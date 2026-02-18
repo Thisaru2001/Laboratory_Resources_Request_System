@@ -1,0 +1,94 @@
+body {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #e0f7f2, #a8dadc);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: "Segoe UI", sans-serif;
+    margin: 0;
+}
+
+/* --- Card --- */
+.auth-card {
+    max-width: 900px;
+    width: 100%;
+    border-radius: 20px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+    display: flex;
+    flex-wrap: nowrap; /* keep left + right side aligned */
+}
+
+/* --- Left Image --- */
+.auth-card .left-image {
+    flex: 1 1 50%;
+    min-width: 50%;
+}
+.auth-card .left-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* image fills container without stretching */
+}
+
+/* --- Right Form --- */
+.auth-form {
+    flex: 1 1 50%;
+    padding: 40px 30px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+/* --- Form Controls --- */
+.form-control {
+    border-radius: 12px;
+    border: 1px solid #b2dfdb;
+    padding: 12px 15px;
+}
+
+/* --- Buttons --- */
+.btn-success {
+    border-radius: 12px;
+    background: linear-gradient(135deg, #16a34a, #22c55e);
+    border: none;
+    font-weight: 600;
+    transition: 0.3s;
+}
+.btn-success:hover {
+    opacity: 0.9;
+}
+
+/* --- Brand --- */
+.brand {
+    color: #086d57;
+}
+
+/* --- Tabs --- */
+.nav-pills .nav-link {
+    border-radius: 12px;
+    transition: 0.3s;
+}
+.nav-pills .nav-link.active {
+    background: #22c55e;
+    color: #fff;
+}
+
+/* --- Links --- */
+a {
+    text-decoration: none;
+    color: #16a34a;
+}
+a:hover {
+    text-decoration: underline;
+}
+
+/* --- Responsive --- */
+@media (max-width: 768px) {
+    .auth-card {
+        flex-direction: column;
+    }
+    .auth-card .left-image img {
+        height: 200px;
+    }
+}
