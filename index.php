@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Microbiology Lab System - Login</title>
 
-<link rel="stylesheet" href="./assets/style.css">
+<link rel="stylesheet" href="./assets/resources/signin.css">
 <!-- Bootstrap CSS -->
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
@@ -17,7 +17,7 @@
 
     <!-- Left Image -->
     <div class="left-image d-none d-md-block">
-        <img src="./resources/signin.png" alt="Lab Image">
+        <img src="./assets/resources/signin.png" alt="Lab Image">
     </div>
 
     <!-- Right Form -->
@@ -38,13 +38,28 @@
 
             <!-- LOGIN -->
             <div class="tab-pane fade show active" id="login">
-                <form action="login.php" method="post">
+                <form action="login.php">
+
+                
+                            <?php
+                            $email = "";
+                            $password = "";
+
+                            if (isset($_COOKIE["University_id"])) {
+                                $University_id = $_COOKIE["email"];
+                            }
+
+                            if (isset($_COOKIE["password"])) {
+                                $password = $_COOKIE["password"];
+                            }
+                            ?>
+
 
                     <div class="mb-3">
-                        <label class="form-label">Username / Email</label>
+                        <label class="form-label">University ID</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-person"></i></span>
-                            <input type="text" class="form-control" placeholder="Enter username" required>
+                            <input id="university" type="text" class="form-control" placeholder="University ID" required>
                         </div>
                     </div>
 
@@ -52,7 +67,7 @@
                         <label class="form-label">Password</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-lock"></i></span>
-                            <input type="password" class="form-control" placeholder="Enter password" required>
+                            <input type="password" class="form-control" placeholder="Password" required>
                         </div>
                     </div>
 
@@ -60,42 +75,22 @@
                         <a href="forgot-password.php" class="small">Forgot password?</a>
                     </div>
 
-                    <div class="d-grid mb-2">
-                        <button class="btn btn-success btn-lg">Sign In</button>
-                    </div>
+                 <div class="d-grid mb-2">
+    <!-- Sign In Button -->
+    <button onclick="signin();"  class="btn btn-success btn-lg">Sign In</button>
+
+    <!-- Sign Up Link Text -->
+    <p class="text-center mt-3 mb-0">
+        Don't have an account? 
+        <a href="signup.html" class="link-success text-decoration-none">Sign up</a>
+    </p>
+</div>
+
 
                 </form>
             </div>
 
-            <!-- REGISTER -->
-            <!-- <div class="tab-pane fade" id="register">
-                <form action="register.php" method="post">
-
-                    <div class="mb-3">
-                        <label class="form-label">Full Name</label>
-                        <input type="text" class="form-control" placeholder="Enter full name" required>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Email</label>
-                        <input type="email" class="form-control" placeholder="Enter email" required>
-                    </div>
-
-                    <div class="mb-3">
-                        <label class="form-label">Password</label>
-                        <input type="password" class="form-control" placeholder="Create password" required>
-                    </div>
-
-                    <div class="d-grid mb-2">
-                        <button class="btn btn-success btn-lg">Create Account</button>
-                    </div>
-
-                    <p class="text-muted text-center mt-3 small">
-                        Admin approval required before access
-                    </p>
-
-                </form>
-            </div> -->
+          
 
         </div>
 
@@ -103,5 +98,6 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="./assets/script/script.js"></script>
 </body>
 </html>
