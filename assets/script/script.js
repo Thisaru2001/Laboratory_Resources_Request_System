@@ -20,7 +20,7 @@ function signin() {
                     const response = JSON.parse(request.responseText);
                     if (response.status === "success") {
                         alert(response.msg || "Login successful");
-                        window.location.href = "dashboard.php"; // redirect after login
+                      //  window.location.href = "dashboard.php"; // redirect after login
                     } else {
                        showModal(response.msg || "Login failed", "error");
                     }
@@ -68,7 +68,7 @@ function forgotPassword() {
     form.append("csrf_token", csrf_token);
 
     var request = new XMLHttpRequest();
-    request.open("POST", "forgotPasswordProcess.php", true);
+    request.open("POST", "controllers/forgot_password_process.php", true);
 
     request.onreadystatechange = function () {
         if (request.readyState === 4) {
