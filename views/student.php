@@ -11,9 +11,6 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
 
-    <!-- Chart.js for analytics -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-
     <style>
         * {
             margin: 0;
@@ -35,7 +32,7 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0, 0, 0, 0.5);
             backdrop-filter: blur(5px);
             z-index: 999;
         }
@@ -56,7 +53,7 @@
             top: 0;
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 1000;
-            box-shadow: 4px 0 20px rgba(0,0,0,0.2);
+            box-shadow: 4px 0 20px rgba(0, 0, 0, 0.2);
             border-radius: 0 30px 30px 0;
             overflow-y: auto;
         }
@@ -68,12 +65,12 @@
             left: 0;
             right: 0;
             height: 100%;
-            background: linear-gradient(45deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
+            background: linear-gradient(45deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%);
             pointer-events: none;
         }
 
         .sidebar a {
-            color: rgba(255,255,255,0.9);
+            color: rgba(255, 255, 255, 0.9);
             display: flex;
             align-items: center;
             gap: 12px;
@@ -95,13 +92,13 @@
         }
 
         .sidebar a:hover {
-            background: rgba(255,255,255,0.15);
+            background: rgba(255, 255, 255, 0.15);
             transform: translateX(8px);
             color: white;
         }
 
         .sidebar a.active {
-            background: rgba(255,255,255,0.2);
+            background: rgba(255, 255, 255, 0.2);
             border-left: 3px solid #ffd700;
         }
 
@@ -110,7 +107,7 @@
             margin-bottom: 20px;
             font-size: 1.5rem;
             font-weight: 600;
-            border-bottom: 2px solid rgba(255,255,255,0.2);
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
             letter-spacing: 1px;
         }
 
@@ -123,9 +120,9 @@
             padding: 20px;
             margin-top: 30px;
             text-align: center;
-            background: rgba(0,0,0,0.2);
+            background: rgba(0, 0, 0, 0.2);
             font-size: 0.85rem;
-            color: rgba(255,255,255,0.7);
+            color: rgba(255, 255, 255, 0.7);
         }
 
         /* Main content */
@@ -137,7 +134,7 @@
 
         /* Modern Topbar with Rounded Navbar */
         .topbar {
-            background: rgba(255,255,255,0.95);
+            background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
             padding: 12px 30px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
@@ -147,7 +144,7 @@
             position: sticky;
             top: 15px;
             z-index: 999;
-            border-bottom: 1px solid rgba(255,255,255,0.3);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
             border-radius: 50px;
             margin: 15px 25px 0 25px;
             width: calc(100% - 50px);
@@ -159,6 +156,7 @@
                 transform: translateY(-100%);
                 opacity: 0;
             }
+
             to {
                 transform: translateY(0);
                 opacity: 1;
@@ -166,8 +164,13 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
         }
 
         .profile-img {
@@ -221,8 +224,15 @@
         }
 
         @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.2); }
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.2);
+            }
         }
 
         /* Notification Dropdown */
@@ -233,7 +243,7 @@
             width: 350px;
             background: white;
             border-radius: 20px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
             display: none;
             z-index: 1000;
             overflow: hidden;
@@ -249,6 +259,7 @@
                 opacity: 0;
                 transform: translateY(-10px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -270,7 +281,7 @@
         }
 
         .notification-header span {
-            background: rgba(255,255,255,0.2);
+            background: rgba(255, 255, 255, 0.2);
             padding: 4px 12px;
             border-radius: 20px;
             font-size: 0.85rem;
@@ -305,25 +316,25 @@
 
         .content-area {
             padding: 30px;
-            background: rgba(255,255,255,0.1);
+            background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(10px);
             min-height: calc(100vh - 80px);
         }
 
         /* Modern Cards */
         .card {
-            background: rgba(255,255,255,0.95);
+            background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
             border-radius: 24px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            border: 1px solid rgba(255,255,255,0.3);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.3);
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             overflow: hidden;
         }
 
         .card:hover {
             transform: translateY(-8px);
-            box-shadow: 0 30px 60px rgba(0,0,0,0.15);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.15);
         }
 
         /* Analytics Cards - Simplified for student */
@@ -356,7 +367,7 @@
             right: -50%;
             width: 200%;
             height: 200%;
-            background: rgba(255,255,255,0.1);
+            background: rgba(255, 255, 255, 0.1);
             transform: rotate(45deg);
             transition: all 0.3s;
         }
@@ -415,7 +426,7 @@
             background: white;
             border-radius: 20px;
             overflow: hidden;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
             transition: all 0.3s;
             cursor: pointer;
         }
@@ -466,8 +477,15 @@
         }
 
         @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
         }
 
         .equipment-info {
@@ -520,7 +538,7 @@
             padding: 24px;
             margin: 30px 0;
             color: white;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
         }
 
         .calendar-wrapper {
@@ -530,7 +548,7 @@
             background: white;
             border-radius: 24px;
             overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
         }
 
         .calendar-left {
@@ -673,7 +691,8 @@
             box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.1);
         }
 
-        .goto-btn, .today-btn {
+        .goto-btn,
+        .today-btn {
             padding: 12px 20px;
             border: none;
             border-radius: 16px;
@@ -687,7 +706,8 @@
             box-shadow: 0 5px 15px rgba(34, 197, 94, 0.4);
         }
 
-        .goto-btn:hover, .today-btn:hover {
+        .goto-btn:hover,
+        .today-btn:hover {
             transform: scale(1.05);
             box-shadow: 0 8px 25px rgba(34, 197, 94, 0.6);
         }
@@ -704,7 +724,7 @@
         }
 
         .event-date {
-            color: rgba(255,255,255,0.7);
+            color: rgba(255, 255, 255, 0.7);
             font-size: 1.1rem;
         }
 
@@ -715,18 +735,18 @@
         }
 
         .event-item {
-            background: rgba(255,255,255,0.1);
+            background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(10px);
             padding: 18px 20px;
             border-radius: 16px;
             margin-bottom: 12px;
             cursor: pointer;
             transition: all 0.3s;
-            border: 1px solid rgba(255,255,255,0.2);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .event-item:hover {
-            background: rgba(255,255,255,0.2);
+            background: rgba(255, 255, 255, 0.2);
             transform: translateX(8px);
         }
 
@@ -750,7 +770,7 @@
 
         .event-item .event-time {
             font-size: 0.9rem;
-            color: rgba(255,255,255,0.7);
+            color: rgba(255, 255, 255, 0.7);
             margin-left: 28px;
         }
 
@@ -765,7 +785,7 @@
             background: white;
             border-radius: 32px;
             padding: 30px;
-            box-shadow: 0 30px 60px rgba(0,0,0,0.3);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
             z-index: 2000;
             display: none;
         }
@@ -780,6 +800,7 @@
                 opacity: 0;
                 transform: translate(-50%, -50%) scale(0.8);
             }
+
             100% {
                 opacity: 1;
                 transform: translate(-50%, -50%) scale(1);
@@ -878,7 +899,7 @@
         .no-event {
             text-align: center;
             padding: 50px 20px;
-            color: rgba(255,255,255,0.5);
+            color: rgba(255, 255, 255, 0.5);
             font-size: 1.1rem;
         }
 
@@ -909,7 +930,22 @@
 
         .btn-secondary:hover {
             transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #0d6efd, #0b5ed7);
+            border: none;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(13, 110, 253, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(13, 110, 253, 0.6);
         }
 
         .btn-danger {
@@ -982,16 +1018,47 @@
         }
 
         /* Form Elements */
-        .form-control, .form-select {
+        .form-control,
+        .form-select {
             border: 2px solid #f0f0f0;
             border-radius: 16px;
             padding: 12px 16px;
             transition: all 0.3s;
         }
 
-        .form-control:focus, .form-select:focus {
+        .form-control:focus,
+        .form-select:focus {
             border-color: #22c55e;
             box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.1);
+        }
+
+        /* Equipment dropdown */
+        .position-relative {
+            position: relative !important;
+        }
+        
+        #equipmentDropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            max-height: 300px;
+            overflow-y: auto;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .dropdown-item {
+            padding: 10px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+        }
+
+        .dropdown-item:hover {
+            background-color: #f8f9fa;
         }
 
         /* Responsive */
@@ -1012,20 +1079,20 @@
                 left: -280px;
                 border-radius: 0 20px 20px 0;
             }
-            
+
             .sidebar.active {
                 left: 0;
             }
-            
+
             .main-content {
                 margin-left: 0;
             }
-            
+
             .topbar {
                 margin: 10px;
                 width: calc(100% - 20px);
             }
-            
+
             .content-area {
                 padding: 20px;
             }
@@ -1035,24 +1102,24 @@
             .analytics-grid {
                 grid-template-columns: 1fr;
             }
-            
+
             .equipment-grid {
                 grid-template-columns: 1fr;
             }
-            
+
             .notification-dropdown {
                 width: 300px;
                 right: 10px;
             }
-            
+
             .event-day {
                 font-size: 1.8rem;
             }
-            
+
             .filter-section {
                 flex-direction: column;
             }
-            
+
             .filter-select {
                 width: 100%;
             }
@@ -1062,15 +1129,15 @@
             .content-area {
                 padding: 15px;
             }
-            
+
             .card {
                 padding: 15px !important;
             }
-            
+
             .stat-card {
                 padding: 20px;
             }
-            
+
             .stat-card h3 {
                 font-size: 1.5rem;
             }
@@ -1103,12 +1170,12 @@
 
     <!-- SIDEBAR - Student Version -->
     <div class="sidebar" id="sidebar">
-        <h4><i class="bi bi-flask"></i> MicroLab Student</h4>
+        <h4><i class="bi bi-flask"></i> MicroLab</h4>
         <a onclick="showSection('dashboard')" class="active"><i class="bi bi-speedometer2"></i> Dashboard</a>
         <a onclick="showSection('equipment')"><i class="bi bi-tools"></i> Equipment Browser</a>
         <a onclick="showSection('history')"><i class="bi bi-clock-history"></i> History</a>
-        <a href="logout.php"><i class="bi bi-box-arrow-right"></i> Logout</a>
-        
+        <a href="#" onclick="logout()"><i class="bi bi-box-arrow-right"></i> Logout</a>
+
         <div class="sidebar-footer">
             <i class="bi bi-building"></i><br>
             Microbiology Lab<br>
@@ -1119,21 +1186,23 @@
     <!-- MAIN -->
     <div class="main-content">
 
-        <!-- TOPBAR with Notification Bell (Only one bell) -->
+        <!-- TOPBAR -->
         <div class="topbar">
             <div class="d-flex align-items-center gap-3">
                 <button class="btn d-lg-none text-dark" onclick="toggleSidebar()">
                     <i class="bi bi-list fs-3"></i>
                 </button>
-                <h5 class="fw-bold mb-0" style="background: linear-gradient(135deg, #22c55e, #16a34a); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Student Dashboard</h5>
+                <h5 class="fw-bold mb-0" style="background: linear-gradient(135deg, #22c55e, #16a34a); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                    Welcome, <span id="userName">John</span>
+                </h5>
             </div>
             <div class="d-flex align-items-center gap-3">
-                <!-- Single Notification Bell -->
+                <!-- Notification Bell -->
                 <div class="notification-bell" onclick="toggleNotifications()">
                     <i class="bi bi-bell"></i>
                     <span class="notification-badge" id="notificationBadge">3</span>
                 </div>
-                
+
                 <!-- Notification Dropdown -->
                 <div class="notification-dropdown" id="notificationDropdown">
                     <div class="notification-header">
@@ -1153,14 +1222,10 @@
                             <div><i class="bi bi-exclamation-triangle-fill text-danger me-2"></i> Return reminder: Microscope due today</div>
                             <div class="time">1 hour ago</div>
                         </div>
-                        <div class="notification-item">
-                            <div><i class="bi bi-check-circle-fill text-success me-2"></i> Your booking #REQ003 completed</div>
-                            <div class="time">2 hours ago</div>
-                        </div>
                     </div>
                 </div>
 
-                <span class="fw-semibold d-none d-sm-block" style="color: #166534;">John Doe</span>
+                <span class="fw-semibold d-none d-sm-block" style="color: #166534;" id="userNameDisplay">John Doe</span>
                 <div class="dropdown">
                     <img src="https://ui-avatars.com/api/?name=John+Doe&background=22c55e&color=fff&size=100" class="profile-img dropdown-toggle" data-bs-toggle="dropdown">
                     <ul class="dropdown-menu dropdown-menu-end" style="border-radius: 16px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
@@ -1169,7 +1234,7 @@
                         <li>
                             <hr class="dropdown-divider">
                         </li>
-                        <li><a class="dropdown-item text-danger" href="logout.php"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                        <li><a class="dropdown-item text-danger" href="#" onclick="logout()"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
                     </ul>
                 </div>
             </div>
@@ -1178,10 +1243,10 @@
         <!-- CONTENT AREA -->
         <div class="content-area">
 
-            <!-- Dashboard Section (Contains Create Request, Request Status, and Calendar) -->
+            <!-- Dashboard Section -->
             <div id="dashboardSection">
                 <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Student Dashboard</h3>
-                
+
                 <!-- Student Stats -->
                 <div class="analytics-grid mb-4">
                     <div class="stat-card">
@@ -1209,11 +1274,11 @@
                 <!-- Create Request Section -->
                 <h4 class="mb-3" style="color: white;">Create Equipment Request</h4>
                 <div class="card p-4 mb-4">
-                    <form id="equipmentRequestForm" onsubmit="return submitEquipmentRequest(event)">
+                    <form id="equipmentRequestForm">
                         <div class="row g-3 mb-3">
-                            <div class="col-md-6">
+                            <div class="col-md-6 position-relative">
                                 <label class="form-label fw-semibold">Search Equipment</label>
-                                <input type="text" id="equipmentName" class="form-control" placeholder="Enter equipment name">
+                                <input type="text" id="equipmentName" class="form-control" placeholder="Enter equipment name" autocomplete="off">
                             </div>
                             <div class="col-md-2">
                                 <label class="form-label fw-semibold">Quantity</label>
@@ -1226,6 +1291,7 @@
                             </div>
                         </div>
 
+                        <!-- Equipment Table -->
                         <div class="table-responsive">
                             <table class="table table-bordered mb-4" id="equipmentTable">
                                 <thead class="table-success">
@@ -1240,6 +1306,7 @@
                             </table>
                         </div>
 
+                        <!-- Lab Location and Date Section -->
                         <div class="row g-3 mb-3">
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold">Lab Location</label>
@@ -1250,12 +1317,22 @@
                                     <option value="Research Laboratory">Research Laboratory</option>
                                 </select>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-3">
                                 <label class="form-label fw-semibold">Requested Day</label>
                                 <input type="date" id="requestDate" class="form-control" required>
                             </div>
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold">Continue Days</label>
+                                <select id="continueDays" class="form-select" required>
+                                    <option value="" disabled selected>Select Days</option>
+                                    <option value="1">1 Day</option>
+                                    <option value="2">2 Days</option>
+                                    <option value="3">3 Days</option>
+                                </select>
+                            </div>
                         </div>
 
+                        <!-- Time Section -->
                         <div class="row g-3 mb-4">
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold">Start Time</label>
@@ -1270,15 +1347,21 @@
                         <!-- Comment Textarea -->
                         <div class="mb-4">
                             <label class="form-label fw-semibold">Additional Comments</label>
-                            <textarea id="requestComment" class="comment-textarea" placeholder="Enter any special requirements or notes..."></textarea>
+                            <textarea id="requestComment" class="form-control" rows="3" placeholder="Enter any special requirements or notes..."></textarea>
                         </div>
 
-                        <button type="submit" class="btn btn-success">
-                            <i class="bi bi-send me-1"></i>Submit Request
-                        </button>
-                        <button type="reset" class="btn btn-secondary">
-                            <i class="bi bi-arrow-counterclockwise me-1"></i>Reset
-                        </button>
+                        <!-- Buttons -->
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-primary" onclick="checkAvailability()">
+                                <i class="bi bi-check-circle me-1"></i>Check Availability
+                            </button>
+                            <button type="button" class="btn btn-success" onclick="submitRequest()">
+                                <i class="bi bi-send me-1"></i>Submit Request
+                            </button>
+                            <button type="button" class="btn btn-secondary" onclick="resetForm()">
+                                <i class="bi bi-arrow-counterclockwise me-1"></i>Reset
+                            </button>
+                        </div>
                     </form>
                 </div>
 
@@ -1299,44 +1382,27 @@
                                 </tr>
                             </thead>
                             <tbody id="requestStatusBody">
-                                <tr>
-                                    <td><span class="fw-semibold">#REQ001</span></td>
-                                    <td>Microscope (2)</td>
-                                    <td>2026-02-20</td>
-                                    <td>10:00 - 12:00</td>
-                                    <td>Lab 01</td>
-                                    <td><span class="badge bg-warning">Pending</span></td>
-                                    <td>-</td>
-                                </tr>
-                                <tr>
-                                    <td><span class="fw-semibold">#REQ002</span></td>
-                                    <td>Centrifuge (1)</td>
-                                    <td>2026-02-21</td>
-                                    <td>14:00 - 16:00</td>
-                                    <td>Research Lab</td>
-                                    <td><span class="badge bg-success">Approved</span></td>
-                                    <td>-</td>
-                                </tr>
-                                <tr>
-                                    <td><span class="fw-semibold">#REQ003</span></td>
-                                    <td>Incubator (1)</td>
-                                    <td>2026-02-19</td>
-                                    <td>09:00 - 11:00</td>
-                                    <td>Lab 02</td>
-                                    <td><span class="badge bg-danger">Rejected</span></td>
-                                    <td class="text-danger">Equipment under maintenance</td>
-                                </tr>
-                                <tr>
-                                    <td><span class="fw-semibold">#REQ004</span></td>
-                                    <td>Autoclave (1)</td>
-                                    <td>2026-02-22</td>
-                                    <td>13:00 - 15:00</td>
-                                    <td>Lab 01</td>
-                                    <td><span class="badge bg-warning">Pending</span></td>
-                                    <td>-</td>
-                                </tr>
+                                <!-- Dynamic content will be loaded here -->
                             </tbody>
                         </table>
+                    </div>
+                </div>
+
+                <!-- Availability Modal -->
+                <div class="modal fade" id="availabilityModal" tabindex="-1">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title" id="availabilityModalTitle">Availability Check</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body" id="availabilityModalBody">
+                                <!-- Content will be dynamically inserted -->
+                            </div>
+                            <div class="modal-footer" id="availabilityModalFooter">
+                                <!-- Footer will be dynamically inserted -->
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -1380,7 +1446,7 @@
             <!-- Equipment Browser Section -->
             <div id="equipmentSection" style="display: none;">
                 <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Equipment Browser</h3>
-                
+
                 <div class="card p-4">
                     <div class="filter-section">
                         <select class="filter-select" id="labFilter" onchange="filterEquipment()">
@@ -1389,7 +1455,7 @@
                             <option value="lab2">Microbiology Lab 02</option>
                             <option value="research">Research Laboratory</option>
                         </select>
-                        
+
                         <select class="filter-select" id="statusFilter" onchange="filterEquipment()">
                             <option value="all">All Status</option>
                             <option value="available">Available</option>
@@ -1404,7 +1470,7 @@
                 </div>
             </div>
 
-            <!-- History Section (Student's Booking History) -->
+            <!-- History Section -->
             <div id="historySection" style="display: none;">
                 <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">My Booking History</h3>
                 <div class="card p-4">
@@ -1445,22 +1511,6 @@
                                     <td>2 hours</td>
                                     <td><span class="badge bg-success">Completed</span></td>
                                 </tr>
-                                <tr>
-                                    <td>#REQ004</td>
-                                    <td>2026-02-19</td>
-                                    <td>Lab 01</td>
-                                    <td>Autoclave (1)</td>
-                                    <td>2 hours</td>
-                                    <td><span class="badge bg-success">Completed</span></td>
-                                </tr>
-                                <tr>
-                                    <td>#REQ005</td>
-                                    <td>2026-02-05</td>
-                                    <td>Research Lab</td>
-                                    <td>pH Meter (1)</td>
-                                    <td>1.5 hours</td>
-                                    <td><span class="badge bg-success">Completed</span></td>
-                                </tr>
                             </tbody>
                         </table>
                     </div>
@@ -1490,13 +1540,388 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-        // Toggle Sidebar
+        // ============ GLOBAL VARIABLES ============
+        let selectedEquipment = [];
+        let currentUser = { name: "John", id: 1 };
+
+        // Calendar variables
+        let activeDay;
+        let month = new Date().getMonth();
+        let year = new Date().getFullYear();
+
+        const months = [
+            "January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"
+        ];
+
+        let eventsArr = [
+            { day: 20, month: 2, year: 2026, events: [{ title: "Microscope Booking", time: "10:00 AM - 12:00 PM", details: "Lab 01" }] },
+            { day: 21, month: 2, year: 2026, events: [{ title: "Centrifuge Booking", time: "2:00 PM - 4:00 PM", details: "Research Lab" }] },
+            { day: 22, month: 2, year: 2026, events: [{ title: "Autoclave Booking", time: "1:00 PM - 3:00 PM", details: "Lab 01" }] }
+        ];
+
+        // Equipment data for browser
+        const equipmentData = [
+            { name: 'Microscope', image: 'https://cdn-icons-png.flaticon.com/512/2941/2941514.png', location: 'Microbiology Lab 01', status: 'available', lab: 'lab1' },
+            { name: 'Centrifuge', image: 'https://cdn-icons-png.flaticon.com/512/2941/2941543.png', location: 'Research Laboratory', status: 'in-use', lab: 'research' },
+            { name: 'Incubator', image: 'https://cdn-icons-png.flaticon.com/512/2941/2941538.png', location: 'Microbiology Lab 02', status: 'maintenance', lab: 'lab2' },
+            { name: 'Autoclave', image: 'https://cdn-icons-png.flaticon.com/512/2941/2941521.png', location: 'Microbiology Lab 01', status: 'available', lab: 'lab1' },
+            { name: 'pH Meter', image: 'https://cdn-icons-png.flaticon.com/512/2941/2941556.png', location: 'Research Laboratory', status: 'available', lab: 'research' },
+            { name: 'Water Bath', image: 'https://cdn-icons-png.flaticon.com/512/2941/2941578.png', location: 'Microbiology Lab 02', status: 'in-use', lab: 'lab2' }
+        ];
+
+        // ============ INITIALIZATION ============
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set minimum date for request
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('requestDate').min = today;
+            document.getElementById('requestDate').value = today;
+            
+            // Add search event listener
+            document.getElementById('equipmentName').addEventListener('input', searchEquipment);
+            
+            // Load initial data
+            loadLabLocations();
+            loadMyRequests();
+            showSection('dashboard');
+            initEquipmentGrid();
+            initCalendar();
+            loadEvents();
+        });
+
+        // ============ LOGOUT ============
+        function logout() {
+            alert('Logged out successfully');
+        }
+
+        // ============ LAB LOCATIONS ============
+        function loadLabLocations() {
+            const select = document.getElementById('labLocation');
+            select.innerHTML = '<option value="" disabled selected>Select Lab</option>';
+            const labs = ['Microbiology Lab 01', 'Microbiology Lab 02', 'Research Laboratory'];
+            labs.forEach(lab => {
+                const option = document.createElement('option');
+                option.value = lab;
+                option.textContent = lab;
+                select.appendChild(option);
+            });
+        }
+
+        // ============ EQUIPMENT SEARCH ============
+        let searchTimeout;
+        function searchEquipment() {
+            clearTimeout(searchTimeout);
+            const term = document.getElementById('equipmentName').value;
+            if (term.length < 2) return;
+            
+            searchTimeout = setTimeout(() => {
+                // Mock equipment data with TODAY availability
+                const mockEquipment = [
+                    { equipment_id: 1, name: 'Microscope', equipment_code: 'MIC001', available_units: 5, total_units: 8 },
+                    { equipment_id: 2, name: 'Centrifuge', equipment_code: 'CEN002', available_units: 3, total_units: 5 },
+                    { equipment_id: 3, name: 'Spectrophotometer', equipment_code: 'SPE003', available_units: 2, total_units: 3 },
+                    { equipment_id: 4, name: 'Incubator', equipment_code: 'INC004', available_units: 4, total_units: 6 },
+                    { equipment_id: 5, name: 'Autoclave', equipment_code: 'AUT005', available_units: 2, total_units: 4 }
+                ].filter(item => item.name.toLowerCase().includes(term.toLowerCase()));
+                
+                showEquipmentDropdown(mockEquipment);
+            }, 300);
+        }
+
+        // Show equipment dropdown with "Today: X/Y" format
+        function showEquipmentDropdown(equipment) {
+            let dropdown = document.getElementById('equipmentDropdown');
+            if (!dropdown) {
+                dropdown = document.createElement('div');
+                dropdown.id = 'equipmentDropdown';
+                dropdown.className = 'dropdown-menu show position-absolute w-100';
+                document.getElementById('equipmentName').parentNode.style.position = 'relative';
+                document.getElementById('equipmentName').parentNode.appendChild(dropdown);
+            }
+            
+            dropdown.innerHTML = '';
+            equipment.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'dropdown-item';
+                div.style.cursor = 'pointer';
+                div.innerHTML = `
+                    <div class="d-flex justify-content-between">
+                        <span><strong>${item.name}</strong> (${item.equipment_code})</span>
+                        <span class="badge bg-success">Today: ${item.available_units || 0}/${item.total_units || 0}</span>
+                    </div>
+                `;
+                div.onclick = () => selectEquipment(item);
+                dropdown.appendChild(div);
+            });
+        }
+
+        // Select equipment
+        function selectEquipment(item) {
+            document.getElementById('equipmentName').value = item.name;
+            document.getElementById('equipmentQty').max = item.available_units || 1;
+            document.getElementById('equipmentQty').value = 1;
+            document.getElementById('equipmentDropdown')?.remove();
+        }
+
+        // ============ ADD EQUIPMENT (ONLY ONE FUNCTION) ============
+        function addEquipment() {
+            const name = document.getElementById('equipmentName').value;
+            const qty = parseInt(document.getElementById('equipmentQty').value);
+            
+            if (!name || !qty) {
+                showNotification('Please search and select equipment', 'warning');
+                return;
+            }
+            
+            // Mock equipment data
+            const mockEquipment = [
+                { equipment_id: 1, name: 'Microscope', available_units: 5 },
+                { equipment_id: 2, name: 'Centrifuge', available_units: 3 },
+                { equipment_id: 3, name: 'Spectrophotometer', available_units: 2 },
+                { equipment_id: 4, name: 'Incubator', available_units: 4 },
+                { equipment_id: 5, name: 'Autoclave', available_units: 2 }
+            ];
+            
+            const equipment = mockEquipment.find(e => e.name.toLowerCase() === name.toLowerCase());
+            
+            if (equipment) {
+                const existing = selectedEquipment.find(e => e.equipment_id === equipment.equipment_id);
+                if (existing) {
+                    existing.qty += qty;
+                } else {
+                    selectedEquipment.push({
+                        equipment_id: equipment.equipment_id,
+                        name: equipment.name,
+                        qty: qty,
+                        available: equipment.available_units || 0
+                    });
+                }
+                
+                updateEquipmentTable();
+                document.getElementById('equipmentName').value = '';
+                document.getElementById('equipmentQty').value = 1;
+                document.getElementById('equipmentDropdown')?.remove();
+            } else {
+                showNotification('Equipment not found', 'warning');
+            }
+        }
+
+        // Update equipment table
+        function updateEquipmentTable() {
+            const tbody = document.querySelector('#equipmentTable tbody');
+            tbody.innerHTML = '';
+            
+            selectedEquipment.forEach((item, index) => {
+                const row = tbody.insertRow();
+                row.innerHTML = `
+                    <td>${item.name}</td>
+                    <td>${item.qty}</td>
+                    <td><span class="badge bg-info">Pending Check</span></td>
+                    <td>
+                        <button class="btn btn-danger btn-sm" onclick="removeEquipment(${index})">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                `;
+            });
+        }
+
+        // Remove equipment
+        function removeEquipment(index) {
+            selectedEquipment.splice(index, 1);
+            updateEquipmentTable();
+        }
+
+        // ============ AI AVAILABILITY CHECK ============
+        function checkAvailability() {
+            // Validate form
+            if (selectedEquipment.length === 0) {
+                showNotification('Please add at least one equipment', 'warning');
+                return;
+            }
+            
+            // Validate required fields
+            const required = ['labLocation', 'requestDate', 'continueDays', 'startTime', 'endTime'];
+            for (const field of required) {
+                if (!document.getElementById(field).value) {
+                    showNotification(`Please fill in all required fields`, 'warning');
+                    return;
+                }
+            }
+            
+            // Validate time
+            const start = document.getElementById('startTime').value;
+            const end = document.getElementById('endTime').value;
+            if (start >= end) {
+                showNotification('End time must be after start time', 'warning');
+                return;
+            }
+            
+            // Get button and show loading
+            const checkBtn = document.querySelector('button[onclick="checkAvailability()"]');
+            const originalText = checkBtn.innerHTML;
+            checkBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Checking...';
+            checkBtn.disabled = true;
+            
+            // Simulate AI analysis
+            setTimeout(() => {
+                // Random availability (70% chance available)
+                const isAvailable = Math.random() > 0.3;
+                const studentName = currentUser.name;
+                
+                if (isAvailable) {
+                    // Show success modal
+                    document.getElementById('availabilityModalTitle').innerHTML = '✅ Success!';
+                    document.getElementById('availabilityModalBody').innerHTML = `
+                        <div class="text-center">
+                            <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
+                            <h5 class="mt-3">✅ Good news ${studentName}! All equipment is available for your request.</h5>
+                            <p class="text-muted">You can now submit your request.</p>
+                        </div>
+                    `;
+                    document.getElementById('availabilityModalFooter').innerHTML = `
+                        <button type="button" class="btn btn-success" onclick="submitRequest()">
+                            <i class="bi bi-send me-1"></i>Submit Request
+                        </button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    `;
+                    
+                    const modal = new bootstrap.Modal(document.getElementById('availabilityModal'));
+                    modal.show();
+                    
+                    // Update status in table
+                    document.querySelectorAll('#equipmentTable tbody tr').forEach(row => {
+                        row.cells[2].innerHTML = '<span class="badge bg-success">✓ Available</span>';
+                    });
+                    
+                    // Auto close after 2 seconds
+                    setTimeout(() => {
+                        const m = bootstrap.Modal.getInstance(document.getElementById('availabilityModal'));
+                        if (m) m.hide();
+                    }, 2000);
+                    
+                } else {
+                    // Random issue
+                    const issues = [
+                        'Microscope is booked by Thushan Fernando',
+                        'Centrifuge is under maintenance',
+                        'Incubator has 2 damaged units',
+                        'Spectrophotometer is already reserved'
+                    ];
+                    const randomIssue = issues[Math.floor(Math.random() * issues.length)];
+                    
+                    // Show error modal
+                    document.getElementById('availabilityModalTitle').innerHTML = '❌ Cannot Submit';
+                    document.getElementById('availabilityModalBody').innerHTML = `
+                        <div class="text-center">
+                            <i class="bi bi-exclamation-triangle-fill text-warning" style="font-size: 4rem;"></i>
+                            <h5 class="mt-3">❌ Sorry ${studentName}, ${randomIssue}</h5>
+                            <p class="text-muted mt-3">Click OK to clear the form and try again.</p>
+                        </div>
+                    `;
+                    document.getElementById('availabilityModalFooter').innerHTML = `
+                        <button type="button" class="btn btn-danger" onclick="resetFormAndCloseModal()">
+                            <i class="bi bi-check-circle me-1"></i>OK
+                        </button>
+                    `;
+                    
+                    const modal = new bootstrap.Modal(document.getElementById('availabilityModal'));
+                    modal.show();
+                    
+                    // Update status in table
+                    document.querySelectorAll('#equipmentTable tbody tr').forEach(row => {
+                        row.cells[2].innerHTML = '<span class="badge bg-danger">✗ Unavailable</span>';
+                    });
+                }
+                
+                // Reset button
+                checkBtn.innerHTML = originalText;
+                checkBtn.disabled = false;
+            }, 1500);
+        }
+
+        // Reset form and close modal
+        function resetFormAndCloseModal() {
+            const modal = bootstrap.Modal.getInstance(document.getElementById('availabilityModal'));
+            if (modal) modal.hide();
+            resetForm();
+        }
+
+        // Reset form
+        function resetForm() {
+            document.getElementById('equipmentRequestForm').reset();
+            selectedEquipment = [];
+            updateEquipmentTable();
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('requestDate').value = today;
+        }
+
+        // Submit request
+        function submitRequest() {
+            if (selectedEquipment.length === 0) {
+                showNotification('Please add equipment', 'warning');
+                return;
+            }
+            
+            showNotification('Request submitted successfully!', 'success');
+            resetForm();
+            
+            const modal = bootstrap.Modal.getInstance(document.getElementById('availabilityModal'));
+            if (modal) modal.hide();
+            loadMyRequests();
+        }
+
+        // Load my requests
+        function loadMyRequests() {
+            const tbody = document.getElementById('requestStatusBody');
+            tbody.innerHTML = '';
+            
+            const mockRequests = [
+                { reservation_id: 1, equipment_names: 'Microscope, Centrifuge', total_equipment: 2, request_date: '2026-02-20', start_time: '10:00', end_time: '12:00', lab_name: 'Lab 01', status: 'Pending', rejected_reason: null },
+                { reservation_id: 2, equipment_names: 'Spectrophotometer', total_equipment: 1, request_date: '2026-02-21', start_time: '14:00', end_time: '16:00', lab_name: 'Research Lab', status: 'Approved', rejected_reason: null },
+                { reservation_id: 3, equipment_names: 'Incubator', total_equipment: 1, request_date: '2026-02-19', start_time: '09:00', end_time: '11:00', lab_name: 'Lab 02', status: 'Rejected', rejected_reason: 'Equipment under maintenance' }
+            ];
+            
+            mockRequests.forEach(req => {
+                const row = tbody.insertRow();
+                
+                let statusBadge = '';
+                if (req.status === 'Approved') {
+                    statusBadge = '<span class="badge bg-success">Approved</span>';
+                } else if (req.status === 'Pending') {
+                    statusBadge = '<span class="badge bg-warning">Pending</span>';
+                } else if (req.status === 'Rejected') {
+                    statusBadge = '<span class="badge bg-danger">Rejected</span>';
+                }
+                
+                row.innerHTML = `
+                    <td><span class="fw-semibold">#REQ${String(req.reservation_id).padStart(3, '0')}</span></td>
+                    <td>${req.equipment_names || 'Multiple'} (${req.total_equipment})</td>
+                    <td>${req.request_date}</td>
+                    <td>${req.start_time} - ${req.end_time}</td>
+                    <td>${req.lab_name}</td>
+                    <td>${statusBadge}</td>
+                    <td class="text-danger">${req.rejected_reason || '-'}</td>
+                `;
+            });
+        }
+
+        // Show notification
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = `alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show position-fixed top-0 end-0 m-3`;
+            notification.style.zIndex = '9999';
+            notification.innerHTML = `${message}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 5000);
+        }
+
+        // ============ SIDEBAR FUNCTIONS ============
         function toggleSidebar() {
             document.getElementById("sidebar").classList.toggle("active");
             document.getElementById("sidebarOverlay").classList.toggle("active");
         }
 
-        // Toggle Notifications
         function toggleNotifications() {
             document.getElementById("notificationDropdown").classList.toggle("show");
         }
@@ -1512,87 +1937,38 @@
 
         // Show different sections
         function showSection(section) {
-            // Hide all sections
             document.getElementById('dashboardSection').style.display = 'none';
             document.getElementById('equipmentSection').style.display = 'none';
             document.getElementById('historySection').style.display = 'none';
-            
-            // Show selected section
+
             document.getElementById(section + 'Section').style.display = 'block';
-            
-            // Update active state in sidebar
+
             document.querySelectorAll('.sidebar a').forEach(link => {
                 link.classList.remove('active');
                 if (link.getAttribute('onclick') && link.getAttribute('onclick').includes(section)) {
                     link.classList.add('active');
                 }
             });
-            
-            // Initialize equipment grid if showing equipment section
+
             if (section === 'equipment') {
                 initEquipmentGrid();
             }
         }
 
-        // Equipment Browser Functions
-        const equipmentData = [
-            {
-                name: 'Microscope',
-                image: 'https://cdn-icons-png.flaticon.com/512/2941/2941514.png',
-                location: 'Microbiology Lab 01',
-                status: 'available',
-                lab: 'lab1'
-            },
-            {
-                name: 'Centrifuge',
-                image: 'https://cdn-icons-png.flaticon.com/512/2941/2941543.png',
-                location: 'Research Laboratory',
-                status: 'in-use',
-                lab: 'research'
-            },
-            {
-                name: 'Incubator',
-                image: 'https://cdn-icons-png.flaticon.com/512/2941/2941538.png',
-                location: 'Microbiology Lab 02',
-                status: 'maintenance',
-                lab: 'lab2'
-            },
-            {
-                name: 'Autoclave',
-                image: 'https://cdn-icons-png.flaticon.com/512/2941/2941521.png',
-                location: 'Microbiology Lab 01',
-                status: 'available',
-                lab: 'lab1'
-            },
-            {
-                name: 'pH Meter',
-                image: 'https://cdn-icons-png.flaticon.com/512/2941/2941556.png',
-                location: 'Research Laboratory',
-                status: 'available',
-                lab: 'research'
-            },
-            {
-                name: 'Water Bath',
-                image: 'https://cdn-icons-png.flaticon.com/512/2941/2941578.png',
-                location: 'Microbiology Lab 02',
-                status: 'in-use',
-                lab: 'lab2'
-            }
-        ];
-
+        // ============ EQUIPMENT BROWSER ============
         function initEquipmentGrid() {
             const grid = document.getElementById('equipmentGrid');
             if (!grid) return;
-            
+
             grid.innerHTML = '';
-            
+
             const labFilter = document.getElementById('labFilter')?.value || 'all';
             const statusFilter = document.getElementById('statusFilter')?.value || 'all';
-            
+
             equipmentData.forEach(item => {
-                if ((labFilter === 'all' || item.lab === labFilter) && 
+                if ((labFilter === 'all' || item.lab === labFilter) &&
                     (statusFilter === 'all' || item.status === statusFilter)) {
-                    
+
                     const card = document.createElement('div');
                     card.className = 'equipment-card';
                     card.innerHTML = `
@@ -1617,168 +1993,13 @@
             initEquipmentGrid();
         }
 
-        // Request Management
-        function getStatusBadge() {
-            const statuses = [
-                ["Available", "success"],
-                ["In Use", "warning"],
-                ["Pending", "warning"],
-                ["Damaged", "danger"],
-                ["Out of Service", "secondary"]
-            ];
-            let s = statuses[Math.floor(Math.random() * statuses.length)];
-            return `<span class="badge bg-${s[1]}">${s[0]}</span>`;
-        }
-
-        function addEquipment() {
-            let name = document.getElementById("equipmentName").value.trim();
-            let qty = document.getElementById("equipmentQty").value;
-
-            if (!name) {
-                alert("Please enter equipment name");
-                return;
-            }
-            if (!qty || qty < 1) {
-                alert("Please enter valid quantity");
-                return;
-            }
-
-            let table = document.querySelector("#equipmentTable tbody");
-            let row = table.insertRow();
-            row.innerHTML = `
-                <td>${name}</td>
-                <td>${qty}</td>
-                <td>${getStatusBadge()}</td>
-                <td><button type="button" class="btn btn-sm btn-danger" onclick="this.closest('tr').remove()"><i class="bi bi-trash"></i></button></td>
-            `;
-
-            document.getElementById("equipmentName").value = "";
-            document.getElementById("equipmentQty").value = "1";
-        }
-
-        function submitEquipmentRequest(event) {
-            event.preventDefault();
-            
-            const date = document.getElementById('requestDate').value;
-            const startTime = document.getElementById('startTime').value;
-            const endTime = document.getElementById('endTime').value;
-            const labLocation = document.getElementById('labLocation').value;
-            const comment = document.getElementById('requestComment').value;
-
-            const equipmentRows = document.querySelectorAll("#equipmentTable tbody tr");
-            if (equipmentRows.length === 0) {
-                alert("Please add at least one equipment");
-                return false;
-            }
-
-            const today = new Date().toISOString().split('T')[0];
-            if (date < today) {
-                alert("Past dates are not allowed");
-                return false;
-            }
-
-            if (!startTime || !endTime) {
-                alert("Please select start and end times");
-                return false;
-            }
-
-            if (endTime <= startTime) {
-                alert("End time must be after start time");
-                return false;
-            }
-
-            const s = new Date(`1970-01-01T${startTime}`);
-            const e = new Date(`1970-01-01T${endTime}`);
-            if ((e - s) / (1000 * 60 * 60) > 8) {
-                alert("Maximum booking duration is 8 hours");
-                return false;
-            }
-
-            let equipmentList = [];
-            equipmentRows.forEach(row => {
-                const cells = row.cells;
-                equipmentList.push(`${cells[0].textContent} (${cells[1].textContent})`);
-            });
-
-            const eventTitle = `Equipment Request: ${labLocation}`;
-            
-            document.getElementById('eventName').value = eventTitle;
-            document.getElementById('eventDetails').value = 
-                `Equipment: ${equipmentList.join(', ')}\nComment: ${comment || 'No comments'}`;
-            document.getElementById('eventTimeFrom').value = startTime;
-            document.getElementById('eventTimeTo').value = endTime;
-
-            window.currentRequestData = {
-                date: date,
-                labLocation: labLocation,
-                equipmentList: equipmentList,
-                comment: comment,
-                startTime: startTime,
-                endTime: endTime
-            };
-
-            document.getElementById('addEventWrapper').classList.add('active');
-            
-            return false;
-        }
-
-        // Calendar Implementation
-        let activeDay;
-        let month = new Date().getMonth();
-        let year = new Date().getFullYear();
-
-        const months = [
-            "January", "February", "March", "April", "May", "June",
-            "July", "August", "September", "October", "November", "December"
-        ];
-
-        let eventsArr = [
-            {
-                day: 20,
-                month: 2,
-                year: 2026,
-                events: [
-                    {
-                        title: "Microscope Booking",
-                        time: "10:00 AM - 12:00 PM",
-                        details: "Lab 01"
-                    }
-                ]
-            },
-            {
-                day: 21,
-                month: 2,
-                year: 2026,
-                events: [
-                    {
-                        title: "Centrifuge Booking",
-                        time: "2:00 PM - 4:00 PM",
-                        details: "Research Lab"
-                    }
-                ]
-            },
-            {
-                day: 22,
-                month: 2,
-                year: 2026,
-                events: [
-                    {
-                        title: "Autoclave Booking",
-                        time: "1:00 PM - 3:00 PM",
-                        details: "Lab 01"
-                    }
-                ]
-            }
-        ];
-
-        // Load events from localStorage
+        // ============ CALENDAR FUNCTIONS ============
         function loadEvents() {
             const saved = localStorage.getItem("studentCalendarEvents");
             if (saved) {
                 eventsArr = JSON.parse(saved);
             }
         }
-        loadEvents();
 
         function saveEvents() {
             localStorage.setItem("studentCalendarEvents", JSON.stringify(eventsArr));
@@ -1835,8 +2056,7 @@
                 daysGrid.innerHTML = days;
             }
             updateActiveDay();
-            
-            // Update event display for current active day or today
+
             if (activeDay) {
                 updateEventDisplay(activeDay);
             } else {
@@ -1849,11 +2069,9 @@
             dayCells.forEach(cell => {
                 cell.addEventListener('click', function(e) {
                     if (!this.classList.contains('prev-date') && !this.classList.contains('next-date')) {
-                        // Remove active class from all cells
                         dayCells.forEach(c => c.classList.remove('active'));
-                        // Add active class to clicked cell
                         this.classList.add('active');
-                        
+
                         const day = parseInt(this.textContent);
                         activeDay = day;
                         updateEventDisplay(day);
@@ -1865,18 +2083,13 @@
         function updateEventDisplay(day) {
             const date = new Date(year, month, day);
             const dayName = date.toString().split(' ')[0];
-            
+
             const eventDayEl = document.getElementById('eventDay');
             const eventDateEl = document.getElementById('eventDate');
-            
-            if (eventDayEl) {
-                eventDayEl.innerHTML = dayName;
-            }
-            if (eventDateEl) {
-                eventDateEl.innerHTML = `${day} ${months[month]} ${year}`;
-            }
 
-            // Show events for this day
+            if (eventDayEl) eventDayEl.innerHTML = dayName;
+            if (eventDateEl) eventDateEl.innerHTML = `${day} ${months[month]} ${year}`;
+
             let eventsHtml = "";
             eventsArr.forEach(event => {
                 if (event.day === day && event.month === month + 1 && event.year === year) {
@@ -1898,17 +2111,17 @@
             if (eventsHtml === "") {
                 eventsHtml = '<div class="no-event">No bookings scheduled</div>';
             }
-            
+
             const eventsList = document.getElementById('eventsList');
             if (eventsList) {
                 eventsList.innerHTML = eventsHtml;
             }
         }
 
-        // Navigation
+        // Calendar Navigation
         const prevBtn = document.querySelector('.prev');
         const nextBtn = document.querySelector('.next');
-        
+
         if (prevBtn) {
             prevBtn.addEventListener('click', () => {
                 month--;
@@ -1963,23 +2176,20 @@
             });
         }
 
-        // Modal close functionality
-        const addEventWrapper = document.getElementById('addEventWrapper');
+        // ============ ADD EVENT MODAL ============
         const closeEventBtn = document.getElementById('closeEventBtn');
-
         if (closeEventBtn) {
             closeEventBtn.addEventListener('click', () => {
-                addEventWrapper.classList.remove('active');
+                document.getElementById('addEventWrapper').classList.remove('active');
             });
         }
 
         window.addEventListener('click', (e) => {
-            if (e.target === addEventWrapper) {
-                addEventWrapper.classList.remove('active');
+            if (e.target === document.getElementById('addEventWrapper')) {
+                document.getElementById('addEventWrapper').classList.remove('active');
             }
         });
 
-        // Confirm Request Submit
         const addEventSubmit = document.getElementById('addEventSubmit');
         if (addEventSubmit) {
             addEventSubmit.addEventListener('click', () => {
@@ -1993,8 +2203,7 @@
                     return;
                 }
 
-                // Add event to calendar
-                const requestDate = window.currentRequestData ? new Date(window.currentRequestData.date) : new Date(year, month, activeDay || new Date().getDate());
+                const requestDate = new Date(year, month, activeDay || new Date().getDate());
                 const eventDay = requestDate.getDate();
                 const eventMonth = requestDate.getMonth() + 1;
                 const eventYear = requestDate.getFullYear();
@@ -2027,15 +2236,8 @@
 
                 // Add notification
                 addNotification('New equipment request submitted', 'info');
-                
-                // Clear form
-                document.getElementById('equipmentRequestForm').reset();
-                const tableBody = document.querySelector("#equipmentTable tbody");
-                if (tableBody) tableBody.innerHTML = '';
-                
-                // Close modal
-                addEventWrapper.classList.remove('active');
-                
+
+                document.getElementById('addEventWrapper').classList.remove('active');
                 alert('Equipment request submitted successfully!');
             });
         }
@@ -2047,7 +2249,7 @@
                 const currentCount = parseInt(badge.textContent);
                 badge.textContent = currentCount + 1;
             }
-            
+
             const list = document.getElementById('notificationList');
             if (list) {
                 const newNotif = document.createElement('div');
@@ -2060,18 +2262,12 @@
             }
         }
 
-        // Set min date for request
-        const today = new Date().toISOString().split('T')[0];
-        const requestDate = document.getElementById('requestDate');
-        if (requestDate) {
-            requestDate.min = today;
-        }
-
-        // Initialize everything when page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            showSection('dashboard');
-            initEquipmentGrid();
-            initCalendar();
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            if (!event.target.closest('#equipmentName') && !event.target.closest('#equipmentDropdown')) {
+                const dropdown = document.getElementById('equipmentDropdown');
+                if (dropdown) dropdown.remove();
+            }
         });
     </script>
 </body>

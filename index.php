@@ -498,7 +498,7 @@ $university_id = $_COOKIE["university_id"] ?? '';
             </div>
             <div class="modal-body text-center">
                 <p class="text-muted mb-2 small">Complete security check</p>
-                <div class="g-recaptcha mb-2" data-sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI" data-callback="recaptchaSuccess"></div>
+                <div class="g-recaptcha mb-2" data-sitekey="6LcM0HMsAAAAAGiNWLW0WX5DFTSKF4F8mlQdX5SO" data-callback="recaptchaSuccess"></div>
                 <div id="recaptchaResponse" class="text-danger small"></div>
             </div>
             <div class="modal-footer">
@@ -638,135 +638,7 @@ $university_id = $_COOKIE["university_id"] ?? '';
 <script src="./assets/script/script.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
-<script>
-    let tempUniversityId = '';
-    let tempPassword = '';
-    let tempRememberMe = false;
 
-    function showRecaptchaModal() {
-        tempUniversityId = document.getElementById('university_id').value;
-        tempPassword = document.getElementById('password').value;
-        tempRememberMe = document.getElementById('remember_me').checked;
-        
-        if (!tempUniversityId) {
-            showMessage('Please enter your University ID');
-            return;
-        }
-        
-        if (!tempPassword) {
-            showMessage('Please enter your password');
-            return;
-        }
-        
-        const recaptchaModal = new bootstrap.Modal(document.getElementById('recaptchaModal'));
-        recaptchaModal.show();
-    }
-
-    function recaptchaSuccess(response) {
-        document.getElementById('recaptchaResponse').innerHTML = '';
-        document.getElementById('verifyBtn').disabled = false;
-    }
-
-    function verifyRecaptcha() {
-        const recaptchaResponse = grecaptcha.getResponse();
-        
-        if (!recaptchaResponse) {
-            document.getElementById('recaptchaResponse').innerHTML = 'Please complete the reCAPTCHA';
-            return;
-        }
-        
-        const recaptchaModal = bootstrap.Modal.getInstance(document.getElementById('recaptchaModal'));
-        recaptchaModal.hide();
-        
-        processLogin();
-    }
-
-    function processLogin() {
-        const btn = document.getElementById('signinBtn');
-        const loginText = document.getElementById('loginText');
-        const originalContent = btn.innerHTML;
-        
-        btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Signing In...';
-        
-        setTimeout(() => {
-            if (tempUniversityId === 'admin' || tempPassword === 'admin123') {
-                window.location.href = 'views/admin.php';
-            } else if (tempUniversityId === 'student' || tempPassword === 'student123') {
-                window.location.href = 'views/student.php';
-            } else if (tempUniversityId === 'tech' || tempPassword === 'tech123') {
-                window.location.href = 'views/technical_officer.php';
-            } else {
-                window.location.href = 'views/hod.php';
-            }
-            
-            btn.disabled = false;
-            btn.innerHTML = originalContent;
-            grecaptcha.reset();
-        }, 1500);
-    }
-
-    function showForgotPassword() {
-        const forgotModal = new bootstrap.Modal(document.getElementById('forgotPasswordModal'));
-        forgotModal.show();
-    }
-
-    function showSignUp() {
-        const signupModal = new bootstrap.Modal(document.getElementById('signupModal'));
-        signupModal.show();
-    }
-
-    function forgotPassword() {
-        showForgotPassword();
-    }
-
-    function resetRecaptchaCallback(response) {
-        document.getElementById('resetRecaptchaResponse').innerHTML = '';
-    }
-
-    function sendResetLink() {
-        const universityId = document.getElementById('reset_university_id').value;
-        const recaptchaResponse = grecaptcha.getResponse();
-        
-        if (!universityId) {
-            document.getElementById('resetRecaptchaResponse').innerHTML = 'Please enter your University ID';
-            return;
-        }
-        
-        if (!recaptchaResponse) {
-            document.getElementById('resetRecaptchaResponse').innerHTML = 'Please complete the reCAPTCHA';
-            return;
-        }
-        
-        const btn = event.target;
-        const originalText = btn.innerHTML;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Sending...';
-        btn.disabled = true;
-        
-        setTimeout(() => {
-            btn.innerHTML = originalText;
-            btn.disabled = false;
-            
-            const modal = bootstrap.Modal.getInstance(document.getElementById('forgotPasswordModal'));
-            modal.hide();
-            
-            showMessage('Reset instructions sent to your email.');
-            
-            grecaptcha.reset();
-            document.getElementById('reset_university_id').value = '';
-        }, 1500);
-    }
-
-    function showMessage(message) {
-        document.getElementById('modalMessage').textContent = message;
-        const modal = new bootstrap.Modal(document.getElementById('messageModal'));
-        modal.show();
-    }
-
-    function signin() {
-        showRecaptchaModal();
-    }
-</script>
 
 </body>
 </html>

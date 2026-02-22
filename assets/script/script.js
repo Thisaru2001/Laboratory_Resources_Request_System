@@ -1,96 +1,140 @@
+
+
+/* ======================================================
+   TEMP VARIABLES
+====================================================== */
+let tempUniversityId = "";
+let tempPassword = "";
+let tempRememberMe = 0;
+
+
+/* ======================================================
+   SIGN IN BUTTON CLICK
+====================================================== */
 function signin() {
-    const university_id = document.getElementById("university_id").value.trim();
-    const password = document.getElementById("password").value;
-    const remember_me = document.getElementById("remember_me").checked ? 1 : 0;
-    const csrf_token = document.getElementById("csrf_token").value;
-
-    const form = new FormData();
-    form.append("u", university_id);
-    form.append("p", password);
-    form.append("r", remember_me);
-    form.append("csrf_token", csrf_token);
-
-    const request = new XMLHttpRequest();
-    request.open("POST", "controllers/signin_process.php", true);
-
-    request.onreadystatechange = function() {
-        if (request.readyState === 4) {
-            if (request.status === 200) {
-                try {
-                    const response = JSON.parse(request.responseText);
-                    if (response.status === "success") {
-                        alert(response.msg || "Login successful");
-                      //  window.location.href = "dashboard.php"; // redirect after login
-                    } else {
-                       showModal(response.msg || "Login failed", "error");
-                    }
-                } catch (e) {
-                    console.error("Invalid JSON response", e);
-                }
-            } else {
-                console.error("AJAX error:", request.status);
-            }
-        }
-    };
-
-    request.send(form);
+    showRecaptchaModal();
 }
 
 
-function showModal(message) {
-    // Set the message text
-    const modalMessage = document.getElementById("modalMessage");
-    modalMessage.textContent = message;
+/* ======================================================
+   SHOW RECAPTCHA MODAL
+====================================================== */
+function showRecaptchaModal() {
 
-    // Always success color
-    const btn = document.querySelector("#messageModal .btn");
-    btn.className = "btn btn-success";
+    tempUniversityId =
+        document.getElementById('university_id').value.trim();
 
-    // Show the modal
-    const modal = new bootstrap.Modal(document.getElementById("messageModal"));
+    tempPassword =
+        document.getElementById('password').value;
+
+    tempRememberMe =
+        document.getElementById('remember_me').checked ? 1 : 0;
+
+    if (!tempUniversityId) {
+        showModal("Please enter your University ID");
+        return;
+    }
+
+    if (!tempPassword) {
+        showModal("Please enter your password");
+        return;
+    }
+
+    const modal =
+        new bootstrap.Modal(document.getElementById('recaptchaModal'));
+
     modal.show();
 }
 
 
-var forgotPasswordModal;
+/* ======================================================
+   RECAPTCHA SUCCESS CALLBACK
+====================================================== */
+function recaptchaSuccess() {
+    document.getElementById('verifyBtn').disabled = false;
+}
 
-function forgotPassword() {
-    var university_id = document.getElementById("university_id").value.trim();
-    var csrf_token = document.getElementById("csrf_token").value;
 
-    if(university_id === ""){
-        showModal("Please enter your email.");
+/* ======================================================
+   VERIFY RECAPTCHA BUTTON
+====================================================== */
+function verifyRecaptcha() {
+
+    const recaptchaResponse = grecaptcha.getResponse();
+
+    if (!recaptchaResponse) {
+        document.getElementById('recaptchaResponse')
+            .innerHTML = "Please complete the reCAPTCHA";
         return;
     }
 
-    var form = new FormData();
-    form.append("u", university_id);
-    form.append("csrf_token", csrf_token);
+    bootstrap.Modal
+        .getInstance(document.getElementById('recaptchaModal'))
+        .hide();
 
-    var request = new XMLHttpRequest();
-    request.open("POST", "controllers/forgot_password_process.php", true);
+    processLogin(recaptchaResponse);
+}
+
+
+/* ======================================================
+   LOGIN PROCESS (AJAX)
+====================================================== */
+function processLogin(recaptchaToken) {
+
+    const btn = document.getElementById('signinBtn');
+    const originalContent = btn.innerHTML;
+
+    btn.disabled = true;
+    btn.innerHTML =
+        '<span class="spinner-border spinner-border-sm me-2"></span> Signing In...';
+
+    const csrf_token =
+        document.getElementById("csrf_token").value;
+
+    const form = new FormData();
+    form.append("u", tempUniversityId);
+    form.append("p", tempPassword);
+    form.append("r", tempRememberMe);
+    form.append("csrf_token", csrf_token);
+    form.append("recaptcha", recaptchaToken);
+
+    const request = new XMLHttpRequest();
+    request.open("POST", "controllers/signin_process.php", true);
 
     request.onreadystatechange = function () {
+
         if (request.readyState === 4) {
+
+            btn.disabled = false;
+            btn.innerHTML = originalContent;
+
             if (request.status === 200) {
+
                 try {
-                    const response = JSON.parse(request.responseText);
 
-                    // Always show success-style modal
-                    showModal(response.msg || "A verification code has been sent.");
+                    const response =
+                        JSON.parse(request.responseText);
 
-                    // If needed, show modal for entering code
-                    // var modalEl = document.getElementById("fpmodal");
-                    // forgotPasswordModal = new bootstrap.Modal(modalEl);
-                    // forgotPasswordModal.show();
+                    if (response.status === "success") {
+
+                        showModal(response.msg || "Login successful");
+
+                        setTimeout(() => {
+                            window.location.href = "dashboard.php";
+                        }, 1000);
+
+                    } else {
+                        showModal(response.msg || "Login failed");
+                        grecaptcha.reset();
+                    }
 
                 } catch (e) {
-                    console.error("Invalid JSON response", e);
-                    showModal("Server error. Try again later.");
+                    console.error(request.responseText);
+                    showModal("Server response error");
                 }
+
             } else {
-                console.error("AJAX error:", request.status);
-                showModal("AJAX request failed. Please try again.");
+                showModal("Connection error. Try again.");
             }
         }
     };
@@ -98,4 +142,70 @@ function forgotPassword() {
     request.send(form);
 }
 
+
+/* ======================================================
+   FORGOT PASSWORD
+====================================================== */
+function forgotPassword() {
+
+    const university_id =
+        document.getElementById("university_id").value.trim();
+
+    const csrf_token =
+        document.getElementById("csrf_token").value;
+
+    if (!university_id) {
+        showModal("Please enter your University ID");
+        return;
+    }
+
+    const form = new FormData();
+    form.append("u", university_id);
+    form.append("csrf_token", csrf_token);
+
+    const request = new XMLHttpRequest();
+    request.open("POST",
+        "controllers/forgot_password_process.php", true);
+
+    request.onreadystatechange = function () {
+
+        if (request.readyState === 4) {
+
+            if (request.status === 200) {
+
+                try {
+                    const response =
+                        JSON.parse(request.responseText);
+
+                    showModal(
+                        response.msg ||
+                        "Verification email sent."
+                    );
+
+                } catch (e) {
+                    showModal("Server error");
+                }
+
+            } else {
+                showModal("Request failed");
+            }
+        }
+    };
+
+    request.send(form);
+}
+
+
+/* ======================================================
+   GLOBAL MESSAGE MODAL
+====================================================== */
+function showModal(message) {
+
+    document.getElementById("modalMessage").textContent = message;
+
+    const modal =
+        new bootstrap.Modal(document.getElementById("messageModal"));
+
+    modal.show();
+}
 
