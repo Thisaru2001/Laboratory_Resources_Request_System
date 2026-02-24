@@ -93,10 +93,10 @@ function createAccount(event) {
             try {
                 console.log('Server response:', xhr.responseText);
                 const response = JSON.parse(xhr.responseText);
-                 alert("ok1")
-                if (response.status === 'success') {
+               
+                if (response.status_user == 'success') {
                     showMessage('success', response.message || 'Account created successfully!');
-                    alert("ok2")
+            
                     // Clear form
                     document.getElementById('first_name').value = '';
                     document.getElementById('last_name').value = '';
