@@ -1,4 +1,5 @@
 <?php
+
 session_start();
 include "./config/database.php";
 
@@ -536,7 +537,7 @@ $university_id = $_COOKIE["university_id"] ?? '';
 </div>
 
 <!-- Sign Up Modal -->
-<div class="modal fade" id="signupModal" tabindex="-1" aria-hidden="true">
+<!-- <div class="modal fade" id="signupModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
@@ -561,7 +562,7 @@ $university_id = $_COOKIE["university_id"] ?? '';
             </div>
         </div>
     </div>
-</div>
+</div> -->
 
 <div class="auth-card">
 
@@ -620,7 +621,7 @@ $university_id = $_COOKIE["university_id"] ?? '';
 
                     <p class="text-center mt-3 mb-0 small">
                         Don't have an account? 
-                        <a href="#" class="link-success" onclick="showSignUp(); return false;">Sign up</a>
+                      <a href="./views/signup.php"  class="link-success">Sign up</a>
                     </p>
                 </div>
 

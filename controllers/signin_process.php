@@ -4,9 +4,6 @@ include "../config/database.php";
 
 header('Content-Type: application/json');
 
-/* =====================================================
-   GET INPUT
-===================================================== */
 
 $university_id = trim($_POST['u'] ?? '');
 $password      = $_POST['p'] ?? '';
@@ -14,9 +11,7 @@ $remember_me   = !empty($_POST['r']);
 $csrf_token    = $_POST['csrf_token'] ?? '';
 $recaptcha     = $_POST['recaptcha'] ?? '';
 
-/* =====================================================
-   CSRF CHECK
-===================================================== */
+
 if (!isset($_SESSION['csrf_token']) ||
     $csrf_token !== $_SESSION['csrf_token']) {
 
@@ -27,9 +22,7 @@ if (!isset($_SESSION['csrf_token']) ||
     exit;
 }
 
-/* =====================================================
-   BASIC VALIDATION
-===================================================== */
+
 if (empty($university_id) || empty($password)) {
     echo json_encode([
         'status'=>'error',
@@ -46,9 +39,7 @@ if (strlen($university_id) > 20) {
     exit;
 }
 
-/* =====================================================
-   GOOGLE RECAPTCHA VERIFY
-===================================================== */
+
 
 $secretKey = "6LcM0HMsAAAAANzVhD2S3a9tOPDDZS0puelYCLI3"; // 🔴 replace
 
@@ -67,9 +58,7 @@ if (!$responseData || !$responseData->success) {
     exit;
 }
 
-/* =====================================================
-   LOGIN PROCESS
-===================================================== */
+
 
 try {
 
