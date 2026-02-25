@@ -56,7 +56,7 @@ function createAccount(event) {
     formData.append('password', password);
     formData.append('supervisor_email', supervisorEmail);
 
-    // Add reCAPTCHA token if available
+    // Add reCAPTCHA token if available`
     if (typeof grecaptcha !== 'undefined') {
         const recaptchaResponse = grecaptcha.getResponse();
         if (recaptchaResponse) {
@@ -244,12 +244,7 @@ function highlightFields(fields) {
     });
 }
 
-// Toggle between signup and signin
-function showSignUp(show) {
-    if (show === 0) {
-        window.location.href = 'signin.html';
-    }
-}
+
 
 
 ///create account finish
@@ -316,6 +311,7 @@ function processLogin(recaptchaToken) {
             btn.disabled = false;
             btn.innerHTML = originalContent;
 
+                 
             if (request.status === 200) {
                 try {
                     const response = JSON.parse(request.responseText);
@@ -324,7 +320,7 @@ function processLogin(recaptchaToken) {
                         showModal(response.msg || "Login successful");
 
                         setTimeout(() => {
-                            window.location.href = "dashboard.php";
+                            window.location.href = "..views/student.php";
                         }, 1000);
                     } else {
                         showModal(response.msg || "Login failed");

@@ -3,10 +3,6 @@
 session_start();
 include "./config/database.php";
 
-// CSRF token for AJAX login
-if (empty($_SESSION['csrf_token'])) {
-    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-}
 
 $university_id = $_COOKIE["university_id"] ?? '';
 ?>
@@ -461,7 +457,7 @@ $university_id = $_COOKIE["university_id"] ?? '';
         }
     }
 
-    /* Remove any animation that might cause layout shifts */
+  
     .btn-success {
         animation: none;
     }
@@ -536,33 +532,7 @@ $university_id = $_COOKIE["university_id"] ?? '';
     </div>
 </div>
 
-<!-- Sign Up Modal -->
-<!-- <div class="modal fade" id="signupModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">
-                    <i class="bi bi-person-plus me-2"></i>
-                    Contact Admin
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div class="d-flex align-items-center mb-2 p-2 bg-light rounded">
-                    <i class="bi bi-envelope text-success me-3 fs-5"></i>
-                    <span class="small">lab.admin@kln.ac.lk</span>
-                </div>
-                <div class="d-flex align-items-center p-2 bg-light rounded">
-                    <i class="bi bi-telephone text-success me-3 fs-5"></i>
-                    <span class="small">+94 11 290 3214</span>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-success btn-sm" data-bs-dismiss="modal">OK</button>
-            </div>
-        </div>
-    </div>
-</div> -->
+
 
 <div class="auth-card">
 
@@ -583,12 +553,12 @@ $university_id = $_COOKIE["university_id"] ?? '';
 
             <h2 class="brand">Sign In</h2>
 
-            <form id="loginForm" onsubmit="return false;">
+            <form>
                 <div class="mb-3">
                     <label class="form-label">University ID</label>
                     <div class="input-group">
                         <span class="input-group-text"><i class="bi bi-person"></i></span>
-                        <input id="university_id" name="university_id"
+                        <input id="university_id"
                                value="<?= htmlspecialchars($university_id) ?>"
                                type="text" class="form-control" placeholder="Enter your ID" required>
                     </div>
@@ -598,7 +568,7 @@ $university_id = $_COOKIE["university_id"] ?? '';
                     <label class="form-label">Password</label>
                     <div class="input-group">
                         <span class="input-group-text"><i class="bi bi-lock"></i></span>
-                        <input type="password" id="password" name="password"
+                        <input type="password" id="password" 
                                class="form-control" placeholder="Enter your password" required>
                     </div>
                 </div>
@@ -625,7 +595,7 @@ $university_id = $_COOKIE["university_id"] ?? '';
                     </p>
                 </div>
 
-                <input type="hidden" id="csrf_token" value="<?= $_SESSION['csrf_token'] ?>">
+              
             </form>
 
             <div class="text-center mt-3">

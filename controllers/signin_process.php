@@ -8,19 +8,10 @@ header('Content-Type: application/json');
 $university_id = trim($_POST['u'] ?? '');
 $password      = $_POST['p'] ?? '';
 $remember_me   = !empty($_POST['r']);
-$csrf_token    = $_POST['csrf_token'] ?? '';
+
 $recaptcha     = $_POST['recaptcha'] ?? '';
 
 
-if (!isset($_SESSION['csrf_token']) ||
-    $csrf_token !== $_SESSION['csrf_token']) {
-
-    echo json_encode([
-        'status'=>'error',
-        'msg'=>'Invalid CSRF token'
-    ]);
-    exit;
-}
 
 
 if (empty($university_id) || empty($password)) {
