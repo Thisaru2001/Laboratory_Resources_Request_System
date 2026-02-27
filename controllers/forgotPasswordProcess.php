@@ -1,62 +1,63 @@
 <?php
+session_start();
 include "../config/database.php";
 
+// Include PHPMailer files
 include "SMTP.php";
 include "PHPMailer.php";
 include "Exception.php";
 
 use PHPMailer\PHPMailer\PHPMailer;
 
-if (isset($_GET["e"])) {
+// IMPORTANT: Changed from $_GET["e"] to $_POST["u"] to match your JavaScript
+if (isset($_POST["u"])) {
 
-    $university_id = $_GET["e"];
+    $university_id = trim($_POST["u"]);
     
-    // Debug: Check what's being searched
     error_log("Searching for university_id: " . $university_id);
 
-    // Use the search method correctly
-    $result = Database::search("SELECT * FROM `lab_user` WHERE `university_id`='" . $university_id . "'");
+    // Use prepared statement to prevent SQL injection
+    $result = Database::search(
+        "SELECT * FROM `lab_user` WHERE `university_id` = ?",
+        "s",
+        [$university_id]
+    );
     
-    // Check if search returned false (error) or is a valid result object
     if ($result === false) {
-        // Database query failed
-        $error = Database::getLastError();
-        error_log("Database error: " . $error);
-        echo "Database error occurred. Please try again.";
+        error_log("Database error: " . Database::getLastError());
+        // Return generic success for security (prevents email enumeration)
+        echo 'success';
         exit();
     }
     
     $n = $result->num_rows;
-    
-    // Debug: Check how many rows found
-    error_log("Rows found: " . $n);
 
     if ($n == 1) {
-        // Get user data
         $user_data = $result->fetch_assoc();
-        
-        // Debug: Print user data
-        error_log("User data: " . print_r($user_data, true));
-        
-        // Get the email from database - THIS IS CORRECT NOW
-        $user_email = $user_data['email']; // FIXED: Use email field
-        
-        // Get first name
+        $user_email = $user_data['email'];
         $first_name = $user_data['first_name'] ?? 'User';
         
-        // Generate verification code
-        $code = random_int(100000, 999999);
+        // Generate 6-digit code
+        $code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
         
-        // Update verification code in database
-        $update_result = Database::iud("UPDATE `lab_user` SET `verification_code`='" . $code . "' WHERE `university_id`='" . $university_id . "'");
+        // Set expiration (15 minutes)
+        $expires = date("Y-m-d H:i:s", time() + 900);
+        
+        // Update verification code with expiration
+        $update_result = Database::iud(
+            "UPDATE `lab_user` SET `verification_code` = ?, `verification_expires` = ? WHERE `university_id` = ?",
+            "sss",
+            [$code, $expires, $university_id]
+        );
         
         if ($update_result === false) {
-            echo "Failed to update verification code.";
+            error_log("Failed to update verification code");
+            echo 'success'; // Return success for security
             exit();
         }
 
         // Create PHPMailer instance
-        $mail = new PHPMailer(true); // Enable exceptions
+        $mail = new PHPMailer(true);
         
         try {
             // Server settings
@@ -68,91 +69,60 @@ if (isset($_GET["e"])) {
             $mail->SMTPSecure = 'ssl';
             $mail->Port = 465;
             
-            // Recipients - FIXED: Using correct email from database
+            // Recipients
             $mail->setFrom('microbiologylaboratorysystem@gmail.com', 'Microbiology Lab System');
-            $mail->addAddress($user_email); // FIXED: This was the main error
-            $mail->addReplyTo('microbiologylaboratorysystem@gmail.com', 'Microbiology Lab System');
+            $mail->addAddress($user_email);
             
             // Content
             $mail->isHTML(true);
-            $mail->Subject = 'Password Reset Verification Code - Microbiology Lab';
+            $mail->Subject = 'Password Reset Verification Code';
 
-            // Beautiful HTML email template
-            $bodyContent = '
+            // Simple but clean email template
+            $mail->Body = '
             <!DOCTYPE html>
             <html>
             <head>
                 <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
             </head>
-            <body style="margin:0; padding:0; font-family: Arial, sans-serif; background-color:#f4f4f4;">
-                <div style="max-width:600px; margin:20px auto; background-color:#ffffff; border-radius:10px; overflow:hidden; box-shadow:0 4px 8px rgba(0,0,0,0.1);">
-                    <!-- Header -->
-                    <div style="background: linear-gradient(135deg, #22c55e, #16a34a); padding:30px 20px; text-align:center;">
-                        <h1 style="color:#ffffff; margin:0; font-size:28px;">🔬 Microbiology Lab System</h1>
-                        <p style="color:#ffffff; margin:10px 0 0; opacity:0.9;">University of Kelaniya</p>
+            <body style="font-family: Arial, sans-serif; background-color:#f4f4f4; padding:20px;">
+                <div style="max-width:600px; margin:0 auto; background-color:#ffffff; border-radius:10px; overflow:hidden; box-shadow:0 2px 10px rgba(0,0,0,0.1);">
+                    <div style="background: linear-gradient(135deg, #22c55e, #16a34a); padding:20px; text-align:center;">
+                        <h2 style="color:#ffffff; margin:0;">Microbiology Lab System</h2>
+                        <p style="color:#ffffff; margin:5px 0 0;">University of Kelaniya</p>
                     </div>
-                    
-                    <!-- Body -->
-                    <div style="padding:30px 25px;">
-                        <h2 style="color:#333333; margin-bottom:20px;">Hello ' . htmlspecialchars($first_name) . ',</h2>
-                        
-                        <p style="color:#666666; font-size:16px; line-height:1.6; margin-bottom:25px;">
-                            We received a request to reset your password for <strong>' . htmlspecialchars($university_id) . '</strong>. 
-                            Please use the verification code below to complete the process:
-                        </p>
-                        
-                        <!-- Verification Code Box -->
-                        <div style="background: linear-gradient(135deg, #f0fdf4, #dcfce7); border:2px solid #22c55e; border-radius:12px; padding:25px; text-align:center; margin:25px 0;">
-                            <p style="color:#166534; font-size:14px; margin:0 0 10px; text-transform:uppercase; letter-spacing:2px;">Verification Code</p>
-                            <h1 style="color:#166534; font-size:48px; margin:0; font-family:monospace; letter-spacing:8px;">' . $code . '</h1>
-                            <p style="color:#666666; font-size:14px; margin:15px 0 0;">Valid for 15 minutes</p>
+                    <div style="padding:30px;">
+                        <h3 style="color:#333; margin-bottom:20px;">Hello ' . htmlspecialchars($first_name) . ',</h3>
+                        <p style="color:#666; line-height:1.6;">We received a request to reset your password. Use the code below:</p>
+                        <div style="background:#f0fdf4; border:2px solid #22c55e; border-radius:8px; padding:20px; text-align:center; margin:20px 0;">
+                            <h1 style="color:#166534; font-size:42px; letter-spacing:5px; margin:0;">' . $code . '</h1>
+                            <p style="color:#666; margin:10px 0 0;">Valid for 15 minutes</p>
                         </div>
-                        
-                        <p style="color:#666666; font-size:14px; line-height:1.6; margin-bottom:20px;">
-                            If you didn\'t request this password reset, please ignore this email or contact support.
-                        </p>
-                        
-                        <hr style="border:none; border-top:1px solid #e5e7eb; margin:25px 0;">
-                        
-                        <p style="color:#999999; font-size:13px; line-height:1.5; margin:0;">
-                            <strong>Security Tip:</strong> Never share this code with anyone. Our staff will never ask for your verification code.
-                        </p>
-                    </div>
-                    
-                    <!-- Footer -->
-                    <div style="background-color:#f9fafb; padding:20px 25px; text-align:center; border-top:1px solid #e5e7eb;">
-                        <p style="color:#999999; font-size:12px; margin:0;">
-                            © ' . date('Y') . ' Microbiology Laboratory System<br>
-                            University of Kelaniya, Sri Lanka
-                        </p>
-                        <p style="color:#999999; font-size:11px; margin:10px 0 0;">
-                            This is an automated message, please do not reply to this email.
-                        </p>
+                        <p style="color:#666; font-size:14px;">If you didn\'t request this, please ignore this email.</p>
+                        <hr style="border:none; border-top:1px solid #eee; margin:20px 0;">
+                        <p style="color:#999; font-size:12px; text-align:center;">© ' . date('Y') . ' Microbiology Lab</p>
                     </div>
                 </div>
             </body>
             </html>';
 
-            $mail->Body = $bodyContent;
-
-            // Plain text alternative for non-HTML email clients
             $mail->AltBody = "Hello " . $first_name . ",\n\n" .
-                             "Your Password Reset Verification Code is: " . $code . "\n\n" .
-                             "If you didn't request this, please ignore this email.\n\n" .
-                             "Microbiology Lab System - University of Kelaniya";
+                             "Your verification code is: " . $code . "\n\n" .
+                             "Valid for 15 minutes.\n\n" .
+                             "Microbiology Lab System";
 
             $mail->send();
             echo 'success';
             
         } catch (Exception $e) {
             error_log("PHPMailer Error: " . $mail->ErrorInfo);
-            echo 'Verification code sending failed. Error: ' . $mail->ErrorInfo;
+            echo 'success'; // Return success even if email fails (security)
         }
     } else {
-        echo "Invalid Email Address. No user found with ID: " . $university_id;
+        // Return success even if user not found (prevents email enumeration)
+        error_log("No user found with ID: " . $university_id);
+        echo 'success';
     }
 } else {
-    echo "Please enter your Email Address in Email Field.";
+    echo 'error';
 }
 ?>

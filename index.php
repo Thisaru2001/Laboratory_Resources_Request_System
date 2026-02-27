@@ -12,7 +12,7 @@ $university_id = $_COOKIE["university_id"] ?? '';
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Microbiology Lab System - Login</title>
 
-    <!-- Google reCAPTCHA -->
+    <!-- Google reCAPTCHA (keep for signin only) -->
     <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 
     <!-- Bootstrap CSS -->
@@ -514,7 +514,7 @@ $university_id = $_COOKIE["university_id"] ?? '';
         </div>
     </div>
 
-    <!-- reCAPTCHA Modal -->
+    <!-- reCAPTCHA Modal for Sign In (KEEP THIS FOR SIGNIN) -->
     <div class="modal fade" id="recaptchaModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-sm">
             <div class="modal-content">
@@ -538,119 +538,10 @@ $university_id = $_COOKIE["university_id"] ?? '';
         </div>
     </div>
 
-   <!-- Forgot Password Modal - Step 1: University ID (WITH reCAPTCHA) -->
-<div class="modal fade" id="forgotPasswordModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header bg-success text-white">
-                <h5 class="modal-title">
-                    <i class="bi bi-key me-2"></i>
-                    Reset Password
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div class="mb-3">
-                    <label class="form-label">University ID</label>
-                    <input type="text" id="forgot_university_id" class="form-control" placeholder="Enter your University ID">
-                </div>
-                <div class="g-recaptcha mb-2" data-sitekey="6LcM0HMsAAAAAGiNWLW0WX5DFTSKF4F8mlQdX5SO" data-callback="resetRecaptchaCallback"></div>
-                <div id="resetRecaptchaResponse" class="text-danger small"></div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-success" onclick="sendResetCode()" id="sendCodeBtn">Send Code</button>
-            </div>
-        </div>
-    </div>
-</div>
 
-<!-- Verify Code Modal - Step 2: Enter verification code (NO reCAPTCHA) -->
-<div class="modal fade" id="verifyCodeModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header bg-success text-white">
-                <h5 class="modal-title">
-                    <i class="bi bi-shield-check me-2"></i>
-                    Verify Code
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <p class="text-muted small mb-3">Enter the 6-digit code sent to your email</p>
-                <div class="mb-3">
-                    <label class="form-label">Verification Code</label>
-                    <input type="text" id="verification_code" class="form-control" placeholder="Enter 6-digit code" maxlength="6">
-                </div>
-                <div id="codeError" class="text-danger small"></div>
-                <div class="text-center mt-2">
-                    <a href="#" onclick="resendCode()" class="small">Resend Code</a>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-success" onclick="verifyCode()" id="verifyCodeBtn">Verify Code</button>
-            </div>
-        </div>
-    </div>
-</div>
+  
 
-<!-- Reset Password Modal - Step 3: Set new password (NO reCAPTCHA) -->
-<div class="modal fade" id="resetPasswordModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header bg-success text-white">
-                <h5 class="modal-title">
-                    <i class="bi bi-lock me-2"></i>
-                    New Password
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div class="mb-3">
-                    <label class="form-label">New Password</label>
-                    <div class="input-group">
-                        <span class="input-group-text"><i class="bi bi-lock"></i></span>
-                        <input type="password" id="new_password" class="form-control" placeholder="Enter new password">
-                    </div>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Confirm Password</label>
-                    <div class="input-group">
-                        <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
-                        <input type="password" id="confirm_password" class="form-control" placeholder="Confirm new password">
-                    </div>
-                </div>
-                
-                <!-- REMOVED: reCAPTCHA from step 3 -->
-                
-                <div id="passwordError" class="text-danger small"></div>
-                <div class="password-requirements small text-muted mt-2">
-                    <i class="bi bi-info-circle"></i> Password must be at least 8 characters
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-success" onclick="resetPassword()" id="resetPasswordBtn">Reset Password</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Success Modal -->
-<div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-body text-center p-4">
-                <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
-                <h4 class="mt-3 text-success">Password Updated!</h4>
-                <p class="text-muted mb-3">Your password has been reset successfully.</p>
-                <button type="button" class="btn btn-success px-4" data-bs-dismiss="modal">OK</button>
-            </div>
-        </div>
-    </div>
-</div>
-
+    <!-- Main Auth Card -->
     <div class="auth-card">
         <!-- Left Image -->
         <div class="left-image d-none d-md-block">
@@ -726,7 +617,7 @@ $university_id = $_COOKIE["university_id"] ?? '';
     <!-- Scripts -->
     <script src="./assets/script/script.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
- 
+
 </body>
 
 </html>
