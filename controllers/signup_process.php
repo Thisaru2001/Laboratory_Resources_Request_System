@@ -40,12 +40,7 @@ try {
     $password = $_POST['password'] ?? '';
     $supervisor_email = trim($_POST['supervisor_email'] ?? '');
 
-    // Validate reCAPTCHA if enabled
-    if (isset($_POST['recaptcha_token'])) {
-        if (!verifyRecaptcha($_POST['recaptcha_token'])) {
-            throw new Exception('reCAPTCHA verification failed');
-        }
-    }
+
 
     // Validate First Name
     if (empty($first_name)) {
@@ -269,36 +264,7 @@ try {
 echo json_encode($response);
 exit;
 
-// Helper Functions
 
-function verifyRecaptcha($token)
-{
-    $secret_key = '6LcM0HMsAAAAANzVhD2S3a9tOPDDZS0puelYCLI3';
-
-    $url = 'https://www.google.com/recaptcha/api/siteverify';
-    $data = [
-        'secret' => $secret_key,
-        'response' => $token
-    ];
-
-    $options = [
-        'http' => [
-            'header' => "Content-type: application/x-www-form-urlencoded\r\n",
-            'method' => 'POST',
-            'content' => http_build_query($data)
-        ]
-    ];
-
-    $context = stream_context_create($options);
-    $result = file_get_contents($url, false, $context);
-
-    if ($result === false) {
-        return false;
-    }
-
-    $result = json_decode($result, true);
-    return $result['success'] ?? false;
-}
 
 function handleImageUpload($file)
 {
