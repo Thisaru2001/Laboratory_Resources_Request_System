@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -158,7 +156,6 @@
                 transform: translateY(-100%);
                 opacity: 0;
             }
-
             to {
                 transform: translateY(0);
                 opacity: 1;
@@ -166,13 +163,8 @@
         }
 
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-
-            to {
-                opacity: 1;
-            }
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
         .profile-img {
@@ -190,7 +182,7 @@
             border-color: #ffd700;
         }
 
-        /* Notification Bell - Only one bell for student */
+        /* Notification Bell */
         .notification-bell {
             position: relative;
             cursor: pointer;
@@ -226,15 +218,8 @@
         }
 
         @keyframes pulse {
-
-            0%,
-            100% {
-                transform: scale(1);
-            }
-
-            50% {
-                transform: scale(1.2);
-            }
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
         }
 
         /* Notification Dropdown */
@@ -261,7 +246,6 @@
                 opacity: 0;
                 transform: translateY(-10px);
             }
-
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -339,7 +323,7 @@
             box-shadow: 0 30px 60px rgba(0, 0, 0, 0.15);
         }
 
-        /* Analytics Cards - Simplified for student */
+        /* Analytics Cards */
         .analytics-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -395,7 +379,7 @@
             font-size: 0.95rem;
         }
 
-        /* Equipment Browser */
+        /* Filter Section */
         .filter-section {
             display: flex;
             gap: 15px;
@@ -417,120 +401,223 @@
             box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.1);
         }
 
-        .equipment-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
-        }
-
-        .equipment-card {
+        /* Equipment Table */
+        .equipment-table {
+            width: 100%;
+            border-collapse: collapse;
             background: white;
-            border-radius: 20px;
+            border-radius: 10px;
             overflow: hidden;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
-            transition: all 0.3s;
-            cursor: pointer;
         }
 
-        .equipment-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(34, 197, 94, 0.2);
+        .equipment-table thead {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: white;
+        }
+
+        .equipment-table th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .equipment-table td {
+            padding: 15px;
+            border-bottom: 1px solid #e0e0e0;
+            vertical-align: middle;
+        }
+
+        .equipment-table tbody tr:hover {
+            background: #f9f9f9;
         }
 
         .equipment-image {
-            height: 180px;
-            background: linear-gradient(135deg, #22c55e20, #16a34a20);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-        }
-
-        .equipment-image img {
-            max-width: 80%;
-            max-height: 80%;
+            width: 50px;
+            height: 50px;
             object-fit: contain;
         }
 
-        .status-indicator {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            animation: blink 2s infinite;
-        }
-
-        .status-indicator.available {
-            background: #22c55e;
-            box-shadow: 0 0 10px #22c55e;
-        }
-
-        .status-indicator.in-use {
-            background: #f59e0b;
-            box-shadow: 0 0 10px #f59e0b;
-        }
-
-        .status-indicator.maintenance {
-            background: #ef4444;
-            box-shadow: 0 0 10px #ef4444;
-        }
-
-        @keyframes blink {
-
-            0%,
-            100% {
-                opacity: 1;
-            }
-
-            50% {
-                opacity: 0.5;
-            }
-        }
-
-        .equipment-info {
-            padding: 20px;
-        }
-
-        .equipment-info h5 {
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: #166534;
-        }
-
-        .equipment-info p {
-            color: #666;
-            font-size: 0.9rem;
-            margin-bottom: 5px;
-        }
-
-        .equipment-info .location {
-            display: flex;
-            align-items: center;
-            gap: 5px;
+        .availability-badge {
+            background: #e6f7e6;
             color: #22c55e;
-            font-weight: 500;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 12px;
+            display: inline-block;
         }
 
-        /* Comment Textarea */
-        .comment-textarea {
-            width: 100%;
-            padding: 16px 18px;
-            border: 2px solid #f0f0f0;
-            border-radius: 18px;
-            outline: none;
+        .btn-view {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.85rem;
             transition: all 0.3s;
-            font-size: 1rem;
-            font-family: inherit;
-            min-height: 100px;
-            resize: vertical;
         }
 
-        .comment-textarea:focus {
+        .btn-view:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            border: none;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(34, 197, 94, 0.4);
+        }
+
+        .btn-success:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(34, 197, 94, 0.6);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #6c757d, #5a6268);
+            border: none;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #0d6efd, #0b5ed7);
+            border: none;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(13, 110, 253, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(13, 110, 253, 0.6);
+        }
+
+        .btn-danger {
+            border-radius: 12px !important;
+            padding: 8px 12px !important;
+            transition: all 0.3s !important;
+        }
+
+        .btn-danger:hover {
+            transform: scale(1.1);
+            background: linear-gradient(135deg, #dc3545, #c82333) !important;
+        }
+
+        /* Badges */
+        .badge {
+            padding: 8px 14px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            letter-spacing: 0.3px;
+        }
+
+        .badge.bg-warning {
+            background: linear-gradient(135deg, #f39c12, #e67e22) !important;
+            color: white;
+        }
+
+        .badge.bg-success {
+            background: linear-gradient(135deg, #22c55e, #16a34a) !important;
+        }
+
+        .badge.bg-danger {
+            background: linear-gradient(135deg, #dc3545, #c82333) !important;
+        }
+
+        .badge.bg-primary {
+            background: linear-gradient(135deg, #0d6efd, #0b5ed7) !important;
+        }
+
+        .badge.bg-secondary {
+            background: linear-gradient(135deg, #6c757d, #5a6268) !important;
+        }
+
+        .badge.bg-info {
+            background: linear-gradient(135deg, #0dcaf0, #0aa2c0) !important;
+            color: white;
+        }
+
+        /* Table Styles */
+        .table {
+            border-radius: 18px;
+            overflow: hidden;
+        }
+
+        .table thead th {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: white;
+            font-weight: 600;
+            border: none;
+            padding: 15px;
+        }
+
+        .table tbody tr {
+            transition: all 0.3s;
+        }
+
+        .table tbody tr:hover {
+            background: rgba(34, 197, 94, 0.05);
+            transform: scale(1.01);
+        }
+
+        /* Form Elements */
+        .form-control,
+        .form-select {
+            border: 2px solid #f0f0f0;
+            border-radius: 16px;
+            padding: 12px 16px;
+            transition: all 0.3s;
+        }
+
+        .form-control:focus,
+        .form-select:focus {
             border-color: #22c55e;
             box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.1);
+        }
+
+        /* Equipment dropdown */
+        .position-relative {
+            position: relative !important;
+        }
+        
+        #equipmentDropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            max-height: 300px;
+            overflow-y: auto;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .dropdown-item {
+            padding: 10px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+        }
+
+        .dropdown-item:hover {
+            background-color: #f8f9fa;
         }
 
         /* Calendar Section */
@@ -802,7 +889,6 @@
                 opacity: 0;
                 transform: translate(-50%, -50%) scale(0.8);
             }
-
             100% {
                 opacity: 1;
                 transform: translate(-50%, -50%) scale(1);
@@ -905,164 +991,6 @@
             font-size: 1.1rem;
         }
 
-        /* Buttons */
-        .btn-success {
-            background: linear-gradient(135deg, #22c55e, #16a34a);
-            border: none;
-            padding: 12px 24px;
-            border-radius: 50px;
-            font-weight: 600;
-            transition: all 0.3s;
-            box-shadow: 0 5px 15px rgba(34, 197, 94, 0.4);
-        }
-
-        .btn-success:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(34, 197, 94, 0.6);
-        }
-
-        .btn-secondary {
-            background: linear-gradient(135deg, #6c757d, #5a6268);
-            border: none;
-            padding: 12px 24px;
-            border-radius: 50px;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-
-        .btn-secondary:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #0d6efd, #0b5ed7);
-            border: none;
-            padding: 12px 24px;
-            border-radius: 50px;
-            font-weight: 600;
-            transition: all 0.3s;
-            box-shadow: 0 5px 15px rgba(13, 110, 253, 0.4);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(13, 110, 253, 0.6);
-        }
-
-        .btn-danger {
-            border-radius: 12px !important;
-            padding: 8px 12px !important;
-            transition: all 0.3s !important;
-        }
-
-        .btn-danger:hover {
-            transform: scale(1.1);
-            background: linear-gradient(135deg, #dc3545, #c82333) !important;
-        }
-
-        /* Badges */
-        .badge {
-            padding: 8px 14px;
-            border-radius: 30px;
-            font-weight: 600;
-            font-size: 0.85rem;
-            letter-spacing: 0.3px;
-        }
-
-        .badge.bg-warning {
-            background: linear-gradient(135deg, #f39c12, #e67e22) !important;
-            color: white;
-        }
-
-        .badge.bg-success {
-            background: linear-gradient(135deg, #22c55e, #16a34a) !important;
-        }
-
-        .badge.bg-danger {
-            background: linear-gradient(135deg, #dc3545, #c82333) !important;
-        }
-
-        .badge.bg-primary {
-            background: linear-gradient(135deg, #0d6efd, #0b5ed7) !important;
-        }
-
-        .badge.bg-secondary {
-            background: linear-gradient(135deg, #6c757d, #5a6268) !important;
-        }
-
-        .badge.bg-info {
-            background: linear-gradient(135deg, #0dcaf0, #0aa2c0) !important;
-            color: white;
-        }
-
-        /* Table Styles */
-        .table {
-            border-radius: 18px;
-            overflow: hidden;
-        }
-
-        .table thead th {
-            background: linear-gradient(135deg, #22c55e, #16a34a);
-            color: white;
-            font-weight: 600;
-            border: none;
-            padding: 15px;
-        }
-
-        .table tbody tr {
-            transition: all 0.3s;
-        }
-
-        .table tbody tr:hover {
-            background: rgba(34, 197, 94, 0.05);
-            transform: scale(1.01);
-        }
-
-        /* Form Elements */
-        .form-control,
-        .form-select {
-            border: 2px solid #f0f0f0;
-            border-radius: 16px;
-            padding: 12px 16px;
-            transition: all 0.3s;
-        }
-
-        .form-control:focus,
-        .form-select:focus {
-            border-color: #22c55e;
-            box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.1);
-        }
-
-        /* Equipment dropdown */
-        .position-relative {
-            position: relative !important;
-        }
-        
-        #equipmentDropdown {
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-            background: white;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            max-height: 300px;
-            overflow-y: auto;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-
-        .dropdown-item {
-            padding: 10px;
-            cursor: pointer;
-            border-bottom: 1px solid #eee;
-        }
-
-        .dropdown-item:hover {
-            background-color: #f8f9fa;
-        }
-
         /* Responsive */
         @media (max-width: 1200px) {
             .calendar-wrapper {
@@ -1098,14 +1026,22 @@
             .content-area {
                 padding: 20px;
             }
+
+            .equipment-table td {
+                display: block;
+            }
+
+            .equipment-table td::before {
+                content: attr(data-label);
+                font-weight: 600;
+                color: #166534;
+                display: block;
+                margin-bottom: 5px;
+            }
         }
 
         @media (max-width: 768px) {
             .analytics-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .equipment-grid {
                 grid-template-columns: 1fr;
             }
 
@@ -1124,6 +1060,35 @@
 
             .filter-select {
                 width: 100%;
+            }
+
+            .equipment-table,
+            .equipment-table thead,
+            .equipment-table tbody,
+            .equipment-table th,
+            .equipment-table td,
+            .equipment-table tr {
+                display: block;
+            }
+
+            .equipment-table thead {
+                display: none;
+            }
+
+            .equipment-table td {
+                padding: 10px;
+                border: none;
+                position: relative;
+                padding-left: 50%;
+            }
+
+            .equipment-table td::before {
+                content: attr(data-label);
+                position: absolute;
+                left: 10px;
+                width: 45%;
+                font-weight: 600;
+                color: #166534;
             }
         }
 
@@ -1163,6 +1128,57 @@
         ::-webkit-scrollbar-thumb:hover {
             background: linear-gradient(135deg, #16a34a, #22c55e);
         }
+
+        /* Search and Add Row */
+        .search-add-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .search-container {
+            display: flex;
+            gap: 10px;
+            flex: 1;
+            max-width: 500px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            border-color: #22c55e;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+        }
+
+        .search-btn {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .search-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+        }
     </style>
 </head>
 
@@ -1174,8 +1190,8 @@
     <div class="sidebar" id="sidebar">
         <h4><i class="bi bi-flask"></i> MicroLab</h4>
         <a onclick="showSection('dashboard')" class="active"><i class="bi bi-speedometer2"></i> Dashboard</a>
-        <a onclick="showSection('equipment')"><i class="bi bi-tools"></i> Equipment Browser</a>
-        <a onclick="showSection('history')"><i class="bi bi-clock-history"></i> History</a>
+        <a onclick="showSection('equipment')"><i class="bi bi-tools"></i> Equipment</a>
+        <a onclick="showSection('history')"><i class="bi bi-clock-history"></i> Reservation History</a>
         <a href="#" onclick="logout()"><i class="bi bi-box-arrow-right"></i> Logout</a>
 
         <div class="sidebar-footer">
@@ -1247,11 +1263,11 @@
 
             <!-- Dashboard Section -->
             <div id="dashboardSection">
-                <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Student Dashboard</h3>
+                <!-- <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Student Dashboard</h3> -->
 
-                <!-- Student Stats -->
-                <div class="analytics-grid mb-4">
-                    <div class="stat-card">
+                <!-- Student Stats (Optional - can be removed if not needed) -->
+                <!-- <div class="analytics-grid mb-4"> -->
+                    <!-- <div class="stat-card">
                         <i class="bi bi-calendar-check"></i>
                         <h3>5</h3>
                         <p>My Bookings</p>
@@ -1270,24 +1286,38 @@
                         <i class="bi bi-hourglass-split"></i>
                         <h3>2</h3>
                         <p>Pending Requests</p>
-                    </div>
-                </div>
+                    </div> -->
+                <!-- </div> -->
 
-                <!-- Create Request Section -->
+                <!-- Create Request Section - UPDATED -->
                 <h4 class="mb-3" style="color: white;">Create Equipment Request</h4>
                 <div class="card p-4 mb-4">
                     <form id="equipmentRequestForm">
+                        <!-- Lab Location Selector - First -->
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">Lab Location</label>
+                                <select id="labLocation" class="form-select" required onchange="loadEquipmentByLab()">
+                                    <option value="" disabled selected>Select Lab</option>
+                                    <option value="Microbiology Lab 01">Microbiology Lab 01</option>
+                                    <option value="Microbiology Lab 02">Microbiology Lab 02</option>
+                                    <option value="Research Laboratory">Research Laboratory</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Equipment Search - Second (only relevant to selected lab) -->
                         <div class="row g-3 mb-3">
                             <div class="col-md-6 position-relative">
-                                <label class="form-label fw-semibold">Search Equipment</label>
-                                <input type="text" id="equipmentName" class="form-control" placeholder="Enter equipment name" autocomplete="off">
+                                <label class="form-label fw-semibold">Search Equipment (by Lab)</label>
+                                <input type="text" id="equipmentName" class="form-control" placeholder="Select lab location first" autocomplete="off" disabled>
                             </div>
                             <div class="col-md-2">
                                 <label class="form-label fw-semibold">Quantity</label>
-                                <input type="number" id="equipmentQty" class="form-control" min="1" value="1">
+                                <input type="number" id="equipmentQty" class="form-control" min="1" value="1" disabled>
                             </div>
                             <div class="col-md-2 d-flex align-items-end">
-                                <button type="button" class="btn btn-success w-100" onclick="addEquipment()">
+                                <button type="button" class="btn btn-success w-100" onclick="addEquipment()" id="addEquipmentBtn" disabled>
                                     <i class="bi bi-plus-circle me-1"></i>Add
                                 </button>
                             </div>
@@ -1300,7 +1330,6 @@
                                     <tr>
                                         <th>Equipment</th>
                                         <th>Qty</th>
-                                        <th>Status</th>
                                         <th>Remove</th>
                                     </tr>
                                 </thead>
@@ -1308,22 +1337,13 @@
                             </table>
                         </div>
 
-                        <!-- Lab Location and Date Section -->
+                        <!-- Requested Date and Continue Days -->
                         <div class="row g-3 mb-3">
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold">Lab Location</label>
-                                <select id="labLocation" class="form-select" required>
-                                    <option value="" disabled selected>Select Lab</option>
-                                    <option value="Microbiology Lab 01">Microbiology Lab 01</option>
-                                    <option value="Microbiology Lab 02">Microbiology Lab 02</option>
-                                    <option value="Research Laboratory">Research Laboratory</option>
-                                </select>
-                            </div>
-                            <div class="col-md-3">
-                                <label class="form-label fw-semibold">Requested Day</label>
+                                <label class="form-label fw-semibold">Requested Date</label>
                                 <input type="date" id="requestDate" class="form-control" required>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-6">
                                 <label class="form-label fw-semibold">Continue Days</label>
                                 <select id="continueDays" class="form-select" required>
                                     <option value="" disabled selected>Select Days</option>
@@ -1334,29 +1354,14 @@
                             </div>
                         </div>
 
-                        <!-- Time Section -->
-                        <div class="row g-3 mb-4">
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold">Start Time</label>
-                                <input type="time" id="startTime" class="form-control" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold">End Time</label>
-                                <input type="time" id="endTime" class="form-control" required>
-                            </div>
-                        </div>
-
-                        <!-- Comment Textarea -->
+                        <!-- Additional Comments -->
                         <div class="mb-4">
                             <label class="form-label fw-semibold">Additional Comments</label>
                             <textarea id="requestComment" class="form-control" rows="3" placeholder="Enter any special requirements or notes..."></textarea>
                         </div>
 
-                        <!-- Buttons -->
+                        <!-- Buttons - Only Submit and Reset -->
                         <div class="d-flex gap-2">
-                            <button type="button" class="btn btn-primary" onclick="checkAvailability()">
-                                <i class="bi bi-check-circle me-1"></i>Check Availability
-                            </button>
                             <button type="button" class="btn btn-success" onclick="submitRequest()">
                                 <i class="bi bi-send me-1"></i>Submit Request
                             </button>
@@ -1377,7 +1382,6 @@
                                     <th>Request ID</th>
                                     <th>Equipment</th>
                                     <th>Date</th>
-                                    <th>Time</th>
                                     <th>Lab</th>
                                     <th>Status</th>
                                     <th>Reason (if rejected)</th>
@@ -1387,24 +1391,6 @@
                                 <!-- Dynamic content will be loaded here -->
                             </tbody>
                         </table>
-                    </div>
-                </div>
-
-                <!-- Availability Modal -->
-                <div class="modal fade" id="availabilityModal" tabindex="-1">
-                    <div class="modal-dialog modal-lg">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="availabilityModalTitle">Availability Check</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                            </div>
-                            <div class="modal-body" id="availabilityModalBody">
-                                <!-- Content will be dynamically inserted -->
-                            </div>
-                            <div class="modal-footer" id="availabilityModalFooter">
-                                <!-- Footer will be dynamically inserted -->
-                            </div>
-                        </div>
                     </div>
                 </div>
 
@@ -1445,81 +1431,129 @@
                 </div>
             </div>
 
-            <!-- Equipment Browser Section -->
+            <!-- Equipment Section (Table View) - UPDATED with Search -->
             <div id="equipmentSection" style="display: none;">
-                <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Equipment Browser</h3>
+                <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Equipment</h3>
 
                 <div class="card p-4">
+                    <!-- Search Bar -->
+                    <div class="search-add-row">
+                        <div class="search-container">
+                            <input type="text" id="equipmentSearch" class="search-input" placeholder="Search by equipment name...">
+                            <button class="search-btn" onclick="searchEquipmentTable()">
+                                <i class="bi bi-search"></i> Search
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Filter Section -->
                     <div class="filter-section">
-                        <select class="filter-select" id="labFilter" onchange="filterEquipment()">
+                        <select class="filter-select" id="labFilter" onchange="filterEquipmentTable()">
                             <option value="all">All Labs</option>
                             <option value="lab1">Microbiology Lab 01</option>
                             <option value="lab2">Microbiology Lab 02</option>
                             <option value="research">Research Laboratory</option>
                         </select>
 
-                        <select class="filter-select" id="statusFilter" onchange="filterEquipment()">
+                        <!-- <select class="filter-select" id="statusFilter" onchange="filterEquipmentTable()">
                             <option value="all">All Status</option>
                             <option value="available">Available</option>
                             <option value="in-use">In Use</option>
                             <option value="maintenance">Maintenance</option>
-                        </select>
+                        </select> -->
                     </div>
 
-                    <div class="equipment-grid" id="equipmentGrid">
-                        <!-- Equipment cards will be populated here -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- History Section -->
-            <div id="historySection" style="display: none;">
-                <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">My Booking History</h3>
-                <div class="card p-4">
                     <div class="table-responsive">
-                        <table class="table table-striped">
+                        <table class="equipment-table">
                             <thead>
                                 <tr>
-                                    <th>ID</th>
-                                    <th>Date</th>
-                                    <th>Lab</th>
-                                    <th>Equipment</th>
-                                    <th>Duration</th>
-                                    <th>Status</th>
+                                    <th>Image</th>
+                                    <th>Name</th>
+                                    <th>Location</th>
+                                    <th>Today Availability</th>
+                                    <th>Action</th>
                                 </tr>
                             </thead>
-                            <tbody id="bookingHistoryBody">
-                                <tr>
-                                    <td>#REQ001</td>
-                                    <td>2026-02-10</td>
-                                    <td>Lab 01</td>
-                                    <td>Microscope (2)</td>
-                                    <td>3 hours</td>
-                                    <td><span class="badge bg-success">Completed</span></td>
-                                </tr>
-                                <tr>
-                                    <td>#REQ002</td>
-                                    <td>2026-02-15</td>
-                                    <td>Research Lab</td>
-                                    <td>Centrifuge (1)</td>
-                                    <td>4 hours</td>
-                                    <td><span class="badge bg-warning">Pending</span></td>
-                                </tr>
-                                <tr>
-                                    <td>#REQ003</td>
-                                    <td>2026-02-18</td>
-                                    <td>Lab 02</td>
-                                    <td>Incubator (1)</td>
-                                    <td>2 hours</td>
-                                    <td><span class="badge bg-success">Completed</span></td>
-                                </tr>
+                            <tbody id="equipmentTableBody">
+                                <!-- Dynamic content will be loaded here -->
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>
 
-            <!-- Add Event Modal -->
+            <!-- Reservation History Section -->
+            <div id="historySection" style="display: none;">
+                <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Reservation History</h3>
+
+                <div class="card p-4">
+                    <!-- Time Filter -->
+                    <div class="filter-section" style="margin-bottom: 20px;">
+                        <select class="filter-select" id="timeFilter" onchange="filterReservations()" style="min-width: 200px;">
+                            <option value="all">All Time</option>
+                            <option value="weekly">Weekly</option>
+                            <option value="monthly">Monthly</option>
+                        </select>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="equipment-table">
+                            <thead>
+                                <tr>
+                                    <th>Reservation ID</th>
+                                    <th>Date & Time</th>
+                                    <th>Location</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reservationHistoryBody">
+                                <!-- Dynamic content will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Equipment Details Modal -->
+            <div class="modal fade" id="equipmentDetailsModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header bg-success text-white">
+                            <h5 class="modal-title">
+                                <i class="bi bi-info-circle me-2"></i>
+                                Equipment Details
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body" id="equipmentDetailsContent">
+                            <!-- Content will be populated by JavaScript -->
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Success/Error Modal -->
+            <div class="modal fade" id="submissionModal" tabindex="-1">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header" id="submissionModalHeader">
+                            <h5 class="modal-title" id="submissionModalTitle">Success!</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body" id="submissionModalBody">
+                            <!-- Content will be dynamically inserted -->
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Add Event Modal (Keep if needed) -->
             <div class="add-event-wrapper" id="addEventWrapper">
                 <div class="add-event-header">
                     <div class="title">Equipment Request Details</div>
@@ -1562,14 +1596,198 @@
             { day: 22, month: 2, year: 2026, events: [{ title: "Autoclave Booking", time: "1:00 PM - 3:00 PM", details: "Lab 01" }] }
         ];
 
-        // Equipment data for browser
+        // Equipment data for table (by lab)
         const equipmentData = [
-            { name: 'Microscope', image: 'https://cdn-icons-png.flaticon.com/512/2941/2941514.png', location: 'Microbiology Lab 01', status: 'available', lab: 'lab1' },
-            { name: 'Centrifuge', image: 'https://cdn-icons-png.flaticon.com/512/2941/2941543.png', location: 'Research Laboratory', status: 'in-use', lab: 'research' },
-            { name: 'Incubator', image: 'https://cdn-icons-png.flaticon.com/512/2941/2941538.png', location: 'Microbiology Lab 02', status: 'maintenance', lab: 'lab2' },
-            { name: 'Autoclave', image: 'https://cdn-icons-png.flaticon.com/512/2941/2941521.png', location: 'Microbiology Lab 01', status: 'available', lab: 'lab1' },
-            { name: 'pH Meter', image: 'https://cdn-icons-png.flaticon.com/512/2941/2941556.png', location: 'Research Laboratory', status: 'available', lab: 'research' },
-            { name: 'Water Bath', image: 'https://cdn-icons-png.flaticon.com/512/2941/2941578.png', location: 'Microbiology Lab 02', status: 'in-use', lab: 'lab2' }
+            { 
+                id: 1,
+                name: 'Microscope', 
+                image: 'https://cdn-icons-png.flaticon.com/512/2941/2941514.png', 
+                location: 'Microbiology Lab 01', 
+                status: 'available', 
+                lab: 'lab1',
+                labName: 'Microbiology Lab 01',
+                available: 5,
+                total: 8,
+                manufacturer: 'Olympus',
+                model: 'CX23',
+                description: 'Binocular microscope with LED illumination'
+            },
+            { 
+                id: 2,
+                name: 'Centrifuge', 
+                image: 'https://cdn-icons-png.flaticon.com/512/2941/2941543.png', 
+                location: 'Research Laboratory', 
+                status: 'in-use', 
+                lab: 'research',
+                labName: 'Research Laboratory',
+                available: 3,
+                total: 5,
+                manufacturer: 'Eppendorf',
+                model: '5424R',
+                description: 'Refrigerated microcentrifuge'
+            },
+            { 
+                id: 3,
+                name: 'Incubator', 
+                image: 'https://cdn-icons-png.flaticon.com/512/2941/2941538.png', 
+                location: 'Microbiology Lab 02', 
+                status: 'maintenance', 
+                lab: 'lab2',
+                labName: 'Microbiology Lab 02',
+                available: 2,
+                total: 4,
+                manufacturer: 'Thermo Scientific',
+                model: 'Heratherm',
+                description: 'Microbiological incubator'
+            },
+            { 
+                id: 4,
+                name: 'Autoclave', 
+                image: 'https://cdn-icons-png.flaticon.com/512/2941/2941521.png', 
+                location: 'Microbiology Lab 01', 
+                status: 'available', 
+                lab: 'lab1',
+                labName: 'Microbiology Lab 01',
+                available: 6,
+                total: 6,
+                manufacturer: 'Hirayama',
+                model: 'HVE-50',
+                description: 'Vertical sterilization autoclave'
+            },
+            { 
+                id: 5,
+                name: 'pH Meter', 
+                image: 'https://cdn-icons-png.flaticon.com/512/2941/2941556.png', 
+                location: 'Research Laboratory', 
+                status: 'available', 
+                lab: 'research',
+                labName: 'Research Laboratory',
+                available: 3,
+                total: 3,
+                manufacturer: 'Mettler Toledo',
+                model: 'FiveEasy',
+                description: 'Digital pH meter'
+            },
+            { 
+                id: 6,
+                name: 'Water Bath', 
+                image: 'https://cdn-icons-png.flaticon.com/512/2941/2941578.png', 
+                location: 'Microbiology Lab 02', 
+                status: 'in-use', 
+                lab: 'lab2',
+                labName: 'Microbiology Lab 02',
+                available: 5,
+                total: 7,
+                manufacturer: 'Memmert',
+                model: 'WNB 14',
+                description: 'Digital water bath'
+            },
+            { 
+                id: 7,
+                name: 'Spectrophotometer', 
+                image: 'https://cdn-icons-png.flaticon.com/512/2941/2941563.png', 
+                location: 'Research Laboratory', 
+                status: 'available', 
+                lab: 'research',
+                labName: 'Research Laboratory',
+                available: 2,
+                total: 3,
+                manufacturer: 'Thermo Scientific',
+                model: 'Genesys 150',
+                description: 'UV-Vis spectrophotometer'
+            },
+            { 
+                id: 8,
+                name: 'Microcentrifuge', 
+                image: 'https://cdn-icons-png.flaticon.com/512/2941/2941543.png', 
+                location: 'Microbiology Lab 01', 
+                status: 'available', 
+                lab: 'lab1',
+                labName: 'Microbiology Lab 01',
+                available: 4,
+                total: 6,
+                manufacturer: 'Eppendorf',
+                model: '5424',
+                description: 'Personal microcentrifuge'
+            }
+        ];
+
+        // Equipment by lab for dropdown
+        const equipmentByLab = {
+            'Microbiology Lab 01': [
+                { equipment_id: 1, name: 'Microscope', equipment_code: 'MIC001', available_units: 5, total_units: 8 },
+                { equipment_id: 4, name: 'Autoclave', equipment_code: 'AUT004', available_units: 6, total_units: 6 },
+                { equipment_id: 8, name: 'Microcentrifuge', equipment_code: 'MIC008', available_units: 4, total_units: 6 }
+            ],
+            'Microbiology Lab 02': [
+                { equipment_id: 3, name: 'Incubator', equipment_code: 'INC003', available_units: 2, total_units: 4 },
+                { equipment_id: 6, name: 'Water Bath', equipment_code: 'WAT006', available_units: 5, total_units: 7 }
+            ],
+            'Research Laboratory': [
+                { equipment_id: 2, name: 'Centrifuge', equipment_code: 'CEN002', available_units: 3, total_units: 5 },
+                { equipment_id: 5, name: 'pH Meter', equipment_code: 'PHM005', available_units: 3, total_units: 3 },
+                { equipment_id: 7, name: 'Spectrophotometer', equipment_code: 'SPE007', available_units: 2, total_units: 3 }
+            ]
+        };
+
+        // Reservation History Data
+        const reservationHistoryData = [
+            { 
+                id: 'RES001', 
+                dateTime: '2026-03-01 10:30 AM',
+                timestamp: new Date('2026-03-01T10:30:00'),
+                location: 'Microbiology Lab 01', 
+                status: 'completed'
+            },
+            { 
+                id: 'RES002', 
+                dateTime: '2026-02-28 02:00 PM',
+                timestamp: new Date('2026-02-28T14:00:00'),
+                location: 'Research Laboratory', 
+                status: 'completed'
+            },
+            { 
+                id: 'RES003', 
+                dateTime: '2026-02-25 09:00 AM',
+                timestamp: new Date('2026-02-25T09:00:00'),
+                location: 'Microbiology Lab 02', 
+                status: 'pending'
+            },
+            { 
+                id: 'RES004', 
+                dateTime: '2026-02-20 01:00 PM',
+                timestamp: new Date('2026-02-20T13:00:00'),
+                location: 'Microbiology Lab 01', 
+                status: 'completed'
+            },
+            { 
+                id: 'RES005', 
+                dateTime: '2026-02-15 11:00 AM',
+                timestamp: new Date('2026-02-15T11:00:00'),
+                location: 'Research Laboratory', 
+                status: 'completed'
+            },
+            { 
+                id: 'RES006', 
+                dateTime: '2026-02-10 03:30 PM',
+                timestamp: new Date('2026-02-10T15:30:00'),
+                location: 'Microbiology Lab 02', 
+                status: 'completed'
+            },
+            { 
+                id: 'RES007', 
+                dateTime: '2026-02-05 10:00 AM',
+                timestamp: new Date('2026-02-05T10:00:00'),
+                location: 'Microbiology Lab 01', 
+                status: 'completed'
+            },
+            { 
+                id: 'RES008', 
+                dateTime: '2026-02-01 02:00 PM',
+                timestamp: new Date('2026-02-01T14:00:00'),
+                location: 'Research Laboratory', 
+                status: 'pending'
+            }
         ];
 
         // ============ INITIALIZATION ============
@@ -1579,14 +1797,12 @@
             document.getElementById('requestDate').min = today;
             document.getElementById('requestDate').value = today;
             
-            // Add search event listener
-            document.getElementById('equipmentName').addEventListener('input', searchEquipment);
-            
             // Load initial data
             loadLabLocations();
             loadMyRequests();
             showSection('dashboard');
-            initEquipmentGrid();
+            displayEquipmentTable(equipmentData);
+            displayReservationHistory(reservationHistoryData);
             initCalendar();
             loadEvents();
         });
@@ -1609,28 +1825,54 @@
             });
         }
 
-        // ============ EQUIPMENT SEARCH ============
+        // ============ LOAD EQUIPMENT BY LAB ============
+        function loadEquipmentByLab() {
+            const selectedLab = document.getElementById('labLocation').value;
+            const equipmentInput = document.getElementById('equipmentName');
+            const qtyInput = document.getElementById('equipmentQty');
+            const addBtn = document.getElementById('addEquipmentBtn');
+            
+            if (selectedLab) {
+                equipmentInput.disabled = false;
+                equipmentInput.placeholder = `Search equipment in ${selectedLab}`;
+                qtyInput.disabled = false;
+                addBtn.disabled = false;
+                
+                // Clear previous input
+                equipmentInput.value = '';
+                
+                // Add event listener for search
+                equipmentInput.removeEventListener('input', searchEquipmentByLab);
+                equipmentInput.addEventListener('input', function() {
+                    searchEquipmentByLab(selectedLab);
+                });
+            } else {
+                equipmentInput.disabled = true;
+                equipmentInput.placeholder = 'Select lab location first';
+                qtyInput.disabled = true;
+                addBtn.disabled = true;
+            }
+        }
+
+        // ============ EQUIPMENT SEARCH BY LAB ============
         let searchTimeout;
-        function searchEquipment() {
+        function searchEquipmentByLab(labName) {
             clearTimeout(searchTimeout);
             const term = document.getElementById('equipmentName').value;
             if (term.length < 2) return;
             
             searchTimeout = setTimeout(() => {
-                // Mock equipment data with TODAY availability
-                const mockEquipment = [
-                    { equipment_id: 1, name: 'Microscope', equipment_code: 'MIC001', available_units: 5, total_units: 8 },
-                    { equipment_id: 2, name: 'Centrifuge', equipment_code: 'CEN002', available_units: 3, total_units: 5 },
-                    { equipment_id: 3, name: 'Spectrophotometer', equipment_code: 'SPE003', available_units: 2, total_units: 3 },
-                    { equipment_id: 4, name: 'Incubator', equipment_code: 'INC004', available_units: 4, total_units: 6 },
-                    { equipment_id: 5, name: 'Autoclave', equipment_code: 'AUT005', available_units: 2, total_units: 4 }
-                ].filter(item => item.name.toLowerCase().includes(term.toLowerCase()));
+                const labEquipment = equipmentByLab[labName] || [];
+                const filtered = labEquipment.filter(item => 
+                    item.name.toLowerCase().includes(term.toLowerCase()) ||
+                    item.equipment_code.toLowerCase().includes(term.toLowerCase())
+                );
                 
-                showEquipmentDropdown(mockEquipment);
+                showEquipmentDropdown(filtered);
             }, 300);
         }
 
-        // Show equipment dropdown with "Today: X/Y" format
+        // Show equipment dropdown
         function showEquipmentDropdown(equipment) {
             let dropdown = document.getElementById('equipmentDropdown');
             if (!dropdown) {
@@ -1649,7 +1891,7 @@
                 div.innerHTML = `
                     <div class="d-flex justify-content-between">
                         <span><strong>${item.name}</strong> (${item.equipment_code})</span>
-                        <span class="badge bg-success">Today: ${item.available_units || 0}/${item.total_units || 0}</span>
+                        <span class="badge bg-success">Available: ${item.available_units || 0}/${item.total_units || 0}</span>
                     </div>
                 `;
                 div.onclick = () => selectEquipment(item);
@@ -1665,26 +1907,25 @@
             document.getElementById('equipmentDropdown')?.remove();
         }
 
-        // ============ ADD EQUIPMENT (ONLY ONE FUNCTION) ============
+        // ============ ADD EQUIPMENT ============
         function addEquipment() {
             const name = document.getElementById('equipmentName').value;
             const qty = parseInt(document.getElementById('equipmentQty').value);
+            const selectedLab = document.getElementById('labLocation').value;
+            
+            if (!selectedLab) {
+                showNotification('Please select a lab location first', 'warning');
+                return;
+            }
             
             if (!name || !qty) {
                 showNotification('Please search and select equipment', 'warning');
                 return;
             }
             
-            // Mock equipment data
-            const mockEquipment = [
-                { equipment_id: 1, name: 'Microscope', available_units: 5 },
-                { equipment_id: 2, name: 'Centrifuge', available_units: 3 },
-                { equipment_id: 3, name: 'Spectrophotometer', available_units: 2 },
-                { equipment_id: 4, name: 'Incubator', available_units: 4 },
-                { equipment_id: 5, name: 'Autoclave', available_units: 2 }
-            ];
-            
-            const equipment = mockEquipment.find(e => e.name.toLowerCase() === name.toLowerCase());
+            // Get equipment from the current lab's list
+            const labEquipment = equipmentByLab[selectedLab] || [];
+            const equipment = labEquipment.find(e => e.name.toLowerCase() === name.toLowerCase());
             
             if (equipment) {
                 const existing = selectedEquipment.find(e => e.equipment_id === equipment.equipment_id);
@@ -1704,7 +1945,7 @@
                 document.getElementById('equipmentQty').value = 1;
                 document.getElementById('equipmentDropdown')?.remove();
             } else {
-                showNotification('Equipment not found', 'warning');
+                showNotification('Equipment not found in this lab', 'warning');
             }
         }
 
@@ -1718,7 +1959,6 @@
                 row.innerHTML = `
                     <td>${item.name}</td>
                     <td>${item.qty}</td>
-                    <td><span class="badge bg-info">Pending Check</span></td>
                     <td>
                         <button class="btn btn-danger btn-sm" onclick="removeEquipment(${index})">
                             <i class="bi bi-trash"></i>
@@ -1734,121 +1974,6 @@
             updateEquipmentTable();
         }
 
-        // ============ AI AVAILABILITY CHECK ============
-        function checkAvailability() {
-            // Validate form
-            if (selectedEquipment.length === 0) {
-                showNotification('Please add at least one equipment', 'warning');
-                return;
-            }
-            
-            // Validate required fields
-            const required = ['labLocation', 'requestDate', 'continueDays', 'startTime', 'endTime'];
-            for (const field of required) {
-                if (!document.getElementById(field).value) {
-                    showNotification(`Please fill in all required fields`, 'warning');
-                    return;
-                }
-            }
-            
-            // Validate time
-            const start = document.getElementById('startTime').value;
-            const end = document.getElementById('endTime').value;
-            if (start >= end) {
-                showNotification('End time must be after start time', 'warning');
-                return;
-            }
-            
-            // Get button and show loading
-            const checkBtn = document.querySelector('button[onclick="checkAvailability()"]');
-            const originalText = checkBtn.innerHTML;
-            checkBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Checking...';
-            checkBtn.disabled = true;
-            
-            // Simulate AI analysis
-            setTimeout(() => {
-                // Random availability (70% chance available)
-                const isAvailable = Math.random() > 0.3;
-                const studentName = currentUser.name;
-                
-                if (isAvailable) {
-                    // Show success modal
-                    document.getElementById('availabilityModalTitle').innerHTML = '✅ Success!';
-                    document.getElementById('availabilityModalBody').innerHTML = `
-                        <div class="text-center">
-                            <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
-                            <h5 class="mt-3">✅ Good news ${studentName}! All equipment is available for your request.</h5>
-                            <p class="text-muted">You can now submit your request.</p>
-                        </div>
-                    `;
-                    document.getElementById('availabilityModalFooter').innerHTML = `
-                        <button type="button" class="btn btn-success" onclick="submitRequest()">
-                            <i class="bi bi-send me-1"></i>Submit Request
-                        </button>
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    `;
-                    
-                    const modal = new bootstrap.Modal(document.getElementById('availabilityModal'));
-                    modal.show();
-                    
-                    // Update status in table
-                    document.querySelectorAll('#equipmentTable tbody tr').forEach(row => {
-                        row.cells[2].innerHTML = '<span class="badge bg-success">✓ Available</span>';
-                    });
-                    
-                    // Auto close after 2 seconds
-                    setTimeout(() => {
-                        const m = bootstrap.Modal.getInstance(document.getElementById('availabilityModal'));
-                        if (m) m.hide();
-                    }, 2000);
-                    
-                } else {
-                    // Random issue
-                    const issues = [
-                        'Microscope is booked by Thushan Fernando',
-                        'Centrifuge is under maintenance',
-                        'Incubator has 2 damaged units',
-                        'Spectrophotometer is already reserved'
-                    ];
-                    const randomIssue = issues[Math.floor(Math.random() * issues.length)];
-                    
-                    // Show error modal
-                    document.getElementById('availabilityModalTitle').innerHTML = '❌ Cannot Submit';
-                    document.getElementById('availabilityModalBody').innerHTML = `
-                        <div class="text-center">
-                            <i class="bi bi-exclamation-triangle-fill text-warning" style="font-size: 4rem;"></i>
-                            <h5 class="mt-3">❌ Sorry ${studentName}, ${randomIssue}</h5>
-                            <p class="text-muted mt-3">Click OK to clear the form and try again.</p>
-                        </div>
-                    `;
-                    document.getElementById('availabilityModalFooter').innerHTML = `
-                        <button type="button" class="btn btn-danger" onclick="resetFormAndCloseModal()">
-                            <i class="bi bi-check-circle me-1"></i>OK
-                        </button>
-                    `;
-                    
-                    const modal = new bootstrap.Modal(document.getElementById('availabilityModal'));
-                    modal.show();
-                    
-                    // Update status in table
-                    document.querySelectorAll('#equipmentTable tbody tr').forEach(row => {
-                        row.cells[2].innerHTML = '<span class="badge bg-danger">✗ Unavailable</span>';
-                    });
-                }
-                
-                // Reset button
-                checkBtn.innerHTML = originalText;
-                checkBtn.disabled = false;
-            }, 1500);
-        }
-
-        // Reset form and close modal
-        function resetFormAndCloseModal() {
-            const modal = bootstrap.Modal.getInstance(document.getElementById('availabilityModal'));
-            if (modal) modal.hide();
-            resetForm();
-        }
-
         // Reset form
         function resetForm() {
             document.getElementById('equipmentRequestForm').reset();
@@ -1856,21 +1981,77 @@
             updateEquipmentTable();
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('requestDate').value = today;
+            
+            // Disable equipment search until lab is selected
+            const equipmentInput = document.getElementById('equipmentName');
+            const qtyInput = document.getElementById('equipmentQty');
+            const addBtn = document.getElementById('addEquipmentBtn');
+            equipmentInput.disabled = true;
+            equipmentInput.placeholder = 'Select lab location first';
+            qtyInput.disabled = true;
+            addBtn.disabled = true;
         }
 
         // Submit request
         function submitRequest() {
+            // Validate form
             if (selectedEquipment.length === 0) {
-                showNotification('Please add equipment', 'warning');
+                showNotification('Please add at least one equipment', 'warning');
                 return;
             }
             
-            showNotification('Request submitted successfully!', 'success');
-            resetForm();
+            const required = ['labLocation', 'requestDate', 'continueDays'];
+            for (const field of required) {
+                if (!document.getElementById(field).value) {
+                    showNotification(`Please fill in all required fields`, 'warning');
+                    return;
+                }
+            }
             
-            const modal = bootstrap.Modal.getInstance(document.getElementById('availabilityModal'));
-            if (modal) modal.hide();
-            loadMyRequests();
+            // Show success modal
+            const modalTitle = document.getElementById('submissionModalTitle');
+            const modalBody = document.getElementById('submissionModalBody');
+            const modalHeader = document.getElementById('submissionModalHeader');
+            
+            modalTitle.textContent = '✅ Request Submitted!';
+            modalHeader.className = 'modal-header bg-success text-white';
+            modalBody.innerHTML = `
+                <div class="text-center">
+                    <i class="bi bi-check-circle-fill text-success" style="font-size: 3rem;"></i>
+                    <h5 class="mt-3">Your equipment request has been submitted successfully!</h5>
+                    <p class="text-muted">Request ID: #REQ${Math.floor(Math.random() * 1000)}</p>
+                    <p>You will be notified once your request is processed.</p>
+                </div>
+            `;
+            
+            const modal = new bootstrap.Modal(document.getElementById('submissionModal'));
+            modal.show();
+            
+            // Auto close after 3 seconds
+            setTimeout(() => {
+                modal.hide();
+            }, 3000);
+            
+            // Add to request status (mock)
+            addToRequestStatus();
+            
+            resetForm();
+        }
+
+        // Add to request status (mock function)
+        function addToRequestStatus() {
+            // In a real app, this would add to database
+            console.log('Request added to status');
+        }
+
+        // Show notification
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = `alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show position-fixed top-0 end-0 m-3`;
+            notification.style.zIndex = '9999';
+            notification.innerHTML = `${message}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 5000);
         }
 
         // Load my requests
@@ -1879,9 +2060,9 @@
             tbody.innerHTML = '';
             
             const mockRequests = [
-                { reservation_id: 1, equipment_names: 'Microscope, Centrifuge', total_equipment: 2, request_date: '2026-02-20', start_time: '10:00', end_time: '12:00', lab_name: 'Lab 01', status: 'Pending', rejected_reason: null },
-                { reservation_id: 2, equipment_names: 'Spectrophotometer', total_equipment: 1, request_date: '2026-02-21', start_time: '14:00', end_time: '16:00', lab_name: 'Research Lab', status: 'Approved', rejected_reason: null },
-                { reservation_id: 3, equipment_names: 'Incubator', total_equipment: 1, request_date: '2026-02-19', start_time: '09:00', end_time: '11:00', lab_name: 'Lab 02', status: 'Rejected', rejected_reason: 'Equipment under maintenance' }
+                { reservation_id: 1, equipment_names: 'Microscope, Centrifuge', total_equipment: 2, request_date: '2026-02-20', lab_name: 'Lab 01', status: 'Pending', rejected_reason: null },
+                { reservation_id: 2, equipment_names: 'Spectrophotometer', total_equipment: 1, request_date: '2026-02-21', lab_name: 'Research Lab', status: 'Approved', rejected_reason: null },
+                { reservation_id: 3, equipment_names: 'Incubator', total_equipment: 1, request_date: '2026-02-19', lab_name: 'Lab 02', status: 'Rejected', rejected_reason: 'Equipment under maintenance' }
             ];
             
             mockRequests.forEach(req => {
@@ -1900,22 +2081,11 @@
                     <td><span class="fw-semibold">#REQ${String(req.reservation_id).padStart(3, '0')}</span></td>
                     <td>${req.equipment_names || 'Multiple'} (${req.total_equipment})</td>
                     <td>${req.request_date}</td>
-                    <td>${req.start_time} - ${req.end_time}</td>
                     <td>${req.lab_name}</td>
                     <td>${statusBadge}</td>
                     <td class="text-danger">${req.rejected_reason || '-'}</td>
                 `;
             });
-        }
-
-        // Show notification
-        function showNotification(message, type) {
-            const notification = document.createElement('div');
-            notification.className = `alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show position-fixed top-0 end-0 m-3`;
-            notification.style.zIndex = '9999';
-            notification.innerHTML = `${message}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
-            document.body.appendChild(notification);
-            setTimeout(() => notification.remove(), 5000);
         }
 
         // ============ SIDEBAR FUNCTIONS ============
@@ -1953,46 +2123,164 @@
             });
 
             if (section === 'equipment') {
-                initEquipmentGrid();
+                filterEquipmentTable();
+            }
+            if (section === 'history') {
+                filterReservations();
             }
         }
 
-        // ============ EQUIPMENT BROWSER ============
-        function initEquipmentGrid() {
-            const grid = document.getElementById('equipmentGrid');
-            if (!grid) return;
-
-            grid.innerHTML = '';
-
-            const labFilter = document.getElementById('labFilter')?.value || 'all';
-            const statusFilter = document.getElementById('statusFilter')?.value || 'all';
-
-            equipmentData.forEach(item => {
-                if ((labFilter === 'all' || item.lab === labFilter) &&
-                    (statusFilter === 'all' || item.status === statusFilter)) {
-
-                    const card = document.createElement('div');
-                    card.className = 'equipment-card';
-                    card.innerHTML = `
-                        <div class="equipment-image">
-                            <img src="${item.image}" alt="${item.name}">
-                            <div class="status-indicator ${item.status === 'available' ? 'available' : item.status === 'in-use' ? 'in-use' : 'maintenance'}"></div>
-                        </div>
-                        <div class="equipment-info">
-                            <h5>${item.name}</h5>
-                            <p><i class="bi bi-geo-alt"></i> ${item.location}</p>
-                            <div class="location">
-                                <span class="badge bg-${item.status === 'available' ? 'success' : item.status === 'in-use' ? 'warning' : 'danger'}">${item.status}</span>
-                            </div>
-                        </div>
-                    `;
-                    grid.appendChild(card);
-                }
+        // ============ EQUIPMENT TABLE FUNCTIONS ============
+        let filteredEquipment = [...equipmentData];
+        
+        function displayEquipmentTable(equipment) {
+            const tableBody = document.getElementById('equipmentTableBody');
+            if (!tableBody) return;
+            
+            tableBody.innerHTML = '';
+            
+            equipment.forEach(item => {
+                const row = document.createElement('tr');
+                
+                // Determine status color for availability badge
+                let badgeColor = '#22c55e';
+                if (item.status === 'maintenance') badgeColor = '#ef4444';
+                else if (item.status === 'in-use') badgeColor = '#f59e0b';
+                
+                row.innerHTML = `
+                    <td data-label="Image"><img src="${item.image}" class="equipment-image" alt="${item.name}"></td>
+                    <td data-label="Name">${item.name}</td>
+                    <td data-label="Location">${item.location}</td>
+                    <td data-label="Availability">
+                        <span class="availability-badge" style="background: ${badgeColor}20; color: ${badgeColor};">
+                            ${item.available}/${item.total}
+                        </span>
+                    </td>
+                    <td data-label="Action">
+                        <button class="btn-view" onclick="viewEquipmentDetails(${item.id})" title="View Details">
+                            <i class="bi bi-eye"></i> View
+                        </button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
             });
         }
 
-        function filterEquipment() {
-            initEquipmentGrid();
+        function filterEquipmentTable() {
+            const labFilter = document.getElementById('labFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+            
+            filteredEquipment = equipmentData.filter(item => {
+                const labMatch = labFilter === 'all' || item.lab === labFilter;
+                const statusMatch = statusFilter === 'all' || item.status === statusFilter;
+                return labMatch && statusMatch;
+            });
+            
+            displayEquipmentTable(filteredEquipment);
+        }
+
+        function searchEquipmentTable() {
+            const searchTerm = document.getElementById('equipmentSearch').value.toLowerCase();
+            
+            if (!searchTerm) {
+                displayEquipmentTable(filteredEquipment);
+                return;
+            }
+            
+            const searched = filteredEquipment.filter(item => 
+                item.name.toLowerCase().includes(searchTerm)
+            );
+            
+            displayEquipmentTable(searched);
+        }
+
+        function viewEquipmentDetails(id) {
+            const equipment = equipmentData.find(item => item.id === id);
+            if (!equipment) return;
+            
+            const detailsContent = document.getElementById('equipmentDetailsContent');
+            
+            // Determine status badge
+            let statusBadge = '';
+            if (equipment.status === 'available') {
+                statusBadge = '<span class="badge bg-success">Available</span>';
+            } else if (equipment.status === 'in-use') {
+                statusBadge = '<span class="badge bg-warning">In Use</span>';
+            } else {
+                statusBadge = '<span class="badge bg-danger">Maintenance</span>';
+            }
+            
+            detailsContent.innerHTML = `
+                <div class="row">
+                    <div class="col-md-4 text-center">
+                        <img src="${equipment.image}" style="width: 150px; height: 150px; object-fit: contain;" class="mb-3">
+                        <h4>${equipment.name}</h4>
+                        ${statusBadge}
+                    </div>
+                    <div class="col-md-8">
+                        <table class="table table-borderless">
+                            <tr><th style="width: 150px;">Location:</th><td>${equipment.location}</td></tr>
+                            <tr><th>Manufacturer:</th><td>${equipment.manufacturer}</td></tr>
+                            <tr><th>Model:</th><td>${equipment.model}</td></tr>
+                            <tr><th>Today Availability:</th><td><span class="availability-badge" style="background: #22c55e20; color: #22c55e;">${equipment.available}/${equipment.total}</span></td></tr>
+                            <tr><th>Description:</th><td>${equipment.description}</td></tr>
+                        </table>
+                    </div>
+                </div>
+            `;
+            
+            new bootstrap.Modal(document.getElementById('equipmentDetailsModal')).show();
+        }
+
+        // ============ RESERVATION HISTORY FUNCTIONS ============
+        function displayReservationHistory(reservations) {
+            const tableBody = document.getElementById('reservationHistoryBody');
+            if (!tableBody) return;
+            
+            // Sort by date (newest first)
+            reservations.sort((a, b) => b.timestamp - a.timestamp);
+            
+            tableBody.innerHTML = '';
+            
+            reservations.forEach(res => {
+                const row = document.createElement('tr');
+                
+                // Determine status badge
+                let statusBadge = '';
+                if (res.status === 'completed') {
+                    statusBadge = '<span class="badge bg-success">Completed</span>';
+                } else {
+                    statusBadge = '<span class="badge bg-warning">Pending</span>';
+                }
+                
+                row.innerHTML = `
+                    <td data-label="Reservation ID">${res.id}</td>
+                    <td data-label="Date & Time">${res.dateTime}</td>
+                    <td data-label="Location">${res.location}</td>
+                    <td data-label="Status">${statusBadge}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        function filterReservations() {
+            const filter = document.getElementById('timeFilter').value;
+            const today = new Date();
+            let filtered = [];
+            
+            if (filter === 'weekly') {
+                const weekAgo = new Date();
+                weekAgo.setDate(today.getDate() - 7);
+                filtered = reservationHistoryData.filter(item => item.timestamp >= weekAgo);
+            } else if (filter === 'monthly') {
+                const monthAgo = new Date();
+                monthAgo.setDate(today.getDate() - 30);
+                filtered = reservationHistoryData.filter(item => item.timestamp >= monthAgo);
+            } else {
+                filtered = reservationHistoryData;
+            }
+            
+            displayReservationHistory(filtered);
         }
 
         // ============ CALENDAR FUNCTIONS ============

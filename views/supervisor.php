@@ -1,13 +1,11 @@
-
-
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Admin Dashboard - Microbiology Lab</title>
 
+    <title>Microbiology Lab System - Supervisor Dashboard</title>
     <!-- Bootstrap & Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
@@ -17,1194 +15,998 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Inter', 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
-            overflow-x: hidden;
-        }
-
-        /* Sidebar Overlay */
-        .sidebar-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.5);
-            backdrop-filter: blur(5px);
-            z-index: 999;
-        }
-
-        .sidebar-overlay.active {
-            display: block;
-            animation: fadeIn 0.3s;
-        }
-
-        /* Sidebar */
-        .sidebar {
-            width: 280px;
-            min-height: 100vh;
-            background: linear-gradient(180deg, #166534 0%, #14532d 100%);
-            color: white;
-            position: fixed;
-            left: 0;
-            top: 0;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            z-index: 1000;
-            box-shadow: 4px 0 20px rgba(0,0,0,0.2);
-            border-radius: 0 30px 30px 0;
-            overflow-y: auto;
-        }
-
-        .sidebar::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 100%;
-            background: linear-gradient(45deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 100%);
-            pointer-events: none;
-        }
-
-        .sidebar a {
-            color: rgba(255,255,255,0.9);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 14px 24px;
-            text-decoration: none;
-            transition: all 0.3s;
-            border-radius: 12px;
-            margin: 4px 16px;
-            font-weight: 500;
-            position: relative;
-            overflow: hidden;
-            cursor: pointer;
-        }
-
-        .sidebar a i {
-            font-size: 1.2rem;
-            width: 24px;
-            text-align: center;
-        }
-
-        .sidebar a:hover {
-            background: rgba(255,255,255,0.15);
-            transform: translateX(8px);
-            color: white;
-        }
-
-        .sidebar a.active {
-            background: rgba(255,255,255,0.2);
-            border-left: 3px solid #ffd700;
-        }
-
-        .sidebar h4 {
-            padding: 28px 24px;
-            margin-bottom: 20px;
-            font-size: 1.5rem;
-            font-weight: 600;
-            border-bottom: 2px solid rgba(255,255,255,0.2);
-            letter-spacing: 1px;
-        }
-
-        .sidebar h4 i {
-            margin-right: 10px;
-            color: #ffd700;
-        }
-
-        .sidebar-footer {
-            padding: 20px;
-            margin-top: 30px;
-            text-align: center;
-            background: rgba(0,0,0,0.2);
-            font-size: 0.85rem;
-            color: rgba(255,255,255,0.7);
-        }
-
-        /* Main content */
-        .main-content {
-            margin-left: 280px;
-            transition: all 0.3s ease;
-            min-height: 100vh;
-        }
-
-        /* Modern Topbar with Rounded Navbar */
-        .topbar {
-            background: rgba(255,255,255,0.95);
-            backdrop-filter: blur(10px);
-            padding: 12px 30px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: sticky;
-            top: 15px;
-            z-index: 999;
-            border-bottom: 1px solid rgba(255,255,255,0.3);
-            border-radius: 50px;
-            margin: 15px 25px 0 25px;
-            width: calc(100% - 50px);
-            animation: slideDown 0.5s ease;
-        }
-
-        @keyframes slideDown {
-            from {
-                transform: translateY(-100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        .profile-img {
-            width: 45px;
-            height: 45px;
-            border-radius: 12px;
-            object-fit: cover;
-            border: 3px solid #22c55e;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .profile-img:hover {
-            transform: scale(1.1);
-            border-color: #ffd700;
-        }
-
-        /* Notification Bell */
-        .notification-bell {
-            position: relative;
-            cursor: pointer;
-            margin-right: 15px;
-        }
-
-        .notification-bell i {
-            font-size: 1.5rem;
-            color: #166534;
-            transition: all 0.3s;
-        }
-
-        .notification-bell:hover i {
-            transform: rotate(15deg);
-            color: #22c55e;
-        }
-
-        .request-badge {
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            background: #dd1818;
-            color: white;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.7rem;
-            font-weight: 600;
-            animation: pulse 2s infinite;
-        }
-
-        .notification-badge {
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            background: #206106;
-            color: white;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.7rem;
-            font-weight: 600;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.2); }
-        }
-
-        /* Notification Dropdown */
-        .notification-dropdown {
-            position: absolute;
-            top: 60px;
-            right: 20px;
-            width: 350px;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-            display: none;
-            z-index: 1000;
-            overflow: hidden;
-            animation: slideIn 0.3s ease;
-        }
-
-        .notification-dropdown.show {
-            display: block;
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .notification-header {
-            padding: 20px;
-            background: linear-gradient(135deg, #22c55e, #16a34a);
-            color: white;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .notification-header h6 {
-            margin: 0;
-            font-weight: 600;
-        }
-
-        .notification-header span {
-            background: rgba(255,255,255,0.2);
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-        }
-
-        .notification-list {
-            max-height: 300px;
-            overflow-y: auto;
-        }
-
-        .notification-item {
-            padding: 15px 20px;
-            border-bottom: 1px solid #f0f0f0;
-            transition: all 0.3s;
-            cursor: pointer;
-        }
-
-        .notification-item:hover {
-            background: #f8f9fa;
-            transform: translateX(5px);
-        }
-
-        .notification-item.unread {
-            background: rgba(34, 197, 94, 0.1);
-        }
-
-        .notification-item .time {
-            font-size: 0.75rem;
-            color: #999;
-            margin-top: 5px;
-        }
-
-        .content-area {
-            padding: 30px;
-            background: rgba(255,255,255,0.1);
-            backdrop-filter: blur(10px);
-            min-height: calc(100vh - 80px);
-        }
-
-        /* Modern Cards */
-        .card {
-            background: rgba(255,255,255,0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 24px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            border: 1px solid rgba(255,255,255,0.3);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            overflow: hidden;
-        }
-
-        .card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 30px 60px rgba(0,0,0,0.15);
-        }
-
-        /* Analytics Cards */
-        .analytics-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .stat-card {
-            background: linear-gradient(135deg, #22c55e, #16a34a);
-            border-radius: 20px;
-            padding: 25px;
-            color: white;
-            position: relative;
-            overflow: hidden;
-            transition: all 0.3s;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(34, 197, 94, 0.4);
-        }
-
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -50%;
-            width: 200%;
-            height: 200%;
-            background: rgba(255,255,255,0.1);
-            transform: rotate(45deg);
-            transition: all 0.3s;
-        }
-
-        .stat-card:hover::before {
-            transform: rotate(45deg) translate(10%, 10%);
-        }
-
-        .stat-card i {
-            font-size: 2.5rem;
-            margin-bottom: 15px;
-        }
-
-        .stat-card h3 {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 5px;
-        }
-
-        .stat-card p {
-            margin: 0;
-            opacity: 0.9;
-            font-size: 0.95rem;
-        }
-
-        /* Equipment Browser */
-        .filter-section {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-
-        .filter-select {
-            padding: 12px 20px;
-            border: 2px solid #f0f0f0;
-            border-radius: 16px;
-            outline: none;
-            transition: all 0.3s;
-            min-width: 200px;
-        }
-
-        .filter-select:focus {
-            border-color: #22c55e;
-            box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.1);
-        }
-
-        .equipment-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
-        }
-
-        .equipment-card {
-            background: white;
-            border-radius: 20px;
-            overflow: hidden;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
-            transition: all 0.3s;
-            cursor: pointer;
-        }
-
-        .equipment-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(34, 197, 94, 0.2);
-        }
-
-        .equipment-image {
-            height: 180px;
-            background: linear-gradient(135deg, #22c55e20, #16a34a20);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-        }
-
-        .equipment-image img {
-            max-width: 80%;
-            max-height: 80%;
-            object-fit: contain;
-        }
-
-        .status-indicator {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            animation: blink 2s infinite;
-        }
-
-        .status-indicator.available {
-            background: #22c55e;
-            box-shadow: 0 0 10px #22c55e;
-        }
-
-        .status-indicator.in-use {
-            background: #f59e0b;
-            box-shadow: 0 0 10px #f59e0b;
-        }
-
-        .status-indicator.maintenance {
-            background: #ef4444;
-            box-shadow: 0 0 10px #ef4444;
-        }
-
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-
-        .equipment-info {
-            padding: 20px;
-        }
-
-        .equipment-info h5 {
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: #166534;
-        }
-
-        .equipment-info p {
-            color: #666;
-            font-size: 0.9rem;
-            margin-bottom: 5px;
-        }
-
-        .equipment-info .location {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            color: #22c55e;
-            font-weight: 500;
-        }
-
-        /* Comment Textarea */
-        .comment-textarea {
-            width: 100%;
-            padding: 16px 18px;
-            border: 2px solid #f0f0f0;
-            border-radius: 18px;
-            outline: none;
-            transition: all 0.3s;
-            font-size: 1rem;
-            font-family: inherit;
-            min-height: 100px;
-            resize: vertical;
-        }
-
-        .comment-textarea:focus {
-            border-color: #22c55e;
-            box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.1);
-        }
-
-        /* Chart Container */
-        .chart-container {
-            height: 300px;
-            margin-top: 20px;
-            position: relative;
-        }
-
-        /* Activity Timeline */
-        .timeline {
-            position: relative;
-            padding: 20px 0;
-        }
-
-        .timeline::before {
-            content: '';
-            position: absolute;
-            left: 20px;
-            top: 0;
-            bottom: 0;
-            width: 2px;
-            background: linear-gradient(180deg, #22c55e, #16a34a);
-        }
-
-        .timeline-item {
-            position: relative;
-            padding-left: 50px;
-            margin-bottom: 25px;
-        }
-
-        .timeline-item::before {
-            content: '';
-            position: absolute;
-            left: 12px;
-            top: 0;
-            width: 16px;
-            height: 16px;
-            border-radius: 50%;
-            background: #22c55e;
-            border: 3px solid white;
-            box-shadow: 0 0 0 2px #22c55e;
-            z-index: 1;
-        }
-
-        .timeline-time {
-            font-size: 0.85rem;
-            color: #22c55e;
-            font-weight: 600;
-            margin-bottom: 5px;
-        }
-
-        .timeline-content {
-            background: #f8f9fa;
-            border-radius: 12px;
-            padding: 15px;
-            transition: all 0.3s;
-        }
-
-        .timeline-content:hover {
-            background: white;
-            box-shadow: 0 5px 15px rgba(34, 197, 94, 0.1);
-            transform: translateX(5px);
-        }
-
-        .timeline-content .action {
-            font-weight: 600;
-            color: #166534;
-            margin-bottom: 5px;
-        }
-
-        .timeline-content .details {
-            font-size: 0.9rem;
-            color: #666;
-        }
-
-        /* Green Theme Calendar */
-        .calendar-container {
-            background: linear-gradient(135deg, #166534 0%, #14532d 100%);
-            border-radius: 32px;
-            padding: 24px;
-            margin: 30px 0;
-            color: white;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-        }
-
-        .calendar-wrapper {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            background: white;
-            border-radius: 24px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-        }
-
-        .calendar-left {
-            flex: 1.5;
-            min-width: 300px;
-            background: white;
-            padding: 25px;
-        }
-
-        .calendar-right {
-            flex: 1;
-            min-width: 280px;
-            background: linear-gradient(135deg, #166534 0%, #14532d 100%);
-            padding: 30px;
-            color: #fff;
-        }
-
-        .calendar-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 25px;
-            padding: 0 5px;
-        }
-
-        .calendar-header .month {
-            font-size: 1.6rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #22c55e, #16a34a);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .calendar-header i {
-            font-size: 1.3rem;
-            cursor: pointer;
-            background: linear-gradient(135deg, #22c55e, #16a34a);
-            color: white;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 12px;
-            transition: all 0.3s;
-            box-shadow: 0 5px 15px rgba(34, 197, 94, 0.4);
-        }
-
-        .calendar-header i:hover {
-            transform: scale(1.1);
-            box-shadow: 0 8px 25px rgba(34, 197, 94, 0.6);
-        }
-
-        .weekdays {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            text-align: center;
-            font-weight: 600;
-            color: #666;
-            margin-bottom: 15px;
-            padding: 10px 0;
-            border-bottom: 2px solid #f0f0f0;
-        }
-
-        .days-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 8px;
-            margin-bottom: 20px;
-        }
-
-        .day-cell {
-            aspect-ratio: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            border-radius: 12px;
-            transition: all 0.3s;
-            font-size: 0.95rem;
-            color: #333;
-            position: relative;
-            font-weight: 500;
-        }
-
-        .day-cell:hover:not(.prev-date):not(.next-date) {
-            background: linear-gradient(135deg, #22c55e, #16a34a);
-            color: white;
-            transform: scale(1.05);
-            box-shadow: 0 5px 15px rgba(34, 197, 94, 0.4);
-        }
-
-        .day-cell.prev-date,
-        .day-cell.next-date {
-            color: #ccc;
-        }
-
-        .day-cell.active {
-            background: linear-gradient(135deg, #22c55e, #16a34a);
-            color: white;
-            font-weight: 600;
-            box-shadow: 0 5px 15px rgba(34, 197, 94, 0.4);
-        }
-
-        .day-cell.today {
-            font-weight: 700;
-            border: 2px solid #22c55e;
-            color: #22c55e;
-        }
-
-        .day-cell.event {
-            position: relative;
-        }
-
-        .day-cell.event::after {
-            content: '•';
-            position: absolute;
-            bottom: 2px;
-            font-size: 1.2rem;
-            color: #ffd700;
-        }
-
-        .goto-section {
-            display: flex;
-            gap: 12px;
-            margin-top: 20px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
-        .goto-input {
-            flex: 1;
-            min-width: 120px;
-            padding: 12px 16px;
-            border: 2px solid #f0f0f0;
-            border-radius: 16px;
-            outline: none;
-            transition: all 0.3s;
-            font-size: 0.95rem;
-        }
-
-        .goto-input:focus {
-            border-color: #22c55e;
-            box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.1);
-        }
-
-        .goto-btn, .today-btn {
-            padding: 12px 20px;
-            border: none;
-            border-radius: 16px;
-            background: linear-gradient(135deg, #22c55e, #16a34a);
-            color: white;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-size: 0.95rem;
-            font-weight: 600;
-            white-space: nowrap;
-            box-shadow: 0 5px 15px rgba(34, 197, 94, 0.4);
-        }
-
-        .goto-btn:hover, .today-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 8px 25px rgba(34, 197, 94, 0.6);
-        }
-
-        .right-header {
-            margin-bottom: 25px;
-        }
-
-        .event-day {
-            font-size: 2.2rem;
-            font-weight: 700;
-            text-transform: capitalize;
-            margin-bottom: 5px;
-        }
-
-        .event-date {
-            color: rgba(255,255,255,0.7);
-            font-size: 1.1rem;
-        }
-
-        .events-list {
-            max-height: 400px;
-            overflow-y: auto;
-            padding-right: 10px;
-        }
-
-        .event-item {
-            background: rgba(255,255,255,0.1);
-            backdrop-filter: blur(10px);
-            padding: 18px 20px;
-            border-radius: 16px;
-            margin-bottom: 12px;
-            cursor: pointer;
-            transition: all 0.3s;
-            border: 1px solid rgba(255,255,255,0.2);
-        }
-
-        .event-item:hover {
-            background: rgba(255,255,255,0.2);
-            transform: translateX(8px);
-        }
-
-        .event-item .title {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 8px;
-        }
-
-        .event-item i {
-            color: #ffd700;
-            font-size: 0.8rem;
-        }
-
-        .event-item .event-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            word-break: break-word;
-        }
-
-        .event-item .event-time {
-            font-size: 0.9rem;
-            color: rgba(255,255,255,0.7);
-            margin-left: 28px;
-        }
-
-        /* Modern Modal */
-        .add-event-wrapper {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 90%;
-            max-width: 450px;
-            background: white;
-            border-radius: 32px;
-            padding: 30px;
-            box-shadow: 0 30px 60px rgba(0,0,0,0.3);
-            z-index: 2000;
-            display: none;
-        }
-
-        .add-event-wrapper.active {
-            display: block;
-            animation: modalPop 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        @keyframes modalPop {
-            0% {
-                opacity: 0;
-                transform: translate(-50%, -50%) scale(0.8);
-            }
-            100% {
-                opacity: 1;
-                transform: translate(-50%, -50%) scale(1);
-            }
-        }
-
-        .add-event-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #f0f0f0;
-        }
-
-        .add-event-header .title {
-            font-size: 1.4rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #22c55e, #16a34a);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .add-event-header .close {
-            cursor: pointer;
-            font-size: 1.3rem;
-            color: #999;
-            transition: all 0.3s;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 12px;
-            background: #f5f5f5;
-        }
-
-        .add-event-header .close:hover {
-            background: linear-gradient(135deg, #22c55e, #16a34a);
-            color: white;
-            transform: rotate(90deg);
-        }
-
-        .add-event-body {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .add-event-body input,
-        .add-event-body textarea {
-            width: 100%;
-            padding: 16px 18px;
-            border: 2px solid #f0f0f0;
-            border-radius: 18px;
-            outline: none;
-            transition: all 0.3s;
-            font-size: 1rem;
-            font-family: inherit;
-        }
-
-        .add-event-body textarea {
-            min-height: 100px;
-            resize: vertical;
-        }
-
-        .add-event-body input:focus,
-        .add-event-body textarea:focus {
-            border-color: #22c55e;
-            box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.1);
-        }
-
-        .add-event-footer {
-            margin-top: 20px;
-        }
-
-        .add-event-footer button {
-            width: 100%;
-            padding: 16px;
-            border: none;
-            border-radius: 18px;
-            background: linear-gradient(135deg, #22c55e, #16a34a);
-            color: white;
-            font-weight: 700;
-            font-size: 1.1rem;
-            cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: 0 10px 20px rgba(34, 197, 94, 0.3);
-        }
-
-        .add-event-footer button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 30px rgba(34, 197, 94, 0.5);
-        }
-
-        .no-event {
-            text-align: center;
-            padding: 50px 20px;
-            color: rgba(255,255,255,0.5);
-            font-size: 1.1rem;
-        }
-
-        /* Modern Buttons */
-        .btn-success {
-            background: linear-gradient(135deg, #22c55e, #16a34a);
-            border: none;
-            padding: 12px 24px;
-            border-radius: 50px;
-            font-weight: 600;
-            transition: all 0.3s;
-            box-shadow: 0 5px 15px rgba(34, 197, 94, 0.4);
-        }
-
-        .btn-success:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(34, 197, 94, 0.6);
-            background: linear-gradient(135deg, #16a34a, #22c55e);
-        }
-
-        .btn-secondary {
-            background: linear-gradient(135deg, #6c757d, #5a6268);
-            border: none;
-            padding: 12px 24px;
-            border-radius: 50px;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-
-        .btn-secondary:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
-
-        .btn-danger {
-            border-radius: 12px !important;
-            padding: 8px 12px !important;
-            transition: all 0.3s !important;
-        }
-
-        .btn-danger:hover {
-            transform: scale(1.1);
-            background: linear-gradient(135deg, #dc3545, #c82333) !important;
-        }
-
-        /* Modern Badges */
-        .badge {
-            padding: 8px 14px;
-            border-radius: 30px;
-            font-weight: 600;
-            font-size: 0.85rem;
-            letter-spacing: 0.3px;
-        }
-
-        .badge.bg-warning {
-            background: linear-gradient(135deg, #f39c12, #e67e22) !important;
-            color: white;
-        }
-
-        .badge.bg-success {
-            background: linear-gradient(135deg, #22c55e, #16a34a) !important;
-        }
-
-        .badge.bg-danger {
-            background: linear-gradient(135deg, #dc3545, #c82333) !important;
-        }
-
-        .badge.bg-primary {
-            background: linear-gradient(135deg, #0d6efd, #0b5ed7) !important;
-        }
-
-        .badge.bg-secondary {
-            background: linear-gradient(135deg, #6c757d, #5a6268) !important;
-        }
-
-        /* Table Styles */
-        .table {
-            border-radius: 18px;
-            overflow: hidden;
-        }
-
-        .table thead th {
-            background: linear-gradient(135deg, #22c55e, #16a34a);
-            color: white;
-            font-weight: 600;
-            border: none;
-            padding: 15px;
-        }
-
-        .table tbody tr {
-            transition: all 0.3s;
-        }
-
-        .table tbody tr:hover {
-            background: rgba(34, 197, 94, 0.05);
-            transform: scale(1.01);
-        }
-
-        /* Form Elements */
-        .form-control, .form-select {
-            border: 2px solid #f0f0f0;
-            border-radius: 16px;
-            padding: 12px 16px;
-            transition: all 0.3s;
-        }
-
-        .form-control:focus, .form-select:focus {
-            border-color: #22c55e;
-            box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.1);
-        }
-
-        /* Responsive Breakpoints */
-        @media (max-width: 1200px) {
-            .calendar-wrapper {
-                flex-direction: row;
-            }
-        }
-
-        @media (max-width: 992px) {
-            .calendar-wrapper {
-                flex-direction: column;
-            }
-        }
-
-        @media (max-width: 991px) {
-            .sidebar {
-                left: -280px;
-                border-radius: 0 20px 20px 0;
-            }
-            
-            .sidebar.active {
-                left: 0;
-            }
-            
-            .main-content {
-                margin-left: 0;
-            }
-            
-            .topbar {
-                margin: 10px;
-                width: calc(100% - 20px);
-            }
-            
-            .content-area {
-                padding: 20px;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .analytics-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .equipment-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .notification-dropdown {
-                width: 300px;
-                right: 10px;
-            }
-            
-            .event-day {
-                font-size: 1.8rem;
-            }
-            
-            .filter-section {
-                flex-direction: column;
-            }
-            
-            .filter-select {
-                width: 100%;
-            }
-        }
-
-        @media (max-width: 576px) {
-            .content-area {
-                padding: 15px;
-            }
-            
-            .card {
-                padding: 15px !important;
-            }
-            
-            .stat-card {
-                padding: 20px;
-            }
-            
-            .stat-card h3 {
-                font-size: 1.5rem;
-            }
-        }
-
-        /* Scrollbar Styling */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 10px;
-        }
-
-        ::-webkit-scrollbar-thumb {
-            background: linear-gradient(135deg, #22c55e, #16a34a);
-            border-radius: 10px;
-        }
-
-        ::-webkit-scrollbar-thumb:hover {
-            background: linear-gradient(135deg, #16a34a, #22c55e);
-        }
+       * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+    overflow-x: hidden;
+}
+
+/* Sidebar Overlay */
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
+    z-index: 999;
+}
+
+.sidebar-overlay.active {
+    display: block;
+    animation: fadeIn 0.3s;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 280px;
+    min-height: 100vh;
+    background: linear-gradient(180deg, #166534 0%, #14532d 100%);
+    color: white;
+    position: fixed;
+    left: 0;
+    top: 0;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1000;
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.2);
+    border-radius: 0 30px 30px 0;
+    overflow-y: auto;
+}
+
+.sidebar::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 100%;
+    background: linear-gradient(45deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%);
+    pointer-events: none;
+}
+
+.sidebar a {
+    color: rgba(255, 255, 255, 0.9);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 24px;
+    text-decoration: none;
+    transition: all 0.3s;
+    border-radius: 12px;
+    margin: 4px 16px;
+    font-weight: 500;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+}
+
+.sidebar a i {
+    font-size: 1.2rem;
+    width: 24px;
+    text-align: center;
+}
+
+.sidebar a:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateX(8px);
+    color: white;
+}
+
+.sidebar a.active {
+    background: rgba(255, 255, 255, 0.2);
+    border-left: 3px solid #ffd700;
+}
+
+.sidebar h4 {
+    padding: 28px 24px;
+    margin-bottom: 20px;
+    font-size: 1.5rem;
+    font-weight: 600;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+    letter-spacing: 1px;
+}
+
+.sidebar h4 i {
+    margin-right: 10px;
+    color: #ffd700;
+}
+
+.sidebar-footer {
+    padding: 20px;
+    margin-top: 30px;
+    text-align: center;
+    background: rgba(0, 0, 0, 0.2);
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+/* Main content */
+.main-content {
+    margin-left: 280px;
+    transition: all 0.3s ease;
+    min-height: 100vh;
+}
+
+/* Modern Topbar with Rounded Navbar */
+.topbar {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    padding: 12px 30px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 15px;
+    z-index: 999;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50px;
+    margin: 15px 25px 0 25px;
+    width: calc(100% - 50px);
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.profile-img {
+    width: 45px;
+    height: 45px;
+    border-radius: 12px;
+    object-fit: cover;
+    border: 3px solid #22c55e;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.profile-img:hover {
+    transform: scale(1.1);
+    border-color: #ffd700;
+}
+
+.content-area {
+    padding: 30px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    min-height: calc(100vh - 80px);
+}
+
+/* Modern Cards */
+.card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 24px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+}
+
+.card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.15);
+}
+
+/* Analytics Cards */
+.analytics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.stat-card {
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    border-radius: 20px;
+    padding: 25px;
+    color: white;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(34, 197, 94, 0.4);
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: rgba(255, 255, 255, 0.1);
+    transform: rotate(45deg);
+    transition: all 0.3s;
+}
+
+.stat-card:hover::before {
+    transform: rotate(45deg) translate(10%, 10%);
+}
+
+.stat-card i {
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+}
+
+.stat-card h3 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 5px;
+}
+
+.stat-card p {
+    margin: 0;
+    opacity: 0.9;
+    font-size: 0.95rem;
+}
+
+/* Filter Section */
+.filter-section {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.filter-select {
+    padding: 12px 20px;
+    border: 2px solid #f0f0f0;
+    border-radius: 16px;
+    outline: none;
+    transition: all 0.3s;
+    min-width: 200px;
+}
+
+.filter-select:focus {
+    border-color: #22c55e;
+    box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.1);
+}
+
+/* Equipment Details Table */
+.details-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.details-table th {
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: white;
+    padding: 15px;
+    font-weight: 600;
+    text-align: left;
+}
+
+.details-table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.details-table tr:hover td {
+    background: rgba(34, 197, 94, 0.05);
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: #f0f0f0;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    border-radius: 4px;
+    transition: width 0.3s;
+}
+
+/* Buttons */
+.btn-view {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    transition: all 0.3s;
+}
+
+.btn-view:hover {
+    transform: scale(1.05);
+    box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    border: none;
+    padding: 12px 24px;
+    border-radius: 50px;
+    font-weight: 600;
+    transition: all 0.3s;
+    box-shadow: 0 5px 15px rgba(34, 197, 94, 0.4);
+}
+
+.btn-success:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(34, 197, 94, 0.6);
+}
+
+.btn-secondary {
+    background: linear-gradient(135deg, #6c757d, #5a6268);
+    border: none;
+    padding: 12px 24px;
+    border-radius: 50px;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.btn-secondary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.btn-danger {
+    border-radius: 12px !important;
+    padding: 8px 12px !important;
+    transition: all 0.3s !important;
+}
+
+.btn-danger:hover {
+    transform: scale(1.1);
+    background: linear-gradient(135deg, #dc3545, #c82333) !important;
+}
+
+/* Badges */
+.badge {
+    padding: 8px 14px;
+    border-radius: 30px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    letter-spacing: 0.3px;
+}
+
+.badge.bg-warning {
+    background: linear-gradient(135deg, #f39c12, #e67e22) !important;
+    color: white;
+}
+
+.badge.bg-success {
+    background: linear-gradient(135deg, #22c55e, #16a34a) !important;
+}
+
+.badge.bg-danger {
+    background: linear-gradient(135deg, #dc3545, #c82333) !important;
+}
+
+.badge.bg-info {
+    background: linear-gradient(135deg, #0dcaf0, #0aa2c0) !important;
+    color: white;
+}
+
+/* Table Styles */
+.table {
+    border-radius: 18px;
+    overflow: hidden;
+}
+
+.table thead th {
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: white;
+    font-weight: 600;
+    border: none;
+    padding: 15px;
+}
+
+.table tbody tr {
+    transition: all 0.3s;
+}
+
+.table tbody tr:hover {
+    background: rgba(34, 197, 94, 0.05);
+    transform: scale(1.01);
+}
+
+/* Form Elements */
+.form-control,
+.form-select {
+    border: 2px solid #f0f0f0;
+    border-radius: 16px;
+    padding: 12px 16px;
+    transition: all 0.3s;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: #22c55e;
+    box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.1);
+}
+
+/* Calendar Section */
+.calendar-container {
+    background: linear-gradient(135deg, #166534 0%, #14532d 100%);
+    border-radius: 32px;
+    padding: 24px;
+    margin: 30px 0;
+    color: white;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.calendar-wrapper {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    background: white;
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.calendar-left {
+    flex: 1.5;
+    min-width: 300px;
+    background: white;
+    padding: 25px;
+}
+
+.calendar-right {
+    flex: 1;
+    min-width: 280px;
+    background: linear-gradient(135deg, #166534 0%, #14532d 100%);
+    padding: 30px;
+    color: #fff;
+}
+
+.calendar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 25px;
+    padding: 0 5px;
+}
+
+.calendar-header .month {
+    font-size: 1.6rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.calendar-header i {
+    font-size: 1.3rem;
+    cursor: pointer;
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: white;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    transition: all 0.3s;
+    box-shadow: 0 5px 15px rgba(34, 197, 94, 0.4);
+}
+
+.calendar-header i:hover {
+    transform: scale(1.1);
+    box-shadow: 0 8px 25px rgba(34, 197, 94, 0.6);
+}
+
+.weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    text-align: center;
+    font-weight: 600;
+    color: #666;
+    margin-bottom: 15px;
+    padding: 10px 0;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.days-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.day-cell {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border-radius: 12px;
+    transition: all 0.3s;
+    font-size: 0.95rem;
+    color: #333;
+    position: relative;
+    font-weight: 500;
+}
+
+.day-cell:hover:not(.prev-date):not(.next-date) {
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: white;
+    transform: scale(1.05);
+    box-shadow: 0 5px 15px rgba(34, 197, 94, 0.4);
+}
+
+.day-cell.prev-date,
+.day-cell.next-date {
+    color: #ccc;
+}
+
+.day-cell.active {
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: white;
+    font-weight: 600;
+    box-shadow: 0 5px 15px rgba(34, 197, 94, 0.4);
+}
+
+.day-cell.today {
+    font-weight: 700;
+    border: 2px solid #22c55e;
+    color: #22c55e;
+}
+
+.day-cell.event::after {
+    content: '•';
+    position: absolute;
+    bottom: 2px;
+    font-size: 1.2rem;
+    color: #ffd700;
+}
+
+.goto-section {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.goto-input {
+    flex: 1;
+    min-width: 120px;
+    padding: 12px 16px;
+    border: 2px solid #f0f0f0;
+    border-radius: 16px;
+    outline: none;
+    transition: all 0.3s;
+    font-size: 0.95rem;
+}
+
+.goto-input:focus {
+    border-color: #22c55e;
+    box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.1);
+}
+
+.goto-btn,
+.today-btn {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: 0.95rem;
+    font-weight: 600;
+    white-space: nowrap;
+    box-shadow: 0 5px 15px rgba(34, 197, 94, 0.4);
+}
+
+.goto-btn:hover,
+.today-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 25px rgba(34, 197, 94, 0.6);
+}
+
+.right-header {
+    margin-bottom: 25px;
+}
+
+.event-day {
+    font-size: 2.2rem;
+    font-weight: 700;
+    text-transform: capitalize;
+    margin-bottom: 5px;
+}
+
+.event-date {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 1.1rem;
+}
+
+.events-list {
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: 10px;
+}
+
+.event-item {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    padding: 18px 20px;
+    border-radius: 16px;
+    margin-bottom: 12px;
+    cursor: pointer;
+    transition: all 0.3s;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.event-item:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateX(8px);
+}
+
+.event-item .title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.event-item i {
+    color: #ffd700;
+    font-size: 0.8rem;
+}
+
+.event-item .event-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    word-break: break-word;
+}
+
+.event-item .event-time {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.7);
+    margin-left: 28px;
+}
+
+.no-event {
+    text-align: center;
+    padding: 50px 20px;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 1.1rem;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #16a34a, #22c55e);
+}
+
+/* Search and Add Row */
+.search-add-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.search-container {
+    display: flex;
+    gap: 10px;
+    flex: 1;
+    max-width: 500px;
+}
+
+.search-input {
+    flex: 1;
+    padding: 10px 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.search-input:focus {
+    border-color: #22c55e;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+}
+
+.search-btn {
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.search-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+}
+
+.add-btn {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: white;
+    border: none;
+    padding: 10px 25px;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+}
+
+.add-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+/* User Table */
+.user-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.user-table thead {
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: white;
+}
+
+.user-table th {
+    padding: 15px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.user-table td {
+    padding: 15px;
+    border-bottom: 1px solid #e0e0e0;
+    vertical-align: middle;
+}
+
+.user-table tbody tr:hover {
+    background: #f9f9f9;
+}
+
+/* Request Rate Badge */
+.request-rate {
+    background: #e6f7e6;
+    color: #22c55e;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 12px;
+    display: inline-block;
+}
+
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.btn-edit {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.btn-edit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+}
+
+.btn-remove {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.btn-remove:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
+}
+
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+    background: white;
+    padding: 20px;
+    margin: 8% auto;
+    width: 60%;
+    border-radius: 8px;
+}
+
+.close {
+    float: right;
+    font-size: 20px;
+    cursor: pointer;
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+    .calendar-wrapper {
+        flex-direction: row;
+    }
+}
+
+@media (max-width: 992px) {
+    .calendar-wrapper {
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 991px) {
+    .sidebar {
+        left: -280px;
+        border-radius: 0 20px 20px 0;
+    }
+
+    .sidebar.active {
+        left: 0;
+    }
+
+    .main-content {
+        margin-left: 0;
+    }
+
+    .topbar {
+        margin: 10px;
+        width: calc(100% - 20px);
+    }
+
+    .content-area {
+        padding: 20px;
+    }
+}
+
+@media (max-width: 768px) {
+    .analytics-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .event-day {
+        font-size: 1.8rem;
+    }
+
+    .filter-section {
+        flex-direction: column;
+    }
+
+    .filter-select {
+        width: 100%;
+    }
+    
+    .search-add-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .search-container {
+        max-width: 100%;
+    }
+
+    .user-table {
+        font-size: 14px;
+    }
+
+    .user-table td {
+        padding: 10px;
+    }
+
+    .action-buttons {
+        flex-direction: column;
+    }
+
+    .btn-edit,
+    .btn-remove {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 576px) {
+    .content-area {
+        padding: 15px;
+    }
+
+    .card {
+        padding: 15px !important;
+    }
+
+    .stat-card {
+        padding: 20px;
+    }
+
+    .stat-card h3 {
+        font-size: 1.5rem;
+    }
+
+    .action-buttons {
+        flex-direction: column;
+    }
+}
     </style>
+
+    <!-- Keep original favicon -->
+    <link rel="icon" type="image/svg+xml" href="../assets/resources/flask.svg">
 </head>
 
 <body>
-    <!-- Sidebar Overlay -->
+   <!-- Sidebar Overlay -->
     <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
     <!-- SIDEBAR -->
     <div class="sidebar" id="sidebar">
         <h4><i class="bi bi-flask"></i> MicroLab</h4>
         <a onclick="showSection('dashboard')" class="active"><i class="bi bi-speedometer2"></i> Dashboard</a>
-        <a onclick="showSection('equipment')"><i class="bi bi-tools"></i> Equipment Browser</a>
-        <a onclick="showSection('request')"><i class="bi bi-plus-circle"></i> Create Request</a>
-        <a onclick="showSection('history')"><i class="bi bi-clock-history"></i> Booking History</a>
-        <a onclick="showSection('analytics')"><i class="bi bi-graph-up"></i> Usage Analytics</a>
-        <a onclick="showSection('activity')"><i class="bi bi-activity"></i> Activity History</a>
+        <a onclick="showSection('student')"><i class="bi bi-people"></i> Student Manage</a>
+        <a onclick="showSection('activity')"><i class="bi bi-activity"></i> Requests</a>
         <a href="logout.php"><i class="bi bi-box-arrow-right"></i> Logout</a>
-        
+
         <div class="sidebar-footer">
             <i class="bi bi-building"></i><br>
             Microbiology Lab<br>
@@ -1215,60 +1017,18 @@
     <!-- MAIN -->
     <div class="main-content">
 
-        <!-- TOPBAR with Notification Bell -->
+        <!-- TOPBAR -->
         <div class="topbar">
             <div class="d-flex align-items-center gap-3">
                 <button class="btn d-lg-none text-dark" onclick="toggleSidebar()">
                     <i class="bi bi-list fs-3"></i>
                 </button>
-                <h5 class="fw-bold mb-0" style="background: linear-gradient(135deg, #22c55e, #16a34a); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Admin Dashboard</h5>
+                <h5 class="fw-bold mb-0" style="background: linear-gradient(135deg, #22c55e, #16a34a); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Supervisor Dashboard</h5>
             </div>
             <div class="d-flex align-items-center gap-3">
-         
-                <!-- Notification Bell -->
-                <div class="notification-bell" onclick="toggleNotifications()">
-                    <i class="bi bi-journal-check"></i>
-                    <span class="request-badge" id="requestBadge">4</span>
-                </div>
-                <!-- Notification Bell -->
-                <div class="notification-bell" onclick="toggleNotifications()">
-                    <i class="bi bi-bell"></i>
-                    <span class="notification-badge" id="notificationBadge">3</span>
-                </div>
-                
-                <!-- Notification Dropdown -->
-                <div class="notification-dropdown" id="notificationDropdown">
-                    <div class="notification-header">
-                        <h6>Notifications</h6>
-                        <span>3 new</span>
-                    </div>
-                    <div class="notification-list" id="notificationList">
-                        <div class="notification-item unread">
-                            <div><i class="bi bi-check-circle-fill text-success me-2"></i> Booking #REQ004 approved</div>
-                            <div class="time">2 minutes ago</div>
-                        </div>
-                        <div class="notification-item unread">
-                            <div><i class="bi bi-clock-fill text-warning me-2"></i> Equipment ready for pickup</div>
-                            <div class="time">15 minutes ago</div>
-                        </div>
-                        <div class="notification-item unread">
-                            <div><i class="bi bi-exclamation-triangle-fill text-danger me-2"></i> Return reminder: Microscope</div>
-                            <div class="time">1 hour ago</div>
-                        </div>
-                        <div class="notification-item">
-                            <div><i class="bi bi-check-circle-fill text-success me-2"></i> Booking #REQ003 completed</div>
-                            <div class="time">2 hours ago</div>
-                        </div>
-                        <div class="notification-item">
-                            <div><i class="bi bi-info-circle-fill text-info me-2"></i> Lab maintenance scheduled</div>
-                            <div class="time">Yesterday</div>
-                        </div>
-                    </div>
-                </div>
-
-                <span class="fw-semibold d-none d-sm-block" style="color: #166534;">John Doe</span>
+                <span class="fw-semibold d-none d-sm-block" style="color: #166534;">Subodhi</span>
                 <div class="dropdown">
-                    <img src="https://ui-avatars.com/api/?name=John+Doe&background=22c55e&color=fff&size=100" class="profile-img dropdown-toggle" data-bs-toggle="dropdown">
+                    <img src="https://ui-avatars.com/api/?name=Admin+User&background=22c55e&color=fff&size=100" class="profile-img dropdown-toggle" data-bs-toggle="dropdown">
                     <ul class="dropdown-menu dropdown-menu-end" style="border-radius: 16px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
                         <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i>Profile</a></li>
                         <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i>Settings</a></li>
@@ -1286,56 +1046,71 @@
 
             <!-- Dashboard Section -->
             <div id="dashboardSection">
-                <!-- Analytics Cards -->
                 <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Dashboard Overview</h3>
-                
-                <div class="analytics-grid">
+
+                <!-- Analytics Grid -->
+                <!-- <div class="analytics-grid">
                     <div class="stat-card">
-                        <i class="bi bi-calendar-check"></i>
-                        <h3 id="totalBookings">24</h3>
-                        <p>Total Bookings</p>
+                        <i class="bi bi-mortarboard-fill"></i>
+                        <h3>56</h3>
+                        <p>Students</p>
                     </div>
                     <div class="stat-card">
-                        <i class="bi bi-clock-history"></i>
-                        <h3 id="totalHours">48.5</h3>
-                        <p>Hours Used</p>
-                    </div>
-                    <div class="stat-card">
-                        <i class="bi bi-tools"></i>
-                        <h3 id="equipmentUsed">12</h3>
-                        <p>Equipment Used</p>
+                        <i class="bi bi-flask"></i>
+                        <h3>100</h3>
+                        <p>Total Equipment</p>
                     </div>
                     <div class="stat-card">
                         <i class="bi bi-graph-up"></i>
-                        <h3 id="utilizationRate">85%</h3>
-                        <p>Utilization Rate</p>
+                        <h3>85%</h3>
+                        <p>Equipment Utilization Rate</p>
+                    </div>
+                    <div class="stat-card">
+                        <i class="bi bi-tools"></i>
+                        <h3>5</h3>
+                        <p>Maintenance</p>
+                    </div>
+                </div> -->
+
+                <!-- Quick Stats -->
+                <div class="row mb-4 justify-content-center">
+                    <div class="col-md-3 mb-3">
+                        <div class="card p-3 text-center">
+                            <h6 class="text-muted d-flex justify-content-center align-items-center gap-2">
+                                Students
+                                <button class="btn btn-sm btn-outline-primary p-1" onclick="viewPendingRequests()" style="line-height: 1;">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </h6>
+                            <h3 class="text-warning">56</h3>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="card p-3 text-center">
+                            <h6 class="text-muted d-flex justify-content-center align-items-center gap-2">
+                                Request Pending
+                                <button class="btn btn-sm btn-outline-primary p-1" onclick="viewPendingRequests()" style="line-height: 1;">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </h6>
+                            <h3 class="text-danger">8</h3>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="card p-3 text-center">
+                            <h6 class="text-muted d-flex justify-content-center align-items-center gap-2">
+                                Today's Practicals
+                                <button class="btn btn-sm btn-outline-primary p-1" onclick="viewPendingRequests()" style="line-height: 1;">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </h6>
+                            <h3 class="text-info">15</h3>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Most Used Equipment -->
-                <div class="row">
-                    <div class="col-md-6 mb-4">
-                        <div class="card p-4">
-                            <h5 class="fw-bold mb-3" style="color: #166534;">Most Used Equipment</h5>
-                            <div class="chart-container">
-                                <canvas id="usageChart"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Monthly Activity Chart -->
-                    <div class="col-md-6 mb-4">
-                        <div class="card p-4">
-                            <h5 class="fw-bold mb-3" style="color: #166534;">Monthly Activity</h5>
-                            <div class="chart-container">
-                                <canvas id="monthlyChart"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Calendar Section - Now with Green Theme -->
-                <h3 class="mb-4 mt-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Equipment Booking Calendar</h3>
+                <!-- Calendar Section -->
+                <h3 class="mb-4 mt-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Equipment & Lab Schedule</h3>
                 <div class="calendar-container">
                     <div class="calendar-wrapper">
                         <div class="calendar-left">
@@ -1371,151 +1146,132 @@
                 </div>
             </div>
 
-            <!-- Equipment Browser Section -->
-            <div id="equipmentSection" style="display: none;">
-                <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Equipment Browser</h3>
-                
+            <!-- Student Management Section -->
+            <div id="studentSection" style="display: none;">
+                <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Student Management</h3>
+
                 <div class="card p-4">
-                    <div class="filter-section">
-                        <select class="filter-select" id="labFilter" onchange="filterEquipment()">
-                            <option value="all">All Labs</option>
-                            <option value="lab1">Microbiology Lab 01</option>
-                            <option value="lab2">Microbiology Lab 02</option>
-                            <option value="research">Research Laboratory</option>
-                        </select>
-                        
-                        <select class="filter-select" id="statusFilter" onchange="filterEquipment()">
-                            <option value="all">All Status</option>
-                            <option value="available">Available</option>
-                            <option value="in-use">In Use</option>
-                            <option value="maintenance">Maintenance</option>
-                        </select>
+                    <!-- Search and Add Row -->
+                    <div class="search-add-row">
+                        <div class="search-container">
+                            <input type="text" id="studentSearch" class="search-input" placeholder="Search by name, university ID or email...">
+                            <button class="search-btn" onclick="searchStudents()">
+                                <i class="bi bi-search"></i> Search
+                            </button>
+                        </div>
+                        <button class="add-btn" onclick="addStudent()">
+                            <i class="bi bi-plus-circle"></i> Add Student
+                        </button>
                     </div>
 
-                    <div class="equipment-grid" id="equipmentGrid">
-                        <!-- Equipment cards will be populated here -->
-                    </div>
-                </div>
-            </div>
-
-            <!-- Create Request Section -->
-            <div id="requestSection" style="display: none;">
-                <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Create Equipment Request</h3>
-                <div class="card p-4">
-                    <form id="equipmentRequestForm" onsubmit="return submitEquipmentRequest(event)">
-                        <div class="row g-3 mb-3">
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold">Search Equipment</label>
-                                <input type="text" id="equipmentName" class="form-control" placeholder="Enter equipment name">
-                            </div>
-                            <div class="col-md-2">
-                                <label class="form-label fw-semibold">Quantity</label>
-                                <input type="number" id="equipmentQty" class="form-control" min="1" value="1">
-                            </div>
-                            <div class="col-md-2 d-flex align-items-end">
-                                <button type="button" class="btn btn-success w-100" onclick="addEquipment()">
-                                    <i class="bi bi-plus-circle me-1"></i>Add
-                                </button>
-                            </div>
-                        </div>
-
-                        <div class="table-responsive">
-                            <table class="table table-bordered mb-4" id="equipmentTable">
-                                <thead class="table-success">
-                                    <tr>
-                                        <th>Equipment</th>
-                                        <th>Qty</th>
-                                        <th>Status</th>
-                                        <th>Remove</th>
-                                    </tr>
-                                </thead>
-                                <tbody></tbody>
-                            </table>
-                        </div>
-
-                        <div class="row g-3 mb-3">
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold">Lab Location</label>
-                                <select id="labLocation" class="form-select" required>
-                                    <option value="" disabled selected>Select Lab</option>
-                                    <option value="Microbiology Lab 01">Microbiology Lab 01</option>
-                                    <option value="Microbiology Lab 02">Microbiology Lab 02</option>
-                                    <option value="Research Laboratory">Research Laboratory</option>
-                                </select>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold">Requested Day</label>
-                                <input type="date" id="requestDate" class="form-control" required>
-                            </div>
-                        </div>
-
-                        <div class="row g-3 mb-4">
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold">Start Time</label>
-                                <input type="time" id="startTime" class="form-control" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold">End Time</label>
-                                <input type="time" id="endTime" class="form-control" required>
-                            </div>
-                        </div>
-
-                        <!-- Comment Textarea -->
-                        <div class="mb-4">
-                            <label class="form-label fw-semibold">Additional Comments</label>
-                            <textarea id="requestComment" class="comment-textarea" placeholder="Enter any special requirements or notes..."></textarea>
-                        </div>
-
-                        <button type="submit" class="btn btn-success">
-                            <i class="bi bi-send me-1"></i>Submit Request
-                        </button>
-                        <button type="reset" class="btn btn-secondary">
-                            <i class="bi bi-arrow-counterclockwise me-1"></i>Reset
-                        </button>
-                    </form>
-                </div>
-            </div>
-
-            <!-- Booking History Section -->
-            <div id="historySection" style="display: none;">
-                <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Booking History</h3>
-                <div class="card p-4">
-                    <div class="table-responsive">
-                        <table class="table table-striped">
+                    <!-- Students Table -->
+                    <div class="table-responsive mt-3">
+                        <table class="user-table">
                             <thead>
                                 <tr>
-                                    <th>ID</th>
-                                    <th>Date</th>
-                                    <th>Lab</th>
-                                    <th>Equipment</th>
-                                    <th>Duration</th>
-                                    <th>Status</th>
+                                    <th>Image</th>
+                                    <th>Name</th>
+                                    <th>University ID</th>
+                                    <th>Request Rate</th>
+                                    <th>Actions</th>
                                 </tr>
                             </thead>
-                            <tbody id="bookingHistoryBody">
+                            <tbody id="studentTableBody">
                                 <tr>
-                                    <td>#REQ001</td>
-                                    <td>2026-02-10</td>
-                                    <td>Lab 01</td>
-                                    <td>Microscope (2)</td>
-                                    <td>3 hours</td>
-                                    <td><span class="badge bg-success">Completed</span></td>
+                                    <td><img src="https://ui-avatars.com/api/?name=John+Doe&background=22c55e&color=fff&size=50" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover;"></td>
+                                    <td>John Doe</td>
+                                    <td>SCI001</td>
+                                    <td><span class="request-rate">12 requests</span></td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <button class="btn-view" onclick="viewStudent('SCI001')" title="View Details">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                            <button class="btn-remove" onclick="removeStudent('SCI001')" title="Remove">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
                                 </tr>
                                 <tr>
-                                    <td>#REQ002</td>
-                                    <td>2026-02-15</td>
-                                    <td>Research Lab</td>
-                                    <td>Centrifuge (1)</td>
-                                    <td>4 hours</td>
-                                    <td><span class="badge bg-warning">Pending</span></td>
+                                    <td><img src="https://ui-avatars.com/api/?name=Jane+Smith&background=22c55e&color=fff&size=50" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover;"></td>
+                                    <td>Jane Smith</td>
+                                    <td>SCI002</td>
+                                    <td><span class="request-rate">8 requests</span></td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <button class="btn-view" onclick="viewStudent('SCI002')" title="View Details">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                            <button class="btn-remove" onclick="removeStudent('SCI002')" title="Remove">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
                                 </tr>
                                 <tr>
-                                    <td>#REQ003</td>
-                                    <td>2026-02-18</td>
-                                    <td>Lab 02</td>
-                                    <td>Incubator (1)</td>
-                                    <td>2 hours</td>
-                                    <td><span class="badge bg-success">Completed</span></td>
+                                    <td><img src="https://ui-avatars.com/api/?name=Pathum+Perera&background=22c55e&color=fff&size=50" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover;"></td>
+                                    <td>Pathum Perera</td>
+                                    <td>SCI005</td>
+                                    <td><span class="request-rate">3 requests</span></td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <button class="btn-view" onclick="viewStudent('SCI005')" title="View Details">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                            <button class="btn-remove" onclick="removeStudent('SCI005')" title="Remove">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><img src="https://ui-avatars.com/api/?name=Nimali+Fernando&background=22c55e&color=fff&size=50" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover;"></td>
+                                    <td>Nimali Fernando</td>
+                                    <td>SCI008</td>
+                                    <td><span class="request-rate">15 requests</span></td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <button class="btn-view" onclick="viewStudent('SCI008')" title="View Details">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                            <button class="btn-remove" onclick="removeStudent('SCI008')" title="Remove">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><img src="https://ui-avatars.com/api/?name=Mike+Johnson&background=22c55e&color=fff&size=50" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover;"></td>
+                                    <td>Mike Johnson</td>
+                                    <td>SCI003</td>
+                                    <td><span class="request-rate">6 requests</span></td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <button class="btn-view" onclick="viewStudent('SCI003')" title="View Details">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                            <button class="btn-remove" onclick="removeStudent('SCI003')" title="Remove">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><img src="https://ui-avatars.com/api/?name=Sarah+Wilson&background=22c55e&color=fff&size=50" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover;"></td>
+                                    <td>Sarah Wilson</td>
+                                    <td>SCI004</td>
+                                    <td><span class="request-rate">10 requests</span></td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <button class="btn-view" onclick="viewStudent('SCI004')" title="View Details">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                            <button class="btn-remove" onclick="removeStudent('SCI004')" title="Remove">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>
@@ -1523,147 +1279,328 @@
                 </div>
             </div>
 
-            <!-- Analytics Section -->
-            <div id="analyticsSection" style="display: none;">
-                <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Usage Analytics</h3>
-                
-                <div class="analytics-grid">
-                    <div class="stat-card">
-                        <i class="bi bi-calendar-check"></i>
-                        <h3>24</h3>
-                        <p>Total Bookings</p>
-                    </div>
-                    <div class="stat-card">
-                        <i class="bi bi-clock-history"></i>
-                        <h3>48.5</h3>
-                        <p>Hours Used</p>
-                    </div>
-                    <div class="stat-card">
-                        <i class="bi bi-tools"></i>
-                        <h3>12</h3>
-                        <p>Equipment Used</p>
-                    </div>
-                    <div class="stat-card">
-                        <i class="bi bi-graph-up"></i>
-                        <h3>85%</h3>
-                        <p>Utilization Rate</p>
-                    </div>
-                </div>
-
-                <div class="row">
-                    <div class="col-12 mb-4">
-                        <div class="card p-4">
-                            <h5 class="fw-bold mb-3" style="color: #166534;">Equipment Usage Distribution</h5>
-                            <div class="chart-container">
-                                <canvas id="analyticsChart"></canvas>
-                            </div>
+            <!-- Student Details Modal -->
+            <div class="modal fade" id="studentDetailsModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header bg-success text-white">
+                            <h5 class="modal-title">
+                                <i class="bi bi-info-circle me-2"></i>
+                                Student Details
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body" id="studentDetailsContent">
+                            <!-- Content will be populated by JavaScript -->
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Activity History Section -->
+            <!-- Requests Section -->
             <div id="activitySection" style="display: none;">
-                <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Activity History</h3>
+                <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Requests</h3>
+
                 <div class="card p-4">
-                    <div class="timeline" id="activityTimeline">
-                        <div class="timeline-item">
-                            <div class="timeline-time">10:30 AM</div>
-                            <div class="timeline-content">
-                                <div class="action">Created booking #REQ004</div>
-                                <div class="details">Microscope - Lab 01 (2 hours)</div>
-                            </div>
+                    <!-- Time Range Filter -->
+                    <div class="filter-section" style="margin-bottom: 20px;">
+                        <select class="filter-select" id="timeRangeFilter" onchange="filterRequestsByTime()" style="min-width: 200px;">
+                            <option value="all">All Time</option>
+                            <option value="daily">Daily</option>
+                            <option value="weekly">Weekly</option>
+                            <option value="monthly">Monthly</option>
+                        </select>
+                    </div>
+
+                    <!-- Requests Table -->
+                    <div class="table-responsive mt-3">
+                        <table class="user-table">
+                            <thead>
+                                <tr>
+                                    <th>Request ID</th>
+                                    <th>Date & Time</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="requestListBody">
+                                <!-- Data will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Request Details Modal -->
+            <div class="modal fade" id="requestDetailsModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header bg-success text-white">
+                            <h5 class="modal-title">
+                                <i class="bi bi-info-circle me-2"></i>
+                                Request Details
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                         </div>
-                        <div class="timeline-item">
-                            <div class="timeline-time">11:00 AM</div>
-                            <div class="timeline-content">
-                                <div class="action">Booking approved</div>
-                                <div class="details">Supervisor: Dr. Smith</div>
-                            </div>
+                        <div class="modal-body" id="requestDetailsContent">
+                            <!-- Content will be populated by JavaScript -->
                         </div>
-                        <div class="timeline-item">
-                            <div class="timeline-time">12:00 PM</div>
-                            <div class="timeline-content">
-                                <div class="action">Equipment checked out</div>
-                                <div class="details">Microscope #1234 from Lab 01</div>
-                            </div>
-                        </div>
-                        <div class="timeline-item">
-                            <div class="timeline-time">2:30 PM</div>
-                            <div class="timeline-content">
-                                <div class="action">Equipment returned</div>
-                                <div class="details">In good condition</div>
-                            </div>
-                        </div>
-                        <div class="timeline-item">
-                            <div class="timeline-time">3:00 PM</div>
-                            <div class="timeline-content">
-                                <div class="action">New request submitted</div>
-                                <div class="details">Centrifuge - Research Lab</div>
-                            </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Add Event Modal -->
-            <div class="add-event-wrapper" id="addEventWrapper">
-                <div class="add-event-header">
-                    <div class="title">Equipment Request Details</div>
-                    <i class="fas fa-times close" id="closeEventBtn"></i>
-                </div>
-                <div class="add-event-body">
-                    <input type="text" placeholder="Equipment Request Title" id="eventName" maxlength="60">
-                    <textarea placeholder="Request Details" id="eventDetails" rows="3"></textarea>
-                    <input type="text" placeholder="Start Time (HH:MM)" id="eventTimeFrom" readonly>
-                    <input type="text" placeholder="End Time (HH:MM)" id="eventTimeTo" readonly>
-                </div>
-                <div class="add-event-footer">
-                    <button id="addEventSubmit">Confirm Request</button>
-                </div>
-            </div>
-        </div>
-    </div>
+        </div> <!-- End content-area -->
+    </div> <!-- End main-content -->
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-        // Initialize charts
-        let usageChart, monthlyChart, analyticsChart;
+        // ========== STUDENT DATA ==========
+       // ========== STUDENT DATA ==========
+const studentData = [
+    {
+        id: 'SCI001',
+        name: 'John Doe',
+        email: 'john.doe@science.lk',
+        image: 'https://ui-avatars.com/api/?name=John+Doe&background=22c55e&color=fff&size=50',
+        requestRate: 75,  // Changed from 12 to percentage
+        department: 'Microbiology',
+        year: '3rd Year',
+        phone: '0771234567',
+        address: 'Colombo',
+        joinDate: '2023-01-15'
+    },
+    {
+        id: 'SCI002',
+        name: 'Jane Smith',
+        email: 'jane.smith@science.lk',
+        image: 'https://ui-avatars.com/api/?name=Jane+Smith&background=22c55e&color=fff&size=50',
+        requestRate: 60,  // Changed from 8 to percentage
+        department: 'Molecular Biology',
+        year: '4th Year',
+        phone: '0772345678',
+        address: 'Kandy',
+        joinDate: '2022-09-10'
+    },
+    {
+        id: 'SCI005',
+        name: 'Pathum Perera',
+        email: 'pathum.p@science.lk',
+        image: 'https://ui-avatars.com/api/?name=Pathum+Perera&background=22c55e&color=fff&size=50',
+        requestRate: 45,  // Changed from 3 to percentage
+        department: 'Biochemistry',
+        year: '2nd Year',
+        phone: '0773456789',
+        address: 'Galle',
+        joinDate: '2024-02-20'
+    },
+    {
+        id: 'SCI008',
+        name: 'Nimali Fernando',
+        email: 'nimali.f@science.lk',
+        image: 'https://ui-avatars.com/api/?name=Nimali+Fernando&background=22c55e&color=fff&size=50',
+        requestRate: 90,  // Changed from 15 to percentage
+        department: 'Microbiology',
+        year: '4th Year',
+        phone: '0774567890',
+        address: 'Colombo',
+        joinDate: '2022-06-15'
+    },
+    {
+        id: 'SCI003',
+        name: 'Mike Johnson',
+        email: 'mike.j@science.lk',
+        image: 'https://ui-avatars.com/api/?name=Mike+Johnson&background=22c55e&color=fff&size=50',
+        requestRate: 55,  // Changed from 6 to percentage
+        department: 'Molecular Biology',
+        year: '3rd Year',
+        phone: '0775678901',
+        address: 'Negombo',
+        joinDate: '2023-08-10'
+    },
+    {
+        id: 'SCI004',
+        name: 'Sarah Wilson',
+        email: 'sarah.w@science.lk',
+        image: 'https://ui-avatars.com/api/?name=Sarah+Wilson&background=22c55e&color=fff&size=50',
+        requestRate: 80,  // Changed from 10 to percentage
+        department: 'Biochemistry',
+        year: '4th Year',
+        phone: '0776789012',
+        address: 'Kandy',
+        joinDate: '2022-11-05'
+    }
+];
 
-        // Toggle Sidebar
+        // ========== SUPERVISOR REQUESTS DATA ==========
+        const supervisorRequests = [{
+            id: 'REQ001',
+            dateTime: '2026-02-20 10:30 AM',
+            timestamp: new Date('2026-02-20T10:30:00'),
+            studentName: 'John Doe',
+            studentId: 'SCI001',
+            equipment: 'Microscope (2)',
+            lab: 'Lab 01',
+            duration: '2 hours',
+            purpose: 'Final Year Research Project',
+            status: 'pending',
+            supervisor: 'Dr. Kamal Perera',
+            notes: 'Awaiting supervisor approval'
+        },
+        {
+            id: 'REQ002',
+            dateTime: '2026-02-20 11:00 AM',
+            timestamp: new Date('2026-02-20T11:00:00'),
+            studentName: 'Jane Smith',
+            studentId: 'SCI002',
+            equipment: 'Centrifuge (1)',
+            lab: 'Research Lab',
+            duration: '3 hours',
+            purpose: 'DNA Extraction',
+            status: 'approved',
+            supervisor: 'Prof. Malini Silva',
+            notes: 'Approved for research'
+        },
+        {
+            id: 'REQ003',
+            dateTime: '2026-02-19 09:15 AM',
+            timestamp: new Date('2026-02-19T09:15:00'),
+            studentName: 'Mike Johnson',
+            studentId: 'SCI003',
+            equipment: 'Incubator (1)',
+            lab: 'Lab 02',
+            duration: '4 hours',
+            purpose: 'Bacterial Culture',
+            status: 'rejected',
+            supervisor: 'Dr. Kamal Perera',
+            notes: 'Equipment under maintenance'
+        },
+        {
+            id: 'REQ004',
+            dateTime: '2026-02-19 04:30 PM',
+            timestamp: new Date('2026-02-19T16:30:00'),
+            studentName: 'Sarah Wilson',
+            studentId: 'SCI004',
+            equipment: 'Autoclave (1)',
+            lab: 'Lab 01',
+            duration: '1.5 hours',
+            purpose: 'Media Sterilization',
+            status: 'pending',
+            supervisor: 'Dr. Nuwan Jayawardena',
+            notes: 'Waiting for approval'
+        },
+        {
+            id: 'REQ005',
+            dateTime: '2026-02-18 02:00 PM',
+            timestamp: new Date('2026-02-18T14:00:00'),
+            studentName: 'Pathum Perera',
+            studentId: 'SCI005',
+            equipment: 'pH Meter (1)',
+            lab: 'Research Lab',
+            duration: '2 hours',
+            purpose: 'Solution Preparation',
+            status: 'approved',
+            supervisor: 'Prof. Malini Silva',
+            notes: 'Approved'
+        },
+        {
+            id: 'REQ006',
+            dateTime: '2026-02-17 03:45 PM',
+            timestamp: new Date('2026-02-17T15:45:00'),
+            studentName: 'Nimali Fernando',
+            studentId: 'SCI006',
+            equipment: 'Water Bath (1)',
+            lab: 'Lab 02',
+            duration: '2 hours',
+            purpose: 'Enzyme Study',
+            status: 'rejected',
+            supervisor: 'Dr. Kamal Perera',
+            notes: 'Schedule conflict'
+        },
+        {
+            id: 'REQ007',
+            dateTime: '2026-02-15 09:30 AM',
+            timestamp: new Date('2026-02-15T09:30:00'),
+            studentName: 'Tharindu Silva',
+            studentId: 'SCI007',
+            equipment: 'Microscope (1)',
+            lab: 'Lab 01',
+            duration: '3 hours',
+            purpose: 'Cell Observation',
+            status: 'approved',
+            supervisor: 'Dr. Nuwan Jayawardena',
+            notes: 'Approved'
+        },
+        {
+            id: 'REQ008',
+            dateTime: '2026-02-10 01:00 PM',
+            timestamp: new Date('2026-02-10T13:00:00'),
+            studentName: 'Dilini Perera',
+            studentId: 'SCI008',
+            equipment: 'Centrifuge (1)',
+            lab: 'Research Lab',
+            duration: '2 hours',
+            purpose: 'Sample Preparation',
+            status: 'approved',
+            supervisor: 'Prof. Malini Silva',
+            notes: 'Completed'
+        }];
+
+        // ========== CALENDAR VARIABLES ==========
+        let activeDay;
+        let month = new Date().getMonth();
+        let year = new Date().getFullYear();
+        const months = [
+            "January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"
+        ];
+        let eventsArr = [];
+
+        // ========== INITIALIZATION ==========
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load events from localStorage
+            loadEvents();
+            
+            // Show dashboard by default
+            showSection('dashboard');
+            
+            // Initialize calendar
+            initCalendar();
+            
+            // Display student table
+            displayStudentTable(studentData);
+            
+            // Initialize request table if activity section exists
+            if (document.getElementById('activitySection')) {
+                filterRequestsByTime();
+            }
+        });
+
+        // ========== SIDEBAR FUNCTIONS ==========
         function toggleSidebar() {
             document.getElementById("sidebar").classList.toggle("active");
             document.getElementById("sidebarOverlay").classList.toggle("active");
         }
 
-        // Toggle Notifications
-        function toggleNotifications() {
-            document.getElementById("notificationDropdown").classList.toggle("show");
-        }
-
-        // Close notifications when clicking outside
-        document.addEventListener('click', function(event) {
-            const bell = document.querySelector('.notification-bell');
-            const dropdown = document.getElementById('notificationDropdown');
-            if (bell && dropdown && !bell.contains(event.target) && !dropdown.contains(event.target)) {
-                dropdown.classList.remove('show');
-            }
-        });
-
-        // Show different sections
+        // ========== SECTION NAVIGATION ==========
         function showSection(section) {
             // Hide all sections
             document.getElementById('dashboardSection').style.display = 'none';
-            document.getElementById('equipmentSection').style.display = 'none';
-            document.getElementById('requestSection').style.display = 'none';
-            document.getElementById('historySection').style.display = 'none';
-            document.getElementById('analyticsSection').style.display = 'none';
+            document.getElementById('studentSection').style.display = 'none';
             document.getElementById('activitySection').style.display = 'none';
             
             // Show selected section
-            document.getElementById(section + 'Section').style.display = 'block';
+            const sectionElement = document.getElementById(section + 'Section');
+            if (sectionElement) {
+                sectionElement.style.display = 'block';
+            }
             
             // Update active state in sidebar
             document.querySelectorAll('.sidebar a').forEach(link => {
@@ -1672,312 +1609,255 @@
                     link.classList.add('active');
                 }
             });
-            
-            // Initialize equipment grid if showing equipment section
-            if (section === 'equipment') {
-                initEquipmentGrid();
-            }
-            
-            // Initialize charts if showing dashboard or analytics
-            if (section === 'dashboard' || section === 'analytics') {
-                setTimeout(() => {
-                    initCharts();
-                }, 100);
-            }
         }
 
-        // Equipment Browser Functions
-        const equipmentData = [
-            {
-                name: 'Microscope',
-                image: 'https://cdn-icons-png.flaticon.com/512/2941/2941514.png',
-                location: 'Microbiology Lab 01',
-                status: 'available',
-                lab: 'lab1'
-            },
-            {
-                name: 'Centrifuge',
-                image: 'https://cdn-icons-png.flaticon.com/512/2941/2941543.png',
-                location: 'Research Laboratory',
-                status: 'in-use',
-                lab: 'research'
-            },
-            {
-                name: 'Incubator',
-                image: 'https://cdn-icons-png.flaticon.com/512/2941/2941538.png',
-                location: 'Microbiology Lab 02',
-                status: 'maintenance',
-                lab: 'lab2'
-            },
-            {
-                name: 'Autoclave',
-                image: 'https://cdn-icons-png.flaticon.com/512/2941/2941521.png',
-                location: 'Microbiology Lab 01',
-                status: 'available',
-                lab: 'lab1'
-            },
-            {
-                name: 'pH Meter',
-                image: 'https://cdn-icons-png.flaticon.com/512/2941/2941556.png',
-                location: 'Research Laboratory',
-                status: 'available',
-                lab: 'research'
-            },
-            {
-                name: 'Water Bath',
-                image: 'https://cdn-icons-png.flaticon.com/512/2941/2941578.png',
-                location: 'Microbiology Lab 02',
-                status: 'in-use',
-                lab: 'lab2'
-            }
-        ];
-
-        function initEquipmentGrid() {
-            const grid = document.getElementById('equipmentGrid');
-            if (!grid) return;
-            
-            grid.innerHTML = '';
-            
-            const labFilter = document.getElementById('labFilter')?.value || 'all';
-            const statusFilter = document.getElementById('statusFilter')?.value || 'all';
-            
-            equipmentData.forEach(item => {
-                if ((labFilter === 'all' || item.lab === labFilter) && 
-                    (statusFilter === 'all' || item.status === statusFilter)) {
-                    
-                    const card = document.createElement('div');
-                    card.className = 'equipment-card';
-                    card.innerHTML = `
-                        <div class="equipment-image">
-                            <img src="${item.image}" alt="${item.name}">
-                            <div class="status-indicator ${item.status === 'available' ? 'available' : item.status === 'in-use' ? 'in-use' : 'maintenance'}"></div>
-                        </div>
-                        <div class="equipment-info">
-                            <h5>${item.name}</h5>
-                            <p><i class="bi bi-geo-alt"></i> ${item.location}</p>
-                            <div class="location">
-                                <span class="badge bg-${item.status === 'available' ? 'success' : item.status === 'in-use' ? 'warning' : 'danger'}">${item.status}</span>
-                            </div>
-                        </div>
-                    `;
-                    grid.appendChild(card);
-                }
-            });
+        // ========== STUDENT MANAGEMENT FUNCTIONS ==========
+        function searchStudents() {
+            const searchTerm = document.getElementById('studentSearch').value.toLowerCase();
+            const filtered = studentData.filter(student =>
+                student.name.toLowerCase().includes(searchTerm) ||
+                student.id.toLowerCase().includes(searchTerm) ||
+                student.email.toLowerCase().includes(searchTerm)
+            );
+            displayStudentTable(filtered);
         }
 
-        function filterEquipment() {
-            initEquipmentGrid();
-        }
+       function displayStudentTable(students) {
+    const tableBody = document.getElementById('studentTableBody');
+    if (!tableBody) return;
+    
+    tableBody.innerHTML = '';
+    
+    students.forEach(student => {
+        const row = document.createElement('tr');
+        
+        row.innerHTML = `
+            <td><img src="${student.image}" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover;"></td>
+            <td>${student.name}</td>
+            <td>${student.id}</td>
+            <td>
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div class="progress-bar" style="width: 80px; height: 6px;">
+                        <div class="progress-fill" style="width: ${student.requestRate}%"></div>
+                    </div>
+                    <span style="font-size: 12px; font-weight: 600;">${student.requestRate}%</span>
+                </div>
+            </td>
+            <td>
+                <div class="action-buttons">
+                    <button class="btn-view" onclick="viewStudent('${student.id}')" title="View Details">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                    <button class="btn-remove" onclick="removeStudent('${student.id}')" title="Remove">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            </td>
+        `;
+        tableBody.appendChild(row);
+    });
+    
+    if (students.length === 0) {
+        const row = document.createElement('tr');
+        row.innerHTML = `<td colspan="5" class="text-center">No students found</td>`;
+        tableBody.appendChild(row);
+    }
+}
 
-        // Request Management
-        let requestCounter = 4;
-
-        function getStatusBadge() {
-            const statuses = [
-                ["Available", "success"],
-                ["In Use", "warning"],
-                ["Pending", "warning"],
-                ["Damaged", "danger"],
-                ["Out of Service", "secondary"]
-            ];
-            let s = statuses[Math.floor(Math.random() * statuses.length)];
-            return `<span class="badge bg-${s[1]}">${s[0]}</span>`;
-        }
-
-        function addEquipment() {
-            let name = document.getElementById("equipmentName").value.trim();
-            let qty = document.getElementById("equipmentQty").value;
-
-            if (!name) {
-                alert("Please enter equipment name");
-                return;
-            }
-            if (!qty || qty < 1) {
-                alert("Please enter valid quantity");
-                return;
-            }
-
-            let table = document.querySelector("#equipmentTable tbody");
-            let row = table.insertRow();
-            row.innerHTML = `
-                <td>${name}</td>
-                <td>${qty}</td>
-                <td>${getStatusBadge()}</td>
-                <td><button type="button" class="btn btn-sm btn-danger" onclick="this.closest('tr').remove()"><i class="bi bi-trash"></i></button></td>
+        function viewStudent(id) {
+            const student = studentData.find(s => s.id === id);
+            if (!student) return;
+            
+            const detailsContent = document.getElementById('studentDetailsContent');
+            
+            detailsContent.innerHTML = `
+                <div class="row">
+                    <div class="col-md-4 text-center">
+                        <img src="${student.image}" style="width: 150px; height: 150px; border-radius: 50%; object-fit: cover; border: 3px solid #22c55e;" class="mb-3">
+                        <h4>${student.name}</h4>
+                        <p class="text-muted">${student.id}</p>
+                    </div>
+                    <div class="col-md-8">
+                        <table class="table table-borderless">
+                            <tr><th style="width: 150px;">Email:</th><td>${student.email}</td></tr>
+                            <tr><th>Department:</th><td>${student.department}</td></tr>
+                            <tr><th>Year:</th><td>${student.year}</td></tr>
+                            <tr><th>Phone:</th><td>${student.phone}</td></tr>
+                            <tr><th>Address:</th><td>${student.address}</td></tr>
+                            <tr><th>Join Date:</th><td>${student.joinDate}</td></tr>
+                            <tr><th>Request Rate:</th><td><span class="request-rate">${student.requestRate} requests</span></td></tr>
+                        </table>
+                    </div>
+                </div>
             `;
-
-            document.getElementById("equipmentName").value = "";
-            document.getElementById("equipmentQty").value = "1";
+            
+            new bootstrap.Modal(document.getElementById('studentDetailsModal')).show();
         }
 
-        function submitEquipmentRequest(event) {
-            event.preventDefault();
+        function addStudent() {
+            alert('Add Student functionality would open a form modal');
+            // In a real app, this would open a form to add a new student
+        }
+
+        function removeStudent(id) {
+            if (confirm(`Are you sure you want to remove student ${id}?`)) {
+                const index = studentData.findIndex(s => s.id === id);
+                if (index !== -1) {
+                    studentData.splice(index, 1);
+                }
+                displayStudentTable(studentData);
+                alert(`Student ${id} has been removed successfully!`);
+            }
+        }
+
+        // ========== REQUEST FUNCTIONS ==========
+        function filterRequestsByTime() {
+            const timeRange = document.getElementById('timeRangeFilter').value;
+            const today = new Date();
+            let filtered = [];
             
-            const date = document.getElementById('requestDate').value;
-            const startTime = document.getElementById('startTime').value;
-            const endTime = document.getElementById('endTime').value;
-            const labLocation = document.getElementById('labLocation').value;
-            const comment = document.getElementById('requestComment').value;
-
-            const equipmentRows = document.querySelectorAll("#equipmentTable tbody tr");
-            if (equipmentRows.length === 0) {
-                alert("Please add at least one equipment");
-                return false;
+            switch (timeRange) {
+                case 'daily':
+                    filtered = supervisorRequests.filter(item =>
+                        item.timestamp.toDateString() === today.toDateString()
+                    );
+                    break;
+                case 'weekly':
+                    const weekAgo = new Date();
+                    weekAgo.setDate(today.getDate() - 7);
+                    filtered = supervisorRequests.filter(item => item.timestamp >= weekAgo);
+                    break;
+                case 'monthly':
+                    const monthAgo = new Date();
+                    monthAgo.setDate(today.getDate() - 30);
+                    filtered = supervisorRequests.filter(item => item.timestamp >= monthAgo);
+                    break;
+                case 'all':
+                default:
+                    filtered = supervisorRequests;
+                    break;
             }
+            
+            displayRequestTable(filtered);
+        }
 
-            const today = new Date().toISOString().split('T')[0];
-            if (date < today) {
-                alert("Past dates are not allowed");
-                return false;
-            }
-
-            if (!startTime || !endTime) {
-                alert("Please select start and end times");
-                return false;
-            }
-
-            if (endTime <= startTime) {
-                alert("End time must be after start time");
-                return false;
-            }
-
-            const s = new Date(`1970-01-01T${startTime}`);
-            const e = new Date(`1970-01-01T${endTime}`);
-            if ((e - s) / (1000 * 60 * 60) > 8) {
-                alert("Maximum booking duration is 8 hours");
-                return false;
-            }
-
-            let equipmentList = [];
-            equipmentRows.forEach(row => {
-                const cells = row.cells;
-                equipmentList.push(`${cells[0].textContent} (${cells[1].textContent})`);
+        function displayRequestTable(requests) {
+            const tableBody = document.getElementById('requestListBody');
+            if (!tableBody) return;
+            
+            tableBody.innerHTML = '';
+            
+            // Sort by date (newest first)
+            requests.sort((a, b) => b.timestamp - a.timestamp);
+            
+            requests.forEach(item => {
+                const row = document.createElement('tr');
+                
+                let statusClass = '';
+                let statusText = '';
+                
+                switch(item.status) {
+                    case 'pending':
+                        statusClass = 'bg-warning';
+                        statusText = 'Pending';
+                        break;
+                    case 'approved':
+                        statusClass = 'bg-success';
+                        statusText = 'Checked';
+                        break;
+                    case 'rejected':
+                        statusClass = 'bg-danger';
+                        statusText = 'Rejected';
+                        break;
+                }
+                
+                row.innerHTML = `
+                    <td>${item.id}</td>
+                    <td>${item.dateTime}</td>
+                    <td><span class="badge ${statusClass}">${statusText}</span></td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn-view" onclick="viewRequest('${item.id}')" title="View Details">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                            <button class="btn-remove" onclick="removeRequest('${item.id}')" title="Remove">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tableBody.appendChild(row);
             });
-
-            const eventTitle = `Equipment Request: ${labLocation}`;
             
-            document.getElementById('eventName').value = eventTitle;
-            document.getElementById('eventDetails').value = 
-                `Equipment: ${equipmentList.join(', ')}\nComment: ${comment || 'No comments'}`;
-            document.getElementById('eventTimeFrom').value = startTime;
-            document.getElementById('eventTimeTo').value = endTime;
-
-            window.currentRequestData = {
-                date: date,
-                labLocation: labLocation,
-                equipmentList: equipmentList,
-                comment: comment,
-                startTime: startTime,
-                endTime: endTime
-            };
-
-            document.getElementById('addEventWrapper').classList.add('active');
-            
-            return false;
-        }
-
-        // Charts Initialization
-        function initCharts() {
-            // Destroy existing charts if they exist
-            if (usageChart) usageChart.destroy();
-            if (monthlyChart) monthlyChart.destroy();
-            if (analyticsChart) analyticsChart.destroy();
-
-            // Usage Chart
-            const usageCtx = document.getElementById('usageChart')?.getContext('2d');
-            if (usageCtx) {
-                usageChart = new Chart(usageCtx, {
-                    type: 'bar',
-                    data: {
-                        labels: ['Microscope', 'Centrifuge', 'Incubator', 'Autoclave', 'pH Meter'],
-                        datasets: [{
-                            label: 'Hours Used',
-                            data: [45, 32, 28, 20, 15],
-                            backgroundColor: '#22c55e',
-                            borderRadius: 8
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                display: false
-                            }
-                        }
-                    }
-                });
-            }
-
-            // Monthly Chart
-            const monthlyCtx = document.getElementById('monthlyChart')?.getContext('2d');
-            if (monthlyCtx) {
-                monthlyChart = new Chart(monthlyCtx, {
-                    type: 'line',
-                    data: {
-                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-                        datasets: [{
-                            label: 'Bookings',
-                            data: [12, 19, 15, 25, 22, 30],
-                            borderColor: '#22c55e',
-                            backgroundColor: 'rgba(34, 197, 94, 0.1)',
-                            tension: 0.4,
-                            fill: true
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false
-                    }
-                });
-            }
-
-            // Analytics Chart
-            const analyticsCtx = document.getElementById('analyticsChart')?.getContext('2d');
-            if (analyticsCtx) {
-                analyticsChart = new Chart(analyticsCtx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: ['Microscope', 'Centrifuge', 'Incubator', 'Autoclave', 'Other'],
-                        datasets: [{
-                            data: [35, 25, 20, 15, 5],
-                            backgroundColor: ['#22c55e', '#16a34a', '#4ade80', '#86efac', '#bbf7d0'],
-                            borderWidth: 0
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                position: 'bottom'
-                            }
-                        }
-                    }
-                });
+            if (requests.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td colspan="4" class="text-center">No requests found for this time period</td>`;
+                tableBody.appendChild(row);
             }
         }
 
-        // Calendar Implementation
-        let activeDay;
-        let month = new Date().getMonth();
-        let year = new Date().getFullYear();
+        function viewRequest(id) {
+            const request = supervisorRequests.find(item => item.id === id);
+            if (!request) return;
+            
+            const detailsContent = document.getElementById('requestDetailsContent');
+            
+            let statusBadge = '';
+            switch (request.status) {
+                case 'pending':
+                    statusBadge = '<span class="badge bg-warning">Pending</span>';
+                    break;
+                case 'approved':
+                    statusBadge = '<span class="badge bg-success">Approved</span>';
+                    break;
+                case 'rejected':
+                    statusBadge = '<span class="badge bg-danger">Rejected</span>';
+                    break;
+            }
+            
+            detailsContent.innerHTML = `
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h4>Request: ${request.id}</h4>
+                            ${statusBadge}
+                        </div>
+                        
+                        <table class="table table-borderless">
+                            <tr><th style="width: 200px;">Date & Time:</th><td>${request.dateTime}</td></tr>
+                            <tr><th>Student:</th><td>${request.studentName} (${request.studentId})</td></tr>
+                            <tr><th>Supervisor:</th><td>${request.supervisor}</td></tr>
+                            <tr><th>Lab Location:</th><td>${request.lab}</td></tr>
+                            <tr><th>Equipment:</th><td>${request.equipment}</td></tr>
+                            <tr><th>Duration:</th><td>${request.duration}</td></tr>
+                            <tr><th>Purpose:</th><td>${request.purpose}</td></tr>
+                            <tr><th>Notes:</th><td>${request.notes}</td></tr>
+                        </table>
+                    </div>
+                </div>
+            `;
+            
+            new bootstrap.Modal(document.getElementById('requestDetailsModal')).show();
+        }
 
-        const months = [
-            "January", "February", "March", "April", "May", "June",
-            "July", "August", "September", "October", "November", "December"
-        ];
+        function removeRequest(id) {
+            if (confirm(`Are you sure you want to remove request ${id}?`)) {
+                const index = supervisorRequests.findIndex(item => item.id === id);
+                if (index !== -1) {
+                    supervisorRequests.splice(index, 1);
+                }
+                filterRequestsByTime();
+                alert(`Request ${id} has been removed successfully!`);
+            }
+        }
 
-        let eventsArr = [];
-
-        // Load events from localStorage
+        // ========== CALENDAR FUNCTIONS ==========
         function loadEvents() {
             const saved = localStorage.getItem("calendarEvents");
             if (saved) {
                 eventsArr = JSON.parse(saved);
             }
         }
-        loadEvents();
 
         function saveEvents() {
             localStorage.setItem("calendarEvents", JSON.stringify(eventsArr));
@@ -1991,19 +1871,19 @@
             const lastDate = lastDay.getDate();
             const day = firstDay.getDay();
             const nextDays = 7 - lastDay.getDay() - 1;
-
+            
             const displayMonth = document.getElementById('displayMonth');
             if (displayMonth) {
                 displayMonth.innerHTML = months[month] + " " + year;
             }
-
+            
             let days = "";
-
+            
             // Previous month days
             for (let x = day; x > 0; x--) {
                 days += `<div class="day-cell prev-date">${prevDays - x + 1}</div>`;
             }
-
+            
             // Current month days
             for (let i = 1; i <= lastDate; i++) {
                 let hasEvent = false;
@@ -2012,7 +1892,7 @@
                         hasEvent = true;
                     }
                 });
-
+                
                 let classes = "day-cell";
                 if (i === new Date().getDate() && year === new Date().getFullYear() && month === new Date().getMonth()) {
                     classes += " today";
@@ -2020,22 +1900,21 @@
                 if (hasEvent) {
                     classes += " event";
                 }
-
+                
                 days += `<div class="${classes}" data-day="${i}">${i}</div>`;
             }
-
+            
             // Next month days
             for (let j = 1; j <= nextDays; j++) {
                 days += `<div class="day-cell next-date">${j}</div>`;
             }
-
+            
             const daysGrid = document.getElementById('daysGrid');
             if (daysGrid) {
                 daysGrid.innerHTML = days;
             }
             updateActiveDay();
             
-            // Update event display for current active day or today
             if (activeDay) {
                 updateEventDisplay(activeDay);
             } else {
@@ -2048,9 +1927,7 @@
             dayCells.forEach(cell => {
                 cell.addEventListener('click', function(e) {
                     if (!this.classList.contains('prev-date') && !this.classList.contains('next-date')) {
-                        // Remove active class from all cells
                         dayCells.forEach(c => c.classList.remove('active'));
-                        // Add active class to clicked cell
                         this.classList.add('active');
                         
                         const day = parseInt(this.textContent);
@@ -2074,8 +1951,7 @@
             if (eventDateEl) {
                 eventDateEl.innerHTML = `${day} ${months[month]} ${year}`;
             }
-
-            // Show events for this day
+            
             let eventsHtml = "";
             eventsArr.forEach(event => {
                 if (event.day === day && event.month === month + 1 && event.year === year) {
@@ -2093,7 +1969,7 @@
                     });
                 }
             });
-
+            
             if (eventsHtml === "") {
                 eventsHtml = '<div class="no-event">No events scheduled</div>';
             }
@@ -2104,7 +1980,6 @@
             }
         }
 
-        // Delete event
         window.deleteEvent = function(element, title) {
             if (confirm('Are you sure you want to delete this event?')) {
                 eventsArr.forEach((event, index) => {
@@ -2121,10 +1996,10 @@
             }
         };
 
-        // Navigation
+        // ========== CALENDAR NAVIGATION ==========
         const prevBtn = document.querySelector('.prev');
         const nextBtn = document.querySelector('.next');
-        
+
         if (prevBtn) {
             prevBtn.addEventListener('click', () => {
                 month--;
@@ -2178,118 +2053,7 @@
                 }
             });
         }
-
-        // Modal close functionality
-        const addEventWrapper = document.getElementById('addEventWrapper');
-        const closeEventBtn = document.getElementById('closeEventBtn');
-
-        if (closeEventBtn) {
-            closeEventBtn.addEventListener('click', () => {
-                addEventWrapper.classList.remove('active');
-            });
-        }
-
-        window.addEventListener('click', (e) => {
-            if (e.target === addEventWrapper) {
-                addEventWrapper.classList.remove('active');
-            }
-        });
-
-        // Confirm Request Submit
-        const addEventSubmit = document.getElementById('addEventSubmit');
-        if (addEventSubmit) {
-            addEventSubmit.addEventListener('click', () => {
-                const title = document.getElementById('eventName').value.trim();
-                const details = document.getElementById('eventDetails').value.trim();
-                const from = document.getElementById('eventTimeFrom').value;
-                const to = document.getElementById('eventTimeTo').value;
-
-                if (!title || !from || !to) {
-                    alert('Please fill all fields');
-                    return;
-                }
-
-                // Add event to calendar
-                const requestDate = window.currentRequestData ? new Date(window.currentRequestData.date) : new Date(year, month, activeDay || new Date().getDate());
-                const eventDay = requestDate.getDate();
-                const eventMonth = requestDate.getMonth() + 1;
-                const eventYear = requestDate.getFullYear();
-
-                const newEvent = {
-                    title: title,
-                    time: `${from} - ${to}`,
-                    details: details
-                };
-
-                let added = false;
-                eventsArr.forEach(event => {
-                    if (event.day === eventDay && event.month === eventMonth && event.year === eventYear) {
-                        event.events.push(newEvent);
-                        added = true;
-                    }
-                });
-
-                if (!added) {
-                    eventsArr.push({
-                        day: eventDay,
-                        month: eventMonth,
-                        year: eventYear,
-                        events: [newEvent]
-                    });
-                }
-
-                saveEvents();
-                initCalendar();
-
-                // Add notification
-                addNotification('New equipment request submitted', 'success');
-                
-                // Clear form
-                document.getElementById('equipmentRequestForm').reset();
-                const tableBody = document.querySelector("#equipmentTable tbody");
-                if (tableBody) tableBody.innerHTML = '';
-                
-                // Close modal
-                addEventWrapper.classList.remove('active');
-                
-                alert('Equipment request submitted successfully!');
-            });
-        }
-
-        // Add notification function
-        function addNotification(message, type) {
-            const badge = document.getElementById('notificationBadge');
-            if (badge) {
-                const currentCount = parseInt(badge.textContent);
-                badge.textContent = currentCount + 1;
-            }
-            
-            const list = document.getElementById('notificationList');
-            if (list) {
-                const newNotif = document.createElement('div');
-                newNotif.className = 'notification-item unread';
-                newNotif.innerHTML = `
-                    <div><i class="bi bi-${type === 'success' ? 'check-circle-fill text-success' : 'info-circle-fill text-info'} me-2"></i> ${message}</div>
-                    <div class="time">Just now</div>
-                `;
-                list.insertBefore(newNotif, list.firstChild);
-            }
-        }
-
-        // Set min date for request
-        const today = new Date().toISOString().split('T')[0];
-        const requestDate = document.getElementById('requestDate');
-        if (requestDate) {
-            requestDate.min = today;
-        }
-
-        // Initialize everything when page loads
-        document.addEventListener('DOMContentLoaded', function() {
-            initCharts();
-            showSection('dashboard');
-            initEquipmentGrid();
-            initCalendar();
-        });
     </script>
 </body>
+
 </html>
