@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    
+
     <title>Microbiology Lab System - Admin Dashboard</title>
     <!-- Bootstrap & Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -1653,10 +1653,172 @@
             margin-right: 5px;
             padding: 5px 10px;
         }
+
+        /* Profile image in tables */
+        .user-table td img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #22c55e;
+            transition: all 0.3s ease;
+        }
+
+        .user-table td img:hover {
+            transform: scale(1.1);
+            border-color: #ffd700;
+        }
+
+        /* Add this to your CSS file - place it near other button styles */
+
+        /* Deactivate Button (Red) */
+        .btn-deactivate {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .btn-deactivate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
+        }
+
+        /* Activate Button (Green) */
+        .btn-activate {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* Request Count Badges */
+        .request-count-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #dc3545;
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 600;
+            min-width: 20px;
+            height: 20px;
+            border-radius: 10px;
+            padding: 0 5px;
+            margin-left: 8px;
+            animation: pulse 2s infinite;
+            box-shadow: 0 2px 5px rgba(220, 53, 69, 0.3);
+        }
+
+        .request-tab.active .request-count-badge {
+            background-color: white;
+            color: #dc3545;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+        }
+
+        .btn-activate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(34, 197, 94, 0.3);
+        }
+
+        /* Update responsive section */
+        @media (max-width: 768px) {
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .btn-edit,
+            .btn-remove,
+            .btn-deactivate,
+            .btn-activate {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+
+        /* Request Tabs */
+        .request-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .request-tab {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 30px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+            color: #166534;
+        }
+
+        .request-tab:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(34, 197, 94, 0.2);
+        }
+
+        .request-tab.active {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: white;
+        }
+
+
+        @media (max-width: 768px) {
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .btn-edit,
+            .btn-remove,
+            .btn-deactivate,
+            .btn-activate,
+            .btn-view,
+            .btn-approve,
+            .btn-reject {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .request-tabs {
+                flex-direction: column;
+            }
+
+            .request-tab {
+                width: 100%;
+            }
+        }
     </style>
 
 
-   <!-- Keep original favicon -->
+    <!-- Keep original favicon -->
     <link rel="icon" type="image/svg+xml" href="../assets/resources/flask.svg">
 </head>
 
@@ -1672,7 +1834,7 @@
         <!-- <a onclick="showSection('requestList')"><i class="bi bi-list-check"></i> Request List</a> -->
         <a onclick="showSection('equipment')"><i class="bi bi-tools"></i> Equipment Manage</a>
         <a onclick="showSection('history')"><i class="bi bi-clock-history"></i> Rservation Details</a>
-        <a onclick="showSection('activity')"><i class="bi bi-activity"></i> Supervisor Requests</a>
+        <a onclick="showSection('activity')"><i class="bi bi-activity"></i> Requests</a>
         <a onclick="showSection('analytics')"><i class="bi bi-graph-up"></i> Analytics</a>
         <!-- <a onclick="showSection('reports')"><i class="bi bi-file-text"></i> Reports</a> -->
         <a href="logout.php"><i class="bi bi-box-arrow-right"></i> Logout</a>
@@ -1776,28 +1938,41 @@
                 </div>
 
                 <!-- Quick Stats -->
-                <div class="row mb-4">
+                <div class="row mb-4 justify-content-center">
                     <div class="col-md-3 mb-3">
                         <div class="card p-3 text-center">
-                            <h6 class="text-muted">Supervisor Pending</h6>
+                            <h6 class="text-muted">Technical officer Pending
+                                <button class="btn btn-sm btn-outline-primary p-1" onclick="viewPendingRequests()" style="line-height: 1;">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </h6>
                             <h3 class="text-warning">8</h3>
                         </div>
                     </div>
                     <div class="col-md-3 mb-3">
                         <div class="card p-3 text-center">
-                            <h6 class="text-muted">Today's Practicals</h6>
+                            <h6 class="text-muted">Today's Practicals
+                                <button class="btn btn-sm btn-outline-primary p-1" onclick="viewPendingRequests()" style="line-height: 1;">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </h6>
                             <h3 class="text-info">15</h3>
                         </div>
                     </div>
-                    <div class="col-md-3 mb-3">
+                    <!-- <div class="col-md-3 mb-3">
                         <div class="card p-3 text-center">
                             <h6 class="text-muted">Total Equipment</h6>
                             <h3 class="text-success">3</h3>
                         </div>
-                    </div>
+                    </div> -->
                     <div class="col-md-3 mb-3">
                         <div class="card p-3 text-center">
-                            <h6 class="text-muted">Maintenance</h6>
+                            <h6 class="text-muted">Maintenance
+                                <button class="btn btn-sm btn-outline-primary p-1" onclick="viewPendingRequests()" style="line-height: 1;">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </h6>
+
                             <h3 class="text-danger">2</h3>
                         </div>
                     </div>
@@ -1865,23 +2040,26 @@
             <!-- User Management Section -->
             <div id="userManagementSection" style="display: none;">
                 <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">User Management</h3>
-
-                <div class="card p-4">
-                    <!-- Search and Add Row -->
-                    <div class="search-add-row">
-                        <div class="search-container">
-                            <input type="text" id="userSearch" class="search-input" placeholder="Search by ID, name or email...">
-                            <button class="search-btn" onclick="searchUsers()">
-                                <i class="bi bi-search"></i> Search
-                            </button>
-                        </div>
-                        <button class="add-btn" onclick="addNewUser()">
-                            <i class="bi bi-plus-circle"></i> Add User
-                        </button>
+                <!-- Search and Add Row (Outside cards - common for all tables) -->
+                <div class="search-add-row" style="margin-bottom: 20px;">
+                    <div class="search-container">
+                        <input type="text"
+                            id="userSearch"
+                            class="search-input"
+                            placeholder="Search by ID, name or email..."
+                            oninput="searchUsers()"> <!-- This triggers on EVERY keystroke, including backspace -->
+                        <!-- <button class="search-btn" onclick="searchUsers()">
+            <i class="bi bi-search"></i> Search
+        </button> -->
                     </div>
+                    <button class="add-btn" onclick="addNewUser()">
+                        <i class="bi bi-plus-circle"></i> Add User
+                    </button>
+                </div>
 
-                    <!-- Student Table -->
-                    <h4 class="table-heading mt-4">
+                <!-- Student Table Card -->
+                <div id="studentTableCard" class="card p-4 mb-4"> <!-- Added ID -->
+                    <h4 class="table-heading mt-0">
                         <i class="bi bi-person-badge"></i> Students
                         <span class="table-count" id="studentCount">(24)</span>
                     </h4>
@@ -1889,79 +2067,131 @@
                         <table class="user-table">
                             <thead>
                                 <tr>
+                                    <th>Profile Image</th>
                                     <th>University ID</th>
-                                    <th>First Name</th>
+                                    <th>Name</th>
+                                    <th>Mobile</th>
                                     <th>Email</th>
-                                    <th>Bookings</th>
-                                    <th>Status</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="studentTableBody">
-                                <tr>
-                                    <td data-label="ID">SCI001</td>
-                                    <td data-label="Name">John Doe</td>
-                                    <td data-label="Email">john.doe@science.lk</td>
-                                    <td data-label="Bookings"><span class="booking-badge">12</span></td>
-                                    <td data-label="Status"><span class="badge bg-success">Active</span></td>
-                                    <td data-label="Actions">
+                                <tr data-user-id="SCI001" data-status="inactive">
+                                    <td>
+                                        <img src="https://ui-avatars.com/api/?name=John+Doe&background=22c55e&color=fff&size=50"
+                                            style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+                                    </td>
+                                    <td>SCI001</td>
+                                    <td>John Doe</td>
+                                    <td>077-1234567</td>
+                                    <td>john.doe@science.lk</td>
+                                    <td>
                                         <div class="action-buttons">
                                             <button class="btn-edit" onclick="editUser('SCI001')">
                                                 <i class="bi bi-pencil-square"></i> Edit
                                             </button>
-                                            <button class="btn-remove" onclick="removeUser('SCI001')">
-                                                <i class="bi bi-trash"></i> Remove
+                                            <button class="btn-activate" onclick="toggleUserStatus('SCI001')">
+                                                <i class="bi bi-person-check"></i> Activate
                                             </button>
                                         </div>
                                     </td>
                                 </tr>
-                                <tr>
-                                    <td data-label="ID">SCI002</td>
-                                    <td data-label="Name">Jane Smith</td>
-                                    <td data-label="Email">jane.smith@science.lk</td>
-                                    <td data-label="Bookings"><span class="booking-badge">8</span></td>
-                                    <td data-label="Status"><span class="badge bg-success">Active</span></td>
-                                    <td data-label="Actions">
+                                <tr data-user-id="SCI002" data-status="inactive">
+                                    <td>
+                                        <img src="https://ui-avatars.com/api/?name=Jane+Smith&background=22c55e&color=fff&size=50"
+                                            style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+                                    </td>
+                                    <td>SCI002</td>
+                                    <td>Jane Smith</td>
+                                    <td>078-2345678</td>
+                                    <td>jane.smith@science.lk</td>
+                                    <td>
                                         <div class="action-buttons">
                                             <button class="btn-edit" onclick="editUser('SCI002')">
                                                 <i class="bi bi-pencil-square"></i> Edit
                                             </button>
-                                            <button class="btn-remove" onclick="removeUser('SCI002')">
-                                                <i class="bi bi-trash"></i> Remove
+                                            <button class="btn-activate" onclick="toggleUserStatus('SCI002')">
+                                                <i class="bi bi-person-check"></i> Activate
                                             </button>
                                         </div>
                                     </td>
                                 </tr>
-                                <tr>
-                                    <td data-label="ID">SCI005</td>
-                                    <td data-label="Name">Pathum Perera</td>
-                                    <td data-label="Email">pathum.p@science.lk</td>
-                                    <td data-label="Bookings"><span class="booking-badge">3</span></td>
-                                    <td data-label="Status"><span class="badge bg-warning">Inactive</span></td>
-                                    <td data-label="Actions">
+                                <tr data-user-id="SCI003" data-status="inactive">
+                                    <td>
+                                        <img src="https://ui-avatars.com/api/?name=Mike+Johnson&background=22c55e&color=fff&size=50"
+                                            style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+                                    </td>
+                                    <td>SCI003</td>
+                                    <td>Mike Johnson</td>
+                                    <td>071-3456789</td>
+                                    <td>mike.j@science.lk</td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <button class="btn-edit" onclick="editUser('SCI003')">
+                                                <i class="bi bi-pencil-square"></i> Edit
+                                            </button>
+                                            <button class="btn-activate" onclick="toggleUserStatus('SCI003')">
+                                                <i class="bi bi-person-check"></i> Activate
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr data-user-id="SCI004" data-status="inactive">
+                                    <td>
+                                        <img src="https://ui-avatars.com/api/?name=Sarah+Wilson&background=22c55e&color=fff&size=50"
+                                            style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+                                    </td>
+                                    <td>SCI004</td>
+                                    <td>Sarah Wilson</td>
+                                    <td>072-4567890</td>
+                                    <td>sarah.w@science.lk</td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <button class="btn-edit" onclick="editUser('SCI004')">
+                                                <i class="bi bi-pencil-square"></i> Edit
+                                            </button>
+                                            <button class="btn-activate" onclick="toggleUserStatus('SCI004')">
+                                                <i class="bi bi-person-check"></i> Activate
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr data-user-id="SCI005" data-status="inactive">
+                                    <td>
+                                        <img src="https://ui-avatars.com/api/?name=Pathum+Perera&background=6c757d&color=fff&size=50"
+                                            style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+                                    </td>
+                                    <td>SCI005</td>
+                                    <td>Pathum Perera</td>
+                                    <td>077-5678901</td>
+                                    <td>pathum.p@science.lk</td>
+                                    <td>
                                         <div class="action-buttons">
                                             <button class="btn-edit" onclick="editUser('SCI005')">
                                                 <i class="bi bi-pencil-square"></i> Edit
                                             </button>
-                                            <button class="btn-remove" onclick="removeUser('SCI005')">
-                                                <i class="bi bi-trash"></i> Remove
+                                            <button class="btn-activate" onclick="toggleUserStatus('SCI005')">
+                                                <i class="bi bi-person-check"></i> Activate
                                             </button>
                                         </div>
                                     </td>
                                 </tr>
-                                <tr>
-                                    <td data-label="ID">SCI008</td>
-                                    <td data-label="Name">Nimali Fernando</td>
-                                    <td data-label="Email">nimali.f@science.lk</td>
-                                    <td data-label="Bookings"><span class="booking-badge">15</span></td>
-                                    <td data-label="Status"><span class="badge bg-success">Active</span></td>
-                                    <td data-label="Actions">
+                                <tr data-user-id="SCI006" data-status="active">
+                                    <td>
+                                        <img src="https://ui-avatars.com/api/?name=Nimali+Fernando&background=22c55e&color=fff&size=50"
+                                            style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+                                    </td>
+                                    <td>SCI006</td>
+                                    <td>Nimali Fernando</td>
+                                    <td>071-6789012</td>
+                                    <td>nimali.f@science.lk</td>
+                                    <td>
                                         <div class="action-buttons">
-                                            <button class="btn-edit" onclick="editUser('SCI008')">
+                                            <button class="btn-edit" onclick="editUser('SCI006')">
                                                 <i class="bi bi-pencil-square"></i> Edit
                                             </button>
-                                            <button class="btn-remove" onclick="removeUser('SCI008')">
-                                                <i class="bi bi-trash"></i> Remove
+                                            <button class="btn-deactivate" onclick="toggleUserStatus('SCI006')">
+                                                <i class="bi bi-person-x"></i> Deactivate
                                             </button>
                                         </div>
                                     </td>
@@ -1969,9 +2199,11 @@
                             </tbody>
                         </table>
                     </div>
+                </div>
 
-                    <!-- Supervisor/Lecturer Table -->
-                    <h4 class="table-heading mt-5">
+                <!-- Supervisor/Lecturer Table Card -->
+                <div id="supervisorTableCard" class="card p-4 mb-4"> <!-- Added ID -->
+                    <h4 class="table-heading mt-0">
                         <i class="bi bi-person-workspace"></i> Supervisors & Lecturers
                         <span class="table-count" id="supervisorCount">(8)</span>
                     </h4>
@@ -1979,62 +2211,96 @@
                         <table class="user-table">
                             <thead>
                                 <tr>
+                                    <th>Profile Image</th>
                                     <th>University ID</th>
-                                    <th>First Name</th>
+                                    <th>Name</th>
+                                    <th>Mobile</th>
                                     <th>Email</th>
-                                    <th>Department</th>
-                                    <th>Status</th>
+
                                     <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="supervisorTableBody">
-                                <tr>
-                                    <td data-label="ID">STF001</td>
-                                    <td data-label="Name">Dr. Kamal Perera</td>
-                                    <td data-label="Email">kamal.p@micro.lk</td>
-                                    <td data-label="Dept">Microbiology</td>
-                                    <td data-label="Status"><span class="badge bg-success">Active</span></td>
-                                    <td data-label="Actions">
+                                <tr data-user-id="STF001" data-status="inactive">
+                                    <td>
+                                        <img src="https://ui-avatars.com/api/?name=Kamal+Perera&background=22c55e&color=fff&size=50"
+                                            style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+                                    </td>
+                                    <td>STF001</td>
+                                    <td>Dr. Kamal Perera</td>
+                                    <td>077-7890123</td>
+                                    <td>kamal.p@micro.lk</td>
+
+                                    <td>
                                         <div class="action-buttons">
                                             <button class="btn-edit" onclick="editUser('STF001')">
                                                 <i class="bi bi-pencil-square"></i> Edit
                                             </button>
-                                            <button class="btn-remove" onclick="removeUser('STF001')">
-                                                <i class="bi bi-trash"></i> Remove
+                                            <button class="btn-activate" onclick="toggleUserStatus('STF001')">
+                                                <i class="bi bi-person-check"></i> Activate
                                             </button>
                                         </div>
                                     </td>
                                 </tr>
-                                <tr>
-                                    <td data-label="ID">STF002</td>
-                                    <td data-label="Name">Prof. Malini Silva</td>
-                                    <td data-label="Email">malini.s@micro.lk</td>
-                                    <td data-label="Dept">Molecular Biology</td>
-                                    <td data-label="Status"><span class="badge bg-success">Active</span></td>
-                                    <td data-label="Actions">
+                                <tr data-user-id="STF002" data-status="inactive">
+                                    <td>
+                                        <img src="https://ui-avatars.com/api/?name=Malini+Silva&background=22c55e&color=fff&size=50"
+                                            style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+                                    </td>
+                                    <td>STF002</td>
+                                    <td>Prof. Malini Silva</td>
+                                    <td>078-8901234</td>
+                                    <td>malini.s@micro.lk</td>
+
+                                    <td>
                                         <div class="action-buttons">
                                             <button class="btn-edit" onclick="editUser('STF002')">
                                                 <i class="bi bi-pencil-square"></i> Edit
                                             </button>
-                                            <button class="btn-remove" onclick="removeUser('STF002')">
-                                                <i class="bi bi-trash"></i> Remove
+                                            <button class="btn-activate" onclick="toggleUserStatus('STF002')">
+                                                <i class="bi bi-person-check"></i> Activate
                                             </button>
                                         </div>
                                     </td>
                                 </tr>
-                                <tr>
-                                    <td data-label="ID">STF004</td>
-                                    <td data-label="Name">Dr. Nuwan Jayawardena</td>
-                                    <td data-label="Email">nuwan.j@micro.lk</td>
-                                    <td data-label="Dept">Biochemistry</td>
-                                    <td data-label="Status"><span class="badge bg-warning">Inactive</span></td>
-                                    <td data-label="Actions">
+                                <tr data-user-id="STF003" data-status="active">
+                                    <td>
+                                        <img src="https://ui-avatars.com/api/?name=Nuwan+Jayawardena&background=22c55e&color=fff&size=50"
+                                            style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+                                    </td>
+                                    <td>STF003</td>
+                                    <td>Dr. Nuwan Jayawardena</td>
+                                    <td>071-9012345</td>
+                                    <td>nuwan.j@micro.lk</td>
+
+                                    <td>
+                                        <div class="action-buttons">
+                                            <button class="btn-edit" onclick="editUser('STF003')">
+                                                <i class="bi bi-pencil-square"></i> Edit
+                                            </button>
+                                            <button class="btn-deactivate" onclick="toggleUserStatus('STF003')">
+                                                <i class="bi bi-person-x"></i> Deactivate
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr data-user-id="STF004" data-status="inactive">
+                                    <td>
+                                        <img src="https://ui-avatars.com/api/?name=Sirimal+Fernando&background=6c757d&color=fff&size=50"
+                                            style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+                                    </td>
+                                    <td>STF004</td>
+                                    <td>Prof. Sirimal Fernando</td>
+                                    <td>072-0123456</td>
+                                    <td>sirimal.f@micro.lk</td>
+
+                                    <td>
                                         <div class="action-buttons">
                                             <button class="btn-edit" onclick="editUser('STF004')">
                                                 <i class="bi bi-pencil-square"></i> Edit
                                             </button>
-                                            <button class="btn-remove" onclick="removeUser('STF004')">
-                                                <i class="bi bi-trash"></i> Remove
+                                            <button class="btn-activate" onclick="toggleUserStatus('STF004')">
+                                                <i class="bi bi-person-check"></i> Activate
                                             </button>
                                         </div>
                                     </td>
@@ -2042,9 +2308,11 @@
                             </tbody>
                         </table>
                     </div>
+                </div>
 
-                    <!-- Technical Officer Table -->
-                    <h4 class="table-heading mt-5">
+                <!-- Technical Officer Table Card -->
+                <div id="techOfficerTableCard" class="card p-4"> <!-- Added ID -->
+                    <h4 class="table-heading mt-0">
                         <i class="bi bi-person-gear"></i> Technical Officers
                         <span class="table-count" id="techOfficerCount">(4)</span>
                     </h4>
@@ -2052,62 +2320,96 @@
                         <table class="user-table">
                             <thead>
                                 <tr>
+                                    <th>Profile Image</th>
                                     <th>University ID</th>
-                                    <th>First Name</th>
+                                    <th>Name</th>
+                                    <th>Mobile</th>
                                     <th>Email</th>
-                                    <th>Specialization</th>
-                                    <th>Status</th>
+
                                     <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="techOfficerTableBody">
-                                <tr>
-                                    <td data-label="ID">TEC001</td>
-                                    <td data-label="Name">Sunil Rathnayake</td>
-                                    <td data-label="Email">sunil.r@lab.lk</td>
-                                    <td data-label="Specialization">Lab Equipment</td>
-                                    <td data-label="Status"><span class="badge bg-success">Active</span></td>
-                                    <td data-label="Actions">
+                                <tr data-user-id="TEC001" data-status="inactive">
+                                    <td>
+                                        <img src="https://ui-avatars.com/api/?name=Sunil+Rathnayake&background=22c55e&color=fff&size=50"
+                                            style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+                                    </td>
+                                    <td>TEC001</td>
+                                    <td>Sunil Rathnayake</td>
+                                    <td>077-1237890</td>
+                                    <td>sunil.r@lab.lk</td>
+
+                                    <td>
                                         <div class="action-buttons">
                                             <button class="btn-edit" onclick="editUser('TEC001')">
                                                 <i class="bi bi-pencil-square"></i> Edit
                                             </button>
-                                            <button class="btn-remove" onclick="removeUser('TEC001')">
-                                                <i class="bi bi-trash"></i> Remove
+                                            <button class="btn-activate" onclick="toggleUserStatus('TEC001')">
+                                                <i class="bi bi-person-check"></i> Activate
                                             </button>
                                         </div>
                                     </td>
                                 </tr>
-                                <tr>
-                                    <td data-label="ID">TEC002</td>
-                                    <td data-label="Name">Chamari Weerasinghe</td>
-                                    <td data-label="Email">chamari.w@lab.lk</td>
-                                    <td data-label="Specialization">Safety & Protocols</td>
-                                    <td data-label="Status"><span class="badge bg-success">Active</span></td>
-                                    <td data-label="Actions">
+                                <tr data-user-id="TEC002" data-status="inactive">
+                                    <td>
+                                        <img src="https://ui-avatars.com/api/?name=Chamari+Weerasinghe&background=22c55e&color=fff&size=50"
+                                            style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+                                    </td>
+                                    <td>TEC002</td>
+                                    <td>Chamari Weerasinghe</td>
+                                    <td>078-2348901</td>
+                                    <td>chamari.w@lab.lk</td>
+
+                                    <td>
                                         <div class="action-buttons">
                                             <button class="btn-edit" onclick="editUser('TEC002')">
                                                 <i class="bi bi-pencil-square"></i> Edit
                                             </button>
-                                            <button class="btn-remove" onclick="removeUser('TEC002')">
-                                                <i class="bi bi-trash"></i> Remove
+                                            <button class="btn-activate" onclick="toggleUserStatus('TEC002')">
+                                                <i class="bi bi-person-check"></i> Activate
                                             </button>
                                         </div>
                                     </td>
                                 </tr>
-                                <tr>
-                                    <td data-label="ID">TEC003</td>
-                                    <td data-label="Name">Prasanna Kumara</td>
-                                    <td data-label="Email">prasanna.k@lab.lk</td>
-                                    <td data-label="Specialization">Maintenance</td>
-                                    <td data-label="Status"><span class="badge bg-warning">Inactive</span></td>
-                                    <td data-label="Actions">
+                                <tr data-user-id="TEC003" data-status="active">
+                                    <td>
+                                        <img src="https://ui-avatars.com/api/?name=Prasanna+Kumara&background=22c55e&color=fff&size=50"
+                                            style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+                                    </td>
+                                    <td>TEC003</td>
+                                    <td>Prasanna Kumara</td>
+                                    <td>071-3459012</td>
+                                    <td>prasanna.k@lab.lk</td>
+
+                                    <td>
                                         <div class="action-buttons">
                                             <button class="btn-edit" onclick="editUser('TEC003')">
                                                 <i class="bi bi-pencil-square"></i> Edit
                                             </button>
-                                            <button class="btn-remove" onclick="removeUser('TEC003')">
-                                                <i class="bi bi-trash"></i> Remove
+                                            <button class="btn-deactivate" onclick="toggleUserStatus('TEC003')">
+                                                <i class="bi bi-person-x"></i> Deactivate
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr data-user-id="TEC004" data-status="inactive">
+                                    <td>
+                                        <img src="https://ui-avatars.com/api/?name=Mahesh+Gunasekara&background=6c757d&color=fff&size=50"
+                                            style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+                                    </td>
+                                    <td>TEC004</td>
+                                    <td>Mahesh Gunasekara</td>
+                                    <td>072-4560123</td>
+                                    <td>mahesh.g@lab.lk</td>
+
+                                    <td>
+                                        <div class="action-buttons">
+                                            <button class="btn-edit" onclick="editUser('TEC004')">
+                                                <i class="bi bi-pencil-square"></i> Edit
+                                            </button>
+                                            <button class="btn-activate" onclick="toggleUserStatus('TEC004')">
+                                                <i class="bi bi-person-check"></i> Activate
                                             </button>
                                         </div>
                                     </td>
@@ -2117,148 +2419,34 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Request List Section -->
-            <!-- <div id="requestListSection" style="display: none;">
-                <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Request List</h3>
-                
-                <div class="card p-4">
-                    <div class="filter-section">
-                        <select class="filter-select" id="requestFilter" onchange="filterRequests()">
-                            <option value="all">All Requests</option>
-                            <option value="pending">Pending</option>
-                            <option value="approved">Approved</option>
-                            <option value="rejected">Rejected</option>
-                        </select>
-                    </div>
-
-                    <div class="table-responsive">
-                        <table class="request-table">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Student</th>
-                                    <th>Equipment</th>
-                                    <th>Date</th>
-                                    <th>Time</th>
-                                    <th>Lab</th>
-                                    <th>Status</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="requestListBody">
-                                <tr>
-                                    <td data-label="ID">#REQ001</td>
-                                    <td data-label="Student">John Doe</td>
-                                    <td data-label="Equipment">Microscope (2)</td>
-                                    <td data-label="Date">2026-02-20</td>
-                                    <td data-label="Time">10:00 - 12:00</td>
-                                    <td data-label="Lab">Lab 01</td>
-                                    <td data-label="Status"><span class="badge bg-warning">Pending</span></td>
-                                    <td data-label="Actions">
-                                        <div class="action-buttons">
-                                            <button class="btn-approve" onclick="approveRequest('REQ001')">Approve</button>
-                                            <button class="btn-reject" onclick="rejectRequest('REQ001')">Reject</button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td data-label="ID">#REQ002</td>
-                                    <td data-label="Student">Jane Smith</td>
-                                    <td data-label="Equipment">Centrifuge (1)</td>
-                                    <td data-label="Date">2026-02-21</td>
-                                    <td data-label="Time">14:00 - 16:00</td>
-                                    <td data-label="Lab">Research Lab</td>
-                                    <td data-label="Status"><span class="badge bg-success">Approved</span></td>
-                                    <td data-label="Actions">
-                                        <div class="action-buttons">
-                                            <span class="text-success">Approved</span>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td data-label="ID">#REQ003</td>
-                                    <td data-label="Student">Mike Johnson</td>
-                                    <td data-label="Equipment">Incubator (1)</td>
-                                    <td data-label="Date">2026-02-19</td>
-                                    <td data-label="Time">09:00 - 11:00</td>
-                                    <td data-label="Lab">Lab 02</td>
-                                    <td data-label="Status"><span class="badge bg-danger">Rejected</span></td>
-                                    <td data-label="Actions">
-                                        <div class="action-buttons">
-                                            <span class="text-danger">Reason: Maintenance</span>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td data-label="ID">#REQ004</td>
-                                    <td data-label="Student">Sarah Wilson</td>
-                                    <td data-label="Equipment">Autoclave (1)</td>
-                                    <td data-label="Date">2026-02-22</td>
-                                    <td data-label="Time">13:00 - 15:00</td>
-                                    <td data-label="Lab">Lab 01</td>
-                                    <td data-label="Status"><span class="badge bg-warning">Pending</span></td>
-                                    <td data-label="Actions">
-                                        <div class="action-buttons">
-                                            <button class="btn-approve" onclick="approveRequest('REQ004')">Approve</button>
-                                            <button class="btn-reject" onclick="rejectRequest('REQ004')">Reject</button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div> -->
-
-            <!-- Equipment Browser Section -->
-            <!-- <div id="equipmentSection" style="display: none;">
-                <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Equipment Management</h3>
-
-                <div class="card p-4">
-                    <div class="filter-section">
-                        <select class="filter-select" id="labFilter" onchange="filterEquipment()">
-                            <option value="all">All Labs</option>
-                            <option value="lab1">Microbiology Lab 01</option>
-                            <option value="lab2">Microbiology Lab 02</option>
-                            <option value="research">Research Laboratory</option>
-                        </select>
-
-                        <select class="filter-select" id="statusFilter" onchange="filterEquipment()">
-                            <option value="all">All Status</option>
-                            <option value="available">Available</option>
-                            <option value="in-use">In Use</option>
-                            <option value="maintenance">Maintenance</option>
-                        </select>
-                    </div>
-
-                    <div class="equipment-grid" id="equipmentGrid"> -->
-            <!-- Equipment cards will be populated here -->
-            <!-- </div>
-                </div>
-            </div> -->
-
-
             <!-- Equipment Management Section -->
             <div id="equipmentSection" style="display: none;">
                 <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Equipment Management</h3>
 
-                <div class="card p-4">
-                    <!-- Search and Add Row -->
-                    <div class="search-add-row">
-                        <div class="search-container">
-                            <input type="text" id="equipmentSearch" class="search-input" placeholder="Search by code, name or location...">
-                            <button class="search-btn" onclick="searchEquipment()">
-                                <i class="bi bi-search"></i> Search
-                            </button>
-                        </div>
-                        <button class="add-btn" onclick="addEquipment()">
-                            <i class="bi bi-plus-circle"></i> Add Equipment
-                        </button>
+                <!-- Search and Add Row (Outside card) -->
+                <div class="search-add-row" style="margin-bottom: 20px;">
+                    <div class="search-container">
+                        <input type="text"
+                            id="equipmentSearch"
+                            class="search-input"
+                            placeholder="Search by code, name or location..."
+                            oninput="searchEquipment()"> <!-- Real-time search -->
+                        <!-- <button class="search-btn" onclick="searchEquipment()">
+                <i class="bi bi-search"></i> Search
+            </button> -->
                     </div>
+                    <button class="add-btn" onclick="addEquipment()">
+                        <i class="bi bi-plus-circle"></i> Add Equipment
+                    </button>
+                </div>
 
-                    <!-- Equipment Table -->
-                    <div class="table-responsive mt-3">
+                <!-- Equipment Table Card -->
+                <div id="equipmentTableCard" class="card p-4"> <!-- Added ID for hiding -->
+                    <h4 class="table-heading mt-0">
+                        <i class="bi bi-tools"></i> Equipment List
+                        <span class="table-count" id="equipmentCount">(6)</span>
+                    </h4>
+                    <div class="table-responsive">
                         <table class="user-table">
                             <thead>
                                 <tr>
@@ -2272,7 +2460,7 @@
                                 </tr>
                             </thead>
                             <tbody id="equipmentTableBody">
-                                <tr>
+                                <tr data-equipment-id="MIC-001">
                                     <td><img src="https://cdn-icons-png.flaticon.com/512/2941/2941514.png" style="width: 50px; height: 50px; object-fit: contain;"></td>
                                     <td>MIC-001</td>
                                     <td>Microscope</td>
@@ -2298,7 +2486,7 @@
                                         </div>
                                     </td>
                                 </tr>
-                                <tr>
+                                <tr data-equipment-id="CEN-002">
                                     <td><img src="https://cdn-icons-png.flaticon.com/512/2941/2941543.png" style="width: 50px; height: 50px; object-fit: contain;"></td>
                                     <td>CEN-002</td>
                                     <td>Centrifuge</td>
@@ -2324,7 +2512,7 @@
                                         </div>
                                     </td>
                                 </tr>
-                                <tr>
+                                <tr data-equipment-id="INC-003">
                                     <td><img src="https://cdn-icons-png.flaticon.com/512/2941/2941538.png" style="width: 50px; height: 50px; object-fit: contain;"></td>
                                     <td>INC-003</td>
                                     <td>Incubator</td>
@@ -2350,7 +2538,7 @@
                                         </div>
                                     </td>
                                 </tr>
-                                <tr>
+                                <tr data-equipment-id="AUT-004">
                                     <td><img src="https://cdn-icons-png.flaticon.com/512/2941/2941521.png" style="width: 50px; height: 50px; object-fit: contain;"></td>
                                     <td>AUT-004</td>
                                     <td>Autoclave</td>
@@ -2376,7 +2564,7 @@
                                         </div>
                                     </td>
                                 </tr>
-                                <tr>
+                                <tr data-equipment-id="PHM-005">
                                     <td><img src="https://cdn-icons-png.flaticon.com/512/2941/2941556.png" style="width: 50px; height: 50px; object-fit: contain;"></td>
                                     <td>PHM-005</td>
                                     <td>pH Meter</td>
@@ -2402,7 +2590,7 @@
                                         </div>
                                     </td>
                                 </tr>
-                                <tr>
+                                <tr data-equipment-id="WAT-006">
                                     <td><img src="https://cdn-icons-png.flaticon.com/512/2941/2941578.png" style="width: 50px; height: 50px; object-fit: contain;"></td>
                                     <td>WAT-006</td>
                                     <td>Water Bath</td>
@@ -2457,212 +2645,103 @@
 
 
 
-            <!-- Booking History Section -->
-            <!-- <div id="historySection" style="display: none;">
-                <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Booking History</h3>
-                <div class="card p-4">
-                    <div class="table-responsive">
-                        <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Student</th>
-                                    <th>Date</th>
-                                    <th>Lab</th>
-                                    <th>Equipment</th>
-                                    <th>Duration</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody id="bookingHistoryBody">
-                                <tr>
-                                    <td>#REQ001</td>
-                                    <td>John Doe</td>
-                                    <td>2026-02-10</td>
-                                    <td>Lab 01</td>
-                                    <td>Microscope (2)</td>
-                                    <td>3 hours</td>
-                                    <td><span class="badge bg-success">Completed</span></td>
-                                </tr>
-                                <tr>
-                                    <td>#REQ002</td>
-                                    <td>Jane Smith</td>
-                                    <td>2026-02-15</td>
-                                    <td>Research Lab</td>
-                                    <td>Centrifuge (1)</td>
-                                    <td>4 hours</td>
-                                    <td><span class="badge bg-warning">Pending</span></td>
-                                </tr>
-                                <tr>
-                                    <td>#REQ003</td>
-                                    <td>Mike Johnson</td>
-                                    <td>2026-02-18</td>
-                                    <td>Lab 02</td>
-                                    <td>Incubator (1)</td>
-                                    <td>2 hours</td>
-                                    <td><span class="badge bg-success">Completed</span></td>
-                                </tr>
-                                <tr>
-                                    <td>#REQ004</td>
-                                    <td>Sarah Wilson</td>
-                                    <td>2026-02-19</td>
-                                    <td>Lab 01</td>
-                                    <td>Autoclave (1)</td>
-                                    <td>2 hours</td>
-                                    <td><span class="badge bg-success">Completed</span></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div> -->
 
             <!-- Reservation Details Section -->
-            <div id="historySection" style="display: none;">
-                <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Reservation Details</h3>
+<div id="historySection" style="display: none;">
+    <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Reservation Details</h3>
+
+    <!-- Search and Filter Row (Outside card) -->
+    <div class="search-add-row" style="margin-bottom: 20px;">
+        <div class="search-container">
+            <input type="text"
+                id="reservationSearch"
+                class="search-input"
+                placeholder="Search by ID, student or lab..."
+                oninput="searchReservations()"> <!-- Real-time search -->
+            <button class="search-btn" onclick="searchReservations()">
+                <i class="bi bi-search"></i> Search
+            </button>
+        </div>
+        <div class="filter-section" style="margin-bottom: 0;">
+            <select class="filter-select" id="statusFilter" onchange="searchReservations()" style="min-width: 150px;">
+                <option value="all">All Status</option>
+                <option value="ready">Ready</option>
+                <option value="pending">Pending</option>
+                <option value="rejected">Rejected</option>
+            </select>
+        </div>
+        <!-- Add Button -->
+        <button class="add-btn" onclick="addReservation()" style="background: linear-gradient(135deg, #22c55e, #16a34a);">
+            <i class="bi bi-plus-circle"></i> Add Reservation
+        </button>
+    </div>
+
+    <!-- Reservation Table Card -->
+    <div id="reservationTableCard" class="card p-4">
+        <h4 class="table-heading mt-0">
+            <i class="bi bi-calendar-check"></i> Reservations
+            <span class="table-count" id="reservationCount">(3)</span>
+        </h4>
+        <div class="table-responsive">
+            <table class="user-table">
+                <thead>
+                    <tr>
+                        <th>Reservation ID</th>
+                        <th>Lab Location</th>
+                        <th>Student ID</th>
+                        <th>Status</th>
+                        <th>Reservation Date</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="reservationTableBody">
+                    <!-- Data will be populated by JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Reservation Details Modal -->
+<div class="modal fade" id="reservationDetailsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-calendar-check me-2"></i>
+                    Reservation Details
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="reservationDetailsContent">
+                <!-- Content will be populated by JavaScript -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+            <!-- Request Section -->
+            <div id="activitySection" style="display: none;">
+                <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Requests</h3>
 
                 <div class="card p-4">
-                    <!-- Search and Filter Row -->
-                    <div class="search-add-row">
-                        <div class="search-container">
-                            <input type="text" id="reservationSearch" class="search-input" placeholder="Search by ID, student or lab...">
-                            <button class="search-btn" onclick="searchReservations()">
-                                <i class="bi bi-search"></i> Search
-                            </button>
-                        </div>
-                        <div class="filter-section" style="margin-bottom: 0;">
-                            <select class="filter-select" id="statusFilter" onchange="filterReservations()" style="min-width: 150px;">
-                                <option value="all">All Status</option>
-                                <option value="ready">Ready</option>
-                                <option value="pending">Pending</option>
-                                <option value="rejected">Rejected</option>
-                            </select>
-                        </div>
-                        <!-- Add Button -->
-                        <button class="add-btn" onclick="addReservation()" style="background: linear-gradient(135deg, #22c55e, #16a34a);">
-                            <i class="bi bi-plus-circle"></i> Add Reservation
+                    <!-- Request Type Tabs with Count Badges -->
+                    <div class="request-tabs" style="margin-bottom: 20px;">
+                        <button class="request-tab active" onclick="switchRequestType('technical')">
+                            Technical Officer Requests
+                            <span class="request-count-badge" id="technicalRequestCount">3</span>
+                        </button>
+                        <button class="request-tab" onclick="switchRequestType('supervisor')">
+                            Supervisor Requests
+                            <span class="request-count-badge" id="supervisorRequestCount">2</span>
                         </button>
                     </div>
 
-                    <!-- Reservation Table -->
-                    <div class="table-responsive mt-3">
-                        <table class="user-table">
-                            <thead>
-                                <tr>
-                                    <th>Reservation ID</th>
-                                    <th>Lab Location</th>
-                                    <th>Student ID</th>
-                                    <th>Technical Officer Status</th>
-                                    <th>Reservation Date</th>
-                                    <th>Requested Equipment</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody id="reservationTableBody">
-                                <!-- Data will be populated by JavaScript -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Reservation Details Modal (for view button) -->
-            <div class="modal fade" id="reservationDetailsModal" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-lg modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header bg-success text-white">
-                            <h5 class="modal-title">
-                                <i class="bi bi-calendar-check me-2"></i>
-                                Reservation Details
-                            </h5>
-                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body" id="reservationDetailsContent">
-                            <!-- Content will be populated by JavaScript -->
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-
-
-            <!-- Activity History Section -->
-            <!-- <div id="activitySection" style="display: none;">
-                <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Activity History</h3>
-
-                <div class="card p-4">
-                    <div class="filter-section">
-                        <input type="date" class="filter-select" id="activityDate" onchange="filterActivities()">
-                    </div>
-
-                    <div class="table-responsive">
-                        <table class="activity-table">
-                            <thead>
-                                <tr>
-                                    <th>Date & Time</th>
-                                    <th>Activity</th>
-                                    <th>User</th>
-                                    <th>Details</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody id="activityListBody">
-                                <tr>
-                                    <td data-label="Date & Time">2026-02-20 10:30 AM</td>
-                                    <td data-label="Activity"><span class="activity-badge created">Booking Created</span></td>
-                                    <td data-label="User">John Doe</td>
-                                    <td data-label="Details">Microscope - Lab 01 (2 hours)</td>
-                                    <td data-label="Action"><button class="btn-view" onclick="viewActivity('REQ004')">View</button></td>
-                                </tr>
-                                <tr>
-                                    <td data-label="Date & Time">2026-02-20 11:00 AM</td>
-                                    <td data-label="Activity"><span class="activity-badge approved">Approved</span></td>
-                                    <td data-label="User">Admin</td>
-                                    <td data-label="Details">Booking #REQ004 approved by Dr. Smith</td>
-                                    <td data-label="Action"><button class="btn-view" onclick="viewActivity('REQ004')">View</button></td>
-                                </tr>
-                                <tr>
-                                    <td data-label="Date & Time">2026-02-20 09:15 AM</td>
-                                    <td data-label="Activity"><span class="activity-badge rejected">Rejected</span></td>
-                                    <td data-label="User">Admin</td>
-                                    <td data-label="Details">Booking #REQ003 rejected - Maintenance required</td>
-                                    <td data-label="Action"><button class="btn-view" onclick="viewActivity('REQ003')">View</button></td>
-                                </tr>
-                                <tr>
-                                    <td data-label="Date & Time">2026-02-19 04:30 PM</td>
-                                    <td data-label="Activity"><span class="activity-badge returned">Equipment Returned</span></td>
-                                    <td data-label="User">Jane Smith</td>
-                                    <td data-label="Details">Centrifuge returned to Research Lab</td>
-                                    <td data-label="Action"><button class="btn-view" onclick="viewActivity('RET001')">View</button></td>
-                                </tr>
-                                <tr>
-                                    <td data-label="Date & Time">2026-02-19 02:00 PM</td>
-                                    <td data-label="Activity"><span class="activity-badge maintenance">Maintenance</span></td>
-                                    <td data-label="User">Technician</td>
-                                    <td data-label="Details">Incubator #123 under maintenance</td>
-                                    <td data-label="Action"><button class="btn-view" onclick="viewActivity('MAINT001')">View</button></td>
-                                </tr>
-                                <tr>
-                                    <td data-label="Date & Time">2026-02-18 03:45 PM</td>
-                                    <td data-label="Activity"><span class="activity-badge approved">Approved</span></td>
-                                    <td data-label="User">Admin</td>
-                                    <td data-label="Details">Booking #REQ005 approved</td>
-                                    <td data-label="Action"><button class="btn-view" onclick="viewActivity('REQ005')">View</button></td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div> -->
-
-            <!-- Supervisor Request Section -->
-            <div id="activitySection" style="display: none;">
-                <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Supervisor Requests</h3>
-
-                <div class="card p-4">
                     <!-- Time Range Filter -->
                     <div class="filter-section" style="margin-bottom: 20px;">
                         <select class="filter-select" id="timeRangeFilter" onchange="filterRequestsByTime()" style="min-width: 200px;">
@@ -2680,7 +2759,9 @@
                                 <tr>
                                     <th>Request ID</th>
                                     <th>Date & Time</th>
-                                    <th>Action</th>
+                                    <th>University ID</th>
+                                    <th>Name</th>
+                                    <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="requestListBody">
@@ -2716,262 +2797,189 @@
 
 
 
-
             <!-- Analytics Section -->
-            <div id="analyticsSection" style="display: none;">
-                <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Analytics Dashboard</h3>
+<div id="analyticsSection" style="display: none;">
+    <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Analytics Dashboard</h3>
 
-                <!-- Summary Statistics Cards -->
-                <div class="analytics-grid">
-                    <!-- Students Card -->
-                    <div class="stat-card">
-                        <i class="bi bi-mortarboard-fill"></i>
-                        <h3>56</h3>
-                        <p>Students</p>
-                    </div>
+    <!-- Summary Statistics Cards -->
+    <div class="analytics-grid">
+        <!-- Students Card -->
+        <div class="stat-card">
+            <i class="bi bi-mortarboard-fill"></i>
+            <h3>56</h3>
+            <p>Students</p>
+        </div>
 
-                    <!-- Supervisors/Lecturers Card -->
-                    <div class="stat-card">
-                        <i class="bi bi-person-badge-fill"></i>
-                        <h3>5</h3>
-                        <p>Supervisors/Lecturers</p>
-                    </div>
+        <!-- Supervisors/Lecturers Card -->
+        <div class="stat-card">
+            <i class="bi bi-person-badge-fill"></i>
+            <h3>5</h3>
+            <p>Supervisors/Lecturers</p>
+        </div>
 
-                    <!-- Technical Officers Card -->
-                    <div class="stat-card">
-                        <i class="bi bi-person-gear"></i>
-                        <h3>3</h3>
-                        <p>Technical Officers</p>
-                    </div>
+        <!-- Technical Officers Card -->
+        <div class="stat-card">
+            <i class="bi bi-person-gear"></i>
+            <h3>3</h3>
+            <p>Technical Officers</p>
+        </div>
 
-                    <!-- Active Equipment Card -->
-                    <div class="stat-card">
-                        <i class="bi bi-tools"></i>
-                        <h3>85%</h3>
-                        <p>Equipment Utilization Rate</p>
-                    </div>
+        <!-- Active Equipment Card -->
+        <div class="stat-card">
+            <i class="bi bi-tools"></i>
+            <h3>85%</h3>
+            <p>Equipment Utilization Rate</p>
+        </div>
 
-                    <!-- Broken Equipment Card -->
-                    <!-- <div class="stat-card">
-            <i class="bi bi-exclamation-triangle-fill"></i>
-            <h3>2</h3>
-            <p>Broken Equipment</p>
-        </div> -->
+        <!-- Maintenance Card -->
+        <div class="stat-card">
+            <i class="bi bi-gear-wide-connected"></i>
+            <h3>3</h3>
+            <p>Maintenance</p>
+        </div>
+    </div>
 
-                    <!-- Maintenance Card -->
-                    <div class="stat-card">
-                        <i class="bi bi-gear-wide-connected"></i>
-                        <h3>3</h3>
-                        <p>Maintenance</p>
-                    </div>
+    <!-- First Row: Rejected Requests Report & Equipment Usage Chart -->
+    <div class="row">
+        <!-- Rejected Requests Report -->
+        <div class="col-md-6 mb-4">
+            <div class="card p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold" style="color: #166534;">
+                        <i class="bi bi-x-circle-fill text-danger me-2"></i>
+                        Rejected Requests (Technical Officer)
+                    </h5>
+                    <button class="btn-generate" onclick="generateReport('rejected')">
+                        <i class="bi bi-file-earmark-pdf me-2"></i>Generate Report
+                    </button>
                 </div>
 
-                <!-- First Row: Rejected Requests Report & Equipment Usage Chart -->
-                <div class="row">
-                    <!-- Rejected Requests Report -->
-                    <div class="col-md-6 mb-4">
-                        <div class="card p-4">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h5 class="fw-bold" style="color: #166534;">
-                                    <i class="bi bi-x-circle-fill text-danger me-2"></i>
-                                    Rejected Requests (Technical Officer)
-                                </h5>
-                                <button class="btn-generate" onclick="generateReport('rejected')">
-                                    <i class="bi bi-file-earmark-pdf me-2"></i>Generate Report
-                                </button>
-                            </div>
+                <div class="table-responsive">
+                    <table class="details-table">
+                        <thead>
+                            <tr>
+                                <th>Request ID</th>
+                                <th>Student ID</th>
+                                <th>Reason</th>
+                                <th>Date & Time</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>#REQ003</td>
+                                <td>SCI003</td>
+                                <td>
+                                    <button class="btn-view" onclick="viewRejectionReason('REQ003')" title="View Reason">
+                                        <i class="bi bi-eye"></i> View
+                                    </button>
+                                </td>
+                                <td>2026-02-19 09:15 AM</td>
+                            </tr>
+                            <tr>
+                                <td>#REQ007</td>
+                                <td>SCI007</td>
+                                <td>
+                                    <button class="btn-view" onclick="viewRejectionReason('REQ007')" title="View Reason">
+                                        <i class="bi bi-eye"></i> View
+                                    </button>
+                                </td>
+                                <td>2026-02-17 02:30 PM</td>
+                            </tr>
+                            <tr>
+                                <td>#REQ012</td>
+                                <td>SCI012</td>
+                                <td>
+                                    <button class="btn-view" onclick="viewRejectionReason('REQ012')" title="View Reason">
+                                        <i class="bi bi-eye"></i> View
+                                    </button>
+                                </td>
+                                <td>2026-02-15 11:45 AM</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
 
-                            <div class="table-responsive">
-                                <table class="details-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Request ID</th>
-                                            <th>Student ID</th>
-                                            <th>Reason</th>
-                                            <th>Date & Time</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>#REQ003</td>
-                                            <td>SCI003</td>
-                                            <td>
-                                                <button class="btn-view" onclick="viewRejectionReason('REQ003')" title="View Reason">
-                                                    <i class="bi bi-eye"></i> View
-                                                </button>
-                                            </td>
-                                            <td>2026-02-19 09:15 AM</td>
-                                        </tr>
-                                        <tr>
-                                            <td>#REQ007</td>
-                                            <td>SCI007</td>
-                                            <td>
-                                                <button class="btn-view" onclick="viewRejectionReason('REQ007')" title="View Reason">
-                                                    <i class="bi bi-eye"></i> View
-                                                </button>
-                                            </td>
-                                            <td>2026-02-17 02:30 PM</td>
-                                        </tr>
-                                        <tr>
-                                            <td>#REQ012</td>
-                                            <td>SCI012</td>
-                                            <td>
-                                                <button class="btn-view" onclick="viewRejectionReason('REQ012')" title="View Reason">
-                                                    <i class="bi bi-eye"></i> View
-                                                </button>
-                                            </td>
-                                            <td>2026-02-15 11:45 AM</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Equipment Usage Chart -->
-                    <div class="col-md-6 mb-4">
-                        <div class="card p-4">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h5 class="fw-bold" style="color: #166534;">
-                                    <i class="bi bi-bar-chart-fill text-success me-2"></i>
-                                    Equipment Usage Report
-                                </h5>
-                                <button class="btn-generate" onclick="generateReport('usage')">
-                                    <i class="bi bi-file-earmark-pdf me-2"></i>Generate Report
-                                </button>
-                            </div>
-
-                            <div class="chart-container" style="height: 250px;">
-                                <canvas id="equipmentUsageChart"></canvas>
-                            </div>
-                        </div>
-                    </div>
+        <!-- Equipment Usage Report with Search -->
+        <div class="col-md-6 mb-4">
+            <div class="card p-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-bold" style="color: #166534;">
+                        <i class="bi bi-bar-chart-fill text-success me-2"></i>
+                        Equipment Usage Report
+                    </h5>
+                    <button class="btn-generate" onclick="generateReport('usage')">
+                        <i class="bi bi-file-earmark-pdf me-2"></i>Generate Report
+                    </button>
                 </div>
 
-                <!-- Second Row: Equipment Usage Table -->
-                <!-- Second Row: Equipment Usage Table -->
-                <div class="row">
-                    <div class="col-12">
-                        <div class="card p-4">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h5 class="fw-bold" style="color: #166534;">
-                                    <i class="bi bi-table me-2"></i>
-                                    Equipment Usage Details
-                                </h5>
-                                <button class="btn-generate" onclick="generateReport('usageTable')">
-                                    <i class="bi bi-file-earmark-spreadsheet me-2"></i>Generate Table Report
-                                </button>
-                            </div>
-
-                            <div class="table-responsive">
-                                <table class="details-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Equipment Code</th>
-                                            <th>Equipment Name</th>
-                                            <th>Available Qty</th>
-                                            <th>Usage Percentage</th>
-                                            <th>Status</th>
-                                            <th>Lab Location</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>MIC-001</td>
-                                            <td>Microscope</td>
-                                            <td><span class="badge" style="background: #22c55e; color: white;">4/8</span></td>
-                                            <td>
-                                                <div class="d-flex align-items-center gap-2">
-                                                    <div class="progress-bar" style="width: 150px;">
-                                                        <div class="progress-fill" style="width: 80%"></div>
-                                                    </div>
-                                                    <span>80%</span>
-                                                </div>
-                                            </td>
-                                            <td>—</td>
-                                            <td>Lab 01</td>
-                                        </tr>
-                                        <tr>
-                                            <td>CEN-002</td>
-                                            <td>Centrifuge</td>
-                                            <td><span class="badge" style="background: #22c55e; color: white;">3/5</span></td>
-                                            <td>
-                                                <div class="d-flex align-items-center gap-2">
-                                                    <div class="progress-bar" style="width: 150px;">
-                                                        <div class="progress-fill" style="width: 65%"></div>
-                                                    </div>
-                                                    <span>65%</span>
-                                                </div>
-                                            </td>
-                                            <td>—</td>
-                                            <td>Research Lab</td>
-                                        </tr>
-                                        <tr>
-                                            <td>INC-003</td>
-                                            <td>Incubator</td>
-                                            <td><span class="badge" style="background: #f59e0b; color: white;">2/4</span></td>
-                                            <td>
-                                                <div class="d-flex align-items-center gap-2">
-                                                    <div class="progress-bar" style="width: 150px;">
-                                                        <div class="progress-fill" style="width: 45%"></div>
-                                                    </div>
-                                                    <span>45%</span>
-                                                </div>
-                                            </td>
-                                            <td><span class="badge bg-warning">Maintenance (3)</span></td>
-                                            <td>Lab 02</td>
-                                        </tr>
-                                        <tr>
-                                            <td>AUT-004</td>
-                                            <td>Autoclave</td>
-                                            <td><span class="badge" style="background: #22c55e; color: white;">6/6</span></td>
-                                            <td>
-                                                <div class="d-flex align-items-center gap-2">
-                                                    <div class="progress-bar" style="width: 150px;">
-                                                        <div class="progress-fill" style="width: 70%"></div>
-                                                    </div>
-                                                    <span>70%</span>
-                                                </div>
-                                            </td>
-                                            <td>—</td>
-                                            <td>Lab 01</td>
-                                        </tr>
-                                        <tr>
-                                            <td>PHM-005</td>
-                                            <td>pH Meter</td>
-                                            <td><span class="badge" style="background: #22c55e; color: white;">3/3</span></td>
-                                            <td>
-                                                <div class="d-flex align-items-center gap-2">
-                                                    <div class="progress-bar" style="width: 150px;">
-                                                        <div class="progress-fill" style="width: 35%"></div>
-                                                    </div>
-                                                    <span>35%</span>
-                                                </div>
-                                            </td>
-                                            <td>—</td>
-                                            <td>Research Lab</td>
-                                        </tr>
-                                        <tr>
-                                            <td>WAT-006</td>
-                                            <td>Water Bath</td>
-                                            <td><span class="badge" style="background: #ef4444; color: white;">5/7</span></td>
-                                            <td>
-                                                <div class="d-flex align-items-center gap-2">
-                                                    <div class="progress-bar" style="width: 150px;">
-                                                        <div class="progress-fill" style="width: 20%"></div>
-                                                    </div>
-                                                    <span>20%</span>
-                                                </div>
-                                            </td>
-                                            <td>—</td>
-                                            <td>Lab 02</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
+                <!-- Search Input for Equipment Name (Real-time) -->
+                <div class="mb-3">
+                    <input type="text" 
+                           id="equipmentUsageSearch" 
+                           class="form-control" 
+                           placeholder="Search equipment name..."
+                           oninput="filterEquipmentUsage()">
                 </div>
+
+                <!-- Equipment Usage Table -->
+                <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+                    <table class="table table-hover">
+                        <thead class="sticky-top bg-white">
+                            <tr>
+                                <th>Equipment Name</th>
+                                <th>Usage Percentage</th>
+                            </tr>
+                        </thead>
+                        <tbody id="equipmentUsageTableBody">
+                            <!-- Data will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Second Row: Download Inventory Button -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card p-4 text-center">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold mb-0" style="color: #166534;">
+                        <i class="bi bi-download me-2"></i>
+                        Full Equipment Inventory
+                    </h5>
+                    <button class="btn-generate" onclick="downloadInventory()">
+                        <i class="bi bi-file-earmark-spreadsheet me-2"></i>Download Full Inventory List
+                    </button>
+                </div>
+                <p class="text-muted mt-2 mb-0 small">Download complete inventory of all equipment with details</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Rejection Reason Modal -->
+<div class="modal fade" id="rejectionReasonModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    Rejection Reason
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="rejectionReasonContent">
+                <!-- Content will be populated by JavaScript -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 
                 <!-- Rejection Reason Modal -->
                 <div class="modal fade" id="rejectionReasonModal" tabindex="-1" aria-hidden="true">
@@ -2995,7 +3003,7 @@
                 </div>
 
 
-           
+
 
                 <!-- Add Event Modal -->
                 <div class="add-event-wrapper" id="addEventWrapper">
@@ -3019,1095 +3027,709 @@
         <!-- Scripts -->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
-        <script>
-            // User Management Functions
-            function searchUsers() {
-                const searchTerm = document.getElementById('userSearch').value.toLowerCase();
+       <script>
+// ========== REQUEST SECTION FUNCTIONS ==========
+let currentRequestType = 'technical';
+let currentRequestId = null;
 
-                // Search in all tables
-                searchInTable('studentTableBody', searchTerm);
-                searchInTable('supervisorTableBody', searchTerm);
-                searchInTable('techOfficerTableBody', searchTerm);
+// Request Data with status tracking
+const technicalRequests = [
+    {
+        id: 'TEC-REQ-001',
+        dateTime: '2026-02-20 10:30 AM',
+        timestamp: new Date('2026-02-20T10:30:00'),
+        universityId: 'SCI001',
+        name: 'John Doe',
+        status: 'pending',
+        details: {
+            equipment: 'Microscope (2 units)',
+            lab: 'Lab 01',
+            duration: '2 hours',
+            purpose: 'Final Year Research Project'
+        }
+    },
+    {
+        id: 'TEC-REQ-002',
+        dateTime: '2026-02-20 11:00 AM',
+        timestamp: new Date('2026-02-20T11:00:00'),
+        universityId: 'SCI002',
+        name: 'Jane Smith',
+        status: 'pending',
+        details: {
+            equipment: 'Centrifuge (1 unit)',
+            lab: 'Research Lab',
+            duration: '3 hours',
+            purpose: 'DNA Extraction'
+        }
+    },
+    {
+        id: 'TEC-REQ-003',
+        dateTime: '2026-02-19 09:15 AM',
+        timestamp: new Date('2026-02-19T09:15:00'),
+        universityId: 'SCI003',
+        name: 'Mike Johnson',
+        status: 'pending',
+        details: {
+            equipment: 'Incubator (1 unit)',
+            lab: 'Lab 02',
+            duration: '4 hours',
+            purpose: 'Bacterial Culture'
+        }
+    }
+];
 
-                updateUserCounts();
-            }
+const supervisorRequests = [
+    {
+        id: 'SUP-REQ-001',
+        dateTime: '2026-02-20 09:30 AM',
+        timestamp: new Date('2026-02-20T09:30:00'),
+        universityId: 'SCI004',
+        name: 'Sarah Wilson',
+        status: 'pending',
+        details: {
+            equipment: 'Autoclave (1 unit)',
+            lab: 'Lab 01',
+            duration: '1.5 hours',
+            purpose: 'Media Sterilization',
+            supervisor: 'Dr. Kamal Perera'
+        }
+    },
+    {
+        id: 'SUP-REQ-002',
+        dateTime: '2026-02-19 02:00 PM',
+        timestamp: new Date('2026-02-19T14:00:00'),
+        universityId: 'SCI005',
+        name: 'Pathum Perera',
+        status: 'pending',
+        details: {
+            equipment: 'pH Meter (1 unit)',
+            lab: 'Research Lab',
+            duration: '2 hours',
+            purpose: 'Solution Preparation',
+            supervisor: 'Prof. Malini Silva'
+        }
+    }
+];
 
-            function searchInTable(tableId, searchTerm) {
-                const table = document.getElementById(tableId);
-                if (!table) return;
+// Function to update request counts
+function updateRequestCounts() {
+    const technicalCount = technicalRequests.filter(req => req.status === 'pending').length;
+    const supervisorCount = supervisorRequests.filter(req => req.status === 'pending').length;
 
-                const rows = table.getElementsByTagName('tr');
+    document.getElementById('technicalRequestCount').textContent = technicalCount;
+    document.getElementById('supervisorRequestCount').textContent = supervisorCount;
+    document.getElementById('requestBadge').textContent = technicalCount + supervisorCount;
+}
 
-                for (let row of rows) {
-                    const text = row.textContent.toLowerCase();
-                    if (text.includes(searchTerm) || searchTerm === '') {
-                        row.style.display = '';
-                    } else {
-                        row.style.display = 'none';
-                    }
-                }
-            }
+function switchRequestType(type) {
+    currentRequestType = type;
+    const tabs = document.querySelectorAll('.request-tab');
+    tabs.forEach(tab => tab.classList.remove('active'));
 
-            function updateUserCounts() {
-                const studentTable = document.getElementById('studentTableBody');
-                const supervisorTable = document.getElementById('supervisorTableBody');
-                const techTable = document.getElementById('techOfficerTableBody');
+    if (type === 'technical') {
+        tabs[0].classList.add('active');
+    } else {
+        tabs[1].classList.add('active');
+    }
+    filterRequestsByTime();
+}
 
-                if (studentTable) {
-                    document.getElementById('studentCount').textContent =
-                        '(' + studentTable.children.length + ')';
-                }
-                if (supervisorTable) {
-                    document.getElementById('supervisorCount').textContent =
-                        '(' + supervisorTable.children.length + ')';
-                }
-                if (techTable) {
-                    document.getElementById('techOfficerCount').textContent =
-                        '(' + techTable.children.length + ')';
-                }
-            }
+function filterRequestsByTime() {
+    const timeRange = document.getElementById('timeRangeFilter').value;
+    const today = new Date();
+    let requests = currentRequestType === 'technical' ? technicalRequests : supervisorRequests;
+    let filtered = [];
 
-            function addNewUser() {
-                alert('Add User modal would open here');
-            }
+    switch (timeRange) {
+        case 'daily':
+            filtered = requests.filter(item =>
+                item.timestamp.toDateString() === today.toDateString()
+            );
+            break;
+        case 'weekly':
+            const weekAgo = new Date();
+            weekAgo.setDate(today.getDate() - 7);
+            filtered = requests.filter(item => item.timestamp >= weekAgo);
+            break;
+        case 'monthly':
+            const monthAgo = new Date();
+            monthAgo.setDate(today.getDate() - 30);
+            filtered = requests.filter(item => item.timestamp >= monthAgo);
+            break;
+        case 'all':
+        default:
+            filtered = requests;
+            break;
+    }
+    displayRequestTable(filtered);
+}
 
-            function editUser(userId) {
-                alert('Edit user: ' + userId);
-            }
+function displayRequestTable(requests) {
+    const tableBody = document.getElementById('requestListBody');
+    if (!tableBody) return;
+    tableBody.innerHTML = '';
 
-            function removeUser(userId) {
-                if (confirm('Are you sure you want to remove user: ' + userId + '?')) {
-                    alert('User ' + userId + ' removed');
-                }
-            }
-
-            // Initialize counts on page load
-            document.addEventListener('DOMContentLoaded', function() {
-                updateUserCounts();
-                initCharts();
-                showSection('dashboard');
-                initEquipmentGrid();
-                initCalendar();
-
-                // Initialize equipment table if equipment section exists
-                if (document.getElementById('equipmentSection')) {
-                    displayEquipmentTable(equipmentDataTable);
-                }
-            });
-
-            // Toggle Sidebar
-            function toggleSidebar() {
-                document.getElementById("sidebar").classList.toggle("active");
-                document.getElementById("sidebarOverlay").classList.toggle("active");
-            }
-
-            // Toggle Notifications
-            function toggleNotifications() {
-                document.getElementById("notificationDropdown").classList.toggle("show");
-            }
-
-            // Close notifications when clicking outside
-            document.addEventListener('click', function(event) {
-                const bell = document.querySelector('.notification-bell');
-                const dropdown = document.getElementById('notificationDropdown');
-                if (bell && dropdown && !bell.contains(event.target) && !dropdown.contains(event.target)) {
-                    dropdown.classList.remove('show');
-                }
-            });
-
-            // Show different sections
-            function showSection(section) {
-                // Hide all sections
-                document.getElementById('dashboardSection').style.display = 'none';
-                document.getElementById('userManagementSection').style.display = 'none';
-                document.getElementById('equipmentSection').style.display = 'none';
-                document.getElementById('historySection').style.display = 'none';
-                document.getElementById('activitySection').style.display = 'none';
-                document.getElementById('analyticsSection').style.display = 'none';
-                // document.getElementById('reportsSection').style.display = 'none';
-
-                // Show selected section
-                const sectionElement = document.getElementById(section + 'Section');
-                if (sectionElement) {
-                    sectionElement.style.display = 'block';
-                }
-
-                // Update active state in sidebar
-                document.querySelectorAll('.sidebar a').forEach(link => {
-                    link.classList.remove('active');
-                    if (link.getAttribute('onclick') && link.getAttribute('onclick').includes(section)) {
-                        link.classList.add('active');
-                    }
-                });
-
-                // Initialize equipment grid if showing equipment section
-                if (section === 'equipment') {
-                    initEquipmentGrid();
-                }
-
-                // Initialize charts if showing dashboard, analytics, or reports
-                if (section === 'dashboard' || section === 'analytics' || section === 'reports') {
-                    setTimeout(() => {
-                        initCharts();
-                    }, 100);
-                }
-            }
-
-            // ========== EQUIPMENT GRID (Browser) ==========
-            const equipmentGridData = [{
-                    name: 'Microscope',
-                    image: 'https://cdn-icons-png.flaticon.com/512/2941/2941514.png',
-                    location: 'Microbiology Lab 01',
-                    status: 'available',
-                    lab: 'lab1'
-                },
-                {
-                    name: 'Centrifuge',
-                    image: 'https://cdn-icons-png.flaticon.com/512/2941/2941543.png',
-                    location: 'Research Laboratory',
-                    status: 'in-use',
-                    lab: 'research'
-                },
-                {
-                    name: 'Incubator',
-                    image: 'https://cdn-icons-png.flaticon.com/512/2941/2941538.png',
-                    location: 'Microbiology Lab 02',
-                    status: 'maintenance',
-                    lab: 'lab2'
-                },
-                {
-                    name: 'Autoclave',
-                    image: 'https://cdn-icons-png.flaticon.com/512/2941/2941521.png',
-                    location: 'Microbiology Lab 01',
-                    status: 'available',
-                    lab: 'lab1'
-                },
-                {
-                    name: 'pH Meter',
-                    image: 'https://cdn-icons-png.flaticon.com/512/2941/2941556.png',
-                    location: 'Research Laboratory',
-                    status: 'available',
-                    lab: 'research'
-                },
-                {
-                    name: 'Water Bath',
-                    image: 'https://cdn-icons-png.flaticon.com/512/2941/2941578.png',
-                    location: 'Microbiology Lab 02',
-                    status: 'in-use',
-                    lab: 'lab2'
-                }
-            ];
-
-            function initEquipmentGrid() {
-                const grid = document.getElementById('equipmentGrid');
-                if (!grid) return;
-
-                grid.innerHTML = '';
-
-                const labFilter = document.getElementById('labFilter')?.value || 'all';
-                const statusFilter = document.getElementById('statusFilter')?.value || 'all';
-
-                equipmentGridData.forEach(item => {
-                    if ((labFilter === 'all' || item.lab === labFilter) &&
-                        (statusFilter === 'all' || item.status === statusFilter)) {
-
-                        const card = document.createElement('div');
-                        card.className = 'equipment-card';
-                        card.innerHTML = `
-                    <div class="equipment-image">
-                        <img src="${item.image}" alt="${item.name}">
-                        <div class="status-indicator ${item.status === 'available' ? 'available' : item.status === 'in-use' ? 'in-use' : 'maintenance'}"></div>
-                    </div>
-                    <div class="equipment-info">
-                        <h5>${item.name}</h5>
-                        <p><i class="bi bi-geo-alt"></i> ${item.location}</p>
-                        <div class="location">
-                            <span class="badge bg-${item.status === 'available' ? 'success' : item.status === 'in-use' ? 'warning' : 'danger'}">${item.status}</span>
-                        </div>
-                    </div>
-                `;
-                        grid.appendChild(card);
-                    }
-                });
-            }
-
-            function filterEquipment() {
-                initEquipmentGrid();
-            }
-
-            // ========== EQUIPMENT TABLE (Management) ==========
-            const equipmentDataTable = [{
-                    code: 'MIC-001',
-                    name: 'Microscope',
-                    image: 'https://cdn-icons-png.flaticon.com/512/2941/2941514.png',
-                    available: 4,
-                    total: 8,
-                    maintenance: 2,
-                    usage: 75,
-                    location: 'Microbiology Lab 01',
-                    manufacturer: 'Olympus',
-                    model: 'CX23',
-                    purchaseDate: '2024-01-15',
-                    lastMaintenance: '2026-02-01',
-                    nextMaintenance: '2026-05-01',
-                    description: 'Binocular microscope with LED illumination, 4 objective lenses (4x, 10x, 40x, 100x)'
-                },
-                {
-                    code: 'CEN-002',
-                    name: 'Centrifuge',
-                    image: 'https://cdn-icons-png.flaticon.com/512/2941/2941543.png',
-                    available: 3,
-                    total: 5,
-                    maintenance: 1,
-                    usage: 60,
-                    location: 'Research Laboratory',
-                    manufacturer: 'Eppendorf',
-                    model: '5424R',
-                    purchaseDate: '2023-11-20',
-                    lastMaintenance: '2026-01-15',
-                    nextMaintenance: '2026-04-15',
-                    description: 'Refrigerated microcentrifuge, max speed 15,000 rpm'
-                },
-                {
-                    code: 'INC-003',
-                    name: 'Incubator',
-                    image: 'https://cdn-icons-png.flaticon.com/512/2941/2941538.png',
-                    available: 2,
-                    total: 4,
-                    maintenance: 3,
-                    usage: 50,
-                    location: 'Microbiology Lab 02',
-                    manufacturer: 'Thermo Scientific',
-                    model: 'Heratherm',
-                    purchaseDate: '2023-09-10',
-                    lastMaintenance: '2026-02-10',
-                    nextMaintenance: '2026-03-10',
-                    description: 'Microbiological incubator, 100L capacity'
-                },
-                {
-                    code: 'AUT-004',
-                    name: 'Autoclave',
-                    image: 'https://cdn-icons-png.flaticon.com/512/2941/2941521.png',
-                    available: 6,
-                    total: 6,
-                    maintenance: 0,
-                    usage: 90,
-                    location: 'Microbiology Lab 01',
-                    manufacturer: 'Hirayama',
-                    model: 'HVE-50',
-                    purchaseDate: '2024-02-01',
-                    lastMaintenance: '2026-01-20',
-                    nextMaintenance: '2026-04-20',
-                    description: 'Vertical sterilization autoclave, 50L capacity'
-                },
-                {
-                    code: 'PHM-005',
-                    name: 'pH Meter',
-                    image: 'https://cdn-icons-png.flaticon.com/512/2941/2941556.png',
-                    available: 3,
-                    total: 3,
-                    maintenance: 1,
-                    usage: 35,
-                    location: 'Research Laboratory',
-                    manufacturer: 'Mettler Toledo',
-                    model: 'FiveEasy',
-                    purchaseDate: '2024-03-05',
-                    lastMaintenance: '2026-02-05',
-                    nextMaintenance: '2026-05-05',
-                    description: 'Digital pH meter with automatic temperature compensation'
-                },
-                {
-                    code: 'WAT-006',
-                    name: 'Water Bath',
-                    image: 'https://cdn-icons-png.flaticon.com/512/2941/2941578.png',
-                    available: 5,
-                    total: 7,
-                    maintenance: 2,
-                    usage: 70,
-                    location: 'Microbiology Lab 02',
-                    manufacturer: 'Memmert',
-                    model: 'WNB 14',
-                    purchaseDate: '2023-10-12',
-                    lastMaintenance: '2026-01-25',
-                    nextMaintenance: '2026-02-25',
-                    description: 'Digital water bath, 20L capacity'
-                }
-            ];
-
-            // Search equipment
-            function searchEquipment() {
-                const searchTerm = document.getElementById('equipmentSearch').value.toLowerCase();
-                const filtered = equipmentDataTable.filter(item =>
-                    item.code.toLowerCase().includes(searchTerm) ||
-                    item.name.toLowerCase().includes(searchTerm) ||
-                    item.location.toLowerCase().includes(searchTerm)
-                );
-                displayEquipmentTable(filtered);
-            }
-
-            // Display equipment table
-            function displayEquipmentTable(equipment) {
-                const tableBody = document.getElementById('equipmentTableBody');
-                if (!tableBody) return;
-
-                tableBody.innerHTML = '';
-
-                equipment.forEach(item => {
-                    const row = document.createElement('tr');
-
-                    // Determine badge color based on availability ratio
-                    const ratio = item.available / item.total;
-                    let badgeColor = '#22c55e'; // green
-                    if (ratio < 0.3) badgeColor = '#ef4444'; // red
-                    else if (ratio < 0.6) badgeColor = '#f59e0b'; // orange
-
-                    row.innerHTML = `
-                <td><img src="${item.image}" style="width: 50px; height: 50px; object-fit: contain;"></td>
-                <td>${item.code}</td>
-                <td>${item.name}</td>
-                <td><span class="badge" style="background: ${badgeColor}; color: white;">${item.available}/${item.total}</span></td>
-                <td><span class="badge bg-warning">${item.maintenance}</span></td>
-                <td>
-                    <div class="progress-bar" style="width: 100px; display: inline-block; margin-right: 10px;">
-                        <div class="progress-fill" style="width: ${item.usage}%"></div>
-                    </div>
-                    ${item.usage}%
-                </td>
-                <td>
-                    <div class="action-buttons">
-                        <button class="btn-view" onclick="viewEquipment('${item.code}')" title="View Details">
-                            <i class="bi bi-eye"></i>
-                        </button>
-                        <button class="btn-edit" onclick="editEquipment('${item.code}')" title="Edit">
-                            <i class="bi bi-pencil-square"></i>
-                        </button>
-                        <button class="btn-remove" onclick="removeEquipment('${item.code}')" title="Remove">
-                            <i class="bi bi-trash"></i>
-                        </button>
-                    </div>
-                </td>
-            `;
-                    tableBody.appendChild(row);
-                });
-            }
-
-            // View equipment details
-            function viewEquipment(code) {
-                const equipment = equipmentDataTable.find(item => item.code === code);
-                if (!equipment) return;
-
-                const detailsContent = document.getElementById('equipmentDetailsContent');
-
-                // Format dates
-                const purchaseDate = new Date(equipment.purchaseDate).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                });
-                const lastMaintenance = new Date(equipment.lastMaintenance).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                });
-                const nextMaintenance = new Date(equipment.nextMaintenance).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                });
-
-                // Check if next maintenance is overdue
-                const today = new Date();
-                const nextDate = new Date(equipment.nextMaintenance);
-                const isOverdue = nextDate < today;
-
-                detailsContent.innerHTML = `
-            <div class="row">
-                <div class="col-md-4 text-center">
-                    <img src="${equipment.image}" style="width: 150px; height: 150px; object-fit: contain;" class="mb-3">
-                    <h4>${equipment.name}</h4>
-                    <p class="text-muted">${equipment.code}</p>
-                    <span class="badge ${equipment.available > 0 ? 'bg-success' : 'bg-danger'}" style="font-size: 1rem;">
-                        ${equipment.available > 0 ? 'Available' : 'Unavailable'}
-                    </span>
+    requests.sort((a, b) => b.timestamp - a.timestamp);
+    requests.forEach(item => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${item.id}</td>
+            <td>${item.dateTime}</td>
+            <td>${item.universityId}</td>
+            <td>${item.name}</td>
+            <td>
+                <div class="action-buttons">
+                    <button class="btn-view" onclick="viewRequest('${item.id}')" title="View Details">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                    <button class="btn-approve" onclick="approveRequest('${item.id}')" title="Approve">
+                        <i class="bi bi-check-circle"></i>
+                    </button>
+                    <button class="btn-reject" onclick="rejectRequest('${item.id}')" title="Reject">
+                        <i class="bi bi-x-circle"></i>
+                    </button>
                 </div>
-                <div class="col-md-8">
-                    <table class="table table-borderless">
-                        <tr><th style="width: 150px;">Location:</th><td>${equipment.location}</td></tr>
-                        <tr><th>Manufacturer:</th><td>${equipment.manufacturer}</td></tr>
-                        <tr><th>Model:</th><td>${equipment.model}</td></tr>
-                        <tr><th>Purchase Date:</th><td>${purchaseDate}</td></tr>
-                        <tr><th>Last Maintenance:</th><td>${lastMaintenance}</td></tr>
-                        <tr>
-                            <th>Next Maintenance:</th>
-                            <td>
-                                ${nextMaintenance}
-                                ${isOverdue ? '<span class="badge bg-danger ms-2">⚠️ Overdue</span>' : ''}
-                            </td>
-                        </tr>
-                        <tr><th>Availability:</th><td><span class="badge" style="background: #22c55e;">${equipment.available}/${equipment.total} units</span></td></tr>
-                        <tr><th>Maintenance:</th><td><span class="badge bg-warning">${equipment.maintenance} pending</span></td></tr>
-                        <tr>
-                            <th>Usage Rate:</th>
-                            <td>
-                                <div class="progress-bar" style="width: 200px;">
-                                    <div class="progress-fill" style="width: ${equipment.usage}%"></div>
-                                </div>
-                                ${equipment.usage}%
-                            </td>
-                        </tr>
-                        <tr><th>Description:</th><td>${equipment.description}</td></tr>
-                    </table>
-                </div>
-            </div>
+            </td>
         `;
-
-                new bootstrap.Modal(document.getElementById('equipmentDetailsModal')).show();
-            }
-
-            // Add new equipment
-            function addEquipment() {
-                alert('Add Equipment functionality would open a form modal');
-            }
-
-            // Edit equipment
-            function editEquipment(code) {
-                alert('Edit equipment: ' + code);
-            }
-
-            // Remove equipment
-            function removeEquipment(code) {
-                if (confirm(`Are you sure you want to remove equipment ${code}?`)) {
-                    // Remove from array
-                    const index = equipmentDataTable.findIndex(item => item.code === code);
-                    if (index !== -1) {
-                        equipmentDataTable.splice(index, 1);
-                    }
-                    displayEquipmentTable(equipmentDataTable);
-                    alert('Equipment removed successfully!');
-                }
-            }
-
-            // Request Management Functions
-            function filterRequests() {
-                const filter = document.getElementById('requestFilter').value;
-                console.log('Filtering requests:', filter);
-            }
-
-            function approveRequest(requestId) {
-                if (confirm(`Approve request ${requestId}?`)) {
-                    alert(`Request ${requestId} approved successfully!`);
-                }
-            }
-
-            function rejectRequest(requestId) {
-                const reason = prompt(`Enter rejection reason for ${requestId}:`);
-                if (reason) {
-                    alert(`Request ${requestId} rejected. Reason: ${reason}`);
-                }
-            }
-
-            // Activity Functions
-            function filterActivities() {
-                const date = document.getElementById('activityDate').value;
-                console.log('Filtering activities for:', date);
-            }
-
-            function viewActivity(activityId) {
-                alert(`Viewing details for activity: ${activityId}`);
-            }
-
-            // Report Functions
-            function generateReport(type) {
-                alert(`Generating ${type} report...`);
-
-                const message = document.createElement('div');
-                message.className = 'alert alert-success position-fixed top-0 end-0 m-3';
-                message.style.zIndex = '9999';
-                message.innerHTML = `${type.charAt(0).toUpperCase() + type.slice(1)} report generated successfully!`;
-                document.body.appendChild(message);
-                setTimeout(() => message.remove(), 3000);
-            }
-
-            // Charts Initialization
-            let usageChart, monthlyChart, reportChart;
-
-            function initCharts() {
-                // Destroy existing charts if they exist
-                if (usageChart) usageChart.destroy();
-                if (monthlyChart) monthlyChart.destroy();
-                if (reportChart) reportChart.destroy();
-
-                // Usage Chart
-                const usageCtx = document.getElementById('usageChart')?.getContext('2d');
-                if (usageCtx) {
-                    usageChart = new Chart(usageCtx, {
-                        type: 'bar',
-                        data: {
-                            labels: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
-                            datasets: [{
-                                label: 'Number of Completed Practicals/Research',
-                                data: [45, 32, 28, 20, 15, 10, 5],
-                                backgroundColor: '#22c55e',
-                                borderRadius: 8
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: {
-                                    display: false
-                                }
-                            }
-                        }
-                    });
-                }
-
-                // Monthly Chart
-                const monthlyCtx = document.getElementById('monthlyChart')?.getContext('2d');
-                if (monthlyCtx) {
-                    monthlyChart = new Chart(monthlyCtx, {
-                        type: 'line',
-                        data: {
-                            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-                            datasets: [{
-                                label: 'System Usage',
-                                data: [12, 19, 15, 25, 22, 30],
-                                borderColor: '#22c55e',
-                                backgroundColor: 'rgba(34, 197, 94, 0.1)',
-                                tension: 0.4,
-                                fill: true
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false
-                        }
-                    });
-                }
-
-                // Report Chart
-                const reportCtx = document.getElementById('reportChart')?.getContext('2d');
-                if (reportCtx) {
-                    reportChart = new Chart(reportCtx, {
-                        type: 'bar',
-                        data: {
-                            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-                            datasets: [{
-                                label: 'Equipment Usage',
-                                data: [12, 19, 15, 17, 14, 8, 5],
-                                backgroundColor: '#22c55e',
-                                borderRadius: 8
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: {
-                                    display: false
-                                }
-                            }
-                        }
-                    });
-                }
-            }
-
-            // Calendar Implementation
-            let activeDay;
-            let month = new Date().getMonth();
-            let year = new Date().getFullYear();
-
-            const months = [
-                "January", "February", "March", "April", "May", "June",
-                "July", "August", "September", "October", "November", "December"
-            ];
-
-            let eventsArr = [];
-
-            // Load events from localStorage
-            function loadEvents() {
-                const saved = localStorage.getItem("calendarEvents");
-                if (saved) {
-                    eventsArr = JSON.parse(saved);
-                }
-            }
-            loadEvents();
-
-            function saveEvents() {
-                localStorage.setItem("calendarEvents", JSON.stringify(eventsArr));
-            }
-
-            function initCalendar() {
-                const firstDay = new Date(year, month, 1);
-                const lastDay = new Date(year, month + 1, 0);
-                const prevLastDay = new Date(year, month, 0);
-                const prevDays = prevLastDay.getDate();
-                const lastDate = lastDay.getDate();
-                const day = firstDay.getDay();
-                const nextDays = 7 - lastDay.getDay() - 1;
-
-                const displayMonth = document.getElementById('displayMonth');
-                if (displayMonth) {
-                    displayMonth.innerHTML = months[month] + " " + year;
-                }
-
-                let days = "";
-
-                // Previous month days
-                for (let x = day; x > 0; x--) {
-                    days += `<div class="day-cell prev-date">${prevDays - x + 1}</div>`;
-                }
-
-                // Current month days
-                for (let i = 1; i <= lastDate; i++) {
-                    let hasEvent = false;
-                    eventsArr.forEach(event => {
-                        if (event.day === i && event.month === month + 1 && event.year === year) {
-                            hasEvent = true;
-                        }
-                    });
-
-                    let classes = "day-cell";
-                    if (i === new Date().getDate() && year === new Date().getFullYear() && month === new Date().getMonth()) {
-                        classes += " today";
-                    }
-                    if (hasEvent) {
-                        classes += " event";
-                    }
-
-                    days += `<div class="${classes}" data-day="${i}">${i}</div>`;
-                }
-
-                // Next month days
-                for (let j = 1; j <= nextDays; j++) {
-                    days += `<div class="day-cell next-date">${j}</div>`;
-                }
-
-                const daysGrid = document.getElementById('daysGrid');
-                if (daysGrid) {
-                    daysGrid.innerHTML = days;
-                }
-                updateActiveDay();
-
-                // Update event display for current active day or today
-                if (activeDay) {
-                    updateEventDisplay(activeDay);
-                } else {
-                    updateEventDisplay(new Date().getDate());
-                }
-            }
-
-            function updateActiveDay() {
-                const dayCells = document.querySelectorAll('.day-cell');
-                dayCells.forEach(cell => {
-                    cell.addEventListener('click', function(e) {
-                        if (!this.classList.contains('prev-date') && !this.classList.contains('next-date')) {
-                            // Remove active class from all cells
-                            dayCells.forEach(c => c.classList.remove('active'));
-                            // Add active class to clicked cell
-                            this.classList.add('active');
-
-                            const day = parseInt(this.textContent);
-                            activeDay = day;
-                            updateEventDisplay(day);
-                        }
-                    });
-                });
-            }
-
-            function updateEventDisplay(day) {
-                const date = new Date(year, month, day);
-                const dayName = date.toString().split(' ')[0];
-
-                const eventDayEl = document.getElementById('eventDay');
-                const eventDateEl = document.getElementById('eventDate');
-
-                if (eventDayEl) {
-                    eventDayEl.innerHTML = dayName;
-                }
-                if (eventDateEl) {
-                    eventDateEl.innerHTML = `${day} ${months[month]} ${year}`;
-                }
-
-                // Show events for this day
-                let eventsHtml = "";
-                eventsArr.forEach(event => {
-                    if (event.day === day && event.month === month + 1 && event.year === year) {
-                        event.events.forEach(ev => {
-                            eventsHtml += `
-                        <div class="event-item" onclick="deleteEvent(this, '${ev.title}')">
-                            <div class="title">
-                                <i class="fas fa-circle"></i>
-                                <span class="event-title">${ev.title}</span>
-                            </div>
-                            <div class="event-time">${ev.time}</div>
-                            <div class="event-time" style="margin-left: 28px; font-size: 0.8rem;">${ev.details || ''}</div>
-                        </div>
-                    `;
-                        });
-                    }
-                });
-
-                if (eventsHtml === "") {
-                    eventsHtml = '<div class="no-event">No events scheduled</div>';
-                }
-
-                const eventsList = document.getElementById('eventsList');
-                if (eventsList) {
-                    eventsList.innerHTML = eventsHtml;
-                }
-            }
-
-            // Delete event
-            window.deleteEvent = function(element, title) {
-                if (confirm('Are you sure you want to delete this event?')) {
-                    eventsArr.forEach((event, index) => {
-                        if (event.day === activeDay && event.month === month + 1 && event.year === year) {
-                            event.events = event.events.filter(e => e.title !== title);
-                            if (event.events.length === 0) {
-                                eventsArr.splice(index, 1);
-                            }
-                        }
-                    });
-                    saveEvents();
-                    initCalendar();
-                    updateEventDisplay(activeDay);
-                }
-            };
-
-            // Navigation
-            const prevBtn = document.querySelector('.prev');
-            const nextBtn = document.querySelector('.next');
-
-            if (prevBtn) {
-                prevBtn.addEventListener('click', () => {
-                    month--;
-                    if (month < 0) {
-                        month = 11;
-                        year--;
-                    }
-                    initCalendar();
-                });
-            }
-
-            if (nextBtn) {
-                nextBtn.addEventListener('click', () => {
-                    month++;
-                    if (month > 11) {
-                        month = 0;
-                        year++;
-                    }
-                    initCalendar();
-                });
-            }
-
-            const todayBtn = document.getElementById('todayBtn');
-            if (todayBtn) {
-                todayBtn.addEventListener('click', () => {
-                    const today = new Date();
-                    month = today.getMonth();
-                    year = today.getFullYear();
-                    initCalendar();
-                    updateEventDisplay(today.getDate());
-                });
-            }
-
-            const gotoBtn = document.getElementById('gotoBtn');
-            if (gotoBtn) {
-                gotoBtn.addEventListener('click', () => {
-                    const input = document.getElementById('gotoInput').value;
-                    const parts = input.split('/');
-                    if (parts.length === 2) {
-                        const m = parseInt(parts[0]) - 1;
-                        const y = parseInt(parts[1]);
-                        if (m >= 0 && m < 12 && y > 0) {
-                            month = m;
-                            year = y;
-                            initCalendar();
-                        } else {
-                            alert('Invalid date format. Use MM/YYYY');
-                        }
-                    } else {
-                        alert('Invalid date format. Use MM/YYYY');
-                    }
-                });
-            }
-
-            // Modal close functionality
-            const addEventWrapper = document.getElementById('addEventWrapper');
-            const closeEventBtn = document.getElementById('closeEventBtn');
-
-            if (closeEventBtn) {
-                closeEventBtn.addEventListener('click', () => {
-                    addEventWrapper.classList.remove('active');
-                });
-            }
-
-            window.addEventListener('click', (e) => {
-                if (e.target === addEventWrapper) {
-                    addEventWrapper.classList.remove('active');
-                }
-            });
-
-            // Confirm Request Submit
-            const addEventSubmit = document.getElementById('addEventSubmit');
-            if (addEventSubmit) {
-                addEventSubmit.addEventListener('click', () => {
-                    const title = document.getElementById('eventName').value.trim();
-                    const details = document.getElementById('eventDetails').value.trim();
-                    const from = document.getElementById('eventTimeFrom').value;
-                    const to = document.getElementById('eventTimeTo').value;
-
-                    if (!title || !from || !to) {
-                        alert('Please fill all fields');
-                        return;
-                    }
-
-                    // Add event to calendar
-                    const requestDate = new Date();
-                    const eventDay = requestDate.getDate();
-                    const eventMonth = requestDate.getMonth() + 1;
-                    const eventYear = requestDate.getFullYear();
-
-                    const newEvent = {
-                        title: title,
-                        time: `${from} - ${to}`,
-                        details: details
-                    };
-
-                    let added = false;
-                    eventsArr.forEach(event => {
-                        if (event.day === eventDay && event.month === eventMonth && event.year === eventYear) {
-                            event.events.push(newEvent);
-                            added = true;
-                        }
-                    });
-
-                    if (!added) {
-                        eventsArr.push({
-                            day: eventDay,
-                            month: eventMonth,
-                            year: eventYear,
-                            events: [newEvent]
-                        });
-                    }
-
-                    saveEvents();
-                    initCalendar();
-
-                    // Add notification
-                    addNotification('New equipment request submitted', 'success');
-
-                    // Clear form
-                    document.getElementById('eventName').value = '';
-                    document.getElementById('eventDetails').value = '';
-
-                    // Close modal
-                    addEventWrapper.classList.remove('active');
-
-                    alert('Equipment request submitted successfully!');
-                });
-            }
-
-            // Add notification function
-            function addNotification(message, type) {
-                const badge = document.getElementById('notificationBadge');
-                if (badge) {
-                    const currentCount = parseInt(badge.textContent);
-                    badge.textContent = currentCount + 1;
-                }
-
-                const list = document.getElementById('notificationList');
-                if (list) {
-                    const newNotif = document.createElement('div');
-                    newNotif.className = 'notification-item unread';
-                    newNotif.innerHTML = `
-                <div><i class="bi bi-${type === 'success' ? 'check-circle-fill text-success' : 'info-circle-fill text-info'} me-2"></i> ${message}</div>
-                <div class="time">Just now</div>
-            `;
-                    list.insertBefore(newNotif, list.firstChild);
-                }
-            }
-
-
-            // ========== RESERVATION DATA ==========
-            const reservationData = [{
-                    id: 'RES-001',
-                    lab: 'Microbiology Lab 01',
-                    studentId: 'SCI001',
-                    studentName: 'John Doe',
-                    status: 'ready',
-                    date: '2026-02-25',
-                    time: '10:00 - 12:00',
-                    equipment: 'Microscope (2), Slides (10)',
-                    purpose: 'Final Year Research Project',
-                    technicalOfficer: 'Mr. Sunil Rathnayake',
-                    notes: 'All equipment verified and ready'
-                },
-                {
-                    id: 'RES-002',
-                    lab: 'Research Laboratory',
-                    studentId: 'SCI002',
-                    studentName: 'Jane Smith',
-                    status: 'pending',
-                    date: '2026-02-26',
-                    time: '14:00 - 16:00',
-                    equipment: 'Centrifuge (1), Test Tubes (5)',
-                    purpose: 'DNA Extraction Practical',
-                    technicalOfficer: 'Mrs. Chamari Weerasinghe',
-                    notes: 'Waiting for equipment availability'
-                },
-                {
-                    id: 'RES-003',
-                    lab: 'Microbiology Lab 02',
-                    studentId: 'SCI003',
-                    studentName: 'Mike Johnson',
-                    status: 'rejected',
-                    date: '2026-02-24',
-                    time: '09:00 - 11:00',
-                    equipment: 'Incubator (1), Culture Media (2)',
-                    purpose: 'Bacterial Culture Experiment',
-                    technicalOfficer: 'Mr. Prasanna Kumara',
-                    notes: 'Equipment under maintenance'
-                },
-                {
-                    id: 'RES-004',
-                    lab: 'Microbiology Lab 01',
-                    studentId: 'SCI004',
-                    studentName: 'Sarah Wilson',
-                    status: 'ready',
-                    date: '2026-02-27',
-                    time: '13:00 - 15:00',
-                    equipment: 'Autoclave (1), Sterilization Bags (5)',
-                    purpose: 'Media Sterilization',
-                    technicalOfficer: 'Mr. Sunil Rathnayake',
-                    notes: 'All set for use'
-                },
-                {
-                    id: 'RES-005',
-                    lab: 'Research Laboratory',
-                    studentId: 'SCI005',
-                    studentName: 'Pathum Perera',
-                    status: 'pending',
-                    date: '2026-02-28',
-                    time: '11:00 - 13:00',
-                    equipment: 'pH Meter (1), Buffer Solutions (3)',
-                    purpose: 'Solution Preparation',
-                    technicalOfficer: 'Mrs. Chamari Weerasinghe',
-                    notes: 'Awaiting supervisor approval'
-                },
-                {
-                    id: 'RES-006',
-                    lab: 'Microbiology Lab 02',
-                    studentId: 'SCI006',
-                    studentName: 'Nimali Fernando',
-                    status: 'rejected',
-                    date: '2026-02-23',
-                    time: '15:00 - 17:00',
-                    equipment: 'Water Bath (1), Thermometers (2)',
-                    purpose: 'Enzyme Activity Study',
-                    technicalOfficer: 'Mr. Prasanna Kumara',
-                    notes: 'Schedule conflict with another reservation'
-                }
-            ];
-
-            // Search reservations
-            function searchReservations() {
-                const searchTerm = document.getElementById('reservationSearch').value.toLowerCase();
-                const filtered = reservationData.filter(item =>
-                    item.id.toLowerCase().includes(searchTerm) ||
-                    item.studentId.toLowerCase().includes(searchTerm) ||
-                    item.studentName.toLowerCase().includes(searchTerm) ||
-                    item.lab.toLowerCase().includes(searchTerm)
-                );
-                displayReservationTable(filtered);
-            }
-
-            // Filter reservations by status
-            function filterReservations() {
-                const statusFilter = document.getElementById('statusFilter').value;
-
-                if (statusFilter === 'all') {
-                    displayReservationTable(reservationData);
-                } else {
-                    const filtered = reservationData.filter(item => item.status === statusFilter);
-                    displayReservationTable(filtered);
-                }
-            }
-
-            // Display reservation table
-            function displayReservationTable(reservations) {
-                const tableBody = document.getElementById('reservationTableBody');
-                if (!tableBody) return;
-
-                tableBody.innerHTML = '';
-
-                reservations.forEach(item => {
-                    const row = document.createElement('tr');
-
-                    // Determine status badge class
-                    let statusClass = '';
-                    let statusText = '';
-
-                    switch (item.status) {
-                        case 'ready':
-                            statusClass = 'bg-success';
-                            statusText = 'Ready';
-                            break;
-                        case 'pending':
-                            statusClass = 'bg-warning';
-                            statusText = 'Pending';
-                            break;
-                        case 'rejected':
-                            statusClass = 'bg-danger';
-                            statusText = 'Rejected';
-                            break;
-                    }
-
-                    row.innerHTML = `
+        tableBody.appendChild(row);
+    });
+
+    if (requests.length === 0) {
+        const row = document.createElement('tr');
+        row.innerHTML = `<td colspan="5" class="text-center">No requests found for this time period</td>`;
+        tableBody.appendChild(row);
+    }
+}
+
+function viewRequest(id) {
+    const requests = currentRequestType === 'technical' ? technicalRequests : supervisorRequests;
+    const request = requests.find(item => item.id === id);
+    if (!request) return;
+
+    currentRequestId = id;
+    const detailsContent = document.getElementById('requestDetailsContent');
+    let detailsHtml = `
+        <div class="row">
+            <div class="col-md-12">
+                <table class="table table-borderless">
+                    <tr><th style="width: 150px;">Request ID:</th><td><strong>${request.id}</strong></td></tr>
+                    <tr><th>Date & Time:</th><td>${request.dateTime}</td></tr>
+                    <tr><th>University ID:</th><td>${request.universityId}</td></tr>
+                    <tr><th>Name:</th><td>${request.name}</td></tr>
+                    <tr><th>Equipment:</th><td>${request.details.equipment}</td></tr>
+                    <tr><th>Lab:</th><td>${request.details.lab}</td></tr>
+                    <tr><th>Duration:</th><td>${request.details.duration}</td></tr>
+                    <tr><th>Purpose:</th><td>${request.details.purpose}</td></tr>
+    `;
+    if (currentRequestType === 'supervisor' && request.details.supervisor) {
+        detailsHtml += `<tr><th>Supervisor:</th><td>${request.details.supervisor}</td></tr>`;
+    }
+    detailsHtml += `</table></div></div>`;
+    detailsContent.innerHTML = detailsHtml;
+    new bootstrap.Modal(document.getElementById('requestDetailsModal')).show();
+}
+
+function approveRequest(id) {
+    const requestId = id || currentRequestId;
+    if (confirm(`Are you sure you want to approve request ${requestId}?`)) {
+        const requests = currentRequestType === 'technical' ? technicalRequests : supervisorRequests;
+        const request = requests.find(r => r.id === requestId);
+        if (request) request.status = 'approved';
+
+        alert(`Request ${requestId} has been approved successfully!`);
+        const modal = bootstrap.Modal.getInstance(document.getElementById('requestDetailsModal'));
+        if (modal) modal.hide();
+
+        updateRequestCounts();
+        filterRequestsByTime();
+    }
+}
+
+function rejectRequest(id) {
+    const requestId = id || currentRequestId;
+    const reason = prompt(`Enter rejection reason for request ${requestId}:`);
+    if (reason) {
+        const requests = currentRequestType === 'technical' ? technicalRequests : supervisorRequests;
+        const request = requests.find(r => r.id === requestId);
+        if (request) request.status = 'rejected';
+
+        alert(`Request ${requestId} has been rejected. Reason: ${reason}`);
+        const modal = bootstrap.Modal.getInstance(document.getElementById('requestDetailsModal'));
+        if (modal) modal.hide();
+
+        updateRequestCounts();
+        filterRequestsByTime();
+    }
+}
+
+// ========== EQUIPMENT SEARCH FUNCTIONS ==========
+function searchEquipment() {
+    const searchTerm = document.getElementById('equipmentSearch').value.toLowerCase().trim();
+    const equipmentVisible = filterEquipmentTable('equipmentTableBody', searchTerm);
+    toggleEquipmentVisibility('equipmentTableCard', equipmentVisible, searchTerm);
+    updateEquipmentCount(searchTerm);
+}
+
+function filterEquipmentTable(tableId, searchTerm) {
+    const table = document.getElementById(tableId);
+    if (!table) return 0;
+    let visibleCount = 0;
+
+    for (let row of table.getElementsByTagName('tr')) {
+        if (searchTerm === '' || row.textContent.toLowerCase().includes(searchTerm)) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    }
+    return visibleCount;
+}
+
+function toggleEquipmentVisibility(cardId, visibleCount, searchTerm) {
+    const card = document.getElementById(cardId);
+    if (!card) return;
+    card.style.display = (visibleCount === 0 && searchTerm !== '') ? 'none' : 'block';
+}
+
+function updateEquipmentCount(searchTerm) {
+    const equipmentTable = document.getElementById('equipmentTableBody');
+    if (!equipmentTable) return;
+
+    const visibleEquipment = Array.from(equipmentTable.getElementsByTagName('tr'))
+        .filter(row => row.style.display !== 'none').length;
+    const totalEquipment = equipmentTable.children.length;
+
+    document.getElementById('equipmentCount').textContent =
+        (visibleEquipment > 0 || searchTerm === '') ?
+        '(' + visibleEquipment + '/' + totalEquipment + ')' : '(0)';
+}
+
+// ========== USER MANAGEMENT FUNCTIONS ==========
+function toggleUserStatus(userId) {
+    const userRow = document.querySelector(`tr[data-user-id="${userId}"]`);
+    if (!userRow) return;
+
+    const currentStatus = userRow.getAttribute('data-status');
+    const actionCell = userRow.querySelector('.action-buttons');
+    const button = actionCell.querySelector(currentStatus === 'active' ? '.btn-deactivate' : '.btn-activate');
+
+    if (currentStatus === 'active') {
+        if (confirm(`Are you sure you want to deactivate user ${userId}?`)) {
+            userRow.setAttribute('data-status', 'inactive');
+            button.className = 'btn-activate';
+            button.innerHTML = '<i class="bi bi-person-check"></i> Activate';
+            alert(`User ${userId} has been deactivated.`);
+        }
+    } else {
+        if (confirm(`Are you sure you want to activate user ${userId}?`)) {
+            userRow.setAttribute('data-status', 'active');
+            button.className = 'btn-deactivate';
+            button.innerHTML = '<i class="bi bi-person-x"></i> Deactivate';
+            alert(`User ${userId} has been activated.`);
+        }
+    }
+}
+
+function viewPendingRequests() {
+    showSection('activity');
+    document.getElementById('timeRangeFilter').value = 'all';
+    filterRequestsByTime();
+}
+
+function openNotificationModal() {
+    toggleNotifications();
+}
+
+function searchUsers() {
+    const searchTerm = document.getElementById('userSearch').value.toLowerCase().trim();
+
+    const studentVisible = filterTable('studentTableBody', searchTerm);
+    const supervisorVisible = filterTable('supervisorTableBody', searchTerm);
+    const techVisible = filterTable('techOfficerTableBody', searchTerm);
+
+    toggleTableVisibility('studentTableCard', studentVisible, searchTerm);
+    toggleTableVisibility('supervisorTableCard', supervisorVisible, searchTerm);
+    toggleTableVisibility('techOfficerTableCard', techVisible, searchTerm);
+
+    updateVisibleCounts(searchTerm);
+}
+
+function filterTable(tableId, searchTerm) {
+    const table = document.getElementById(tableId);
+    if (!table) return 0;
+    let visibleCount = 0;
+
+    for (let row of table.getElementsByTagName('tr')) {
+        if (searchTerm === '' || row.textContent.toLowerCase().includes(searchTerm)) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    }
+    return visibleCount;
+}
+
+function toggleTableVisibility(cardId, visibleCount, searchTerm) {
+    const card = document.getElementById(cardId);
+    if (!card) return;
+    card.style.display = (visibleCount === 0 && searchTerm !== '') ? 'none' : 'block';
+}
+
+function updateVisibleCounts(searchTerm) {
+    const tables = [
+        { id: 'studentTableBody', countId: 'studentCount' },
+        { id: 'supervisorTableBody', countId: 'supervisorCount' },
+        { id: 'techOfficerTableBody', countId: 'techOfficerCount' }
+    ];
+
+    tables.forEach(table => {
+        const tbody = document.getElementById(table.id);
+        if (!tbody) return;
+
+        const visible = Array.from(tbody.getElementsByTagName('tr'))
+            .filter(row => row.style.display !== 'none').length;
+        const total = tbody.children.length;
+
+        document.getElementById(table.countId).textContent =
+            (visible > 0 || searchTerm === '') ? '(' + visible + '/' + total + ')' : '(0)';
+    });
+}
+
+function addNewUser() {
+    alert('Add User modal would open here');
+}
+
+function editUser(userId) {
+    alert('Edit user: ' + userId);
+}
+
+// ========== SIDEBAR & NAVIGATION ==========
+function toggleSidebar() {
+    document.getElementById("sidebar").classList.toggle("active");
+    document.getElementById("sidebarOverlay").classList.toggle("active");
+}
+
+function toggleNotifications() {
+    document.getElementById("notificationDropdown").classList.toggle("show");
+}
+
+document.addEventListener('click', function(event) {
+    const bell = document.querySelector('.notification-bell:last-child');
+    const dropdown = document.getElementById('notificationDropdown');
+    if (bell && dropdown && !bell.contains(event.target) && !dropdown.contains(event.target)) {
+        dropdown.classList.remove('show');
+    }
+});
+
+function showSection(section) {
+    const sections = ['dashboard', 'userManagement', 'equipment', 'history', 'activity', 'analytics'];
+    sections.forEach(s => document.getElementById(s + 'Section').style.display = 'none');
+
+    const sectionElement = document.getElementById(section + 'Section');
+    if (sectionElement) sectionElement.style.display = 'block';
+
+    document.querySelectorAll('.sidebar a').forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('onclick')?.includes(section)) link.classList.add('active');
+    });
+
+    if (section === 'equipment') {
+        displayEquipmentTable(equipmentDataTable);
+    }
+    if (section === 'dashboard' || section === 'analytics') {
+        setTimeout(() => {
+            initCharts();
+            initAnalyticsCharts();
+        }, 100);
+    }
+    if (section === 'history') {
+        // Reset filters when showing section
+        document.getElementById('reservationSearch').value = '';
+        document.getElementById('statusFilter').value = 'all';
+        searchReservations();
+    }
+    if (section === 'activity') filterRequestsByTime();
+}
+
+// ========== EQUIPMENT FUNCTIONS ==========
+const equipmentGridData = [
+    { name: 'Microscope', image: 'https://cdn-icons-png.flaticon.com/512/2941/2941514.png', location: 'Microbiology Lab 01', status: 'available', lab: 'lab1' },
+    { name: 'Centrifuge', image: 'https://cdn-icons-png.flaticon.com/512/2941/2941543.png', location: 'Research Laboratory', status: 'in-use', lab: 'research' },
+    { name: 'Incubator', image: 'https://cdn-icons-png.flaticon.com/512/2941/2941538.png', location: 'Microbiology Lab 02', status: 'maintenance', lab: 'lab2' },
+    { name: 'Autoclave', image: 'https://cdn-icons-png.flaticon.com/512/2941/2941521.png', location: 'Microbiology Lab 01', status: 'available', lab: 'lab1' },
+    { name: 'pH Meter', image: 'https://cdn-icons-png.flaticon.com/512/2941/2941556.png', location: 'Research Laboratory', status: 'available', lab: 'research' },
+    { name: 'Water Bath', image: 'https://cdn-icons-png.flaticon.com/512/2941/2941578.png', location: 'Microbiology Lab 02', status: 'in-use', lab: 'lab2' }
+];
+
+const equipmentDataTable = [
+    { code: 'MIC-001', name: 'Microscope', image: 'https://cdn-icons-png.flaticon.com/512/2941/2941514.png', available: 4, total: 8, maintenance: 2, usage: 75, location: 'Microbiology Lab 01', manufacturer: 'Olympus', model: 'CX23', purchaseDate: '2024-01-15', lastMaintenance: '2026-02-01', nextMaintenance: '2026-05-01', description: 'Binocular microscope with LED illumination, 4 objective lenses (4x, 10x, 40x, 100x)' },
+    { code: 'CEN-002', name: 'Centrifuge', image: 'https://cdn-icons-png.flaticon.com/512/2941/2941543.png', available: 3, total: 5, maintenance: 1, usage: 60, location: 'Research Laboratory', manufacturer: 'Eppendorf', model: '5424R', purchaseDate: '2023-11-20', lastMaintenance: '2026-01-15', nextMaintenance: '2026-04-15', description: 'Refrigerated microcentrifuge, max speed 15,000 rpm' },
+    { code: 'INC-003', name: 'Incubator', image: 'https://cdn-icons-png.flaticon.com/512/2941/2941538.png', available: 2, total: 4, maintenance: 3, usage: 50, location: 'Microbiology Lab 02', manufacturer: 'Thermo Scientific', model: 'Heratherm', purchaseDate: '2023-09-10', lastMaintenance: '2026-02-10', nextMaintenance: '2026-03-10', description: 'Microbiological incubator, 100L capacity' },
+    { code: 'AUT-004', name: 'Autoclave', image: 'https://cdn-icons-png.flaticon.com/512/2941/2941521.png', available: 6, total: 6, maintenance: 0, usage: 90, location: 'Microbiology Lab 01', manufacturer: 'Hirayama', model: 'HVE-50', purchaseDate: '2024-02-01', lastMaintenance: '2026-01-20', nextMaintenance: '2026-04-20', description: 'Vertical sterilization autoclave, 50L capacity' },
+    { code: 'PHM-005', name: 'pH Meter', image: 'https://cdn-icons-png.flaticon.com/512/2941/2941556.png', available: 3, total: 3, maintenance: 1, usage: 35, location: 'Research Laboratory', manufacturer: 'Mettler Toledo', model: 'FiveEasy', purchaseDate: '2024-03-05', lastMaintenance: '2026-02-05', nextMaintenance: '2026-05-05', description: 'Digital pH meter with automatic temperature compensation' },
+    { code: 'WAT-006', name: 'Water Bath', image: 'https://cdn-icons-png.flaticon.com/512/2941/2941578.png', available: 5, total: 7, maintenance: 2, usage: 70, location: 'Microbiology Lab 02', manufacturer: 'Memmert', model: 'WNB 14', purchaseDate: '2023-10-12', lastMaintenance: '2026-01-25', nextMaintenance: '2026-02-25', description: 'Digital water bath, 20L capacity' }
+];
+
+function displayEquipmentTable(equipment) {
+    const tableBody = document.getElementById('equipmentTableBody');
+    if (!tableBody) return;
+    tableBody.innerHTML = '';
+
+    equipment.forEach(item => {
+        const ratio = item.available / item.total;
+        let badgeColor = '#22c55e';
+        if (ratio < 0.3) badgeColor = '#ef4444';
+        else if (ratio < 0.6) badgeColor = '#f59e0b';
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td><img src="${item.image}" style="width: 50px; height: 50px; object-fit: contain;"></td>
+            <td>${item.code}</td>
+            <td>${item.name}</td>
+            <td><span class="badge" style="background: ${badgeColor}; color: white;">${item.available}/${item.total}</span></td>
+            <td><span class="badge bg-warning">${item.maintenance}</span></td>
+            <td>
+                <div class="progress-bar" style="width: 100px; display: inline-block;">
+                    <div class="progress-fill" style="width: ${item.usage}%"></div>
+                </div> ${item.usage}%
+            </td>
+            <td>
+                <div class="action-buttons">
+                    <button class="btn-view" onclick="viewEquipment('${item.code}')" title="View Details"><i class="bi bi-eye"></i></button>
+                    <button class="btn-edit" onclick="editEquipment('${item.code}')" title="Edit"><i class="bi bi-pencil-square"></i></button>
+                    <button class="btn-remove" onclick="removeEquipment('${item.code}')" title="Remove"><i class="bi bi-trash"></i></button>
+                </div>
+            </td>
+        `;
+        tableBody.appendChild(row);
+    });
+}
+
+function viewEquipment(code) {
+    const equipment = equipmentDataTable.find(item => item.code === code);
+    if (!equipment) return;
+
+    const formatDate = (date) => new Date(date).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+    });
+    const isOverdue = new Date(equipment.nextMaintenance) < new Date();
+
+    document.getElementById('equipmentDetailsContent').innerHTML = `
+        <div class="row">
+            <div class="col-md-4 text-center">
+                <img src="${equipment.image}" style="width: 150px; height: 150px; object-fit: contain;" class="mb-3">
+                <h4>${equipment.name}</h4>
+                <p class="text-muted">${equipment.code}</p>
+            </div>
+            <div class="col-md-8">
+                <table class="table table-borderless">
+                    <tr><th>Location:</th><td>${equipment.location}</td></tr>
+                    <tr><th>Manufacturer:</th><td>${equipment.manufacturer}</td></tr>
+                    <tr><th>Model:</th><td>${equipment.model}</td></tr>
+                    <tr><th>Purchase Date:</th><td>${formatDate(equipment.purchaseDate)}</td></tr>
+                    <tr><th>Last Maintenance:</th><td>${formatDate(equipment.lastMaintenance)}</td></tr>
+                    <tr><th>Next Maintenance:</th><td>${formatDate(equipment.nextMaintenance)} ${isOverdue ? '<span class="badge bg-danger ms-2">⚠️ Overdue</span>' : ''}</td></tr>
+                    <tr><th>Availability:</th><td>${equipment.available}/${equipment.total} units</td></tr>
+                    <tr><th>Maintenance:</th><td>${equipment.maintenance} pending</td></tr>
+                    <tr><th>Usage Rate:</th><td>${equipment.usage}%</td></tr>
+                    <tr><th>Description:</th><td>${equipment.description}</td></tr>
+                </table>
+            </div>
+        </div>
+    `;
+    new bootstrap.Modal(document.getElementById('equipmentDetailsModal')).show();
+}
+
+function addEquipment() {
+    alert('Add Equipment modal would open here');
+}
+
+function editEquipment(code) {
+    alert('Edit equipment: ' + code);
+}
+
+function removeEquipment(code) {
+    if (confirm(`Remove equipment ${code}?`)) {
+        const index = equipmentDataTable.findIndex(item => item.code === code);
+        if (index !== -1) equipmentDataTable.splice(index, 1);
+        displayEquipmentTable(equipmentDataTable);
+        alert('Equipment removed!');
+    }
+}
+
+// ========== RESERVATION DATA ==========
+const reservationData = [
+    {
+        id: 'RES-001',
+        lab: 'Microbiology Lab 01',
+        studentId: 'SCI001',
+        studentName: 'John Doe',
+        status: 'ready',
+        date: '2026-02-25',
+        time: '10:00 - 12:00',
+        equipment: 'Microscope (2), Slides (10)',
+        purpose: 'Final Year Research Project',
+        technicalOfficer: 'Mr. Sunil Rathnayake',
+        notes: 'All equipment verified and ready'
+    },
+    {
+        id: 'RES-002',
+        lab: 'Research Laboratory',
+        studentId: 'SCI002',
+        studentName: 'Jane Smith',
+        status: 'pending',
+        date: '2026-02-26',
+        time: '14:00 - 16:00',
+        equipment: 'Centrifuge (1), Test Tubes (5)',
+        purpose: 'DNA Extraction Practical',
+        technicalOfficer: 'Mrs. Chamari Weerasinghe',
+        notes: 'Waiting for equipment availability'
+    },
+    {
+        id: 'RES-003',
+        lab: 'Microbiology Lab 02',
+        studentId: 'SCI003',
+        studentName: 'Mike Johnson',
+        status: 'rejected',
+        date: '2026-02-24',
+        time: '09:00 - 11:00',
+        equipment: 'Incubator (1), Culture Media (2)',
+        purpose: 'Bacterial Culture Experiment',
+        technicalOfficer: 'Mr. Prasanna Kumara',
+        notes: 'Equipment under maintenance'
+    }
+];
+
+// ========== RESERVATION FUNCTIONS ==========
+function searchReservations() {
+    const searchTerm = document.getElementById('reservationSearch').value.toLowerCase().trim();
+    const statusFilter = document.getElementById('statusFilter').value;
+    
+    console.log('Searching reservations:', { searchTerm, statusFilter });
+    
+    // Filter reservations based on search term and status
+    const filtered = reservationData.filter(item => {
+        // Check status filter
+        if (statusFilter !== 'all' && item.status !== statusFilter) {
+            return false;
+        }
+        
+        // Check search term (if not empty)
+        if (searchTerm !== '') {
+            return (
+                item.id.toLowerCase().includes(searchTerm) ||
+                item.studentId.toLowerCase().includes(searchTerm) ||
+                item.studentName.toLowerCase().includes(searchTerm) ||
+                item.lab.toLowerCase().includes(searchTerm)
+            );
+        }
+        
+        return true; // Passes all filters
+    });
+    
+    // Display filtered results
+    displayReservationTable(filtered);
+    
+    // Update visibility and count
+    updateReservationVisibility(filtered.length, searchTerm, statusFilter);
+}
+
+// This function is called by the select onchange
+function filterReservations() {
+    searchReservations();
+}
+
+function displayReservationTable(reservations) {
+    const tableBody = document.getElementById('reservationTableBody');
+    if (!tableBody) return;
+
+    tableBody.innerHTML = '';
+
+    if (reservations.length === 0) {
+        const row = document.createElement('tr');
+        row.innerHTML = `<td colspan="6" class="text-center py-4">No reservations found</td>`;
+        tableBody.appendChild(row);
+        return;
+    }
+
+    reservations.forEach(item => {
+        let statusClass = '';
+        switch (item.status) {
+            case 'ready':
+                statusClass = 'bg-success';
+                break;
+            case 'pending':
+                statusClass = 'bg-warning';
+                break;
+            case 'rejected':
+                statusClass = 'bg-danger';
+                break;
+        }
+
+        const row = document.createElement('tr');
+        row.innerHTML = `
             <td>${item.id}</td>
             <td>${item.lab}</td>
             <td>${item.studentId}</td>
-            <td><span class="badge ${statusClass}">${statusText}</span></td>
+            <td><span class="badge ${statusClass}">${item.status}</span></td>
             <td>${item.date}</td>
             <td>
-                <button class="btn-view" onclick="viewReservation('${item.id}')" title="View Equipment">
+                <button class="btn-view" onclick="viewReservation('${item.id}')" title="View Details">
                     <i class="bi bi-eye"></i> View
                 </button>
             </td>
-            <td>
-                <button class="btn-remove" onclick="removeReservation('${item.id}')" title="Remove">
-                    <i class="bi bi-trash"></i> Remove
-                </button>
-            </td>
         `;
-                    tableBody.appendChild(row);
-                });
-            }
+        tableBody.appendChild(row);
+    });
+}
 
-            // View reservation details
-            function viewReservation(id) {
-                const reservation = reservationData.find(item => item.id === id);
-                if (!reservation) return;
+function updateReservationVisibility(visibleCount, searchTerm, statusFilter) {
+    const card = document.getElementById('reservationTableCard');
+    const countElement = document.getElementById('reservationCount');
+    
+    if (!card || !countElement) return;
+    
+    const totalReservations = reservationData.length;
+    
+    // Update count display
+    if (visibleCount > 0 || (searchTerm === '' && statusFilter === 'all')) {
+        countElement.textContent = '(' + visibleCount + '/' + totalReservations + ')';
+    } else {
+        countElement.textContent = '(0)';
+    }
+    
+    // Hide card if no results AND (search is active OR filter is active)
+    if (visibleCount === 0 && (searchTerm !== '' || statusFilter !== 'all')) {
+        card.style.display = 'none';
+    } else {
+        card.style.display = 'block';
+    }
+}
 
-                const detailsContent = document.getElementById('reservationDetailsContent');
+function viewReservation(id) {
+    const reservation = reservationData.find(item => item.id === id);
+    if (!reservation) return;
 
-                // Determine status badge
-                let statusBadge = '';
-                switch (reservation.status) {
-                    case 'ready':
-                        statusBadge = '<span class="badge bg-success">Ready</span>';
-                        break;
-                    case 'pending':
-                        statusBadge = '<span class="badge bg-warning">Pending</span>';
-                        break;
-                    case 'rejected':
-                        statusBadge = '<span class="badge bg-danger">Rejected</span>';
-                        break;
-                }
+    const detailsContent = document.getElementById('reservationDetailsContent');
 
-                detailsContent.innerHTML = `
+    let statusBadge = '';
+    switch (reservation.status) {
+        case 'ready':
+            statusBadge = '<span class="badge bg-success">Ready</span>';
+            break;
+        case 'pending':
+            statusBadge = '<span class="badge bg-warning">Pending</span>';
+            break;
+        case 'rejected':
+            statusBadge = '<span class="badge bg-danger">Rejected</span>';
+            break;
+    }
+
+    detailsContent.innerHTML = `
         <div class="row">
             <div class="col-md-12">
                 <div class="d-flex justify-content-between align-items-center mb-3">
@@ -4116,574 +3738,314 @@
                 </div>
                 
                 <table class="table table-borderless">
-                    <tr>
-                        <th style="width: 200px;">Lab Location:</th>
-                        <td>${reservation.lab}</td>
-                    </tr>
-                    <tr>
-                        <th>Student ID:</th>
-                        <td>${reservation.studentId} (${reservation.studentName})</td>
-                    </tr>
-                    <tr>
-                        <th>Technical Officer:</th>
-                        <td>${reservation.technicalOfficer}</td>
-                    </tr>
-                    <tr>
-                        <th>Reservation Date:</th>
-                        <td>${reservation.date}</td>
-                    </tr>
-                    <tr>
-                        <th>Time Slot:</th>
-                        <td>${reservation.time}</td>
-                    </tr>
-                    <tr>
-                        <th>Purpose:</th>
-                        <td>${reservation.purpose}</td>
-                    </tr>
-                    <tr>
-                        <th>Requested Equipment:</th>
-                        <td>${reservation.equipment}</td>
-                    </tr>
-                    <tr>
-                        <th>Notes:</th>
-                        <td>${reservation.notes}</td>
-                    </tr>
+                    <tr><th style="width: 200px;">Lab Location:</th><td>${reservation.lab}</td></tr>
+                    <tr><th>Student ID:</th><td>${reservation.studentId} (${reservation.studentName})</td></tr>
+                    <tr><th>Technical Officer:</th><td>${reservation.technicalOfficer}</td></tr>
+                    <tr><th>Reservation Date:</th><td>${reservation.date}</td></tr>
+                    <tr><th>Time Slot:</th><td>${reservation.time}</td></tr>
+                    <tr><th>Purpose:</th><td>${reservation.purpose}</td></tr>
+                    <tr><th>Requested Equipment:</th><td>${reservation.equipment}</td></tr>
+                    <tr><th>Notes:</th><td>${reservation.notes}</td></tr>
                 </table>
             </div>
         </div>
     `;
 
-                new bootstrap.Modal(document.getElementById('reservationDetailsModal')).show();
+    new bootstrap.Modal(document.getElementById('reservationDetailsModal')).show();
+}
+
+function addReservation() {
+    alert('Add Reservation modal would open here');
+}
+
+// ========== ANALYTICS FUNCTIONS ==========
+let usageChart, monthlyChart, equipmentUsageChart;
+let equipmentUsageData = [
+    { name: 'Microscope', usage: 80 },
+    { name: 'Centrifuge', usage: 65 },
+    { name: 'Incubator', usage: 45 },
+    { name: 'Autoclave', usage: 70 },
+    { name: 'pH Meter', usage: 35 },
+    { name: 'Water Bath', usage: 20 },
+    { name: 'Shaker', usage: 55 },
+    { name: 'Hot Plate', usage: 30 },
+    { name: 'Balance', usage: 25 }
+];
+
+function initCharts() {
+    const usageCtx = document.getElementById('usageChart')?.getContext('2d');
+    if (usageCtx) {
+        if (usageChart) usageChart.destroy();
+        usageChart = new Chart(usageCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                datasets: [{
+                    label: 'Completed Practicals',
+                    data: [45, 32, 28, 20, 15, 10, 5],
+                    backgroundColor: '#22c55e',
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } }
             }
+        });
+    }
 
-            // Remove reservation
-            function removeReservation(id) {
-                if (confirm(`Are you sure you want to remove reservation ${id}?`)) {
-                    // Remove from array
-                    const index = reservationData.findIndex(item => item.id === id);
-                    if (index !== -1) {
-                        reservationData.splice(index, 1);
-                    }
+    const monthlyCtx = document.getElementById('monthlyChart')?.getContext('2d');
+    if (monthlyCtx) {
+        if (monthlyChart) monthlyChart.destroy();
+        monthlyChart = new Chart(monthlyCtx, {
+            type: 'line',
+            data: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                datasets: [{
+                    label: 'System Usage',
+                    data: [12, 19, 15, 25, 22, 30],
+                    borderColor: '#22c55e',
+                    backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: { responsive: true, maintainAspectRatio: false }
+        });
+    }
+    
+    // Initialize equipment usage table
+    displayEquipmentUsageTable(equipmentUsageData);
+}
 
-                    // Refresh table
-                    displayReservationTable(reservationData);
+function initAnalyticsCharts() {
+    const ctx = document.getElementById('equipmentUsageChart')?.getContext('2d');
+    if (!ctx) return;
+    if (equipmentUsageChart) equipmentUsageChart.destroy();
+    equipmentUsageChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Microscope', 'Centrifuge', 'Incubator', 'Autoclave', 'pH Meter', 'Water Bath'],
+            datasets: [{
+                label: 'Usage Percentage',
+                data: [80, 65, 45, 70, 35, 20],
+                backgroundColor: ['#22c55e', '#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899', '#ef4444'],
+                borderRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true, max: 100, title: { display: true, text: 'Usage %' } } }
+        }
+    });
+}
 
-                    // Show success message
-                    alert(`Reservation ${id} has been removed successfully!`);
-                }
-            }
+// Filter equipment usage table (real-time search)
+function filterEquipmentUsage() {
+    const searchTerm = document.getElementById('equipmentUsageSearch').value.toLowerCase().trim();
+    
+    const filtered = equipmentUsageData.filter(item => 
+        item.name.toLowerCase().includes(searchTerm)
+    );
+    
+    displayEquipmentUsageTable(filtered);
+}
 
-            // Add new reservation
-            function addReservation() {
-                alert('Add Reservation modal would open here');
-                // In a real app, this would open a form to create a new reservation
-            }
-
-            // Initialize reservation table
-            document.addEventListener('DOMContentLoaded', function() {
-                if (document.getElementById('historySection')) {
-                    displayReservationTable(reservationData);
-                }
-            });
-
-
-            // ========== SUPERVISOR REQUESTS DATA ==========
-            const supervisorRequests = [{
-                    id: 'REQ001',
-                    dateTime: '2026-02-20 10:30 AM',
-                    timestamp: new Date('2026-02-20T10:30:00'),
-                    studentName: 'John Doe',
-                    studentId: 'SCI001',
-                    equipment: 'Microscope (2)',
-                    lab: 'Lab 01',
-                    duration: '2 hours',
-                    purpose: 'Final Year Research Project',
-                    status: 'pending',
-                    supervisor: 'Dr. Kamal Perera',
-                    notes: 'Awaiting supervisor approval'
-                },
-                {
-                    id: 'REQ002',
-                    dateTime: '2026-02-20 11:00 AM',
-                    timestamp: new Date('2026-02-20T11:00:00'),
-                    studentName: 'Jane Smith',
-                    studentId: 'SCI002',
-                    equipment: 'Centrifuge (1)',
-                    lab: 'Research Lab',
-                    duration: '3 hours',
-                    purpose: 'DNA Extraction',
-                    status: 'approved',
-                    supervisor: 'Prof. Malini Silva',
-                    notes: 'Approved for research'
-                },
-                {
-                    id: 'REQ003',
-                    dateTime: '2026-02-19 09:15 AM',
-                    timestamp: new Date('2026-02-19T09:15:00'),
-                    studentName: 'Mike Johnson',
-                    studentId: 'SCI003',
-                    equipment: 'Incubator (1)',
-                    lab: 'Lab 02',
-                    duration: '4 hours',
-                    purpose: 'Bacterial Culture',
-                    status: 'rejected',
-                    supervisor: 'Dr. Kamal Perera',
-                    notes: 'Equipment under maintenance'
-                },
-                {
-                    id: 'REQ004',
-                    dateTime: '2026-02-19 04:30 PM',
-                    timestamp: new Date('2026-02-19T16:30:00'),
-                    studentName: 'Sarah Wilson',
-                    studentId: 'SCI004',
-                    equipment: 'Autoclave (1)',
-                    lab: 'Lab 01',
-                    duration: '1.5 hours',
-                    purpose: 'Media Sterilization',
-                    status: 'pending',
-                    supervisor: 'Dr. Nuwan Jayawardena',
-                    notes: 'Waiting for approval'
-                },
-                {
-                    id: 'REQ005',
-                    dateTime: '2026-02-18 02:00 PM',
-                    timestamp: new Date('2026-02-18T14:00:00'),
-                    studentName: 'Pathum Perera',
-                    studentId: 'SCI005',
-                    equipment: 'pH Meter (1)',
-                    lab: 'Research Lab',
-                    duration: '2 hours',
-                    purpose: 'Solution Preparation',
-                    status: 'approved',
-                    supervisor: 'Prof. Malini Silva',
-                    notes: 'Approved'
-                },
-                {
-                    id: 'REQ006',
-                    dateTime: '2026-02-17 03:45 PM',
-                    timestamp: new Date('2026-02-17T15:45:00'),
-                    studentName: 'Nimali Fernando',
-                    studentId: 'SCI006',
-                    equipment: 'Water Bath (1)',
-                    lab: 'Lab 02',
-                    duration: '2 hours',
-                    purpose: 'Enzyme Study',
-                    status: 'rejected',
-                    supervisor: 'Dr. Kamal Perera',
-                    notes: 'Schedule conflict'
-                },
-                {
-                    id: 'REQ007',
-                    dateTime: '2026-02-15 09:30 AM',
-                    timestamp: new Date('2026-02-15T09:30:00'),
-                    studentName: 'Tharindu Silva',
-                    studentId: 'SCI007',
-                    equipment: 'Microscope (1)',
-                    lab: 'Lab 01',
-                    duration: '3 hours',
-                    purpose: 'Cell Observation',
-                    status: 'approved',
-                    supervisor: 'Dr. Nuwan Jayawardena',
-                    notes: 'Approved'
-                },
-                {
-                    id: 'REQ008',
-                    dateTime: '2026-02-10 01:00 PM',
-                    timestamp: new Date('2026-02-10T13:00:00'),
-                    studentName: 'Dilini Perera',
-                    studentId: 'SCI008',
-                    equipment: 'Centrifuge (1)',
-                    lab: 'Research Lab',
-                    duration: '2 hours',
-                    purpose: 'Sample Preparation',
-                    status: 'approved',
-                    supervisor: 'Prof. Malini Silva',
-                    notes: 'Completed'
-                }
-            ];
-
-            // Filter requests by time range
-            function filterRequestsByTime() {
-                const timeRange = document.getElementById('timeRangeFilter').value;
-                const today = new Date();
-                let filtered = [];
-
-                switch (timeRange) {
-                    case 'daily':
-                        // Today's requests
-                        filtered = supervisorRequests.filter(item =>
-                            item.timestamp.toDateString() === today.toDateString()
-                        );
-                        break;
-                    case 'weekly':
-                        // Last 7 days
-                        const weekAgo = new Date();
-                        weekAgo.setDate(today.getDate() - 7);
-                        filtered = supervisorRequests.filter(item =>
-                            item.timestamp >= weekAgo
-                        );
-                        break;
-                    case 'monthly':
-                        // Last 30 days
-                        const monthAgo = new Date();
-                        monthAgo.setDate(today.getDate() - 30);
-                        filtered = supervisorRequests.filter(item =>
-                            item.timestamp >= monthAgo
-                        );
-                        break;
-                    case 'all':
-                    default:
-                        filtered = supervisorRequests;
-                        break;
-                }
-
-                displayRequestTable(filtered);
-            }
-
-            // Display request table
-            function displayRequestTable(requests) {
-                const tableBody = document.getElementById('requestListBody');
-                if (!tableBody) return;
-
-                tableBody.innerHTML = '';
-
-                // Sort by date (newest first)
-                requests.sort((a, b) => b.timestamp - a.timestamp);
-
-                requests.forEach(item => {
-                    const row = document.createElement('tr');
-
-                    row.innerHTML = `
-            <td>${item.id}</td>
-            <td>${item.dateTime}</td>
+// Display equipment usage table
+function displayEquipmentUsageTable(data) {
+    const tableBody = document.getElementById('equipmentUsageTableBody');
+    if (!tableBody) return;
+    
+    tableBody.innerHTML = '';
+    
+    if (data.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="2" class="text-center py-4">No equipment found</td></tr>';
+        return;
+    }
+    
+    data.forEach(item => {
+        // Determine color based on usage percentage
+        let color = '#22c55e'; // green
+        if (item.usage < 30) color = '#ef4444'; // red
+        else if (item.usage < 60) color = '#f59e0b'; // orange
+        
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${item.name}</td>
             <td>
-                <div class="action-buttons">
-                    <button class="btn-view" onclick="viewRequest('${item.id}')" title="View Details">
-                        <i class="bi bi-eye"></i>
-                    </button>
-                    <button class="btn-remove" onclick="removeRequest('${item.id}')" title="Remove">
-                        <i class="bi bi-trash"></i>
-                    </button>
+                <div class="d-flex align-items-center gap-2">
+                    <div class="progress-bar" style="width: 150px;">
+                        <div class="progress-fill" style="width: ${item.usage}%; background: ${color};"></div>
+                    </div>
+                    <span style="color: ${color}; font-weight: 600;">${item.usage}%</span>
                 </div>
             </td>
         `;
-                    tableBody.appendChild(row);
-                });
+        tableBody.appendChild(row);
+    });
+}
 
-                // Show message if no requests
-                if (requests.length === 0) {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `<td colspan="3" class="text-center">No requests found for this time period</td>`;
-                    tableBody.appendChild(row);
-                }
-            }
+// Download full inventory
+function downloadInventory() {
+    // Create CSV content
+    let csv = "Equipment Code,Equipment Name,Available/Total,Maintenance Pending,Usage %,Location,Manufacturer,Model\n";
+    
+    equipmentDataTable.forEach(item => {
+        csv += `${item.code},${item.name},${item.available}/${item.total},${item.maintenance},${item.usage}%,${item.location},${item.manufacturer},${item.model}\n`;
+    });
+    
+    // Create download link
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'equipment_inventory.csv';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+    
+    alert('Inventory list downloaded successfully!');
+}
 
-            // View request details
-            function viewRequest(id) {
-                const request = supervisorRequests.find(item => item.id === id);
-                if (!request) return;
+const rejectionReasons = {
+    'REQ003': { studentName: 'Mike Johnson', studentId: 'SCI003', reason: 'Equipment under maintenance - Scheduled for repair on 2026-02-25', rejectedBy: 'Mr. Prasanna Kumara', dateTime: '2026-02-19 09:15 AM' },
+    'REQ007': { studentName: 'Alice Brown', studentId: 'SCI007', reason: 'Technical issue reported - Motor malfunction, awaiting spare parts', rejectedBy: 'Mrs. Chamari Weerasinghe', dateTime: '2026-02-17 02:30 PM' },
+    'REQ012': { studentName: 'Tharindu Silva', studentId: 'SCI012', reason: 'Calibration required - Device giving inaccurate readings', rejectedBy: 'Mr. Sunil Rathnayake', dateTime: '2026-02-15 11:45 AM' }
+};
 
-                const detailsContent = document.getElementById('requestDetailsContent');
-
-                // Determine status badge
-                let statusBadge = '';
-                switch (request.status) {
-                    case 'pending':
-                        statusBadge = '<span class="badge bg-warning">Pending</span>';
-                        break;
-                    case 'approved':
-                        statusBadge = '<span class="badge bg-success">Approved</span>';
-                        break;
-                    case 'rejected':
-                        statusBadge = '<span class="badge bg-danger">Rejected</span>';
-                        break;
-                }
-
-                detailsContent.innerHTML = `
-        <div class="row">
-            <div class="col-md-12">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h4>Request: ${request.id}</h4>
-                    ${statusBadge}
-                </div>
-                
-                <table class="table table-borderless">
-                    <tr>
-                        <th style="width: 200px;">Date & Time:</th>
-                        <td>${request.dateTime}</td>
-                    </tr>
-                    <tr>
-                        <th>Student:</th>
-                        <td>${request.studentName} (${request.studentId})</td>
-                    </tr>
-                    <tr>
-                        <th>Supervisor:</th>
-                        <td>${request.supervisor}</td>
-                    </tr>
-                    <tr>
-                        <th>Lab Location:</th>
-                        <td>${request.lab}</td>
-                    </tr>
-                    <tr>
-                        <th>Equipment:</th>
-                        <td>${request.equipment}</td>
-                    </tr>
-                    <tr>
-                        <th>Duration:</th>
-                        <td>${request.duration}</td>
-                    </tr>
-                    <tr>
-                        <th>Purpose:</th>
-                        <td>${request.purpose}</td>
-                    </tr>
-                    <tr>
-                        <th>Notes:</th>
-                        <td>${request.notes}</td>
-                    </tr>
-                </table>
-            </div>
+function viewRejectionReason(requestId) {
+    const r = rejectionReasons[requestId];
+    if (!r) return;
+    document.getElementById('rejectionReasonContent').innerHTML = `
+        <p><strong>Request ID:</strong> ${requestId}</p>
+        <p><strong>Student:</strong> ${r.studentName} (${r.studentId})</p>
+        <p><strong>Rejected By:</strong> ${r.rejectedBy}</p>
+        <p><strong>Date & Time:</strong> ${r.dateTime}</p>
+        <div class="alert alert-danger mt-3">
+            <i class="bi bi-info-circle-fill me-2"></i> ${r.reason}
         </div>
     `;
+    new bootstrap.Modal(document.getElementById('rejectionReasonModal')).show();
+}
 
-                new bootstrap.Modal(document.getElementById('requestDetailsModal')).show();
-            }
+function generateReport(type) {
+    if (type === 'rejected') {
+        // Generate rejected requests report
+        let report = "REJECTED REQUESTS REPORT\n";
+        report += "=======================\n\n";
+        report += "Request ID | Student ID | Reason | Date & Time\n";
+        report += "----------------------------------------\n";
+        
+        Object.keys(rejectionReasons).forEach(reqId => {
+            const r = rejectionReasons[reqId];
+            report += `${reqId} | ${r.studentId} | ${r.reason} | ${r.dateTime}\n`;
+        });
+        
+        console.log(report);
+        alert('Rejected requests report generated! Check console for preview.');
+        
+    } else if (type === 'usage') {
+        // Generate equipment usage report
+        let report = "EQUIPMENT USAGE REPORT\n";
+        report += "======================\n\n";
+        report += "Equipment Name | Usage Percentage\n";
+        report += "--------------------------------\n";
+        
+        equipmentUsageData.forEach(item => {
+            report += `${item.name} | ${item.usage}%\n`;
+        });
+        
+        console.log(report);
+        alert('Equipment usage report generated! Check console for preview.');
+    }
+    
+    // Show success message
+    const msg = document.createElement('div');
+    msg.className = 'alert alert-success position-fixed top-0 end-0 m-3';
+    msg.style.zIndex = '9999';
+    msg.innerHTML = `${type.charAt(0).toUpperCase() + type.slice(1)} report generated!`;
+    document.body.appendChild(msg);
+    setTimeout(() => msg.remove(), 3000);
+}
 
-            // Remove request
-            function removeRequest(id) {
-                if (confirm(`Are you sure you want to remove request ${id}?`)) {
-                    // Remove from array
-                    const index = supervisorRequests.findIndex(item => item.id === id);
-                    if (index !== -1) {
-                        supervisorRequests.splice(index, 1);
-                    }
+// ========== CALENDAR FUNCTIONS ==========
+let month = new Date().getMonth();
+let year = new Date().getFullYear();
+const months = ["January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+];
 
-                    // Refresh table with current filter
-                    filterRequestsByTime();
+function initCalendar() {
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const lastDate = lastDay.getDate();
+    const day = firstDay.getDay();
 
-                    // Show success message
-                    alert(`Request ${id} has been removed successfully!`);
-                }
-            }
+    document.getElementById('displayMonth').innerHTML = months[month] + " " + year;
+    let days = "";
+    for (let i = 0; i < day; i++) days += `<div class="day-cell prev-date"></div>`;
+    for (let i = 1; i <= lastDate; i++) {
+        let classes = "day-cell";
+        if (i === new Date().getDate() && year === new Date().getFullYear() && month === new Date().getMonth()) classes += " today";
+        days += `<div class="${classes}">${i}</div>`;
+    }
+    document.getElementById('daysGrid').innerHTML = days;
+    document.getElementById('eventDay').innerHTML = 'Monday';
+    document.getElementById('eventDate').innerHTML = '15 February 2026';
+    document.getElementById('eventsList').innerHTML = '<div class="no-event">No events scheduled</div>';
+}
 
-            // Initialize request table
-            document.addEventListener('DOMContentLoaded', function() {
-                if (document.getElementById('activitySection')) {
-                    filterRequestsByTime(); // Show all by default
-                }
-            });
+document.querySelector('.prev')?.addEventListener('click', () => {
+    month--;
+    if (month < 0) { month = 11; year--; }
+    initCalendar();
+});
 
+document.querySelector('.next')?.addEventListener('click', () => {
+    month++;
+    if (month > 11) { month = 0; year++; }
+    initCalendar();
+});
 
+document.getElementById('todayBtn')?.addEventListener('click', () => {
+    const d = new Date();
+    month = d.getMonth();
+    year = d.getFullYear();
+    initCalendar();
+});
 
-            // ========== ANALYTICS FUNCTIONS ==========
+document.getElementById('gotoBtn')?.addEventListener('click', () => {
+    const parts = document.getElementById('gotoInput').value.split('/');
+    if (parts.length === 2) {
+        const m = parseInt(parts[0]) - 1, y = parseInt(parts[1]);
+        if (m >= 0 && m < 12 && y > 0) {
+            month = m;
+            year = y;
+            initCalendar();
+        } else alert('Invalid date. Use MM/YYYY');
+    } else alert('Invalid format. Use MM/YYYY');
+});
 
-            // Initialize charts
-            let equipmentUsageChart;
-
-            function initAnalyticsCharts() {
-                const ctx = document.getElementById('equipmentUsageChart')?.getContext('2d');
-                if (!ctx) return;
-
-                // Destroy existing chart if it exists
-                if (equipmentUsageChart) equipmentUsageChart.destroy();
-
-                equipmentUsageChart = new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: ['Microscope', 'Centrifuge', 'Incubator', 'Autoclave', 'pH Meter', 'Water Bath'],
-                        datasets: [{
-                            label: 'Usage Percentage',
-                            data: [80, 65, 45, 70, 35, 20],
-                            backgroundColor: [
-                                '#22c55e',
-                                '#3b82f6',
-                                '#f59e0b',
-                                '#8b5cf6',
-                                '#ec4899',
-                                '#ef4444'
-                            ],
-                            borderRadius: 8
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                display: false
-                            }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                max: 100,
-                                title: {
-                                    display: true,
-                                    text: 'Usage %'
-                                }
-                            }
-                        }
-                    }
-                });
-            }
-
-            // Rejection reasons data
-            const rejectionReasons = {
-                'REQ003': {
-                    studentName: 'Mike Johnson',
-                    studentId: 'SCI003',
-                    equipment: 'Incubator',
-                    reason: 'Equipment under maintenance - Scheduled for repair on 2026-02-25',
-                    rejectedBy: 'Mr. Prasanna Kumara',
-                    dateTime: '2026-02-19 09:15 AM'
-                },
-                'REQ007': {
-                    studentName: 'Alice Brown',
-                    studentId: 'SCI007',
-                    equipment: 'Centrifuge',
-                    reason: 'Technical issue reported - Motor malfunction, awaiting spare parts',
-                    rejectedBy: 'Mrs. Chamari Weerasinghe',
-                    dateTime: '2026-02-17 02:30 PM'
-                },
-                'REQ012': {
-                    studentName: 'Tharindu Silva',
-                    studentId: 'SCI012',
-                    equipment: 'pH Meter',
-                    reason: 'Calibration required - Device giving inaccurate readings',
-                    rejectedBy: 'Mr. Sunil Rathnayake',
-                    dateTime: '2026-02-15 11:45 AM'
-                }
-            };
-
-            // View rejection reason
-            function viewRejectionReason(requestId) {
-                const reason = rejectionReasons[requestId];
-                if (!reason) return;
-
-                const content = document.getElementById('rejectionReasonContent');
-                content.innerHTML = `
-        <div class="p-2">
-            <table class="table table-borderless">
-                <tr>
-                    <th style="width: 120px;">Request ID:</th>
-                    <td><strong>${requestId}</strong></td>
-                </tr>
-                <tr>
-                    <th>Student:</th>
-                    <td>${reason.studentName} (${reason.studentId})</td>
-                </tr>
-                <tr>
-                    <th>Equipment:</th>
-                    <td>${reason.equipment}</td>
-                </tr>
-                <tr>
-                    <th>Rejected By:</th>
-                    <td>${reason.rejectedBy}</td>
-                </tr>
-                <tr>
-                    <th>Date & Time:</th>
-                    <td>${reason.dateTime}</td>
-                </tr>
-                <tr>
-                    <th>Reason:</th>
-                    <td>
-                        <div class="alert alert-danger mb-0">
-                            <i class="bi bi-info-circle-fill me-2"></i>
-                            ${reason.reason}
-                        </div>
-                    </td>
-                </tr>
-            </table>
-        </div>
-    `;
-
-                new bootstrap.Modal(document.getElementById('rejectionReasonModal')).show();
-            }
-
-            // Generate report function
-            function generateReport(type) {
-                if (type === 'rejected') {
-                    // Generate rejected requests report
-                    alert('Generating Rejected Requests Report...');
-
-                    // Create a simple table for the report
-                    let reportContent = "REJECTED REQUESTS REPORT\n";
-                    reportContent += "========================\n\n";
-                    reportContent += "Request ID | Student ID | Reason | Date & Time\n";
-                    reportContent += "----------------------------------------\n";
-
-                    Object.keys(rejectionReasons).forEach(reqId => {
-                        const r = rejectionReasons[reqId];
-                        reportContent += `${reqId} | ${r.studentId} | ${r.reason.substring(0, 30)}... | ${r.dateTime}\n`;
-                    });
-
-                    console.log(reportContent);
-
-                } else if (type === 'usage') {
-                    // Generate equipment usage chart report
-                    alert('Generating Equipment Usage Chart Report...');
-
-                } else if (type === 'usageTable') {
-                    // Generate equipment usage table report
-                    alert('Generating Equipment Usage Table Report...');
-
-                    // Get table data
-                    const tableData = [{
-                            name: 'Microscope',
-                            usage: '80%'
-                        },
-                        {
-                            name: 'Centrifuge',
-                            usage: '65%'
-                        },
-                        {
-                            name: 'Incubator',
-                            usage: '45%'
-                        },
-                        {
-                            name: 'Autoclave',
-                            usage: '70%'
-                        },
-                        {
-                            name: 'pH Meter',
-                            usage: '35%'
-                        },
-                        {
-                            name: 'Water Bath',
-                            usage: '20%'
-                        }
-                    ];
-
-                    let reportContent = "EQUIPMENT USAGE REPORT\n";
-                    reportContent += "======================\n\n";
-                    reportContent += "Equipment Name | Usage Percentage\n";
-                    reportContent += "--------------------------------\n";
-
-                    tableData.forEach(item => {
-                        reportContent += `${item.name} | ${item.usage}\n`;
-                    });
-
-                    console.log(reportContent);
-                }
-
-                // Show success message
-                const message = document.createElement('div');
-                message.className = 'alert alert-success position-fixed top-0 end-0 m-3';
-                message.style.zIndex = '9999';
-                message.innerHTML = `${type === 'rejected' ? 'Rejected Requests' : type === 'usage' ? 'Usage Chart' : 'Usage Table'} report generated successfully!`;
-                document.body.appendChild(message);
-                setTimeout(() => message.remove(), 3000);
-            }
-
-            // Initialize analytics when section is shown
-            document.addEventListener('DOMContentLoaded', function() {
-                // Check if we need to initialize analytics
-                if (document.getElementById('analyticsSection')) {
-                    setTimeout(() => {
-                        initAnalyticsCharts();
-                    }, 500);
-                }
-            });
-        </script>
+// ========== INITIALIZATION ==========
+document.addEventListener('DOMContentLoaded', function() {
+    updateRequestCounts();
+    updateVisibleCounts('');
+    initCharts();
+    showSection('dashboard');
+    initCalendar();
+    
+    // Initialize reservation display
+    displayReservationTable(reservationData);
+    document.getElementById('reservationCount').textContent = '(' + reservationData.length + ')';
+    
+    if (document.getElementById('equipmentSection')) displayEquipmentTable(equipmentDataTable);
+    if (document.getElementById('analyticsSection')) setTimeout(initAnalyticsCharts, 500);
+});
+</script>
 </body>
 
 </html>
