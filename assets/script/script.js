@@ -1,9 +1,250 @@
-let tempUniversityId = "";
-let tempPassword = "";
-let tempRememberMe = "";
 
-// Global variables for forgot password flow
-let resetUniversityId = '';
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ // Global variable for forgot password modal
+    var forgotPasswordModal;
+
+    // Sign in function
+    function signin() {
+       
+        var university_id = document.getElementById("university_id");
+        var password = document.getElementById("password");
+        var remember_me = document.getElementById("remember_me");
+
+        if (!university_id.value || !password.value) {
+            document.getElementById("msg1").innerHTML = "Please enter both University ID and Password";
+            document.getElementById("msgdiv1").className = "d-block";
+            return;
+        }
+
+        var form = new FormData();
+        form.append("university_id", university_id.value);
+        form.append("password", password.value);
+        form.append("remember_me", remember_me.checked);
+
+        var request = new XMLHttpRequest();
+
+        request.onreadystatechange = function() {
+            if (request.status == 200 && request.readyState == 4) {
+                var response = request.responseText;
+
+                if (response == "success") {
+                  
+                } else {
+                     
+                    document.getElementById("msg1").innerHTML = response;
+                    document.getElementById("msgdiv1").className = "d-block";
+                }
+            }
+        }
+
+        request.open("POST", "/LRRS/controllers/signin_process.php", true);
+        request.send(form);
+    }
+
+    // Forgot password function
+    function forgotPassword() {
+        var university_id = document.getElementById("university_id");
+
+        if (!university_id.value) {
+            document.getElementById("msg1").innerHTML = "Please enter your University ID";
+            document.getElementById("msgdiv1").className = "d-block";
+            return;
+        }
+
+        var request = new XMLHttpRequest();
+
+        request.onreadystatechange = function() {
+            if (request.status == 200 && request.readyState == 4) {
+                var text = request.responseText;
+
+                if (text == "Success") {
+                    alert("Verification code has been sent successfully. Please check your email.");
+                    var modal = document.getElementById("fpmodal");
+                    forgotPasswordModal = new bootstrap.Modal(modal);
+                    forgotPasswordModal.show();
+                } else {
+                    document.getElementById("msg1").innerHTML = text;
+                    document.getElementById("msgdiv1").className = "d-block";
+                }
+            }
+        }
+
+        request.open("GET", "./functions/forgotPasswordProcess.php?university_id=" + university_id.value, true);
+        request.send();
+    }
+
+    // Show/Hide password for first field
+    function showPassword1() {
+        var textfield = document.getElementById("np");
+        var button = document.getElementById("npb");
+
+        if (textfield.type == "password") {
+            textfield.type = "text";
+            button.innerHTML = "Hide";
+        } else {
+            textfield.type = "password";
+            button.innerHTML = "Show";
+        }
+    }
+
+    // Show/Hide password for second field
+    function showPassword2() {
+        var textfield = document.getElementById("rnp");
+        var button = document.getElementById("rnpb");
+
+        if (textfield.type == "password") {
+            textfield.type = "text";
+            button.innerHTML = "Hide";
+        } else {
+            textfield.type = "password";
+            button.innerHTML = "Show";
+        }
+    }
+
+    // Reset password function
+    function resetPassword() {
+        var university_id = document.getElementById("university_id");
+        var newPassword = document.getElementById("np");
+        var retypePassword = document.getElementById("rnp");
+        var verification = document.getElementById("vcode");
+
+        if (!newPassword.value || !retypePassword.value || !verification.value) {
+            alert("Please fill in all fields");
+            return;
+        }
+
+        if (newPassword.value !== retypePassword.value) {
+            alert("Passwords do not match");
+            return;
+        }
+
+        var form = new FormData();
+        form.append("university_id", university_id.value);
+        form.append("new_password", newPassword.value);
+        form.append("retype_password", retypePassword.value);
+        form.append("verification_code", verification.value);
+
+        var request = new XMLHttpRequest();
+
+        request.onreadystatechange = function() {
+            if (request.status == 200 && request.readyState == 4) {
+                var response = request.responseText;
+                if (response == "success") {
+                    alert("Password updated successfully.");
+                    forgotPasswordModal.hide();
+                    
+                    // Clear the form
+                    document.getElementById("np").value = "";
+                    document.getElementById("rnp").value = "";
+                    document.getElementById("vcode").value = "";
+                } else {
+                    alert(response);
+                }
+            }
+        }
+
+        request.open("POST", "./functions/resetPasswordProcess.php", true);
+        request.send(form);
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // Main signup function
 function createAccount(event) {
@@ -135,13 +376,7 @@ function createAccount(event) {
     return false;
 }
 
-// Helper function to reset button
-function resetButton(btn, originalContent) {
-    if (btn) {
-        btn.disabled = false;
-        btn.innerHTML = originalContent;
-    }
-}
+
 
 // Show message function
 function showMessage(type, message) {
@@ -177,100 +412,12 @@ function showMessage(type, message) {
     }
 }
 
-// Show reCAPTCHA modal for sign in
-function showRecaptchaModal() {
-    tempUniversityId = document.getElementById('university_id').value.trim();
-    tempPassword = document.getElementById('password').value;
-    tempRememberMe = document.getElementById('remember_me')?.checked ? 1 : 0;
 
-    if (!tempUniversityId) {
-        showModal("Please enter your University ID");
-        return;
-    }
 
-    if (!tempPassword) {
-        showModal("Please enter your password");
-        return;
-    }
 
-    const modal = new bootstrap.Modal(document.getElementById('recaptchaModal'));
-    modal.show();
-}
 
-function recaptchaSuccess() {
-    const verifyBtn = document.getElementById('verifyBtn');
-    if (verifyBtn) {
-        verifyBtn.disabled = false;
-    }
-}
 
-function verifyRecaptcha() {
-    const recaptchaResponse = grecaptcha.getResponse();
 
-    if (!recaptchaResponse) {
-        document.getElementById('recaptchaResponse').innerHTML = "Please complete the reCAPTCHA";
-        return;
-    }
-
-    bootstrap.Modal.getInstance(document.getElementById('recaptchaModal')).hide();
-    processLogin(recaptchaResponse);
-}
-
-// Process login
-function processLogin(recaptchaToken) {
-    const btn = document.getElementById('signinBtn');
-    const originalContent = btn.innerHTML;
-
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Signing In...';
-
-    const form = new FormData();
-    form.append("u", tempUniversityId);
-    form.append("p", tempPassword);
-    form.append("r", tempRememberMe);
-    form.append("recaptcha", recaptchaToken);
-
-    const request = new XMLHttpRequest();
-    const url = "/LRRS/controllers/signin_process.php";
-    
-    console.log("Sending request to:", url);
-    
-    request.open("POST", url, true);
-
-    request.onreadystatechange = function () {
-        if (request.readyState === 4) {
-            btn.disabled = false;
-            btn.innerHTML = originalContent;
-
-            if (request.status === 200) {
-                try {
-                    const response = JSON.parse(request.responseText);
-
-                    if (response.status === "success") {
-                        showModal(response.msg || "Login successful");
-
-                        setTimeout(() => {
-                            window.location.href = "./views/student.php";
-                        }, 1000);
-                    } else {
-                        showModal(response.msg || "Login failed");
-                        if (typeof grecaptcha !== 'undefined') {
-                            grecaptcha.reset();
-                        }
-                    }
-                } catch (e) {
-                    console.error('Parse error:', e);
-                    console.error('Raw response:', request.responseText);
-                    showModal("Server response error");
-                }
-            } else {
-                showModal("Connection error. Status: " + request.status);
-            }
-        }
-    };
-
-    request.send(form);
-}
 
 // SHOW FORGOT PASSWORD MODAL - NO reCAPTCHA
 function showForgotPassword() {
@@ -302,188 +449,6 @@ function showForgotPassword() {
     modal.show();
 }
 
-// Send reset code (Step 1) - NO reCAPTCHA
-function sendResetCode() {
-    console.log("sendResetCode called");
-    
-    // Use the stored resetUniversityId (from signin page input)
-    const university_id = resetUniversityId;
-    console.log("University ID:", university_id);
-
-    if (!university_id) {
-        document.getElementById('resetResponse').innerHTML = 'University ID not found';
-        return;
-    }
-
-    const btn = document.getElementById('sendCodeBtn');
-    const originalContent = btn.innerHTML;
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Sending...';
-
-    const form = new FormData();
-    form.append('u', university_id);
-
-    const request = new XMLHttpRequest();
-    request.open('POST', '/LRRS/controllers/forgot_password_process.php', true);
-
-    request.onreadystatechange = function() {
-        if (request.readyState === 4) {
-            btn.disabled = false;
-            btn.innerHTML = originalContent;
-
-            if (request.status === 200) {
-                try {
-                    const response = JSON.parse(request.responseText);
-                    console.log("Server response:", response);
-                    
-                    if (response.status === 'success') {
-                        // Close current modal
-                        bootstrap.Modal.getInstance(document.getElementById('forgotPasswordModal')).hide();
-                        
-                        // Open verify code modal
-                        setTimeout(() => {
-                            const verifyModal = new bootstrap.Modal(document.getElementById('verifyCodeModal'));
-                            verifyModal.show();
-                        }, 500);
-                    } else {
-                        document.getElementById('resetResponse').innerHTML = response.msg;
-                    }
-                } catch (e) {
-                    console.error('Parse error:', e);
-                    console.error('Raw response:', request.responseText);
-                    showModal('Server error occurred');
-                }
-            } else {
-                showModal('Connection error');
-            }
-        }
-    };
-
-    request.send(form);
-}
-
-// Verify code (Step 2) - NO reCAPTCHA
-function verifyCode() {
-    const code = document.getElementById('verification_code').value.trim();
-    
-    if (!code || code.length !== 6) {
-        document.getElementById('codeError').innerHTML = 'Please enter a valid 6-digit code';
-        return;
-    }
-
-    const btn = document.getElementById('verifyCodeBtn');
-    const originalContent = btn.innerHTML;
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Verifying...';
-
-    const form = new FormData();
-    form.append('u', resetUniversityId);
-    form.append('code', code);
-
-    const request = new XMLHttpRequest();
-    request.open('POST', '/LRRS/controllers/verify_code_process.php', true);
-
-    request.onreadystatechange = function() {
-        if (request.readyState === 4) {
-            btn.disabled = false;
-            btn.innerHTML = originalContent;
-
-            if (request.status === 200) {
-                try {
-                    const response = JSON.parse(request.responseText);
-                    if (response.status === 'success') {
-                        bootstrap.Modal.getInstance(document.getElementById('verifyCodeModal')).hide();
-                        setTimeout(() => {
-                            const resetModal = new bootstrap.Modal(document.getElementById('resetPasswordModal'));
-                            resetModal.show();
-                        }, 500);
-                    } else {
-                        document.getElementById('codeError').innerHTML = response.msg;
-                    }
-                } catch (e) {
-                    showModal('Server error occurred');
-                }
-            } else {
-                showModal('Connection error');
-            }
-        }
-    };
-
-    request.send(form);
-}
-
-// Reset password (Step 3)
-function resetPassword() {
-    const newPassword = document.getElementById('new_password').value;
-    const confirmPassword = document.getElementById('confirm_password').value;
-
-    // Validate passwords
-    if (!newPassword || newPassword.length < 8) {
-        document.getElementById('passwordError').innerHTML = 'Password must be at least 8 characters';
-        return;
-    }
-
-    if (newPassword !== confirmPassword) {
-        document.getElementById('passwordError').innerHTML = 'Passwords do not match';
-        return;
-    }
-
-    const btn = document.getElementById('resetPasswordBtn');
-    const originalContent = btn.innerHTML;
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Resetting...';
-
-    const form = new FormData();
-    form.append('u', resetUniversityId);
-    form.append('password', newPassword);
-
-    const request = new XMLHttpRequest();
-    request.open('POST', '/LRRS/controllers/reset_password_process.php', true);
-
-    request.onreadystatechange = function() {
-        if (request.readyState === 4) {
-            btn.disabled = false;
-            btn.innerHTML = originalContent;
-
-            if (request.status === 200) {
-                try {
-                    const response = JSON.parse(request.responseText);
-                    if (response.status === 'success') {
-                        // Close reset modal and show success modal
-                        bootstrap.Modal.getInstance(document.getElementById('resetPasswordModal')).hide();
-                        setTimeout(() => {
-                            const successModal = new bootstrap.Modal(document.getElementById('successModal'));
-                            successModal.show();
-                            
-                            // Clear fields
-                            document.getElementById('new_password').value = '';
-                            document.getElementById('confirm_password').value = '';
-                            document.getElementById('verification_code').value = '';
-                            
-                            // Redirect to signin page after 2 seconds
-                            setTimeout(() => {
-                                window.location.href = '/LRRS/index.php';
-                            }, 2000);
-                        }, 500);
-                    } else {
-                        document.getElementById('passwordError').innerHTML = response.msg;
-                    }
-                } catch (e) {
-                    showModal('Server error occurred');
-                }
-            } else {
-                showModal('Connection error');
-            }
-        }
-    };
-
-    request.send(form);
-}
-
-// Resend code
-function resendCode() {
-    sendResetCode();
-}
 
 // Show modal function
 function showModal(message) {

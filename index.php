@@ -2,7 +2,9 @@
 session_start();
 include "./config/database.php";
 
+// Get cookies if they exist
 $university_id = $_COOKIE["university_id"] ?? '';
+$password = $_COOKIE["password"] ?? '';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -11,9 +13,6 @@ $university_id = $_COOKIE["university_id"] ?? '';
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Microbiology Lab System - Login</title>
-
-    <!-- Google reCAPTCHA (keep for signin only) -->
-    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -48,48 +47,244 @@ $university_id = $_COOKIE["university_id"] ?? '';
             padding: 20px;
         }
 
-        /* Animated background elements */
-        body::before {
-            content: '';
-            position: absolute;
-            width: 300px;
-            height: 300px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 50%;
-            top: -100px;
-            right: -100px;
-            animation: float 20s infinite ease-in-out;
+        /* Laboratory Decorative Elements - All positioned outside */
+        .lab-microscope {
+            position: fixed;
+            font-size: 150px;
+            opacity: 0.2;
+            top: 10px;
+            right: 20px;
+            animation: float 15s infinite ease-in-out;
+            z-index: 1;
+            color: rgba(255, 255, 255, 0.8);
+            text-shadow: 0 0 20px rgba(0,0,0,0.3);
+            pointer-events: none;
         }
 
-        body::after {
-            content: '';
-            position: absolute;
-            width: 400px;
-            height: 400px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 50%;
-            bottom: -150px;
-            left: -150px;
-            animation: float 25s infinite ease-in-out reverse;
+        .lab-test-tube {
+            position: fixed;
+            font-size: 180px;
+            opacity: 0.2;
+            bottom: 10px;
+            left: 20px;
+            animation: floatReverse 18s infinite ease-in-out;
+            z-index: 1;
+            color: rgba(255, 255, 255, 0.8);
+            text-shadow: 0 0 20px rgba(0,0,0,0.3);
+            pointer-events: none;
         }
 
+        .lab-alembic {
+            position: fixed;
+            font-size: 120px;
+            opacity: 0.15;
+            top: 30%;
+            left: 5%;
+            animation: floatSlow 20s infinite ease-in-out;
+            z-index: 1;
+            color: rgba(255, 255, 255, 0.8);
+            text-shadow: 0 0 20px rgba(0,0,0,0.3);
+            pointer-events: none;
+        }
+
+        .lab-petri {
+            position: fixed;
+            font-size: 140px;
+            opacity: 0.15;
+            bottom: 20%;
+            right: 5%;
+            animation: floatMedium 22s infinite ease-in-out;
+            z-index: 1;
+            color: rgba(255, 255, 255, 0.8);
+            text-shadow: 0 0 20px rgba(0,0,0,0.3);
+            pointer-events: none;
+        }
+
+        .lab-dna {
+            position: fixed;
+            font-size: 130px;
+            opacity: 0.12;
+            top: 60%;
+            left: 10%;
+            animation: rotate 25s infinite linear;
+            z-index: 1;
+            color: rgba(255, 255, 255, 0.8);
+            text-shadow: 0 0 20px rgba(0,0,0,0.3);
+            pointer-events: none;
+        }
+
+        .lab-microbe {
+            position: fixed;
+            font-size: 110px;
+            opacity: 0.12;
+            top: 15%;
+            left: 20%;
+            animation: bounce 8s infinite ease-in-out;
+            z-index: 1;
+            color: rgba(255, 255, 255, 0.8);
+            text-shadow: 0 0 20px rgba(0,0,0,0.3);
+            pointer-events: none;
+        }
+
+        .lab-flask {
+            position: fixed;
+            font-size: 160px;
+            opacity: 0.1;
+            top: 70%;
+            right: 15%;
+            animation: floatFlask 19s infinite ease-in-out;
+            z-index: 1;
+            color: rgba(255, 255, 255, 0.8);
+            text-shadow: 0 0 20px rgba(0,0,0,0.3);
+            pointer-events: none;
+        }
+
+        .lab-beaker {
+            position: fixed;
+            font-size: 140px;
+            opacity: 0.1;
+            top: 45%;
+            right: 25%;
+            animation: floatBeaker 21s infinite ease-in-out;
+            z-index: 1;
+            color: rgba(255, 255, 255, 0.8);
+            text-shadow: 0 0 20px rgba(0,0,0,0.3);
+            pointer-events: none;
+        }
+
+        /* Bubble animations */
+        .bubble-container {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .bubble {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+        }
+
+        .bubble1 {
+            width: 40px;
+            height: 40px;
+            bottom: 10%;
+            left: 15%;
+            animation: bubbleUp 12s infinite ease-out;
+        }
+
+        .bubble2 {
+            width: 25px;
+            height: 25px;
+            bottom: 20%;
+            right: 25%;
+            animation: bubbleUp 8s infinite ease-out;
+            animation-delay: 2s;
+        }
+
+        .bubble3 {
+            width: 35px;
+            height: 35px;
+            bottom: 5%;
+            left: 40%;
+            animation: bubbleUp 10s infinite ease-out;
+            animation-delay: 4s;
+        }
+
+        .bubble4 {
+            width: 20px;
+            height: 20px;
+            bottom: 30%;
+            right: 40%;
+            animation: bubbleUp 9s infinite ease-out;
+            animation-delay: 1s;
+        }
+
+        .bubble5 {
+            width: 30px;
+            height: 30px;
+            bottom: 15%;
+            left: 70%;
+            animation: bubbleUp 11s infinite ease-out;
+            animation-delay: 3s;
+        }
+
+        .bubble6 {
+            width: 45px;
+            height: 45px;
+            bottom: 25%;
+            right: 15%;
+            animation: bubbleUp 13s infinite ease-out;
+            animation-delay: 5s;
+        }
+
+        /* Animation Keyframes */
         @keyframes float {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(30px, -30px) rotate(10deg); }
+            50% { transform: translate(50px, 0) rotate(0deg); }
+            75% { transform: translate(20px, 30px) rotate(-10deg); }
+        }
 
-            0%,
-            100% {
-                transform: translate(0, 0) rotate(0deg);
+        @keyframes floatReverse {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(-30px, 30px) rotate(-10deg); }
+            50% { transform: translate(-50px, 0) rotate(0deg); }
+            75% { transform: translate(-20px, -30px) rotate(10deg); }
+        }
+
+        @keyframes floatSlow {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            33% { transform: translate(40px, -20px) rotate(15deg); }
+            66% { transform: translate(-20px, 40px) rotate(-15deg); }
+        }
+
+        @keyframes floatMedium {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(-40px, 30px) scale(1.1); }
+            50% { transform: translate(30px, -40px) scale(0.9); }
+            75% { transform: translate(-30px, -30px) scale(1.05); }
+        }
+
+        @keyframes floatFlask {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            30% { transform: translateY(-40px) rotate(15deg); }
+            60% { transform: translateY(20px) rotate(-15deg); }
+        }
+
+        @keyframes floatBeaker {
+            0%, 100% { transform: translateY(0) scale(1); }
+            40% { transform: translateY(-50px) scale(1.1); }
+            80% { transform: translateY(30px) scale(0.95); }
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-60px) scale(1.2); }
+        }
+
+        @keyframes bubbleUp {
+            0% {
+                transform: translateY(0) scale(1);
+                opacity: 0.3;
             }
-
-            25% {
-                transform: translate(50px, 50px) rotate(90deg);
-            }
-
             50% {
-                transform: translate(100px, 0) rotate(180deg);
+                transform: translateY(-150px) scale(1.5);
+                opacity: 0.5;
             }
-
-            75% {
-                transform: translate(50px, -50px) rotate(270deg);
+            100% {
+                transform: translateY(-300px) scale(0.5);
+                opacity: 0;
             }
         }
 
@@ -105,7 +300,6 @@ $university_id = $_COOKIE["university_id"] ?? '';
             position: relative;
             z-index: 10;
             animation: slideUp 0.8s cubic-bezier(0.4, 0, 0.2, 1);
-            margin: 0 auto;
         }
 
         @keyframes slideUp {
@@ -113,7 +307,6 @@ $university_id = $_COOKIE["university_id"] ?? '';
                 opacity: 0;
                 transform: translateY(50px);
             }
-
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -141,16 +334,6 @@ $university_id = $_COOKIE["university_id"] ?? '';
             animation: rotate 20s infinite linear;
         }
 
-        @keyframes rotate {
-            from {
-                transform: rotate(0deg);
-            }
-
-            to {
-                transform: rotate(360deg);
-            }
-        }
-
         .left-image img {
             width: 100%;
             height: 100%;
@@ -162,12 +345,10 @@ $university_id = $_COOKIE["university_id"] ?? '';
         }
 
         @keyframes floatImage {
-
             0%,
             100% {
                 transform: translateY(0) scale(1.02);
             }
-
             50% {
                 transform: translateY(-10px) scale(1.03);
             }
@@ -179,7 +360,7 @@ $university_id = $_COOKIE["university_id"] ?? '';
             display: flex;
             align-items: center;
             justify-content: center;
-            height: 100%;
+            min-height: 500px;
             padding: 0;
             overflow: hidden;
         }
@@ -200,6 +381,11 @@ $university_id = $_COOKIE["university_id"] ?? '';
             font-size: 1.4rem;
         }
 
+        h2.brand {
+            font-size: 1.6rem;
+            margin-bottom: 20px;
+        }
+
         .brand i {
             background: linear-gradient(135deg, #22c55e, #16a34a);
             -webkit-background-clip: text;
@@ -213,7 +399,6 @@ $university_id = $_COOKIE["university_id"] ?? '';
             from {
                 transform: rotate(0deg);
             }
-
             to {
                 transform: rotate(360deg);
             }
@@ -224,11 +409,6 @@ $university_id = $_COOKIE["university_id"] ?? '';
             font-size: 0.85rem;
             text-align: center;
             margin-bottom: 15px;
-        }
-
-        h2.brand {
-            font-size: 1.6rem;
-            margin-bottom: 20px;
         }
 
         .form-label {
@@ -346,12 +526,24 @@ $university_id = $_COOKIE["university_id"] ?? '';
             text-decoration: underline;
         }
 
+        /* Message/Error div */
+        #msgdiv1 {
+            margin-bottom: 15px;
+        }
+
+        .alert {
+            border-radius: 12px;
+            font-size: 0.9rem;
+            padding: 10px 15px;
+        }
+
         /* Modal Styles */
         .modal-content {
             border-radius: 24px;
             border: none;
             box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
             overflow: hidden;
+            z-index: 1050;
         }
 
         .modal-header {
@@ -382,32 +574,19 @@ $university_id = $_COOKIE["university_id"] ?? '';
             border: none;
         }
 
-        /* reCAPTCHA container */
-        .g-recaptcha {
-            margin: 10px 0;
-            display: flex;
-            justify-content: center;
-            transform: scale(0.9);
+        /* Password show button */
+        .input-group .btn-outline-secondary {
+            border: 2px solid #e5e7eb;
+            border-left: none;
+            background: #f9fafb;
+            color: #22c55e;
+            font-weight: 500;
         }
 
-        /* Loading spinner */
-        .spinner-border {
-            width: 1rem;
-            height: 1rem;
-            margin-right: 6px;
-        }
-
-        /* Error message */
-        .text-danger {
-            color: #ef4444 !important;
-            font-size: 0.8rem;
-            margin-top: 5px;
-        }
-
-        /* Remove any extra lines */
-        .auth-form::before,
-        .auth-form::after {
-            display: none;
+        .input-group .btn-outline-secondary:hover {
+            background: #22c55e;
+            color: white;
+            border-color: #22c55e;
         }
 
         /* Responsive Design */
@@ -423,7 +602,6 @@ $university_id = $_COOKIE["university_id"] ?? '';
             }
 
             .auth-form {
-                height: auto;
                 min-height: 500px;
                 padding: 20px;
             }
@@ -433,19 +611,25 @@ $university_id = $_COOKIE["university_id"] ?? '';
             }
         }
 
+        @media (max-width: 768px) {
+            .lab-microscope, .lab-test-tube, .lab-alembic, .lab-petri, .lab-dna, .lab-microbe, .lab-flask, .lab-beaker {
+                font-size: 80px;
+                opacity: 0.15;
+            }
+        }
+
         @media (max-width: 576px) {
             body {
                 padding: 10px;
             }
 
             .auth-card {
-                height: auto;
                 min-height: 450px;
-                border-radius: 30px;
             }
 
             .auth-form {
                 padding: 15px;
+                min-height: 450px;
             }
 
             .form-container {
@@ -457,26 +641,26 @@ $university_id = $_COOKIE["university_id"] ?? '';
                 font-size: 1.2rem;
             }
 
-            .brand i {
-                font-size: 1.5rem;
-            }
-
             h2.brand {
                 font-size: 1.4rem;
                 margin-bottom: 15px;
+            }
+
+            .brand i {
+                font-size: 1.5rem;
             }
 
             .btn-success {
                 height: 44px;
                 font-size: 0.95rem;
             }
+
+            .lab-microscope, .lab-test-tube, .lab-alembic, .lab-petri, .lab-dna, .lab-microbe, .lab-flask, .lab-beaker {
+                font-size: 60px;
+            }
         }
 
         @media (max-width: 380px) {
-            .g-recaptcha {
-                transform: scale(0.8);
-            }
-
             .d-flex.justify-content-between {
                 flex-direction: column;
                 gap: 10px;
@@ -486,11 +670,10 @@ $university_id = $_COOKIE["university_id"] ?? '';
             .small {
                 align-self: flex-end;
             }
-        }
 
-
-        .btn-success {
-            animation: none;
+            .lab-microscope, .lab-test-tube, .lab-alembic, .lab-petri, .lab-dna, .lab-microbe, .lab-flask, .lab-beaker {
+                font-size: 50px;
+            }
         }
     </style>
 
@@ -500,6 +683,25 @@ $university_id = $_COOKIE["university_id"] ?? '';
 </head>
 
 <body>
+    <!-- Laboratory Decorative Elements - All positioned OUTSIDE the card -->
+    <div class="lab-microscope">🔬</div>
+    <div class="lab-test-tube">🧪</div>
+    <div class="lab-alembic">⚗️</div>
+    <div class="lab-petri">🧫</div>
+    <div class="lab-dna">🧬</div>
+    <div class="lab-microbe">🦠</div>
+    <div class="lab-flask">🧪</div>
+    <div class="lab-beaker">🥼</div>
+    
+    <!-- Bubble Container -->
+    <div class="bubble-container">
+        <div class="bubble bubble1"></div>
+        <div class="bubble bubble2"></div>
+        <div class="bubble bubble3"></div>
+        <div class="bubble bubble4"></div>
+        <div class="bubble bubble5"></div>
+        <div class="bubble bubble6"></div>
+    </div>
 
     <!-- Message Modal -->
     <div class="modal fade" id="messageModal" tabindex="-1" aria-hidden="true">
@@ -514,32 +716,47 @@ $university_id = $_COOKIE["university_id"] ?? '';
         </div>
     </div>
 
-    <!-- reCAPTCHA Modal for Sign In (KEEP THIS FOR SIGNIN) -->
-    <div class="modal fade" id="recaptchaModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-sm">
+    <!-- Forgot Password Modal -->
+    <div class="modal fade" id="fpmodal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">
-                        <i class="bi bi-shield-check me-2"></i>
-                        Verification
+                        <i class="bi bi-key me-2"></i>Forgot Password
                     </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body text-center">
-                    <p class="text-muted mb-2 small">Complete security check</p>
-                    <div class="g-recaptcha mb-2" data-sitekey="6LcM0HMsAAAAAGiNWLW0WX5DFTSKF4F8mlQdX5SO" data-callback="recaptchaSuccess"></div>
-                    <div id="recaptchaResponse" class="text-danger small"></div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-6">
+                            <label class="form-label">New Password</label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="np" placeholder="Enter new password">
+                                <button class="btn btn-outline-secondary" type="button" onclick="showPassword1()" id="npb">Show</button>
+                            </div>
+                        </div>
+                        <div class="col-6">
+                            <label class="form-label">Re-type Password</label>
+                            <div class="input-group">
+                                <input type="password" class="form-control" id="rnp" placeholder="Re-type password">
+                                <button class="btn btn-outline-secondary" type="button" onclick="showPassword2()" id="rnpb">Show</button>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Verification Code</label>
+                            <input type="text" class="form-control" id="vcode" placeholder="Enter verification code">
+                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-success btn-sm" id="verifyBtn" onclick="verifyRecaptcha()" disabled>Verify</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-success" onclick="resetPassword()">
+                        <i class="bi bi-check-circle me-2"></i>Reset Password
+                    </button>
                 </div>
             </div>
         </div>
     </div>
-
-
-  
 
     <!-- Main Auth Card -->
     <div class="auth-card">
@@ -560,49 +777,62 @@ $university_id = $_COOKIE["university_id"] ?? '';
 
                 <h2 class="brand">Sign In</h2>
 
-                <form>
-                    <div class="mb-3">
-                        <label class="form-label">University ID</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="bi bi-person"></i></span>
-                            <input id="university_id"
-                                value="<?= htmlspecialchars($university_id) ?>"
-                                type="text" class="form-control" placeholder="Enter your ID" required>
-                        </div>
-                    </div>
+                <!-- Error Message Div -->
+                <div class="col-12 d-none" id="msgdiv1">
+                    <div class="alert alert-danger" role="alert" id="msg1"></div>
+                </div>
 
-                    <div class="mb-3">
-                        <label class="form-label">Password</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="bi bi-lock"></i></span>
-                            <input type="password"
-                                id="password"
-                                class="form-control"
-                                placeholder="Enter your password"
-                                oninput="this.value = this.value.toUpperCase()"
-                                required>
-                        </div>
-                    </div>
+                <form>
+                   <div class="mb-3">
+    <label class="form-label">University ID</label>
+    <div class="input-group">
+        <span class="input-group-text"><i class="bi bi-person"></i></span>
+        <input id="university_id"
+            value="<?= htmlspecialchars($university_id) ?>"
+            type="text" 
+            class="form-control" 
+            placeholder="Enter your ID" 
+            oninput="this.value = this.value.toUpperCase()"
+            required>
+    </div>
+</div>
+
+                   <div class="mb-3">
+    <label class="form-label">Password</label>
+    <div class="input-group">
+        <span class="input-group-text"><i class="bi bi-lock"></i></span>
+        <input type="password"
+            id="password"
+            value="<?= htmlspecialchars($password) ?>"
+            class="form-control"
+            placeholder="Enter your password"
+            required>
+    </div>
+</div>
 
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="remember_me">
+                            <input class="form-check-input" type="checkbox" id="remember_me" <?= $university_id ? 'checked' : '' ?>>
                             <label class="form-check-label" for="remember_me">
                                 Remember Me
                             </label>
                         </div>
-                        <a href="#" onclick="showForgotPassword(); return false;" class="small">Forgot password?</a>
+                        <a href="#" onclick="forgotPassword(); return false;" class="small">
+                            <i class="bi bi-question-circle"></i> Forgot password?
+                        </a>
                     </div>
 
                     <div class="d-grid">
-                        <button type="button" onclick="showRecaptchaModal();" class="btn btn-success" id="signinBtn">
+                        <button type="button" onclick="signin();" class="btn btn-success" id="signinBtn">
                             <i class="bi bi-box-arrow-in-right me-2"></i>
                             <span id="loginText">Sign In</span>
                         </button>
 
                         <p class="text-center mt-3 mb-0 small">
                             Don't have an account?
-                            <a href="./views/signup.php" class="link-success">Sign up</a>
+                            <a href="./views/signup.php" class="link-success">
+                                <i class="bi bi-person-plus"></i> Sign up
+                            </a>
                         </p>
                     </div>
                 </form>
@@ -614,10 +844,10 @@ $university_id = $_COOKIE["university_id"] ?? '';
         </div>
     </div>
 
-    <!-- Scripts -->
-    <script src="./assets/script/script.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+     <script src="./assets/script/script.js"></script>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+ 
 </body>
 
 </html>
