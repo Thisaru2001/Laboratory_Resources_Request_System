@@ -1180,6 +1180,8 @@
             box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
         }
     </style>
+      <!-- Keep original favicon -->
+    <link rel="icon" type="image/svg+xml" href="../assets/resources/flask.svg">
 </head>
 
 <body>
@@ -1263,114 +1265,87 @@
 
             <!-- Dashboard Section -->
             <div id="dashboardSection">
-                <!-- <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Student Dashboard</h3> -->
-
-                <!-- Student Stats (Optional - can be removed if not needed) -->
-                <!-- <div class="analytics-grid mb-4"> -->
-                    <!-- <div class="stat-card">
-                        <i class="bi bi-calendar-check"></i>
-                        <h3>5</h3>
-                        <p>My Bookings</p>
-                    </div>
-                    <div class="stat-card">
-                        <i class="bi bi-clock-history"></i>
-                        <h3>12.5</h3>
-                        <p>Hours Used</p>
-                    </div>
-                    <div class="stat-card">
-                        <i class="bi bi-tools"></i>
-                        <h3>3</h3>
-                        <p>Equipment Used</p>
-                    </div>
-                    <div class="stat-card">
-                        <i class="bi bi-hourglass-split"></i>
-                        <h3>2</h3>
-                        <p>Pending Requests</p>
-                    </div> -->
-                <!-- </div> -->
+           
 
                 <!-- Create Request Section - UPDATED -->
-                <h4 class="mb-3" style="color: white;">Create Equipment Request</h4>
-                <div class="card p-4 mb-4">
-                    <form id="equipmentRequestForm">
-                        <!-- Lab Location Selector - First -->
-                        <div class="row g-3 mb-3">
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold">Lab Location</label>
-                                <select id="labLocation" class="form-select" required onchange="loadEquipmentByLab()">
-                                    <option value="" disabled selected>Select Lab</option>
-                                    <option value="Microbiology Lab 01">Microbiology Lab 01</option>
-                                    <option value="Microbiology Lab 02">Microbiology Lab 02</option>
-                                    <option value="Research Laboratory">Research Laboratory</option>
-                                </select>
-                            </div>
-                        </div>
+<h4 class="mb-3" style="color: white;">Create Equipment Request</h4>
+<div class="card p-4 mb-4">
+    <form id="equipmentRequestForm">
+        <!-- Lab Location, Requested Date, Continue Days - ALL IN ONE ROW -->
+        <div class="row g-3 mb-3">
+            <div class="col-md-4">
+                <label class="form-label fw-semibold">Lab Location</label>
+                <select id="labLocation" class="form-select" required onchange="loadEquipmentByLab()">
+                    <option value="" disabled selected>Select Lab</option>
+                    <option value="Microbiology Lab 01">Microbiology Lab 01</option>
+                    <option value="Microbiology Lab 02">Microbiology Lab 02</option>
+                    <option value="Research Laboratory">Research Laboratory</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-semibold">Requested Date</label>
+                <input type="date" id="requestDate" class="form-control" required>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label fw-semibold">Continue Days</label>
+                <select id="continueDays" class="form-select" required>
+                    <option value="" disabled selected>Select Days</option>
+                    <option value="1">1 Day</option>
+                    <option value="2">2 Days</option>
+                    <option value="3">3 Days</option>
+                </select>
+            </div>
+        </div>
 
-                        <!-- Equipment Search - Second (only relevant to selected lab) -->
-                        <div class="row g-3 mb-3">
-                            <div class="col-md-6 position-relative">
-                                <label class="form-label fw-semibold">Search Equipment (by Lab)</label>
-                                <input type="text" id="equipmentName" class="form-control" placeholder="Select lab location first" autocomplete="off" disabled>
-                            </div>
-                            <div class="col-md-2">
-                                <label class="form-label fw-semibold">Quantity</label>
-                                <input type="number" id="equipmentQty" class="form-control" min="1" value="1" disabled>
-                            </div>
-                            <div class="col-md-2 d-flex align-items-end">
-                                <button type="button" class="btn btn-success w-100" onclick="addEquipment()" id="addEquipmentBtn" disabled>
-                                    <i class="bi bi-plus-circle me-1"></i>Add
-                                </button>
-                            </div>
-                        </div>
+        <!-- Equipment Search - Second (only relevant to selected lab) -->
+        <div class="row g-3 mb-3">
+            <div class="col-md-6 position-relative">
+                <label class="form-label fw-semibold">Search Equipment (by Lab)</label>
+                <input type="text" id="equipmentName" class="form-control" placeholder="Select lab location first" autocomplete="off" disabled>
+                <div id="equipmentDropdown" class="dropdown-menu w-100" style="display: none; max-height: 200px; overflow-y: auto;"></div>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label fw-semibold">Quantity</label>
+                <input type="number" id="equipmentQty" class="form-control" min="1" value="1" disabled>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="button" class="btn btn-success w-100" onclick="addEquipment()" id="addEquipmentBtn" disabled>
+                    <i class="bi bi-plus-circle me-1"></i>Add
+                </button>
+            </div>
+        </div>
 
-                        <!-- Equipment Table -->
-                        <div class="table-responsive">
-                            <table class="table table-bordered mb-4" id="equipmentTable">
-                                <thead class="table-success">
-                                    <tr>
-                                        <th>Equipment</th>
-                                        <th>Qty</th>
-                                        <th>Remove</th>
-                                    </tr>
-                                </thead>
-                                <tbody></tbody>
-                            </table>
-                        </div>
+        <!-- Equipment Table -->
+        <div class="table-responsive">
+            <table class="table table-bordered mb-4" id="equipmentTable">
+                <thead class="table-success">
+                    <tr>
+                        <th>Equipment</th>
+                        <th>Qty</th>
+                        <th>Remove</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
 
-                        <!-- Requested Date and Continue Days -->
-                        <div class="row g-3 mb-3">
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold">Requested Date</label>
-                                <input type="date" id="requestDate" class="form-control" required>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold">Continue Days</label>
-                                <select id="continueDays" class="form-select" required>
-                                    <option value="" disabled selected>Select Days</option>
-                                    <option value="1">1 Day</option>
-                                    <option value="2">2 Days</option>
-                                    <option value="3">3 Days</option>
-                                </select>
-                            </div>
-                        </div>
+        <!-- Additional Comments -->
+        <div class="mb-4">
+            <label class="form-label fw-semibold">Additional Comments</label>
+            <textarea id="requestComment" class="form-control" rows="3" placeholder="Enter any special requirements or notes..."></textarea>
+        </div>
 
-                        <!-- Additional Comments -->
-                        <div class="mb-4">
-                            <label class="form-label fw-semibold">Additional Comments</label>
-                            <textarea id="requestComment" class="form-control" rows="3" placeholder="Enter any special requirements or notes..."></textarea>
-                        </div>
-
-                        <!-- Buttons - Only Submit and Reset -->
-                        <div class="d-flex gap-2">
-                            <button type="button" class="btn btn-success" onclick="submitRequest()">
-                                <i class="bi bi-send me-1"></i>Submit Request
-                            </button>
-                            <button type="button" class="btn btn-secondary" onclick="resetForm()">
-                                <i class="bi bi-arrow-counterclockwise me-1"></i>Reset
-                            </button>
-                        </div>
-                    </form>
-                </div>
+        <!-- Buttons - Only Submit and Reset -->
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-success" onclick="submitRequest()">
+                <i class="bi bi-send me-1"></i>Submit Request
+            </button>
+            <button type="button" class="btn btn-secondary" onclick="resetForm()">
+                <i class="bi bi-arrow-counterclockwise me-1"></i>Reset
+            </button>
+        </div>
+    </form>
+</div>
 
                 <!-- Request Status Section -->
                 <h4 class="mb-3" style="color: white;">My Request Status</h4>
@@ -1380,7 +1355,7 @@
                             <thead class="table-light">
                                 <tr>
                                     <th>Request ID</th>
-                                    <th>Equipment</th>
+                                  
                                     <th>Date</th>
                                     <th>Lab</th>
                                     <th>Status</th>
@@ -1482,38 +1457,38 @@
                 </div>
             </div>
 
-            <!-- Reservation History Section -->
-            <div id="historySection" style="display: none;">
-                <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Reservation History</h3>
+           <!-- Reservation History Section -->
+<div id="historySection" style="display: none;">
+    <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Reservation History</h3>
 
-                <div class="card p-4">
-                    <!-- Time Filter -->
-                    <div class="filter-section" style="margin-bottom: 20px;">
-                        <select class="filter-select" id="timeFilter" onchange="filterReservations()" style="min-width: 200px;">
-                            <option value="all">All Time</option>
-                            <option value="weekly">Weekly</option>
-                            <option value="monthly">Monthly</option>
-                        </select>
-                    </div>
+    <div class="card p-4">
+        <!-- Time Filter -->
+        <div class="filter-section" style="margin-bottom: 20px;">
+            <select class="filter-select" id="timeFilter" onchange="filterReservations()" style="min-width: 200px;">
+                <option value="all">All Time</option>
+                <option value="weekly">Weekly</option>
+                <option value="monthly">Monthly</option>
+            </select>
+        </div>
 
-                    <div class="table-responsive">
-                        <table class="equipment-table">
-                            <thead>
-                                <tr>
-                                    <th>Reservation ID</th>
-                                    <th>Date & Time</th>
-                                    <th>Location</th>
-                                    <th>Status</th>
-                                </tr>
-                            </thead>
-                            <tbody id="reservationHistoryBody">
-                                <!-- Dynamic content will be loaded here -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
+        <div class="table-responsive">
+            <table class="equipment-table">
+                <thead>
+                    <tr>
+                        <th>Reservation ID</th>
+                        <th>Date & Time</th>
+                        <th>Location</th>
+                        <th>Status</th>
+                        <th>Action</th> <!-- New column for View button -->
+                    </tr>
+                </thead>
+                <tbody id="reservationHistoryBody">
+                    <!-- Dynamic content will be loaded here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
             <!-- Equipment Details Modal -->
             <div class="modal fade" id="equipmentDetailsModal" tabindex="-1" aria-hidden="true">
                 <div class="modal-dialog modal-lg modal-dialog-centered">
@@ -1575,990 +1550,1069 @@
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
-    <script>
-        // ============ GLOBAL VARIABLES ============
-        let selectedEquipment = [];
-        let currentUser = { name: "John", id: 1 };
+   <script>
+// ============ GLOBAL VARIABLES ============
+let selectedEquipment = [];
+let currentUser = { name: "John", id: 1 };
 
-        // Calendar variables
-        let activeDay;
-        let month = new Date().getMonth();
-        let year = new Date().getFullYear();
+// Equipment data by lab (detailed version with all fields)
+const equipmentByLab = {
+    'Microbiology Lab 01': [
+        { equipment_id: 1, name: 'Microscope', equipment_code: 'MIC001', available_units: 5, total_units: 8, manufacturer: 'Olympus', model: 'CX23' },
+        { equipment_id: 4, name: 'Autoclave', equipment_code: 'AUT004', available_units: 6, total_units: 6, manufacturer: 'Hirayama', model: 'HVE-50' },
+        { equipment_id: 8, name: 'Microcentrifuge', equipment_code: 'MIC008', available_units: 4, total_units: 6, manufacturer: 'Eppendorf', model: '5424' }
+    ],
+    'Microbiology Lab 02': [
+        { equipment_id: 3, name: 'Incubator', equipment_code: 'INC003', available_units: 2, total_units: 4, manufacturer: 'Thermo Scientific', model: 'Heratherm' },
+        { equipment_id: 6, name: 'Water Bath', equipment_code: 'WAT006', available_units: 5, total_units: 7, manufacturer: 'Memmert', model: 'WNB 14' }
+    ],
+    'Research Laboratory': [
+        { equipment_id: 2, name: 'Centrifuge', equipment_code: 'CEN002', available_units: 3, total_units: 5, manufacturer: 'Eppendorf', model: '5424R' },
+        { equipment_id: 5, name: 'pH Meter', equipment_code: 'PHM005', available_units: 3, total_units: 3, manufacturer: 'Mettler Toledo', model: 'FiveEasy' },
+        { equipment_id: 7, name: 'Spectrophotometer', equipment_code: 'SPE007', available_units: 2, total_units: 3, manufacturer: 'Thermo Scientific', model: 'Genesys 150' }
+    ]
+};
 
-        const months = [
-            "January", "February", "March", "April", "May", "June",
-            "July", "August", "September", "October", "November", "December"
-        ];
+// Equipment data for table display
+const equipmentData = [
+    { 
+        id: 1,
+        name: 'Microscope', 
+        image: 'https://cdn-icons-png.flaticon.com/512/2941/2941514.png', 
+        location: 'Microbiology Lab 01', 
+        status: 'available', 
+        lab: 'lab1',
+        labName: 'Microbiology Lab 01',
+        available: 5,
+        total: 8,
+        manufacturer: 'Olympus',
+        model: 'CX23',
+        description: 'Binocular microscope with LED illumination'
+    },
+    { 
+        id: 2,
+        name: 'Centrifuge', 
+        image: 'https://cdn-icons-png.flaticon.com/512/2941/2941543.png', 
+        location: 'Research Laboratory', 
+        status: 'in-use', 
+        lab: 'research',
+        labName: 'Research Laboratory',
+        available: 3,
+        total: 5,
+        manufacturer: 'Eppendorf',
+        model: '5424R',
+        description: 'Refrigerated microcentrifuge'
+    },
+    { 
+        id: 3,
+        name: 'Incubator', 
+        image: 'https://cdn-icons-png.flaticon.com/512/2941/2941538.png', 
+        location: 'Microbiology Lab 02', 
+        status: 'maintenance', 
+        lab: 'lab2',
+        labName: 'Microbiology Lab 02',
+        available: 2,
+        total: 4,
+        manufacturer: 'Thermo Scientific',
+        model: 'Heratherm',
+        description: 'Microbiological incubator'
+    },
+    { 
+        id: 4,
+        name: 'Autoclave', 
+        image: 'https://cdn-icons-png.flaticon.com/512/2941/2941521.png', 
+        location: 'Microbiology Lab 01', 
+        status: 'available', 
+        lab: 'lab1',
+        labName: 'Microbiology Lab 01',
+        available: 6,
+        total: 6,
+        manufacturer: 'Hirayama',
+        model: 'HVE-50',
+        description: 'Vertical sterilization autoclave'
+    },
+    { 
+        id: 5,
+        name: 'pH Meter', 
+        image: 'https://cdn-icons-png.flaticon.com/512/2941/2941556.png', 
+        location: 'Research Laboratory', 
+        status: 'available', 
+        lab: 'research',
+        labName: 'Research Laboratory',
+        available: 3,
+        total: 3,
+        manufacturer: 'Mettler Toledo',
+        model: 'FiveEasy',
+        description: 'Digital pH meter'
+    },
+    { 
+        id: 6,
+        name: 'Water Bath', 
+        image: 'https://cdn-icons-png.flaticon.com/512/2941/2941578.png', 
+        location: 'Microbiology Lab 02', 
+        status: 'in-use', 
+        lab: 'lab2',
+        labName: 'Microbiology Lab 02',
+        available: 5,
+        total: 7,
+        manufacturer: 'Memmert',
+        model: 'WNB 14',
+        description: 'Digital water bath'
+    },
+    { 
+        id: 7,
+        name: 'Spectrophotometer', 
+        image: 'https://cdn-icons-png.flaticon.com/512/2941/2941563.png', 
+        location: 'Research Laboratory', 
+        status: 'available', 
+        lab: 'research',
+        labName: 'Research Laboratory',
+        available: 2,
+        total: 3,
+        manufacturer: 'Thermo Scientific',
+        model: 'Genesys 150',
+        description: 'UV-Vis spectrophotometer'
+    },
+    { 
+        id: 8,
+        name: 'Microcentrifuge', 
+        image: 'https://cdn-icons-png.flaticon.com/512/2941/2941543.png', 
+        location: 'Microbiology Lab 01', 
+        status: 'available', 
+        lab: 'lab1',
+        labName: 'Microbiology Lab 01',
+        available: 4,
+        total: 6,
+        manufacturer: 'Eppendorf',
+        model: '5424',
+        description: 'Personal microcentrifuge'
+    }
+];
 
-        let eventsArr = [
-            { day: 20, month: 2, year: 2026, events: [{ title: "Microscope Booking", time: "10:00 AM - 12:00 PM", details: "Lab 01" }] },
-            { day: 21, month: 2, year: 2026, events: [{ title: "Centrifuge Booking", time: "2:00 PM - 4:00 PM", details: "Research Lab" }] },
-            { day: 22, month: 2, year: 2026, events: [{ title: "Autoclave Booking", time: "1:00 PM - 3:00 PM", details: "Lab 01" }] }
-        ];
+// Calendar variables
+let activeDay;
+let month = new Date().getMonth();
+let year = new Date().getFullYear();
 
-        // Equipment data for table (by lab)
-        const equipmentData = [
-            { 
-                id: 1,
-                name: 'Microscope', 
-                image: 'https://cdn-icons-png.flaticon.com/512/2941/2941514.png', 
-                location: 'Microbiology Lab 01', 
-                status: 'available', 
-                lab: 'lab1',
-                labName: 'Microbiology Lab 01',
-                available: 5,
-                total: 8,
-                manufacturer: 'Olympus',
-                model: 'CX23',
-                description: 'Binocular microscope with LED illumination'
-            },
-            { 
-                id: 2,
-                name: 'Centrifuge', 
-                image: 'https://cdn-icons-png.flaticon.com/512/2941/2941543.png', 
-                location: 'Research Laboratory', 
-                status: 'in-use', 
-                lab: 'research',
-                labName: 'Research Laboratory',
-                available: 3,
-                total: 5,
-                manufacturer: 'Eppendorf',
-                model: '5424R',
-                description: 'Refrigerated microcentrifuge'
-            },
-            { 
-                id: 3,
-                name: 'Incubator', 
-                image: 'https://cdn-icons-png.flaticon.com/512/2941/2941538.png', 
-                location: 'Microbiology Lab 02', 
-                status: 'maintenance', 
-                lab: 'lab2',
-                labName: 'Microbiology Lab 02',
-                available: 2,
-                total: 4,
-                manufacturer: 'Thermo Scientific',
-                model: 'Heratherm',
-                description: 'Microbiological incubator'
-            },
-            { 
-                id: 4,
-                name: 'Autoclave', 
-                image: 'https://cdn-icons-png.flaticon.com/512/2941/2941521.png', 
-                location: 'Microbiology Lab 01', 
-                status: 'available', 
-                lab: 'lab1',
-                labName: 'Microbiology Lab 01',
-                available: 6,
-                total: 6,
-                manufacturer: 'Hirayama',
-                model: 'HVE-50',
-                description: 'Vertical sterilization autoclave'
-            },
-            { 
-                id: 5,
-                name: 'pH Meter', 
-                image: 'https://cdn-icons-png.flaticon.com/512/2941/2941556.png', 
-                location: 'Research Laboratory', 
-                status: 'available', 
-                lab: 'research',
-                labName: 'Research Laboratory',
-                available: 3,
-                total: 3,
-                manufacturer: 'Mettler Toledo',
-                model: 'FiveEasy',
-                description: 'Digital pH meter'
-            },
-            { 
-                id: 6,
-                name: 'Water Bath', 
-                image: 'https://cdn-icons-png.flaticon.com/512/2941/2941578.png', 
-                location: 'Microbiology Lab 02', 
-                status: 'in-use', 
-                lab: 'lab2',
-                labName: 'Microbiology Lab 02',
-                available: 5,
-                total: 7,
-                manufacturer: 'Memmert',
-                model: 'WNB 14',
-                description: 'Digital water bath'
-            },
-            { 
-                id: 7,
-                name: 'Spectrophotometer', 
-                image: 'https://cdn-icons-png.flaticon.com/512/2941/2941563.png', 
-                location: 'Research Laboratory', 
-                status: 'available', 
-                lab: 'research',
-                labName: 'Research Laboratory',
-                available: 2,
-                total: 3,
-                manufacturer: 'Thermo Scientific',
-                model: 'Genesys 150',
-                description: 'UV-Vis spectrophotometer'
-            },
-            { 
-                id: 8,
-                name: 'Microcentrifuge', 
-                image: 'https://cdn-icons-png.flaticon.com/512/2941/2941543.png', 
-                location: 'Microbiology Lab 01', 
-                status: 'available', 
-                lab: 'lab1',
-                labName: 'Microbiology Lab 01',
-                available: 4,
-                total: 6,
-                manufacturer: 'Eppendorf',
-                model: '5424',
-                description: 'Personal microcentrifuge'
-            }
-        ];
+const months = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+];
 
-        // Equipment by lab for dropdown
-        const equipmentByLab = {
-            'Microbiology Lab 01': [
-                { equipment_id: 1, name: 'Microscope', equipment_code: 'MIC001', available_units: 5, total_units: 8 },
-                { equipment_id: 4, name: 'Autoclave', equipment_code: 'AUT004', available_units: 6, total_units: 6 },
-                { equipment_id: 8, name: 'Microcentrifuge', equipment_code: 'MIC008', available_units: 4, total_units: 6 }
-            ],
-            'Microbiology Lab 02': [
-                { equipment_id: 3, name: 'Incubator', equipment_code: 'INC003', available_units: 2, total_units: 4 },
-                { equipment_id: 6, name: 'Water Bath', equipment_code: 'WAT006', available_units: 5, total_units: 7 }
-            ],
-            'Research Laboratory': [
-                { equipment_id: 2, name: 'Centrifuge', equipment_code: 'CEN002', available_units: 3, total_units: 5 },
-                { equipment_id: 5, name: 'pH Meter', equipment_code: 'PHM005', available_units: 3, total_units: 3 },
-                { equipment_id: 7, name: 'Spectrophotometer', equipment_code: 'SPE007', available_units: 2, total_units: 3 }
-            ]
-        };
+let eventsArr = [
+    { day: 20, month: 2, year: 2026, events: [{ title: "Microscope Booking", time: "10:00 AM - 12:00 PM", details: "Lab 01" }] },
+    { day: 21, month: 2, year: 2026, events: [{ title: "Centrifuge Booking", time: "2:00 PM - 4:00 PM", details: "Research Lab" }] },
+    { day: 22, month: 2, year: 2026, events: [{ title: "Autoclave Booking", time: "1:00 PM - 3:00 PM", details: "Lab 01" }] }
+];
 
-        // Reservation History Data
-        const reservationHistoryData = [
-            { 
-                id: 'RES001', 
-                dateTime: '2026-03-01 10:30 AM',
-                timestamp: new Date('2026-03-01T10:30:00'),
-                location: 'Microbiology Lab 01', 
-                status: 'completed'
-            },
-            { 
-                id: 'RES002', 
-                dateTime: '2026-02-28 02:00 PM',
-                timestamp: new Date('2026-02-28T14:00:00'),
-                location: 'Research Laboratory', 
-                status: 'completed'
-            },
-            { 
-                id: 'RES003', 
-                dateTime: '2026-02-25 09:00 AM',
-                timestamp: new Date('2026-02-25T09:00:00'),
-                location: 'Microbiology Lab 02', 
-                status: 'pending'
-            },
-            { 
-                id: 'RES004', 
-                dateTime: '2026-02-20 01:00 PM',
-                timestamp: new Date('2026-02-20T13:00:00'),
-                location: 'Microbiology Lab 01', 
-                status: 'completed'
-            },
-            { 
-                id: 'RES005', 
-                dateTime: '2026-02-15 11:00 AM',
-                timestamp: new Date('2026-02-15T11:00:00'),
-                location: 'Research Laboratory', 
-                status: 'completed'
-            },
-            { 
-                id: 'RES006', 
-                dateTime: '2026-02-10 03:30 PM',
-                timestamp: new Date('2026-02-10T15:30:00'),
-                location: 'Microbiology Lab 02', 
-                status: 'completed'
-            },
-            { 
-                id: 'RES007', 
-                dateTime: '2026-02-05 10:00 AM',
-                timestamp: new Date('2026-02-05T10:00:00'),
-                location: 'Microbiology Lab 01', 
-                status: 'completed'
-            },
-            { 
-                id: 'RES008', 
-                dateTime: '2026-02-01 02:00 PM',
-                timestamp: new Date('2026-02-01T14:00:00'),
-                location: 'Research Laboratory', 
-                status: 'pending'
-            }
-        ];
+// Enhanced Reservation History Data with more details
+const reservationHistoryData = [
+    { id: 'RES001', dateTime: '2026-03-01 10:30 AM', timestamp: new Date('2026-03-01T10:30:00'), location: 'Microbiology Lab 01', status: 'completed', equipment: 'Microscope (2), Centrifuge (1)', duration: '2 hours', purpose: 'Research Project' },
+    { id: 'RES002', dateTime: '2026-02-28 02:00 PM', timestamp: new Date('2026-02-28T14:00:00'), location: 'Research Laboratory', status: 'completed', equipment: 'Spectrophotometer (1)', duration: '1.5 hours', purpose: 'Sample Analysis' },
+    { id: 'RES003', dateTime: '2026-02-25 09:00 AM', timestamp: new Date('2026-02-25T09:00:00'), location: 'Microbiology Lab 02', status: 'pending', equipment: 'Incubator (1), Water Bath (1)', duration: '3 hours', purpose: 'Culture Growth' },
+    { id: 'RES004', dateTime: '2026-02-20 01:00 PM', timestamp: new Date('2026-02-20T13:00:00'), location: 'Microbiology Lab 01', status: 'completed', equipment: 'Autoclave (1)', duration: '1 hour', purpose: 'Sterilization' },
+    { id: 'RES005', dateTime: '2026-02-15 11:00 AM', timestamp: new Date('2026-02-15T11:00:00'), location: 'Research Laboratory', status: 'completed', equipment: 'pH Meter (1), Balance (1)', duration: '2 hours', purpose: 'Solution Preparation' },
+    { id: 'RES006', dateTime: '2026-02-10 03:30 PM', timestamp: new Date('2026-02-10T15:30:00'), location: 'Microbiology Lab 02', status: 'completed', equipment: 'Microscope (1)', duration: '2 hours', purpose: 'Cell Observation' },
+    { id: 'RES007', dateTime: '2026-02-05 10:00 AM', timestamp: new Date('2026-02-05T10:00:00'), location: 'Microbiology Lab 01', status: 'completed', equipment: 'Centrifuge (1)', duration: '1.5 hours', purpose: 'Sample Preparation' },
+    { id: 'RES008', dateTime: '2026-02-01 02:00 PM', timestamp: new Date('2026-02-01T14:00:00'), location: 'Research Laboratory', status: 'pending', equipment: 'Spectrophotometer (1), pH Meter (1)', duration: '3 hours', purpose: 'Experiment' }
+];
 
-        // ============ INITIALIZATION ============
-        document.addEventListener('DOMContentLoaded', function() {
-            // Set minimum date for request
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('requestDate').min = today;
-            document.getElementById('requestDate').value = today;
-            
-            // Load initial data
-            loadLabLocations();
-            loadMyRequests();
-            showSection('dashboard');
-            displayEquipmentTable(equipmentData);
-            displayReservationHistory(reservationHistoryData);
-            initCalendar();
-            loadEvents();
-        });
-
-        // ============ LOGOUT ============
-        function logout() {
-            alert('Logged out successfully');
+// ============ INITIALIZATION ============
+document.addEventListener('DOMContentLoaded', function() {
+    // Set minimum date for request
+    const today = new Date().toISOString().split('T')[0];
+    const requestDate = document.getElementById('requestDate');
+    if (requestDate) {
+        requestDate.min = today;
+        requestDate.value = today;
+    }
+    
+    // Load initial data
+    loadLabLocations();
+    loadMyRequests();
+    showSection('dashboard');
+    
+    // Display equipment table
+    const equipmentTableBody = document.getElementById('equipmentTableBody');
+    if (equipmentTableBody) displayEquipmentTable(equipmentData);
+    
+    // Display reservation history with slight delay to ensure functions are loaded
+    setTimeout(() => {
+        const historyBody = document.getElementById('reservationHistoryBody');
+        if (historyBody) {
+            filterReservations(); // This will call the correct display function
         }
+    }, 100);
+    
+    initCalendar();
+    loadEvents();
+});
 
-        // ============ LAB LOCATIONS ============
-        function loadLabLocations() {
-            const select = document.getElementById('labLocation');
-            select.innerHTML = '<option value="" disabled selected>Select Lab</option>';
-            const labs = ['Microbiology Lab 01', 'Microbiology Lab 02', 'Research Laboratory'];
-            labs.forEach(lab => {
-                const option = document.createElement('option');
-                option.value = lab;
-                option.textContent = lab;
-                select.appendChild(option);
-            });
-        }
+// ============ LOGOUT ============
+function logout() {
+    alert('Logged out successfully');
+}
 
-        // ============ LOAD EQUIPMENT BY LAB ============
-        function loadEquipmentByLab() {
-            const selectedLab = document.getElementById('labLocation').value;
-            const equipmentInput = document.getElementById('equipmentName');
-            const qtyInput = document.getElementById('equipmentQty');
-            const addBtn = document.getElementById('addEquipmentBtn');
-            
-            if (selectedLab) {
-                equipmentInput.disabled = false;
-                equipmentInput.placeholder = `Search equipment in ${selectedLab}`;
-                qtyInput.disabled = false;
-                addBtn.disabled = false;
-                
-                // Clear previous input
-                equipmentInput.value = '';
-                
-                // Add event listener for search
-                equipmentInput.removeEventListener('input', searchEquipmentByLab);
-                equipmentInput.addEventListener('input', function() {
-                    searchEquipmentByLab(selectedLab);
-                });
-            } else {
-                equipmentInput.disabled = true;
-                equipmentInput.placeholder = 'Select lab location first';
-                qtyInput.disabled = true;
-                addBtn.disabled = true;
-            }
-        }
+// ============ LAB LOCATIONS ============
+function loadLabLocations() {
+    const select = document.getElementById('labLocation');
+    if (!select) return;
+    
+    select.innerHTML = '<option value="" disabled selected>Select Lab</option>';
+    const labs = ['Microbiology Lab 01', 'Microbiology Lab 02', 'Research Laboratory'];
+    labs.forEach(lab => {
+        const option = document.createElement('option');
+        option.value = lab;
+        option.textContent = lab;
+        select.appendChild(option);
+    });
+}
 
-        // ============ EQUIPMENT SEARCH BY LAB ============
-        let searchTimeout;
-        function searchEquipmentByLab(labName) {
-            clearTimeout(searchTimeout);
-            const term = document.getElementById('equipmentName').value;
-            if (term.length < 2) return;
-            
-            searchTimeout = setTimeout(() => {
-                const labEquipment = equipmentByLab[labName] || [];
-                const filtered = labEquipment.filter(item => 
-                    item.name.toLowerCase().includes(term.toLowerCase()) ||
-                    item.equipment_code.toLowerCase().includes(term.toLowerCase())
-                );
-                
-                showEquipmentDropdown(filtered);
-            }, 300);
-        }
-
-        // Show equipment dropdown
-        function showEquipmentDropdown(equipment) {
-            let dropdown = document.getElementById('equipmentDropdown');
-            if (!dropdown) {
-                dropdown = document.createElement('div');
-                dropdown.id = 'equipmentDropdown';
-                dropdown.className = 'dropdown-menu show position-absolute w-100';
-                document.getElementById('equipmentName').parentNode.style.position = 'relative';
-                document.getElementById('equipmentName').parentNode.appendChild(dropdown);
-            }
-            
-            dropdown.innerHTML = '';
-            equipment.forEach(item => {
-                const div = document.createElement('div');
-                div.className = 'dropdown-item';
-                div.style.cursor = 'pointer';
-                div.innerHTML = `
-                    <div class="d-flex justify-content-between">
-                        <span><strong>${item.name}</strong> (${item.equipment_code})</span>
-                        <span class="badge bg-success">Available: ${item.available_units || 0}/${item.total_units || 0}</span>
-                    </div>
-                `;
-                div.onclick = () => selectEquipment(item);
-                dropdown.appendChild(div);
-            });
-        }
-
-        // Select equipment
-        function selectEquipment(item) {
-            document.getElementById('equipmentName').value = item.name;
-            document.getElementById('equipmentQty').max = item.available_units || 1;
-            document.getElementById('equipmentQty').value = 1;
-            document.getElementById('equipmentDropdown')?.remove();
-        }
-
-        // ============ ADD EQUIPMENT ============
-        function addEquipment() {
-            const name = document.getElementById('equipmentName').value;
-            const qty = parseInt(document.getElementById('equipmentQty').value);
-            const selectedLab = document.getElementById('labLocation').value;
-            
-            if (!selectedLab) {
-                showNotification('Please select a lab location first', 'warning');
-                return;
-            }
-            
-            if (!name || !qty) {
-                showNotification('Please search and select equipment', 'warning');
-                return;
-            }
-            
-            // Get equipment from the current lab's list
-            const labEquipment = equipmentByLab[selectedLab] || [];
-            const equipment = labEquipment.find(e => e.name.toLowerCase() === name.toLowerCase());
-            
-            if (equipment) {
-                const existing = selectedEquipment.find(e => e.equipment_id === equipment.equipment_id);
-                if (existing) {
-                    existing.qty += qty;
-                } else {
-                    selectedEquipment.push({
-                        equipment_id: equipment.equipment_id,
-                        name: equipment.name,
-                        qty: qty,
-                        available: equipment.available_units || 0
-                    });
-                }
-                
-                updateEquipmentTable();
-                document.getElementById('equipmentName').value = '';
-                document.getElementById('equipmentQty').value = 1;
-                document.getElementById('equipmentDropdown')?.remove();
-            } else {
-                showNotification('Equipment not found in this lab', 'warning');
-            }
-        }
-
-        // Update equipment table
-        function updateEquipmentTable() {
-            const tbody = document.querySelector('#equipmentTable tbody');
-            tbody.innerHTML = '';
-            
-            selectedEquipment.forEach((item, index) => {
-                const row = tbody.insertRow();
-                row.innerHTML = `
-                    <td>${item.name}</td>
-                    <td>${item.qty}</td>
-                    <td>
-                        <button class="btn btn-danger btn-sm" onclick="removeEquipment(${index})">
-                            <i class="bi bi-trash"></i>
-                        </button>
-                    </td>
-                `;
-            });
-        }
-
-        // Remove equipment
-        function removeEquipment(index) {
-            selectedEquipment.splice(index, 1);
-            updateEquipmentTable();
-        }
-
-        // Reset form
-        function resetForm() {
-            document.getElementById('equipmentRequestForm').reset();
-            selectedEquipment = [];
-            updateEquipmentTable();
-            const today = new Date().toISOString().split('T')[0];
-            document.getElementById('requestDate').value = today;
-            
-            // Disable equipment search until lab is selected
-            const equipmentInput = document.getElementById('equipmentName');
-            const qtyInput = document.getElementById('equipmentQty');
-            const addBtn = document.getElementById('addEquipmentBtn');
-            equipmentInput.disabled = true;
-            equipmentInput.placeholder = 'Select lab location first';
-            qtyInput.disabled = true;
-            addBtn.disabled = true;
-        }
-
-        // Submit request
-        function submitRequest() {
-            // Validate form
-            if (selectedEquipment.length === 0) {
-                showNotification('Please add at least one equipment', 'warning');
-                return;
-            }
-            
-            const required = ['labLocation', 'requestDate', 'continueDays'];
-            for (const field of required) {
-                if (!document.getElementById(field).value) {
-                    showNotification(`Please fill in all required fields`, 'warning');
-                    return;
-                }
-            }
-            
-            // Show success modal
-            const modalTitle = document.getElementById('submissionModalTitle');
-            const modalBody = document.getElementById('submissionModalBody');
-            const modalHeader = document.getElementById('submissionModalHeader');
-            
-            modalTitle.textContent = '✅ Request Submitted!';
-            modalHeader.className = 'modal-header bg-success text-white';
-            modalBody.innerHTML = `
-                <div class="text-center">
-                    <i class="bi bi-check-circle-fill text-success" style="font-size: 3rem;"></i>
-                    <h5 class="mt-3">Your equipment request has been submitted successfully!</h5>
-                    <p class="text-muted">Request ID: #REQ${Math.floor(Math.random() * 1000)}</p>
-                    <p>You will be notified once your request is processed.</p>
-                </div>
-            `;
-            
-            const modal = new bootstrap.Modal(document.getElementById('submissionModal'));
-            modal.show();
-            
-            // Auto close after 3 seconds
-            setTimeout(() => {
-                modal.hide();
-            }, 3000);
-            
-            // Add to request status (mock)
-            addToRequestStatus();
-            
-            resetForm();
-        }
-
-        // Add to request status (mock function)
-        function addToRequestStatus() {
-            // In a real app, this would add to database
-            console.log('Request added to status');
-        }
-
-        // Show notification
-        function showNotification(message, type) {
-            const notification = document.createElement('div');
-            notification.className = `alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show position-fixed top-0 end-0 m-3`;
-            notification.style.zIndex = '9999';
-            notification.innerHTML = `${message}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
-            document.body.appendChild(notification);
-            setTimeout(() => notification.remove(), 5000);
-        }
-
-        // Load my requests
-        function loadMyRequests() {
-            const tbody = document.getElementById('requestStatusBody');
-            tbody.innerHTML = '';
-            
-            const mockRequests = [
-                { reservation_id: 1, equipment_names: 'Microscope, Centrifuge', total_equipment: 2, request_date: '2026-02-20', lab_name: 'Lab 01', status: 'Pending', rejected_reason: null },
-                { reservation_id: 2, equipment_names: 'Spectrophotometer', total_equipment: 1, request_date: '2026-02-21', lab_name: 'Research Lab', status: 'Approved', rejected_reason: null },
-                { reservation_id: 3, equipment_names: 'Incubator', total_equipment: 1, request_date: '2026-02-19', lab_name: 'Lab 02', status: 'Rejected', rejected_reason: 'Equipment under maintenance' }
-            ];
-            
-            mockRequests.forEach(req => {
-                const row = tbody.insertRow();
-                
-                let statusBadge = '';
-                if (req.status === 'Approved') {
-                    statusBadge = '<span class="badge bg-success">Approved</span>';
-                } else if (req.status === 'Pending') {
-                    statusBadge = '<span class="badge bg-warning">Pending</span>';
-                } else if (req.status === 'Rejected') {
-                    statusBadge = '<span class="badge bg-danger">Rejected</span>';
-                }
-                
-                row.innerHTML = `
-                    <td><span class="fw-semibold">#REQ${String(req.reservation_id).padStart(3, '0')}</span></td>
-                    <td>${req.equipment_names || 'Multiple'} (${req.total_equipment})</td>
-                    <td>${req.request_date}</td>
-                    <td>${req.lab_name}</td>
-                    <td>${statusBadge}</td>
-                    <td class="text-danger">${req.rejected_reason || '-'}</td>
-                `;
-            });
-        }
-
-        // ============ SIDEBAR FUNCTIONS ============
-        function toggleSidebar() {
-            document.getElementById("sidebar").classList.toggle("active");
-            document.getElementById("sidebarOverlay").classList.toggle("active");
-        }
-
-        function toggleNotifications() {
-            document.getElementById("notificationDropdown").classList.toggle("show");
-        }
-
-        // Close notifications when clicking outside
-        document.addEventListener('click', function(event) {
-            const bell = document.querySelector('.notification-bell');
-            const dropdown = document.getElementById('notificationDropdown');
-            if (bell && dropdown && !bell.contains(event.target) && !dropdown.contains(event.target)) {
-                dropdown.classList.remove('show');
-            }
-        });
-
-        // Show different sections
-        function showSection(section) {
-            document.getElementById('dashboardSection').style.display = 'none';
-            document.getElementById('equipmentSection').style.display = 'none';
-            document.getElementById('historySection').style.display = 'none';
-
-            document.getElementById(section + 'Section').style.display = 'block';
-
-            document.querySelectorAll('.sidebar a').forEach(link => {
-                link.classList.remove('active');
-                if (link.getAttribute('onclick') && link.getAttribute('onclick').includes(section)) {
-                    link.classList.add('active');
-                }
-            });
-
-            if (section === 'equipment') {
-                filterEquipmentTable();
-            }
-            if (section === 'history') {
-                filterReservations();
-            }
-        }
-
-        // ============ EQUIPMENT TABLE FUNCTIONS ============
-        let filteredEquipment = [...equipmentData];
+// ============ LOAD EQUIPMENT BY LAB ============
+let searchTimeout;
+function loadEquipmentByLab() {
+    const selectedLab = document.getElementById('labLocation').value;
+    const equipmentInput = document.getElementById('equipmentName');
+    const qtyInput = document.getElementById('equipmentQty');
+    const addBtn = document.getElementById('addEquipmentBtn');
+    
+    if (!equipmentInput || !qtyInput || !addBtn) return;
+    
+    if (selectedLab) {
+        equipmentInput.disabled = false;
+        equipmentInput.placeholder = `Search equipment in ${selectedLab}`;
+        qtyInput.disabled = false;
+        addBtn.disabled = false;
+        equipmentInput.value = '';
         
-        function displayEquipmentTable(equipment) {
-            const tableBody = document.getElementById('equipmentTableBody');
-            if (!tableBody) return;
-            
-            tableBody.innerHTML = '';
-            
-            equipment.forEach(item => {
-                const row = document.createElement('tr');
-                
-                // Determine status color for availability badge
-                let badgeColor = '#22c55e';
-                if (item.status === 'maintenance') badgeColor = '#ef4444';
-                else if (item.status === 'in-use') badgeColor = '#f59e0b';
-                
-                row.innerHTML = `
-                    <td data-label="Image"><img src="${item.image}" class="equipment-image" alt="${item.name}"></td>
-                    <td data-label="Name">${item.name}</td>
-                    <td data-label="Location">${item.location}</td>
-                    <td data-label="Availability">
-                        <span class="availability-badge" style="background: ${badgeColor}20; color: ${badgeColor};">
-                            ${item.available}/${item.total}
-                        </span>
-                    </td>
-                    <td data-label="Action">
-                        <button class="btn-view" onclick="viewEquipmentDetails(${item.id})" title="View Details">
-                            <i class="bi bi-eye"></i> View
-                        </button>
-                    </td>
-                `;
-                tableBody.appendChild(row);
+        // Add event listener for search
+        equipmentInput.removeEventListener('input', searchHandler);
+        equipmentInput.addEventListener('input', searchHandler);
+    } else {
+        equipmentInput.disabled = true;
+        equipmentInput.placeholder = 'Select lab location first';
+        qtyInput.disabled = true;
+        addBtn.disabled = true;
+    }
+}
+
+// Search handler function
+function searchHandler() {
+    const lab = document.getElementById('labLocation').value;
+    searchEquipmentByLab(lab);
+}
+
+function searchEquipmentByLab(labName) {
+    clearTimeout(searchTimeout);
+    const term = document.getElementById('equipmentName').value;
+    
+    if (term.length < 2) return; // Only search after 2 characters
+    
+    searchTimeout = setTimeout(() => {
+        const labEquipment = equipmentByLab[labName] || [];
+        const filtered = labEquipment.filter(item => 
+            item.name.toLowerCase().includes(term.toLowerCase()) ||
+            item.equipment_code.toLowerCase().includes(term.toLowerCase())
+        );
+        
+        showEquipmentDropdown(filtered);
+    }, 300);
+}
+
+// Show equipment dropdown
+function showEquipmentDropdown(equipment) {
+    let dropdown = document.getElementById('equipmentDropdown');
+    if (!dropdown) {
+        dropdown = document.createElement('div');
+        dropdown.id = 'equipmentDropdown';
+        dropdown.className = 'dropdown-menu show position-absolute w-100';
+        dropdown.style.maxHeight = '200px';
+        dropdown.style.overflowY = 'auto';
+        dropdown.style.zIndex = '1000';
+        
+        const parent = document.getElementById('equipmentName').parentNode;
+        parent.style.position = 'relative';
+        parent.appendChild(dropdown);
+    }
+    
+    dropdown.innerHTML = '';
+    
+    if (equipment.length === 0) {
+        const div = document.createElement('div');
+        div.className = 'dropdown-item text-muted';
+        div.textContent = 'No equipment found';
+        dropdown.appendChild(div);
+        return;
+    }
+    
+    equipment.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'dropdown-item';
+        div.style.cursor = 'pointer';
+        div.innerHTML = `
+            <div class="d-flex justify-content-between align-items-center">
+                <span><strong>${item.name}</strong> (${item.equipment_code})</span>
+                <span class="badge bg-success">Available: ${item.available_units || 0}/${item.total_units || 0}</span>
+            </div>
+        `;
+        div.onclick = () => selectEquipment(item);
+        dropdown.appendChild(div);
+    });
+}
+
+// Select equipment
+function selectEquipment(item) {
+    document.getElementById('equipmentName').value = item.name;
+    const qtyInput = document.getElementById('equipmentQty');
+    qtyInput.max = item.available_units || 1;
+    qtyInput.value = 1;
+    document.getElementById('equipmentDropdown')?.remove();
+}
+
+// ============ ADD EQUIPMENT ============
+function addEquipment() {
+    const name = document.getElementById('equipmentName').value;
+    const qty = parseInt(document.getElementById('equipmentQty').value);
+    const selectedLab = document.getElementById('labLocation').value;
+    
+    if (!selectedLab) {
+        showNotification('Please select a lab location first', 'warning');
+        return;
+    }
+    
+    if (!name || !qty) {
+        showNotification('Please search and select equipment', 'warning');
+        return;
+    }
+    
+    // Get equipment from the current lab's list
+    const labEquipment = equipmentByLab[selectedLab] || [];
+    const equipment = labEquipment.find(e => e.name.toLowerCase() === name.toLowerCase());
+    
+    if (equipment) {
+        // Check if quantity exceeds available units
+        const existing = selectedEquipment.find(e => e.equipment_id === equipment.equipment_id);
+        const currentQty = existing ? existing.qty : 0;
+        
+        if (currentQty + qty > equipment.available_units) {
+            showNotification(`Only ${equipment.available_units} units available`, 'warning');
+            return;
+        }
+        
+        if (existing) {
+            existing.qty += qty;
+        } else {
+            selectedEquipment.push({
+                equipment_id: equipment.equipment_id,
+                name: equipment.name,
+                qty: qty,
+                available: equipment.available_units || 0
             });
         }
+        
+        updateEquipmentTable();
+        document.getElementById('equipmentName').value = '';
+        document.getElementById('equipmentQty').value = 1;
+        document.getElementById('equipmentDropdown')?.remove();
+    } else {
+        showNotification('Equipment not found in this lab', 'warning');
+    }
+}
 
-        function filterEquipmentTable() {
-            const labFilter = document.getElementById('labFilter').value;
-            const statusFilter = document.getElementById('statusFilter').value;
-            
-            filteredEquipment = equipmentData.filter(item => {
-                const labMatch = labFilter === 'all' || item.lab === labFilter;
-                const statusMatch = statusFilter === 'all' || item.status === statusFilter;
-                return labMatch && statusMatch;
-            });
-            
-            displayEquipmentTable(filteredEquipment);
+// Update equipment table
+function updateEquipmentTable() {
+    const tbody = document.querySelector('#equipmentTable tbody');
+    if (!tbody) return;
+    
+    tbody.innerHTML = '';
+    
+    selectedEquipment.forEach((item, index) => {
+        const row = tbody.insertRow();
+        row.innerHTML = `
+            <td>${item.name}</td>
+            <td>${item.qty}</td>
+            <td>
+                <button class="btn btn-danger btn-sm" onclick="removeEquipment(${index})">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </td>
+        `;
+    });
+}
+
+// Remove equipment
+function removeEquipment(index) {
+    selectedEquipment.splice(index, 1);
+    updateEquipmentTable();
+}
+
+// Reset form
+function resetForm() {
+    const form = document.getElementById('equipmentRequestForm');
+    if (form) form.reset();
+    
+    selectedEquipment = [];
+    updateEquipmentTable();
+    
+    const today = new Date().toISOString().split('T')[0];
+    const requestDate = document.getElementById('requestDate');
+    if (requestDate) requestDate.value = today;
+    
+    // Disable equipment search until lab is selected
+    const equipmentInput = document.getElementById('equipmentName');
+    const qtyInput = document.getElementById('equipmentQty');
+    const addBtn = document.getElementById('addEquipmentBtn');
+    
+    if (equipmentInput) {
+        equipmentInput.disabled = true;
+        equipmentInput.placeholder = 'Select lab location first';
+    }
+    if (qtyInput) qtyInput.disabled = true;
+    if (addBtn) addBtn.disabled = true;
+}
+
+// Submit request
+function submitRequest() {
+    // Validate form
+    if (selectedEquipment.length === 0) {
+        showNotification('Please add at least one equipment', 'warning');
+        return;
+    }
+    
+    const required = ['labLocation', 'requestDate', 'continueDays'];
+    for (const field of required) {
+        if (!document.getElementById(field)?.value) {
+            showNotification(`Please fill in all required fields`, 'warning');
+            return;
         }
+    }
+    
+    // Show success modal
+    const modalTitle = document.getElementById('submissionModalTitle');
+    const modalBody = document.getElementById('submissionModalBody');
+    const modalHeader = document.getElementById('submissionModalHeader');
+    
+    if (modalTitle) modalTitle.textContent = '✅ Request Submitted!';
+    if (modalHeader) modalHeader.className = 'modal-header bg-success text-white';
+    if (modalBody) {
+        modalBody.innerHTML = `
+            <div class="text-center">
+                <i class="bi bi-check-circle-fill text-success" style="font-size: 3rem;"></i>
+                <h5 class="mt-3">Your equipment request has been submitted successfully!</h5>
+                <p class="text-muted">Request ID: #REQ${Math.floor(Math.random() * 1000)}</p>
+                <p>You will be notified once your request is processed.</p>
+            </div>
+        `;
+    }
+    
+    const modalElement = document.getElementById('submissionModal');
+    if (modalElement) {
+        const modal = new bootstrap.Modal(modalElement);
+        modal.show();
+        
+        // Auto close after 3 seconds
+        setTimeout(() => modal.hide(), 3000);
+    }
+    
+    // Add to request status (mock)
+    addToRequestStatus();
+    
+    resetForm();
+}
 
-        function searchEquipmentTable() {
-            const searchTerm = document.getElementById('equipmentSearch').value.toLowerCase();
-            
-            if (!searchTerm) {
-                displayEquipmentTable(filteredEquipment);
-                return;
-            }
-            
-            const searched = filteredEquipment.filter(item => 
-                item.name.toLowerCase().includes(searchTerm)
-            );
-            
-            displayEquipmentTable(searched);
+// Add to request status (mock function)
+function addToRequestStatus() {
+    console.log('Request added to status');
+    // In a real app, this would add to database
+}
+
+// Show notification
+function showNotification(message, type) {
+    const notification = document.createElement('div');
+    notification.className = `alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show position-fixed top-0 end-0 m-3`;
+    notification.style.zIndex = '9999';
+    notification.innerHTML = `${message}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
+    document.body.appendChild(notification);
+    setTimeout(() => notification.remove(), 5000);
+}
+
+// Load my requests
+function loadMyRequests() {
+    const tbody = document.getElementById('requestStatusBody');
+    if (!tbody) return;
+    
+    tbody.innerHTML = '';
+    
+    const mockRequests = [
+        { reservation_id: 1, total_equipment: 2, request_date: '2026-02-20', lab_name: 'Lab 01', status: 'Pending', rejected_reason: null },
+        { reservation_id: 2,  total_equipment: 1, request_date: '2026-02-21', lab_name: 'Research Lab', status: 'Pending', rejected_reason: null },
+        { reservation_id: 3,  total_equipment: 1, request_date: '2026-02-19', lab_name: 'Lab 02', status: 'Rejected', rejected_reason: 'Equipment under maintenance' }
+    ];
+    
+    mockRequests.forEach(req => {
+        const row = tbody.insertRow();
+        
+        let statusBadge = '';
+        if (req.status === 'Approved') {
+            statusBadge = '<span class="badge bg-success">Approved</span>';
+        } else if (req.status === 'Pending') {
+            statusBadge = '<span class="badge bg-warning">Pending</span>';
+        } else if (req.status === 'Rejected') {
+            statusBadge = '<span class="badge bg-danger">Rejected</span>';
         }
+        
+        row.innerHTML = `
+            <td><span class="fw-semibold">#REQ${String(req.reservation_id).padStart(3, '0')}</span></td>
+         
+            <td>${req.request_date}</td>
+            <td>${req.lab_name}</td>
+            <td>${statusBadge}</td>
+            <td class="text-danger">${req.rejected_reason || '-'}</td>
+        `;
+    });
+}
 
-        function viewEquipmentDetails(id) {
-            const equipment = equipmentData.find(item => item.id === id);
-            if (!equipment) return;
-            
-            const detailsContent = document.getElementById('equipmentDetailsContent');
-            
-            // Determine status badge
-            let statusBadge = '';
-            if (equipment.status === 'available') {
-                statusBadge = '<span class="badge bg-success">Available</span>';
-            } else if (equipment.status === 'in-use') {
-                statusBadge = '<span class="badge bg-warning">In Use</span>';
-            } else {
-                statusBadge = '<span class="badge bg-danger">Maintenance</span>';
-            }
-            
-            detailsContent.innerHTML = `
-                <div class="row">
-                    <div class="col-md-4 text-center">
-                        <img src="${equipment.image}" style="width: 150px; height: 150px; object-fit: contain;" class="mb-3">
-                        <h4>${equipment.name}</h4>
+// ============ SIDEBAR FUNCTIONS ============
+function toggleSidebar() {
+    document.getElementById("sidebar")?.classList.toggle("active");
+    document.getElementById("sidebarOverlay")?.classList.toggle("active");
+}
+
+function toggleNotifications() {
+    document.getElementById("notificationDropdown")?.classList.toggle("show");
+}
+
+// Close notifications when clicking outside
+document.addEventListener('click', function(event) {
+    const bell = document.querySelector('.notification-bell');
+    const dropdown = document.getElementById('notificationDropdown');
+    if (bell && dropdown && !bell.contains(event.target) && !dropdown.contains(event.target)) {
+        dropdown.classList.remove('show');
+    }
+    
+    // Close equipment dropdown when clicking outside
+    if (!event.target.closest('#equipmentName') && !event.target.closest('#equipmentDropdown')) {
+        const dropdown = document.getElementById('equipmentDropdown');
+        if (dropdown) dropdown.remove();
+    }
+});
+
+// Show different sections
+function showSection(section) {
+    const sections = ['dashboardSection', 'equipmentSection', 'historySection'];
+    sections.forEach(s => {
+        const el = document.getElementById(s);
+        if (el) el.style.display = 'none';
+    });
+
+    const sectionEl = document.getElementById(section + 'Section');
+    if (sectionEl) sectionEl.style.display = 'block';
+
+    document.querySelectorAll('.sidebar a').forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('onclick')?.includes(section)) {
+            link.classList.add('active');
+        }
+    });
+
+    if (section === 'history') {
+        filterReservations();
+    }
+}
+
+// ============ EQUIPMENT TABLE FUNCTIONS ============
+let filteredEquipment = [...equipmentData];
+
+function displayEquipmentTable(equipment) {
+    const tableBody = document.getElementById('equipmentTableBody');
+    if (!tableBody) return;
+    
+    tableBody.innerHTML = '';
+    
+    equipment.forEach(item => {
+        const row = document.createElement('tr');
+        
+        // All badges are green - no conditional logic needed
+        const badgeColor = '#22c55e';
+        
+        row.innerHTML = `
+            <td data-label="Image"><img src="${item.image}" class="equipment-image" alt="${item.name}" style="width: 40px; height: 40px; object-fit: contain; border-radius: 4px;"></td>
+            <td data-label="Name">${item.name}</td>
+            <td data-label="Location">${item.location}</td>
+            <td data-label="Availability">
+                <span class="availability-badge" style="background: ${badgeColor}20; color: ${badgeColor}; padding: 4px 8px; border-radius: 4px; font-weight: 500;">
+                    ${item.available}/${item.total}
+                </span>
+            </td>
+            <td data-label="Action">
+                <button class="btn-view" onclick="viewEquipmentDetails(${item.id})" title="View Details">
+                    <i class="bi bi-eye"></i> View
+                </button>
+            </td>
+        `;
+        tableBody.appendChild(row);
+    });
+}
+
+function viewEquipmentDetails(id) {
+    const equipment = equipmentData.find(item => item.id === id);
+    if (!equipment) return;
+    
+    const detailsContent = document.getElementById('equipmentDetailsContent');
+    if (!detailsContent) return;
+    
+    // Determine status badge
+    let statusBadge = '';
+    if (equipment.status === 'available') {
+        statusBadge = '<span class="badge bg-success">Available</span>';
+    } else if (equipment.status === 'in-use') {
+        statusBadge = '<span class="badge bg-warning">In Use</span>';
+    } else {
+        statusBadge = '<span class="badge bg-danger">Maintenance</span>';
+    }
+    
+    detailsContent.innerHTML = `
+        <div class="row">
+            <div class="col-md-4 text-center">
+                <img src="${equipment.image}" style="width: 150px; height: 150px; object-fit: contain;" class="mb-3">
+                <h4>${equipment.name}</h4>
+                ${statusBadge}
+            </div>
+            <div class="col-md-8">
+                <table class="table table-borderless">
+                    <tr><th style="width: 150px;">Location:</th><td>${equipment.location}</td></tr>
+                    <tr><th>Manufacturer:</th><td>${equipment.manufacturer}</td></tr>
+                    <tr><th>Model:</th><td>${equipment.model}</td></tr>
+                    <tr><th>Today Availability:</th><td><span class="availability-badge" style="background: #22c55e20; color: #22c55e; padding: 4px 8px; border-radius: 4px; font-weight: 500;">${equipment.available}/${equipment.total}</span></td></tr>
+                    <tr><th>Description:</th><td>${equipment.description}</td></tr>
+                </table>
+            </div>
+        </div>
+    `;
+    
+    const modalElement = document.getElementById('equipmentDetailsModal');
+    if (modalElement) {
+        const modal = new bootstrap.Modal(modalElement);
+        modal.show();
+    }
+}
+
+// ============ RESERVATION HISTORY FUNCTIONS ============
+function displayReservationHistory(reservations) {
+    const tableBody = document.getElementById('reservationHistoryBody');
+    if (!tableBody) return;
+    
+    // Sort by date (newest first)
+    reservations.sort((a, b) => b.timestamp - a.timestamp);
+    
+    tableBody.innerHTML = '';
+    
+    reservations.forEach(res => {
+        const row = document.createElement('tr');
+        
+        // Determine status badge
+        let statusBadge = '';
+        if (res.status === 'completed') {
+            statusBadge = '<span class="badge bg-success">Completed</span>';
+        } else {
+            statusBadge = '<span class="badge bg-warning">Pending</span>';
+        }
+        
+        row.innerHTML = `
+            <td data-label="Reservation ID">${res.id}</td>
+            <td data-label="Date & Time">${res.dateTime}</td>
+            <td data-label="Location">${res.location}</td>
+            <td data-label="Status">${statusBadge}</td>
+            <td data-label="Action">
+                <button class="btn-view" onclick="viewReservationDetails('${res.id}')" title="View Details">
+                    <i class="bi bi-eye"></i> View
+                </button>
+            </td>
+        `;
+        tableBody.appendChild(row);
+    });
+}
+
+// View reservation details function
+function viewReservationDetails(reservationId) {
+    const reservation = reservationHistoryData.find(item => item.id === reservationId);
+    if (!reservation) return;
+    
+    // Check if modal exists, if not create it
+    let modalElement = document.getElementById('reservationDetailsModal');
+    
+    if (!modalElement) {
+        // Create modal dynamically
+        modalElement = document.createElement('div');
+        modalElement.className = 'modal fade';
+        modalElement.id = 'reservationDetailsModal';
+        modalElement.setAttribute('tabindex', '-1');
+        modalElement.setAttribute('aria-hidden', 'true');
+        modalElement.innerHTML = `
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-success text-white">
+                        <h5 class="modal-title">
+                            <i class="bi bi-calendar-check me-2"></i>
+                            Reservation Details
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body" id="reservationDetailsContent">
+                        <!-- Content will be populated here -->
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modalElement);
+    }
+    
+    // Determine status badge for modal
+    let statusBadge = '';
+    if (reservation.status === 'completed') {
+        statusBadge = '<span class="badge bg-success">Completed</span>';
+    } else {
+        statusBadge = '<span class="badge bg-warning">Pending</span>';
+    }
+    
+    // Populate modal content with all details
+    const detailsContent = document.getElementById('reservationDetailsContent');
+    if (detailsContent) {
+        detailsContent.innerHTML = `
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4>Reservation: ${reservation.id}</h4>
                         ${statusBadge}
                     </div>
-                    <div class="col-md-8">
-                        <table class="table table-borderless">
-                            <tr><th style="width: 150px;">Location:</th><td>${equipment.location}</td></tr>
-                            <tr><th>Manufacturer:</th><td>${equipment.manufacturer}</td></tr>
-                            <tr><th>Model:</th><td>${equipment.model}</td></tr>
-                            <tr><th>Today Availability:</th><td><span class="availability-badge" style="background: #22c55e20; color: #22c55e;">${equipment.available}/${equipment.total}</span></td></tr>
-                            <tr><th>Description:</th><td>${equipment.description}</td></tr>
-                        </table>
-                    </div>
+                    
+                    <table class="table table-borderless">
+                        <tr>
+                            <th style="width: 150px;">Date & Time:</th>
+                            <td>${reservation.dateTime}</td>
+                        </tr>
+                        <tr>
+                            <th>Location:</th>
+                            <td>${reservation.location}</td>
+                        </tr>
+                        <tr>
+                            <th>Status:</th>
+                            <td>${statusBadge}</td>
+                        </tr>
+                        <tr>
+                            <th>Equipment:</th>
+                            <td>${reservation.equipment || 'Not specified'}</td>
+                        </tr>
+                        <tr>
+                            <th>Duration:</th>
+                            <td>${reservation.duration || 'Not specified'}</td>
+                        </tr>
+                        <tr>
+                            <th>Purpose:</th>
+                            <td>${reservation.purpose || 'Not specified'}</td>
+                        </tr>
+                    </table>
                 </div>
-            `;
-            
-            new bootstrap.Modal(document.getElementById('equipmentDetailsModal')).show();
-        }
+            </div>
+        `;
+    }
+    
+    // Show modal
+    const modal = new bootstrap.Modal(modalElement);
+    modal.show();
+}
 
-        // ============ RESERVATION HISTORY FUNCTIONS ============
-        function displayReservationHistory(reservations) {
-            const tableBody = document.getElementById('reservationHistoryBody');
-            if (!tableBody) return;
-            
-            // Sort by date (newest first)
-            reservations.sort((a, b) => b.timestamp - a.timestamp);
-            
-            tableBody.innerHTML = '';
-            
-            reservations.forEach(res => {
-                const row = document.createElement('tr');
-                
-                // Determine status badge
-                let statusBadge = '';
-                if (res.status === 'completed') {
-                    statusBadge = '<span class="badge bg-success">Completed</span>';
-                } else {
-                    statusBadge = '<span class="badge bg-warning">Pending</span>';
-                }
-                
-                row.innerHTML = `
-                    <td data-label="Reservation ID">${res.id}</td>
-                    <td data-label="Date & Time">${res.dateTime}</td>
-                    <td data-label="Location">${res.location}</td>
-                    <td data-label="Status">${statusBadge}</td>
-                `;
-                tableBody.appendChild(row);
-            });
-        }
+function filterReservations() {
+    const filter = document.getElementById('timeFilter')?.value || 'all';
+    const today = new Date();
+    let filtered = [];
+    
+    if (filter === 'weekly') {
+        const weekAgo = new Date();
+        weekAgo.setDate(today.getDate() - 7);
+        filtered = reservationHistoryData.filter(item => item.timestamp >= weekAgo);
+    } else if (filter === 'monthly') {
+        const monthAgo = new Date();
+        monthAgo.setDate(today.getDate() - 30);
+        filtered = reservationHistoryData.filter(item => item.timestamp >= monthAgo);
+    } else {
+        filtered = reservationHistoryData;
+    }
+    
+    displayReservationHistory(filtered);
+}
 
-        function filterReservations() {
-            const filter = document.getElementById('timeFilter').value;
-            const today = new Date();
-            let filtered = [];
-            
-            if (filter === 'weekly') {
-                const weekAgo = new Date();
-                weekAgo.setDate(today.getDate() - 7);
-                filtered = reservationHistoryData.filter(item => item.timestamp >= weekAgo);
-            } else if (filter === 'monthly') {
-                const monthAgo = new Date();
-                monthAgo.setDate(today.getDate() - 30);
-                filtered = reservationHistoryData.filter(item => item.timestamp >= monthAgo);
-            } else {
-                filtered = reservationHistoryData;
-            }
-            
-            displayReservationHistory(filtered);
-        }
+// ============ CALENDAR FUNCTIONS ============
+function loadEvents() {
+    const saved = localStorage.getItem("studentCalendarEvents");
+    if (saved) {
+        eventsArr = JSON.parse(saved);
+    }
+}
 
-        // ============ CALENDAR FUNCTIONS ============
-        function loadEvents() {
-            const saved = localStorage.getItem("studentCalendarEvents");
-            if (saved) {
-                eventsArr = JSON.parse(saved);
-            }
-        }
+function saveEvents() {
+    localStorage.setItem("studentCalendarEvents", JSON.stringify(eventsArr));
+}
 
-        function saveEvents() {
-            localStorage.setItem("studentCalendarEvents", JSON.stringify(eventsArr));
-        }
+function initCalendar() {
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const prevLastDay = new Date(year, month, 0);
+    const prevDays = prevLastDay.getDate();
+    const lastDate = lastDay.getDate();
+    const day = firstDay.getDay();
+    const nextDays = 7 - lastDay.getDay() - 1;
 
-        function initCalendar() {
-            const firstDay = new Date(year, month, 1);
-            const lastDay = new Date(year, month + 1, 0);
-            const prevLastDay = new Date(year, month, 0);
-            const prevDays = prevLastDay.getDate();
-            const lastDate = lastDay.getDate();
-            const day = firstDay.getDay();
-            const nextDays = 7 - lastDay.getDay() - 1;
+    const displayMonth = document.getElementById('displayMonth');
+    if (displayMonth) {
+        displayMonth.innerHTML = months[month] + " " + year;
+    }
 
-            const displayMonth = document.getElementById('displayMonth');
-            if (displayMonth) {
-                displayMonth.innerHTML = months[month] + " " + year;
-            }
+    let days = "";
 
-            let days = "";
+    // Previous month days
+    for (let x = day; x > 0; x--) {
+        days += `<div class="day-cell prev-date">${prevDays - x + 1}</div>`;
+    }
 
-            // Previous month days
-            for (let x = day; x > 0; x--) {
-                days += `<div class="day-cell prev-date">${prevDays - x + 1}</div>`;
-            }
-
-            // Current month days
-            for (let i = 1; i <= lastDate; i++) {
-                let hasEvent = false;
-                eventsArr.forEach(event => {
-                    if (event.day === i && event.month === month + 1 && event.year === year) {
-                        hasEvent = true;
-                    }
-                });
-
-                let classes = "day-cell";
-                if (i === new Date().getDate() && year === new Date().getFullYear() && month === new Date().getMonth()) {
-                    classes += " today";
-                }
-                if (hasEvent) {
-                    classes += " event";
-                }
-
-                days += `<div class="${classes}" data-day="${i}">${i}</div>`;
-            }
-
-            // Next month days
-            for (let j = 1; j <= nextDays; j++) {
-                days += `<div class="day-cell next-date">${j}</div>`;
-            }
-
-            const daysGrid = document.getElementById('daysGrid');
-            if (daysGrid) {
-                daysGrid.innerHTML = days;
-            }
-            updateActiveDay();
-
-            if (activeDay) {
-                updateEventDisplay(activeDay);
-            } else {
-                updateEventDisplay(new Date().getDate());
-            }
-        }
-
-        function updateActiveDay() {
-            const dayCells = document.querySelectorAll('.day-cell');
-            dayCells.forEach(cell => {
-                cell.addEventListener('click', function(e) {
-                    if (!this.classList.contains('prev-date') && !this.classList.contains('next-date')) {
-                        dayCells.forEach(c => c.classList.remove('active'));
-                        this.classList.add('active');
-
-                        const day = parseInt(this.textContent);
-                        activeDay = day;
-                        updateEventDisplay(day);
-                    }
-                });
-            });
-        }
-
-        function updateEventDisplay(day) {
-            const date = new Date(year, month, day);
-            const dayName = date.toString().split(' ')[0];
-
-            const eventDayEl = document.getElementById('eventDay');
-            const eventDateEl = document.getElementById('eventDate');
-
-            if (eventDayEl) eventDayEl.innerHTML = dayName;
-            if (eventDateEl) eventDateEl.innerHTML = `${day} ${months[month]} ${year}`;
-
-            let eventsHtml = "";
-            eventsArr.forEach(event => {
-                if (event.day === day && event.month === month + 1 && event.year === year) {
-                    event.events.forEach(ev => {
-                        eventsHtml += `
-                            <div class="event-item">
-                                <div class="title">
-                                    <i class="fas fa-circle"></i>
-                                    <span class="event-title">${ev.title}</span>
-                                </div>
-                                <div class="event-time">${ev.time}</div>
-                                <div class="event-time" style="margin-left: 28px; font-size: 0.8rem;">${ev.details || ''}</div>
-                            </div>
-                        `;
-                    });
-                }
-            });
-
-            if (eventsHtml === "") {
-                eventsHtml = '<div class="no-event">No bookings scheduled</div>';
-            }
-
-            const eventsList = document.getElementById('eventsList');
-            if (eventsList) {
-                eventsList.innerHTML = eventsHtml;
-            }
-        }
-
-        // Calendar Navigation
-        const prevBtn = document.querySelector('.prev');
-        const nextBtn = document.querySelector('.next');
-
-        if (prevBtn) {
-            prevBtn.addEventListener('click', () => {
-                month--;
-                if (month < 0) {
-                    month = 11;
-                    year--;
-                }
-                initCalendar();
-            });
-        }
-
-        if (nextBtn) {
-            nextBtn.addEventListener('click', () => {
-                month++;
-                if (month > 11) {
-                    month = 0;
-                    year++;
-                }
-                initCalendar();
-            });
-        }
-
-        const todayBtn = document.getElementById('todayBtn');
-        if (todayBtn) {
-            todayBtn.addEventListener('click', () => {
-                const today = new Date();
-                month = today.getMonth();
-                year = today.getFullYear();
-                initCalendar();
-                updateEventDisplay(today.getDate());
-            });
-        }
-
-        const gotoBtn = document.getElementById('gotoBtn');
-        if (gotoBtn) {
-            gotoBtn.addEventListener('click', () => {
-                const input = document.getElementById('gotoInput').value;
-                const parts = input.split('/');
-                if (parts.length === 2) {
-                    const m = parseInt(parts[0]) - 1;
-                    const y = parseInt(parts[1]);
-                    if (m >= 0 && m < 12 && y > 0) {
-                        month = m;
-                        year = y;
-                        initCalendar();
-                    } else {
-                        alert('Invalid date format. Use MM/YYYY');
-                    }
-                } else {
-                    alert('Invalid date format. Use MM/YYYY');
-                }
-            });
-        }
-
-        // ============ ADD EVENT MODAL ============
-        const closeEventBtn = document.getElementById('closeEventBtn');
-        if (closeEventBtn) {
-            closeEventBtn.addEventListener('click', () => {
-                document.getElementById('addEventWrapper').classList.remove('active');
-            });
-        }
-
-        window.addEventListener('click', (e) => {
-            if (e.target === document.getElementById('addEventWrapper')) {
-                document.getElementById('addEventWrapper').classList.remove('active');
+    // Current month days
+    for (let i = 1; i <= lastDate; i++) {
+        let hasEvent = false;
+        eventsArr.forEach(event => {
+            if (event.day === i && event.month === month + 1 && event.year === year) {
+                hasEvent = true;
             }
         });
 
-        const addEventSubmit = document.getElementById('addEventSubmit');
-        if (addEventSubmit) {
-            addEventSubmit.addEventListener('click', () => {
-                const title = document.getElementById('eventName').value.trim();
-                const details = document.getElementById('eventDetails').value.trim();
-                const from = document.getElementById('eventTimeFrom').value;
-                const to = document.getElementById('eventTimeTo').value;
+        let classes = "day-cell";
+        if (i === new Date().getDate() && year === new Date().getFullYear() && month === new Date().getMonth()) {
+            classes += " today";
+        }
+        if (hasEvent) {
+            classes += " event";
+        }
 
-                if (!title || !from || !to) {
-                    alert('Please fill all fields');
-                    return;
-                }
+        days += `<div class="${classes}" data-day="${i}">${i}</div>`;
+    }
 
-                const requestDate = new Date(year, month, activeDay || new Date().getDate());
-                const eventDay = requestDate.getDate();
-                const eventMonth = requestDate.getMonth() + 1;
-                const eventYear = requestDate.getFullYear();
+    // Next month days
+    for (let j = 1; j <= nextDays; j++) {
+        days += `<div class="day-cell next-date">${j}</div>`;
+    }
 
-                const newEvent = {
-                    title: title,
-                    time: `${from} - ${to}`,
-                    details: details
-                };
+    const daysGrid = document.getElementById('daysGrid');
+    if (daysGrid) {
+        daysGrid.innerHTML = days;
+    }
+    updateActiveDay();
 
-                let added = false;
-                eventsArr.forEach(event => {
-                    if (event.day === eventDay && event.month === eventMonth && event.year === eventYear) {
-                        event.events.push(newEvent);
-                        added = true;
-                    }
-                });
+    if (activeDay) {
+        updateEventDisplay(activeDay);
+    } else {
+        updateEventDisplay(new Date().getDate());
+    }
+}
 
-                if (!added) {
-                    eventsArr.push({
-                        day: eventDay,
-                        month: eventMonth,
-                        year: eventYear,
-                        events: [newEvent]
-                    });
-                }
+function updateActiveDay() {
+    const dayCells = document.querySelectorAll('.day-cell');
+    dayCells.forEach(cell => {
+        cell.addEventListener('click', function(e) {
+            if (!this.classList.contains('prev-date') && !this.classList.contains('next-date')) {
+                dayCells.forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
 
-                saveEvents();
+                const day = parseInt(this.textContent);
+                activeDay = day;
+                updateEventDisplay(day);
+            }
+        });
+    });
+}
+
+function updateEventDisplay(day) {
+    const date = new Date(year, month, day);
+    const dayName = date.toString().split(' ')[0];
+
+    const eventDayEl = document.getElementById('eventDay');
+    const eventDateEl = document.getElementById('eventDate');
+
+    if (eventDayEl) eventDayEl.innerHTML = dayName;
+    if (eventDateEl) eventDateEl.innerHTML = `${day} ${months[month]} ${year}`;
+
+    let eventsHtml = "";
+    eventsArr.forEach(event => {
+        if (event.day === day && event.month === month + 1 && event.year === year) {
+            event.events.forEach(ev => {
+                eventsHtml += `
+                    <div class="event-item">
+                        <div class="title">
+                            <i class="fas fa-circle"></i>
+                            <span class="event-title">${ev.title}</span>
+                        </div>
+                        <div class="event-time">${ev.time}</div>
+                        <div class="event-time" style="margin-left: 28px; font-size: 0.8rem;">${ev.details || ''}</div>
+                    </div>
+                `;
+            });
+        }
+    });
+
+    if (eventsHtml === "") {
+        eventsHtml = '<div class="no-event">No bookings scheduled</div>';
+    }
+
+    const eventsList = document.getElementById('eventsList');
+    if (eventsList) {
+        eventsList.innerHTML = eventsHtml;
+    }
+}
+
+// Calendar Navigation
+const prevBtn = document.querySelector('.prev');
+const nextBtn = document.querySelector('.next');
+
+if (prevBtn) {
+    prevBtn.addEventListener('click', () => {
+        month--;
+        if (month < 0) {
+            month = 11;
+            year--;
+        }
+        initCalendar();
+    });
+}
+
+if (nextBtn) {
+    nextBtn.addEventListener('click', () => {
+        month++;
+        if (month > 11) {
+            month = 0;
+            year++;
+        }
+        initCalendar();
+    });
+}
+
+const todayBtn = document.getElementById('todayBtn');
+if (todayBtn) {
+    todayBtn.addEventListener('click', () => {
+        const today = new Date();
+        month = today.getMonth();
+        year = today.getFullYear();
+        initCalendar();
+        updateEventDisplay(today.getDate());
+    });
+}
+
+const gotoBtn = document.getElementById('gotoBtn');
+if (gotoBtn) {
+    gotoBtn.addEventListener('click', () => {
+        const input = document.getElementById('gotoInput').value;
+        const parts = input.split('/');
+        if (parts.length === 2) {
+            const m = parseInt(parts[0]) - 1;
+            const y = parseInt(parts[1]);
+            if (m >= 0 && m < 12 && y > 0) {
+                month = m;
+                year = y;
                 initCalendar();
+            } else {
+                alert('Invalid date format. Use MM/YYYY');
+            }
+        } else {
+            alert('Invalid date format. Use MM/YYYY');
+        }
+    });
+}
 
-                // Add notification
-                addNotification('New equipment request submitted', 'info');
+// ============ ADD EVENT MODAL ============
+const closeEventBtn = document.getElementById('closeEventBtn');
+if (closeEventBtn) {
+    closeEventBtn.addEventListener('click', () => {
+        document.getElementById('addEventWrapper')?.classList.remove('active');
+    });
+}
 
-                document.getElementById('addEventWrapper').classList.remove('active');
-                alert('Equipment request submitted successfully!');
+window.addEventListener('click', (e) => {
+    if (e.target === document.getElementById('addEventWrapper')) {
+        document.getElementById('addEventWrapper')?.classList.remove('active');
+    }
+});
+
+const addEventSubmit = document.getElementById('addEventSubmit');
+if (addEventSubmit) {
+    addEventSubmit.addEventListener('click', () => {
+        const title = document.getElementById('eventName')?.value.trim();
+        const details = document.getElementById('eventDetails')?.value.trim();
+        const from = document.getElementById('eventTimeFrom')?.value;
+        const to = document.getElementById('eventTimeTo')?.value;
+
+        if (!title || !from || !to) {
+            alert('Please fill all fields');
+            return;
+        }
+
+        const requestDate = new Date(year, month, activeDay || new Date().getDate());
+        const eventDay = requestDate.getDate();
+        const eventMonth = requestDate.getMonth() + 1;
+        const eventYear = requestDate.getFullYear();
+
+        const newEvent = {
+            title: title,
+            time: `${from} - ${to}`,
+            details: details
+        };
+
+        let added = false;
+        eventsArr.forEach(event => {
+            if (event.day === eventDay && event.month === eventMonth && event.year === eventYear) {
+                event.events.push(newEvent);
+                added = true;
+            }
+        });
+
+        if (!added) {
+            eventsArr.push({
+                day: eventDay,
+                month: eventMonth,
+                year: eventYear,
+                events: [newEvent]
             });
         }
 
-        // Add notification function
-        function addNotification(message, type) {
-            const badge = document.getElementById('notificationBadge');
-            if (badge) {
-                const currentCount = parseInt(badge.textContent);
-                badge.textContent = currentCount + 1;
-            }
+        saveEvents();
+        initCalendar();
 
-            const list = document.getElementById('notificationList');
-            if (list) {
-                const newNotif = document.createElement('div');
-                newNotif.className = 'notification-item unread';
-                newNotif.innerHTML = `
-                    <div><i class="bi bi-${type === 'success' ? 'check-circle-fill' : 'info-circle-fill'} me-2"></i> ${message}</div>
-                    <div class="time">Just now</div>
-                `;
-                list.insertBefore(newNotif, list.firstChild);
-            }
-        }
+        // Add notification
+        addNotification('New equipment request submitted', 'info');
 
-        // Close dropdown when clicking outside
-        document.addEventListener('click', function(event) {
-            if (!event.target.closest('#equipmentName') && !event.target.closest('#equipmentDropdown')) {
-                const dropdown = document.getElementById('equipmentDropdown');
-                if (dropdown) dropdown.remove();
-            }
-        });
-    </script>
+        document.getElementById('addEventWrapper')?.classList.remove('active');
+        alert('Equipment request submitted successfully!');
+    });
+}
+
+// Add notification function
+function addNotification(message, type) {
+    const badge = document.getElementById('notificationBadge');
+    if (badge) {
+        const currentCount = parseInt(badge.textContent);
+        badge.textContent = currentCount + 1;
+    }
+
+    const list = document.getElementById('notificationList');
+    if (list) {
+        const newNotif = document.createElement('div');
+        newNotif.className = 'notification-item unread';
+        newNotif.innerHTML = `
+            <div><i class="bi bi-${type === 'success' ? 'check-circle-fill' : 'info-circle-fill'} me-2"></i> ${message}</div>
+            <div class="time">Just now</div>
+        `;
+        list.insertBefore(newNotif, list.firstChild);
+    }
+}
+</script>
 </body>
 </html>

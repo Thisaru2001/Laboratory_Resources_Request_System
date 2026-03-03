@@ -804,6 +804,108 @@ body {
     background: #f9f9f9;
 }
 
+
+ .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: #dc3545;
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 11px;
+            font-weight: bold;
+            min-width: 18px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .nav-tabs .nav-link {
+            position: relative;
+            padding-right: 25px !important;
+        }
+
+        .nav-tabs .nav-link.active .notification-badge {
+            background-color: #ffc107;
+            color: #000;
+        }
+
+/* Additional styles for the request sections */
+.nav-tabs .nav-link {
+    color: #495057;
+    font-weight: 500;
+    border: none;
+    padding: 10px 20px;
+}
+
+.nav-tabs .nav-link.active {
+    color: #28a745;
+    background: transparent;
+    border-bottom: 3px solid #28a745;
+}
+
+.nav-tabs .nav-link:hover {
+    border-color: transparent;
+    color: #28a745;
+}
+
+.status-badge {
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.status-pending {
+    background-color: #ffc107;
+    color: #000;
+}
+
+.status-approved {
+    background-color: #28a745;
+    color: #fff;
+}
+
+.status-rejected {
+    background-color: #dc3545;
+    color: #fff;
+}
+
+.status-in_progress {
+    background-color: #17a2b8;
+    color: #fff;
+}
+
+.action-btn {
+    padding: 5px 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    margin: 0 2px;
+}
+
+.view-btn {
+    background-color: #28a745;
+    color: white;
+}
+
+.view-btn:hover {
+    background-color: #218838;
+}
+
 /* Request Rate Badge */
 .request-rate {
     background: #e6f7e6;
@@ -996,7 +1098,7 @@ body {
 </head>
 
 <body>
-   <!-- Sidebar Overlay -->
+  <!-- Sidebar Overlay -->
     <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
     <!-- SIDEBAR -->
@@ -1300,78 +1402,301 @@ body {
                 </div>
             </div>
 
-            <!-- Requests Section -->
-            <div id="activitySection" style="display: none;">
-                <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Requests</h3>
+            <!-- Requests Section with Notification Badges -->
+<div id="activitySection" style="display: none;">
+    <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Requests</h3>
 
-                <div class="card p-4">
-                    <!-- Time Range Filter -->
-                    <div class="filter-section" style="margin-bottom: 20px;">
-                        <select class="filter-select" id="timeRangeFilter" onchange="filterRequestsByTime()" style="min-width: 200px;">
-                            <option value="all">All Time</option>
-                            <option value="daily">Daily</option>
-                            <option value="weekly">Weekly</option>
-                            <option value="monthly">Monthly</option>
-                        </select>
-                    </div>
+    <!-- Request Type Tabs with Notification Badges -->
+    <ul class="nav nav-tabs mb-4" id="requestTabs" role="tablist">
+        <li class="nav-item" role="presentation" style="position: relative;">
+            <button class="nav-link active" id="account-tab" data-bs-toggle="tab" data-bs-target="#account" type="button" role="tab" aria-selected="true">
+                <i class="bi bi-person-plus me-2"></i>Account Requests
+                <span class="notification-badge" id="accountNotification">3</span>
+            </button>
+        </li>
+        <li class="nav-item" role="presentation" style="position: relative;">
+            <button class="nav-link" id="practical-tab" data-bs-toggle="tab" data-bs-target="#practical" type="button" role="tab" aria-selected="false">
+                <i class="bi bi-flask me-2"></i>Practical/Research Requests
+                <span class="notification-badge" id="practicalNotification">6</span>
+            </button>
+        </li>
+    </ul>
 
-                    <!-- Requests Table -->
-                    <div class="table-responsive mt-3">
-                        <table class="user-table">
-                            <thead>
-                                <tr>
-                                    <th>Request ID</th>
-                                    <th>Date & Time</th>
-                                    <th>Status</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody id="requestListBody">
-                                <!-- Data will be populated by JavaScript -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Request Details Modal -->
-            <div class="modal fade" id="requestDetailsModal" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-lg modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header bg-success text-white">
-                            <h5 class="modal-title">
-                                <i class="bi bi-info-circle me-2"></i>
-                                Request Details
-                            </h5>
-                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+    <!-- Tab Content -->
+    <div class="tab-content" id="requestTabContent">
+        <!-- Account Requests Tab -->
+        <div class="tab-pane fade show active" id="account" role="tabpanel" aria-labelledby="account-tab">
+            <div class="card p-4">
+                <!-- Search Input for Account Requests -->
+                <div class="filter-section" style="margin-bottom: 20px;">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <input type="text" class="form-control" id="accountSearchInput" placeholder="Search by ID, name, email or status..." onkeyup="searchRequests('account')">
                         </div>
-                        <div class="modal-body" id="requestDetailsContent">
-                            <!-- Content will be populated by JavaScript -->
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <div class="col-md-6">
+                            <select class="filter-select" id="accountTimeRangeFilter" onchange="filterRequestsByTime('account')" style="min-width: 200px;">
+                                <option value="all">All Time</option>
+                                <option value="daily">Daily</option>
+                                <option value="weekly">Weekly</option>
+                                <option value="monthly">Monthly</option>
+                            </select>
                         </div>
                     </div>
                 </div>
+
+                <!-- Account Requests Table -->
+                <div class="table-responsive mt-3">
+                    <table class="user-table">
+                        <thead>
+                            <tr>
+                                <th>Request ID</th>
+                                <th>Date & Time</th>
+                                <th>User Name</th>
+                                <th>Email</th>
+                              
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="accountRequestListBody">
+                            <!-- Data will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
+        </div>
+
+        <!-- Practical/Research Requests Tab -->
+        <div class="tab-pane fade" id="practical" role="tabpanel" aria-labelledby="practical-tab">
+            <div class="card p-4">
+                <!-- Search Input for Practical/Research Requests -->
+                <div class="filter-section" style="margin-bottom: 20px;">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <input type="text" class="form-control" id="practicalSearchInput" placeholder="Search by ID, title, researcher or status..." onkeyup="searchRequests('practical')">
+                        </div>
+                        <div class="col-md-6">
+                            <select class="filter-select" id="practicalTimeRangeFilter" onchange="filterRequestsByTime('practical')" style="min-width: 200px;">
+                                <option value="all">All Time</option>
+                                <option value="daily">Daily</option>
+                                <option value="weekly">Weekly</option>
+                                <option value="monthly">Monthly</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Practical/Research Requests Table -->
+                <div class="table-responsive mt-3">
+                    <table class="user-table">
+                        <thead>
+                            <tr>
+                                <th>Request ID</th>
+                                <th>Date & Time</th>
+                              
+                                <th>Type</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="practicalRequestListBody">
+                            <!-- Data will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Request Details Modal (Updated for both types) -->
+<div class="modal fade" id="requestDetailsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <span id="modalTitle">Request Details</span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="requestDetailsContent">
+                <!-- Content will be populated by JavaScript -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-success" id="approveRequestBtn" onclick="handleRequestAction('approve')">
+                    <i class="bi bi-check-circle me-2"></i>Approve
+                </button>
+                <button type="button" class="btn btn-danger" id="rejectRequestBtn" onclick="handleRequestAction('reject')">
+                    <i class="bi bi-x-circle me-2"></i>Reject
+                </button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 
         </div> <!-- End content-area -->
-    </div> <!-- End main-content -->
+    </div> 
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
-    <script>
-        // ========== STUDENT DATA ==========
-       // ========== STUDENT DATA ==========
+   <script>
+// ========== REQUEST DATA ==========
+let accountRequests = [
+    {
+        id: 'ACC001',
+        dateTime: '2024-01-15 10:30 AM',
+        userName: 'John Doe',
+        email: 'john@example.com',
+      
+        status: 'pending',
+        details: {
+            studentId: 'STU12345',
+            course: 'Computer Science',
+            year: '3rd Year',
+            purpose: 'Access to laboratory resources'
+        }
+    },
+    {
+        id: 'ACC002',
+        dateTime: '2024-01-15 02:15 PM',
+        userName: 'Jane Smith',
+        email: 'jane@example.com',
+     
+        status: 'approved',
+        details: {
+            employeeId: 'TCH789',
+            department: 'Physics',
+            position: 'Senior Lecturer'
+        }
+    },
+    {
+        id: 'ACC003',
+        dateTime: '2024-01-16 09:30 AM',
+        userName: 'Mike Johnson',
+        email: 'mike@example.com',
+     
+        status: 'pending',
+        details: {
+            studentId: 'STU67890',
+            course: 'Biology',
+            year: '2nd Year',
+            purpose: 'Lab access for research'
+        }
+    },
+    {
+        id: 'ACC004',
+        dateTime: '2024-01-16 11:45 AM',
+        userName: 'Sarah Wilson',
+        email: 'sarah@example.com',
+      
+        status: 'pending',
+        details: {
+            employeeId: 'RES456',
+            department: 'Biochemistry',
+            project: 'Enzyme Research'
+        }
+    }
+];
+
+let practicalRequests = [
+    {
+        id: 'PRAC001',
+        dateTime: '2024-01-14 09:00 AM',
+     
+      
+     
+        status: 'pending',
+        details: {
+            institution: 'University of Science',
+            duration: '3 months',
+            equipment: ['Microscope', 'pH Meter', 'Spectrophotometer'],
+            abstract: 'Study of water quality parameters in urban areas'
+        }
+    },
+    {
+        id: 'PRAC002',
+        dateTime: '2024-01-14 11:30 AM',
+       
+       
+      
+        status: 'in_progress',
+        details: {
+            course: 'Electrical Engineering',
+            students: 25,
+            labRequired: 'Electronics Lab',
+            schedule: 'Monday-Wednesday, 2-5 PM'
+        }
+    },
+    {
+        id: 'PRAC003',
+        dateTime: '2024-01-15 10:00 AM',
+        projectTitle: 'DNA Sequencing',
+       
+     
+        status: 'pending',
+        details: {
+            institution: 'Medical Research Center',
+            duration: '6 months',
+            equipment: ['Sequencer', 'Centrifuge', 'PCR Machine'],
+            abstract: 'Genetic analysis of bacterial strains'
+        }
+    },
+    {
+        id: 'PRAC004',
+        dateTime: '2024-01-15 02:30 PM',
+      
+      
+      
+        status: 'pending',
+        details: {
+            institution: 'Biotech Institute',
+            duration: '4 months',
+            equipment: ['X-ray Diffractometer', 'Microscope'],
+            abstract: 'Protein structure determination'
+        }
+    },
+    {
+        id: 'PRAC005',
+        dateTime: '2024-01-16 09:15 AM',
+      
+      
+      
+        status: 'pending',
+        details: {
+            course: 'Microbiology 301',
+            students: 20,
+            labRequired: 'Microbiology Lab',
+            schedule: 'Tuesday-Thursday, 9-12 AM'
+        }
+    },
+    {
+        id: 'PRAC006',
+        dateTime: '2024-01-16 01:00 PM',
+      
+      
+       
+        status: 'pending',
+        details: {
+            course: 'Cell Biology',
+            students: 15,
+            labRequired: 'Tissue Culture Lab',
+            schedule: 'Wednesday-Friday, 1-4 PM'
+        }
+    }
+];
+
+// ========== STUDENT DATA ==========
 const studentData = [
     {
         id: 'SCI001',
         name: 'John Doe',
         email: 'john.doe@science.lk',
         image: 'https://ui-avatars.com/api/?name=John+Doe&background=22c55e&color=fff&size=50',
-        requestRate: 75,  // Changed from 12 to percentage
-        department: 'Microbiology',
+        requestRate: 75,
+    
         year: '3rd Year',
         phone: '0771234567',
         address: 'Colombo',
@@ -1382,8 +1707,8 @@ const studentData = [
         name: 'Jane Smith',
         email: 'jane.smith@science.lk',
         image: 'https://ui-avatars.com/api/?name=Jane+Smith&background=22c55e&color=fff&size=50',
-        requestRate: 60,  // Changed from 8 to percentage
-        department: 'Molecular Biology',
+        requestRate: 60,
+      
         year: '4th Year',
         phone: '0772345678',
         address: 'Kandy',
@@ -1394,8 +1719,8 @@ const studentData = [
         name: 'Pathum Perera',
         email: 'pathum.p@science.lk',
         image: 'https://ui-avatars.com/api/?name=Pathum+Perera&background=22c55e&color=fff&size=50',
-        requestRate: 45,  // Changed from 3 to percentage
-        department: 'Biochemistry',
+        requestRate: 45,
+     
         year: '2nd Year',
         phone: '0773456789',
         address: 'Galle',
@@ -1406,8 +1731,8 @@ const studentData = [
         name: 'Nimali Fernando',
         email: 'nimali.f@science.lk',
         image: 'https://ui-avatars.com/api/?name=Nimali+Fernando&background=22c55e&color=fff&size=50',
-        requestRate: 90,  // Changed from 15 to percentage
-        department: 'Microbiology',
+        requestRate: 90,
+      
         year: '4th Year',
         phone: '0774567890',
         address: 'Colombo',
@@ -1418,8 +1743,8 @@ const studentData = [
         name: 'Mike Johnson',
         email: 'mike.j@science.lk',
         image: 'https://ui-avatars.com/api/?name=Mike+Johnson&background=22c55e&color=fff&size=50',
-        requestRate: 55,  // Changed from 6 to percentage
-        department: 'Molecular Biology',
+        requestRate: 55,
+      
         year: '3rd Year',
         phone: '0775678901',
         address: 'Negombo',
@@ -1430,8 +1755,8 @@ const studentData = [
         name: 'Sarah Wilson',
         email: 'sarah.w@science.lk',
         image: 'https://ui-avatars.com/api/?name=Sarah+Wilson&background=22c55e&color=fff&size=50',
-        requestRate: 80,  // Changed from 10 to percentage
-        department: 'Biochemistry',
+        requestRate: 80,
+       
         year: '4th Year',
         phone: '0776789012',
         address: 'Kandy',
@@ -1439,190 +1764,372 @@ const studentData = [
     }
 ];
 
-        // ========== SUPERVISOR REQUESTS DATA ==========
-        const supervisorRequests = [{
-            id: 'REQ001',
-            dateTime: '2026-02-20 10:30 AM',
-            timestamp: new Date('2026-02-20T10:30:00'),
-            studentName: 'John Doe',
-            studentId: 'SCI001',
-            equipment: 'Microscope (2)',
-            lab: 'Lab 01',
-            duration: '2 hours',
-            purpose: 'Final Year Research Project',
-            status: 'pending',
-            supervisor: 'Dr. Kamal Perera',
-            notes: 'Awaiting supervisor approval'
-        },
-        {
-            id: 'REQ002',
-            dateTime: '2026-02-20 11:00 AM',
-            timestamp: new Date('2026-02-20T11:00:00'),
-            studentName: 'Jane Smith',
-            studentId: 'SCI002',
-            equipment: 'Centrifuge (1)',
-            lab: 'Research Lab',
-            duration: '3 hours',
-            purpose: 'DNA Extraction',
-            status: 'approved',
-            supervisor: 'Prof. Malini Silva',
-            notes: 'Approved for research'
-        },
-        {
-            id: 'REQ003',
-            dateTime: '2026-02-19 09:15 AM',
-            timestamp: new Date('2026-02-19T09:15:00'),
-            studentName: 'Mike Johnson',
-            studentId: 'SCI003',
-            equipment: 'Incubator (1)',
-            lab: 'Lab 02',
-            duration: '4 hours',
-            purpose: 'Bacterial Culture',
-            status: 'rejected',
-            supervisor: 'Dr. Kamal Perera',
-            notes: 'Equipment under maintenance'
-        },
-        {
-            id: 'REQ004',
-            dateTime: '2026-02-19 04:30 PM',
-            timestamp: new Date('2026-02-19T16:30:00'),
-            studentName: 'Sarah Wilson',
-            studentId: 'SCI004',
-            equipment: 'Autoclave (1)',
-            lab: 'Lab 01',
-            duration: '1.5 hours',
-            purpose: 'Media Sterilization',
-            status: 'pending',
-            supervisor: 'Dr. Nuwan Jayawardena',
-            notes: 'Waiting for approval'
-        },
-        {
-            id: 'REQ005',
-            dateTime: '2026-02-18 02:00 PM',
-            timestamp: new Date('2026-02-18T14:00:00'),
-            studentName: 'Pathum Perera',
-            studentId: 'SCI005',
-            equipment: 'pH Meter (1)',
-            lab: 'Research Lab',
-            duration: '2 hours',
-            purpose: 'Solution Preparation',
-            status: 'approved',
-            supervisor: 'Prof. Malini Silva',
-            notes: 'Approved'
-        },
-        {
-            id: 'REQ006',
-            dateTime: '2026-02-17 03:45 PM',
-            timestamp: new Date('2026-02-17T15:45:00'),
-            studentName: 'Nimali Fernando',
-            studentId: 'SCI006',
-            equipment: 'Water Bath (1)',
-            lab: 'Lab 02',
-            duration: '2 hours',
-            purpose: 'Enzyme Study',
-            status: 'rejected',
-            supervisor: 'Dr. Kamal Perera',
-            notes: 'Schedule conflict'
-        },
-        {
-            id: 'REQ007',
-            dateTime: '2026-02-15 09:30 AM',
-            timestamp: new Date('2026-02-15T09:30:00'),
-            studentName: 'Tharindu Silva',
-            studentId: 'SCI007',
-            equipment: 'Microscope (1)',
-            lab: 'Lab 01',
-            duration: '3 hours',
-            purpose: 'Cell Observation',
-            status: 'approved',
-            supervisor: 'Dr. Nuwan Jayawardena',
-            notes: 'Approved'
-        },
-        {
-            id: 'REQ008',
-            dateTime: '2026-02-10 01:00 PM',
-            timestamp: new Date('2026-02-10T13:00:00'),
-            studentName: 'Dilini Perera',
-            studentId: 'SCI008',
-            equipment: 'Centrifuge (1)',
-            lab: 'Research Lab',
-            duration: '2 hours',
-            purpose: 'Sample Preparation',
-            status: 'approved',
-            supervisor: 'Prof. Malini Silva',
-            notes: 'Completed'
-        }];
+// ========== CALENDAR VARIABLES ==========
+let activeDay;
+let month = new Date().getMonth();
+let year = new Date().getFullYear();
+const months = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
+];
+let eventsArr = [];
 
-        // ========== CALENDAR VARIABLES ==========
-        let activeDay;
-        let month = new Date().getMonth();
-        let year = new Date().getFullYear();
-        const months = [
-            "January", "February", "March", "April", "May", "June",
-            "July", "August", "September", "October", "November", "December"
-        ];
-        let eventsArr = [];
+// ========== NOTIFICATION FUNCTIONS ==========
+function updateNotificationBadges() {
+    const accountPending = accountRequests.filter(r => r.status === 'pending').length;
+    const practicalPending = practicalRequests.filter(r => r.status === 'pending' || r.status === 'in_progress').length;
+    
+    const accountBadge = document.getElementById('accountNotification');
+    const practicalBadge = document.getElementById('practicalNotification');
+    
+    if (accountBadge) {
+        accountBadge.textContent = accountPending;
+        accountBadge.style.display = accountPending > 0 ? 'inline-block' : 'none';
+    }
+    
+    if (practicalBadge) {
+        practicalBadge.textContent = practicalPending;
+        practicalBadge.style.display = practicalPending > 0 ? 'inline-block' : 'none';
+    }
+}
 
-        // ========== INITIALIZATION ==========
-        document.addEventListener('DOMContentLoaded', function() {
-            // Load events from localStorage
-            loadEvents();
+// Dashboard function for view pending requests
+function viewPendingRequests() {
+    showSection('activity');
+    
+    // Optional: Switch to the tab with most pending requests
+    const accountPending = accountRequests.filter(r => r.status === 'pending').length;
+    const practicalPending = practicalRequests.filter(r => r.status === 'pending' || r.status === 'in_progress').length;
+    
+    if (practicalPending > accountPending) {
+        // Switch to practical tab
+        const practicalTab = document.getElementById('practical-tab');
+        if (practicalTab) {
+            practicalTab.click();
+        }
+    }
+}
+
+// ========== REQUEST FUNCTIONS (Account & Practical) ==========
+
+// Auto-search function triggered by onkeyup
+function searchRequests(type) {
+    const searchInput = document.getElementById(type + 'SearchInput');
+    const searchTerm = searchInput.value.toLowerCase().trim();
+    
+    if (type === 'account') {
+        filterAccountRequests(searchTerm);
+    } else {
+        filterPracticalRequests(searchTerm);
+    }
+}
+
+// Filter account requests based on search term
+function filterAccountRequests(searchTerm) {
+    const filteredRequests = accountRequests.filter(request => {
+        return request.id.toLowerCase().includes(searchTerm) ||
+               request.userName.toLowerCase().includes(searchTerm) ||
+               request.email.toLowerCase().includes(searchTerm) ||
+               request.accountType.toLowerCase().includes(searchTerm) ||
+               request.status.toLowerCase().includes(searchTerm);
+    });
+    
+    displayAccountRequests(filteredRequests);
+}
+
+// Filter practical requests based on search term
+function filterPracticalRequests(searchTerm) {
+    const filteredRequests = practicalRequests.filter(request => {
+        return request.id.toLowerCase().includes(searchTerm) ||
+               request.projectTitle.toLowerCase().includes(searchTerm) ||
+               request.researcherName.toLowerCase().includes(searchTerm) ||
+               request.type.toLowerCase().includes(searchTerm) ||
+               request.status.toLowerCase().includes(searchTerm);
+    });
+    
+    displayPracticalRequests(filteredRequests);
+}
+
+// Time range filter function for account/practical requests
+function filterRequestsByTime(type) {
+    const timeFilter = document.getElementById(type + 'TimeRangeFilter').value;
+    const searchTerm = document.getElementById(type + 'SearchInput').value.toLowerCase();
+    
+    // Get current date for comparison
+    const today = new Date();
+    const oneDay = 24 * 60 * 60 * 1000;
+    const oneWeek = 7 * oneDay;
+    const oneMonth = 30 * oneDay;
+    
+    let filteredRequests;
+    
+    if (type === 'account') {
+        filteredRequests = accountRequests.filter(request => {
+            const requestDate = new Date(request.dateTime);
             
-            // Show dashboard by default
-            showSection('dashboard');
-            
-            // Initialize calendar
-            initCalendar();
-            
-            // Display student table
-            displayStudentTable(studentData);
-            
-            // Initialize request table if activity section exists
-            if (document.getElementById('activitySection')) {
-                filterRequestsByTime();
+            // Apply time filter
+            if (timeFilter === 'daily') {
+                if (requestDate.toDateString() !== today.toDateString()) return false;
+            } else if (timeFilter === 'weekly') {
+                if (today - requestDate > oneWeek) return false;
+            } else if (timeFilter === 'monthly') {
+                if (today - requestDate > oneMonth) return false;
             }
+            
+            // Apply search filter if search term exists
+            if (searchTerm) {
+                return request.id.toLowerCase().includes(searchTerm) ||
+                       request.userName.toLowerCase().includes(searchTerm) ||
+                       request.email.toLowerCase().includes(searchTerm) ||
+                       request.accountType.toLowerCase().includes(searchTerm) ||
+                       request.status.toLowerCase().includes(searchTerm);
+            }
+            
+            return true;
         });
-
-        // ========== SIDEBAR FUNCTIONS ==========
-        function toggleSidebar() {
-            document.getElementById("sidebar").classList.toggle("active");
-            document.getElementById("sidebarOverlay").classList.toggle("active");
-        }
-
-        // ========== SECTION NAVIGATION ==========
-        function showSection(section) {
-            // Hide all sections
-            document.getElementById('dashboardSection').style.display = 'none';
-            document.getElementById('studentSection').style.display = 'none';
-            document.getElementById('activitySection').style.display = 'none';
+        
+        displayAccountRequests(filteredRequests);
+    } else {
+        filteredRequests = practicalRequests.filter(request => {
+            const requestDate = new Date(request.dateTime);
             
-            // Show selected section
-            const sectionElement = document.getElementById(section + 'Section');
-            if (sectionElement) {
-                sectionElement.style.display = 'block';
+            // Apply time filter
+            if (timeFilter === 'daily') {
+                if (requestDate.toDateString() !== today.toDateString()) return false;
+            } else if (timeFilter === 'weekly') {
+                if (today - requestDate > oneWeek) return false;
+            } else if (timeFilter === 'monthly') {
+                if (today - requestDate > oneMonth) return false;
             }
             
-            // Update active state in sidebar
-            document.querySelectorAll('.sidebar a').forEach(link => {
-                link.classList.remove('active');
-                if (link.getAttribute('onclick') && link.getAttribute('onclick').includes(section)) {
-                    link.classList.add('active');
-                }
-            });
-        }
+            // Apply search filter if search term exists
+            if (searchTerm) {
+                return request.id.toLowerCase().includes(searchTerm) ||
+                       request.projectTitle.toLowerCase().includes(searchTerm) ||
+                       request.researcherName.toLowerCase().includes(searchTerm) ||
+                       request.type.toLowerCase().includes(searchTerm) ||
+                       request.status.toLowerCase().includes(searchTerm);
+            }
+            
+            return true;
+        });
+        
+        displayPracticalRequests(filteredRequests);
+    }
+}
 
-        // ========== STUDENT MANAGEMENT FUNCTIONS ==========
-        function searchStudents() {
-            const searchTerm = document.getElementById('studentSearch').value.toLowerCase();
-            const filtered = studentData.filter(student =>
-                student.name.toLowerCase().includes(searchTerm) ||
-                student.id.toLowerCase().includes(searchTerm) ||
-                student.email.toLowerCase().includes(searchTerm)
-            );
-            displayStudentTable(filtered);
-        }
+// Display account requests
+function displayAccountRequests(requests) {
+    const tbody = document.getElementById('accountRequestListBody');
+    if (!tbody) return;
+    
+    tbody.innerHTML = '';
+    
+    if (requests.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center">No account requests found</td></tr>';
+        return;
+    }
+    
+    requests.forEach(request => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${request.id}</td>
+            <td>${request.dateTime}</td>
+            <td>${request.userName}</td>
+            <td>${request.email}</td>
+          
+            <td><span class="status-badge status-${request.status}">${request.status}</span></td>
+            <td>
+                <button class="action-btn view-btn" onclick="viewRequestDetails('${request.id}', 'account')">
+                    <i class="bi bi-eye"></i>
+                </button>
+            </td>
+        `;
+        tbody.appendChild(row);
+    });
+}
 
-       function displayStudentTable(students) {
+// Display practical requests
+function displayPracticalRequests(requests) {
+    const tbody = document.getElementById('practicalRequestListBody');
+    if (!tbody) return;
+    
+    tbody.innerHTML = '';
+    
+    if (requests.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center">No practical/research requests found</td></tr>';
+        return;
+    }
+    
+    requests.forEach(request => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${request.id}</td>
+            <td>${request.dateTime}</td>
+           
+         
+         
+            <td><span class="status-badge status-${request.status}">${request.status}</span></td>
+            <td>
+                <button class="action-btn view-btn" onclick="viewRequestDetails('${request.id}', 'practical')">
+                    <i class="bi bi-eye"></i>
+                </button>
+            </td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+
+// View request details
+function viewRequestDetails(requestId, type) {
+    let request;
+    let modalTitle = document.getElementById('modalTitle');
+    
+    if (type === 'account') {
+        request = accountRequests.find(r => r.id === requestId);
+        modalTitle.textContent = 'Account Request Details';
+    } else {
+        request = practicalRequests.find(r => r.id === requestId);
+        modalTitle.textContent = 'Practical/Research Request Details';
+    }
+    
+    if (request) {
+        displayRequestDetails(request, type);
+        
+        // Store current request info for action buttons
+        document.getElementById('approveRequestBtn').setAttribute('data-request-id', requestId);
+        document.getElementById('approveRequestBtn').setAttribute('data-request-type', type);
+        document.getElementById('rejectRequestBtn').setAttribute('data-request-id', requestId);
+        document.getElementById('rejectRequestBtn').setAttribute('data-request-type', type);
+        
+        // Show modal
+        const modal = new bootstrap.Modal(document.getElementById('requestDetailsModal'));
+        modal.show();
+    }
+}
+
+// Display request details in modal
+function displayRequestDetails(request, type) {
+    const contentDiv = document.getElementById('requestDetailsContent');
+    let html = '';
+    
+    if (type === 'account') {
+        html = `
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Request ID:</strong> ${request.id}</p>
+                    <p><strong>Date & Time:</strong> ${request.dateTime}</p>
+                    <p><strong>User Name:</strong> ${request.userName}</p>
+                    <p><strong>Email:</strong> ${request.email}</p>
+                    <p><strong>Account Type:</strong> ${request.accountType}</p>
+                    <p><strong>Status:</strong> <span class="status-badge status-${request.status}">${request.status}</span></p>
+                </div>
+                <div class="col-md-6">
+                    <h6>Additional Details:</h6>
+                    ${Object.entries(request.details).map(([key, value]) => 
+                        `<p><strong>${key}:</strong> ${value}</p>`
+                    ).join('')}
+                </div>
+            </div>
+        `;
+    } else {
+        html = `
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Request ID:</strong> ${request.id}</p>
+                    <p><strong>Date & Time:</strong> ${request.dateTime}</p>
+                    <p><strong>Project Title:</strong> ${request.projectTitle}</p>
+                    <p><strong>Researcher Name:</strong> ${request.researcherName}</p>
+                    <p><strong>Type:</strong> ${request.type}</p>
+                    <p><strong>Status:</strong> <span class="status-badge status-${request.status}">${request.status}</span></p>
+                </div>
+                <div class="col-md-6">
+                    <h6>Additional Details:</h6>
+                    ${Object.entries(request.details).map(([key, value]) => {
+                        if (Array.isArray(value)) {
+                            return `<p><strong>${key}:</strong> ${value.join(', ')}</p>`;
+                        }
+                        return `<p><strong>${key}:</strong> ${value}</p>`;
+                    }).join('')}
+                </div>
+            </div>
+        `;
+    }
+    
+    contentDiv.innerHTML = html;
+}
+
+// Handle approve/reject actions
+function handleRequestAction(action) {
+    const requestId = document.getElementById('approveRequestBtn').getAttribute('data-request-id');
+    const requestType = document.getElementById('approveRequestBtn').getAttribute('data-request-type');
+    
+    if (requestType === 'account') {
+        const requestIndex = accountRequests.findIndex(r => r.id === requestId);
+        if (requestIndex !== -1) {
+            accountRequests[requestIndex].status = action === 'approve' ? 'approved' : 'rejected';
+            // Refresh the display
+            filterRequestsByTime('account');
+        }
+    } else {
+        const requestIndex = practicalRequests.findIndex(r => r.id === requestId);
+        if (requestIndex !== -1) {
+            practicalRequests[requestIndex].status = action === 'approve' ? 'approved' : 'rejected';
+            // Refresh the display
+            filterRequestsByTime('practical');
+        }
+    }
+    
+    // Update notification badges
+    updateNotificationBadges();
+    
+    // Close modal
+    bootstrap.Modal.getInstance(document.getElementById('requestDetailsModal')).hide();
+    
+    // Show success message
+    alert(`Request ${action === 'approve' ? 'approved' : 'rejected'} successfully!`);
+}
+
+// ========== SIDEBAR FUNCTIONS ==========
+function toggleSidebar() {
+    document.getElementById("sidebar").classList.toggle("active");
+    document.getElementById("sidebarOverlay").classList.toggle("active");
+}
+
+// ========== SECTION NAVIGATION ==========
+function showSection(section) {
+    // Hide all sections
+    document.getElementById('dashboardSection').style.display = 'none';
+    document.getElementById('studentSection').style.display = 'none';
+    document.getElementById('activitySection').style.display = 'none';
+    
+    // Show selected section
+    const sectionElement = document.getElementById(section + 'Section');
+    if (sectionElement) {
+        sectionElement.style.display = 'block';
+    }
+    
+    // Update active state in sidebar
+    document.querySelectorAll('.sidebar a').forEach(link => {
+        link.classList.remove('active');
+        if (link.getAttribute('onclick') && link.getAttribute('onclick').includes(section)) {
+            link.classList.add('active');
+        }
+    });
+}
+
+// ========== STUDENT MANAGEMENT FUNCTIONS ==========
+function searchStudents() {
+    const searchTerm = document.getElementById('studentSearch').value.toLowerCase();
+    const filtered = studentData.filter(student =>
+        student.name.toLowerCase().includes(searchTerm) ||
+        student.id.toLowerCase().includes(searchTerm) ||
+        student.email.toLowerCase().includes(searchTerm)
+    );
+    displayStudentTable(filtered);
+}
+
+function displayStudentTable(students) {
     const tableBody = document.getElementById('studentTableBody');
     if (!tableBody) return;
     
@@ -1664,396 +2171,277 @@ const studentData = [
     }
 }
 
-        function viewStudent(id) {
-            const student = studentData.find(s => s.id === id);
-            if (!student) return;
-            
-            const detailsContent = document.getElementById('studentDetailsContent');
-            
-            detailsContent.innerHTML = `
-                <div class="row">
-                    <div class="col-md-4 text-center">
-                        <img src="${student.image}" style="width: 150px; height: 150px; border-radius: 50%; object-fit: cover; border: 3px solid #22c55e;" class="mb-3">
-                        <h4>${student.name}</h4>
-                        <p class="text-muted">${student.id}</p>
-                    </div>
-                    <div class="col-md-8">
-                        <table class="table table-borderless">
-                            <tr><th style="width: 150px;">Email:</th><td>${student.email}</td></tr>
-                            <tr><th>Department:</th><td>${student.department}</td></tr>
-                            <tr><th>Year:</th><td>${student.year}</td></tr>
-                            <tr><th>Phone:</th><td>${student.phone}</td></tr>
-                            <tr><th>Address:</th><td>${student.address}</td></tr>
-                            <tr><th>Join Date:</th><td>${student.joinDate}</td></tr>
-                            <tr><th>Request Rate:</th><td><span class="request-rate">${student.requestRate} requests</span></td></tr>
-                        </table>
-                    </div>
-                </div>
-            `;
-            
-            new bootstrap.Modal(document.getElementById('studentDetailsModal')).show();
-        }
+function viewStudent(id) {
+    const student = studentData.find(s => s.id === id);
+    if (!student) return;
+    
+    const detailsContent = document.getElementById('studentDetailsContent');
+    
+    detailsContent.innerHTML = `
+        <div class="row">
+            <div class="col-md-4 text-center">
+                <img src="${student.image}" style="width: 150px; height: 150px; border-radius: 50%; object-fit: cover; border: 3px solid #22c55e;" class="mb-3">
+                <h4>${student.name}</h4>
+                <p class="text-muted">${student.id}</p>
+            </div>
+            <div class="col-md-8">
+                <table class="table table-borderless">
+                    <tr><th style="width: 150px;">Email:</th><td>${student.email}</td></tr>
+                    <tr><th>Department:</th><td>${student.department}</td></tr>
+                    <tr><th>Year:</th><td>${student.year}</td></tr>
+                    <tr><th>Phone:</th><td>${student.phone}</td></tr>
+                    <tr><th>Address:</th><td>${student.address}</td></tr>
+                    <tr><th>Join Date:</th><td>${student.joinDate}</td></tr>
+                    <tr><th>Request Rate:</th><td><span class="request-rate">${student.requestRate} requests</span></td></tr>
+                </table>
+            </div>
+        </div>
+    `;
+    
+    new bootstrap.Modal(document.getElementById('studentDetailsModal')).show();
+}
 
-        function addStudent() {
-            alert('Add Student functionality would open a form modal');
-            // In a real app, this would open a form to add a new student
-        }
+function addStudent() {
+    alert('Add Student functionality would open a form modal');
+    // In a real app, this would open a form to add a new student
+}
 
-        function removeStudent(id) {
-            if (confirm(`Are you sure you want to remove student ${id}?`)) {
-                const index = studentData.findIndex(s => s.id === id);
-                if (index !== -1) {
-                    studentData.splice(index, 1);
-                }
-                displayStudentTable(studentData);
-                alert(`Student ${id} has been removed successfully!`);
+function removeStudent(id) {
+    if (confirm(`Are you sure you want to remove student ${id}?`)) {
+        const index = studentData.findIndex(s => s.id === id);
+        if (index !== -1) {
+            studentData.splice(index, 1);
+        }
+        displayStudentTable(studentData);
+        alert(`Student ${id} has been removed successfully!`);
+    }
+}
+
+// ========== CALENDAR FUNCTIONS ==========
+function loadEvents() {
+    const saved = localStorage.getItem("calendarEvents");
+    if (saved) {
+        eventsArr = JSON.parse(saved);
+    }
+}
+
+function saveEvents() {
+    localStorage.setItem("calendarEvents", JSON.stringify(eventsArr));
+}
+
+function initCalendar() {
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const prevLastDay = new Date(year, month, 0);
+    const prevDays = prevLastDay.getDate();
+    const lastDate = lastDay.getDate();
+    const day = firstDay.getDay();
+    const nextDays = 7 - lastDay.getDay() - 1;
+    
+    const displayMonth = document.getElementById('displayMonth');
+    if (displayMonth) {
+        displayMonth.innerHTML = months[month] + " " + year;
+    }
+    
+    let days = "";
+    
+    // Previous month days
+    for (let x = day; x > 0; x--) {
+        days += `<div class="day-cell prev-date">${prevDays - x + 1}</div>`;
+    }
+    
+    // Current month days
+    for (let i = 1; i <= lastDate; i++) {
+        let hasEvent = false;
+        eventsArr.forEach(event => {
+            if (event.day === i && event.month === month + 1 && event.year === year) {
+                hasEvent = true;
             }
+        });
+        
+        let classes = "day-cell";
+        if (i === new Date().getDate() && year === new Date().getFullYear() && month === new Date().getMonth()) {
+            classes += " today";
         }
+        if (hasEvent) {
+            classes += " event";
+        }
+        
+        days += `<div class="${classes}" data-day="${i}">${i}</div>`;
+    }
+    
+    // Next month days
+    for (let j = 1; j <= nextDays; j++) {
+        days += `<div class="day-cell next-date">${j}</div>`;
+    }
+    
+    const daysGrid = document.getElementById('daysGrid');
+    if (daysGrid) {
+        daysGrid.innerHTML = days;
+    }
+    updateActiveDay();
+    
+    if (activeDay) {
+        updateEventDisplay(activeDay);
+    } else {
+        updateEventDisplay(new Date().getDate());
+    }
+}
 
-        // ========== REQUEST FUNCTIONS ==========
-        function filterRequestsByTime() {
-            const timeRange = document.getElementById('timeRangeFilter').value;
-            const today = new Date();
-            let filtered = [];
-            
-            switch (timeRange) {
-                case 'daily':
-                    filtered = supervisorRequests.filter(item =>
-                        item.timestamp.toDateString() === today.toDateString()
-                    );
-                    break;
-                case 'weekly':
-                    const weekAgo = new Date();
-                    weekAgo.setDate(today.getDate() - 7);
-                    filtered = supervisorRequests.filter(item => item.timestamp >= weekAgo);
-                    break;
-                case 'monthly':
-                    const monthAgo = new Date();
-                    monthAgo.setDate(today.getDate() - 30);
-                    filtered = supervisorRequests.filter(item => item.timestamp >= monthAgo);
-                    break;
-                case 'all':
-                default:
-                    filtered = supervisorRequests;
-                    break;
+function updateActiveDay() {
+    const dayCells = document.querySelectorAll('.day-cell');
+    dayCells.forEach(cell => {
+        cell.addEventListener('click', function(e) {
+            if (!this.classList.contains('prev-date') && !this.classList.contains('next-date')) {
+                dayCells.forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+                
+                const day = parseInt(this.textContent);
+                activeDay = day;
+                updateEventDisplay(day);
             }
-            
-            displayRequestTable(filtered);
-        }
+        });
+    });
+}
 
-        function displayRequestTable(requests) {
-            const tableBody = document.getElementById('requestListBody');
-            if (!tableBody) return;
-            
-            tableBody.innerHTML = '';
-            
-            // Sort by date (newest first)
-            requests.sort((a, b) => b.timestamp - a.timestamp);
-            
-            requests.forEach(item => {
-                const row = document.createElement('tr');
-                
-                let statusClass = '';
-                let statusText = '';
-                
-                switch(item.status) {
-                    case 'pending':
-                        statusClass = 'bg-warning';
-                        statusText = 'Pending';
-                        break;
-                    case 'approved':
-                        statusClass = 'bg-success';
-                        statusText = 'Checked';
-                        break;
-                    case 'rejected':
-                        statusClass = 'bg-danger';
-                        statusText = 'Rejected';
-                        break;
-                }
-                
-                row.innerHTML = `
-                    <td>${item.id}</td>
-                    <td>${item.dateTime}</td>
-                    <td><span class="badge ${statusClass}">${statusText}</span></td>
-                    <td>
-                        <div class="action-buttons">
-                            <button class="btn-view" onclick="viewRequest('${item.id}')" title="View Details">
-                                <i class="bi bi-eye"></i>
-                            </button>
-                            <button class="btn-remove" onclick="removeRequest('${item.id}')" title="Remove">
-                                <i class="bi bi-trash"></i>
-                            </button>
+function updateEventDisplay(day) {
+    const date = new Date(year, month, day);
+    const dayName = date.toString().split(' ')[0];
+    
+    const eventDayEl = document.getElementById('eventDay');
+    const eventDateEl = document.getElementById('eventDate');
+    
+    if (eventDayEl) {
+        eventDayEl.innerHTML = dayName;
+    }
+    if (eventDateEl) {
+        eventDateEl.innerHTML = `${day} ${months[month]} ${year}`;
+    }
+    
+    let eventsHtml = "";
+    eventsArr.forEach(event => {
+        if (event.day === day && event.month === month + 1 && event.year === year) {
+            event.events.forEach(ev => {
+                eventsHtml += `
+                    <div class="event-item" onclick="deleteEvent(this, '${ev.title}')">
+                        <div class="title">
+                            <i class="fas fa-circle"></i>
+                            <span class="event-title">${ev.title}</span>
                         </div>
-                    </td>
+                        <div class="event-time">${ev.time}</div>
+                        <div class="event-time" style="margin-left: 28px; font-size: 0.8rem;">${ev.details || ''}</div>
+                    </div>
                 `;
-                tableBody.appendChild(row);
             });
-            
-            if (requests.length === 0) {
-                const row = document.createElement('tr');
-                row.innerHTML = `<td colspan="4" class="text-center">No requests found for this time period</td>`;
-                tableBody.appendChild(row);
-            }
         }
+    });
+    
+    if (eventsHtml === "") {
+        eventsHtml = '<div class="no-event">No events scheduled</div>';
+    }
+    
+    const eventsList = document.getElementById('eventsList');
+    if (eventsList) {
+        eventsList.innerHTML = eventsHtml;
+    }
+}
 
-        function viewRequest(id) {
-            const request = supervisorRequests.find(item => item.id === id);
-            if (!request) return;
-            
-            const detailsContent = document.getElementById('requestDetailsContent');
-            
-            let statusBadge = '';
-            switch (request.status) {
-                case 'pending':
-                    statusBadge = '<span class="badge bg-warning">Pending</span>';
-                    break;
-                case 'approved':
-                    statusBadge = '<span class="badge bg-success">Approved</span>';
-                    break;
-                case 'rejected':
-                    statusBadge = '<span class="badge bg-danger">Rejected</span>';
-                    break;
-            }
-            
-            detailsContent.innerHTML = `
-                <div class="row">
-                    <div class="col-md-12">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
-                            <h4>Request: ${request.id}</h4>
-                            ${statusBadge}
-                        </div>
-                        
-                        <table class="table table-borderless">
-                            <tr><th style="width: 200px;">Date & Time:</th><td>${request.dateTime}</td></tr>
-                            <tr><th>Student:</th><td>${request.studentName} (${request.studentId})</td></tr>
-                            <tr><th>Supervisor:</th><td>${request.supervisor}</td></tr>
-                            <tr><th>Lab Location:</th><td>${request.lab}</td></tr>
-                            <tr><th>Equipment:</th><td>${request.equipment}</td></tr>
-                            <tr><th>Duration:</th><td>${request.duration}</td></tr>
-                            <tr><th>Purpose:</th><td>${request.purpose}</td></tr>
-                            <tr><th>Notes:</th><td>${request.notes}</td></tr>
-                        </table>
-                    </div>
-                </div>
-            `;
-            
-            new bootstrap.Modal(document.getElementById('requestDetailsModal')).show();
-        }
-
-        function removeRequest(id) {
-            if (confirm(`Are you sure you want to remove request ${id}?`)) {
-                const index = supervisorRequests.findIndex(item => item.id === id);
-                if (index !== -1) {
-                    supervisorRequests.splice(index, 1);
+window.deleteEvent = function(element, title) {
+    if (confirm('Are you sure you want to delete this event?')) {
+        eventsArr.forEach((event, index) => {
+            if (event.day === activeDay && event.month === month + 1 && event.year === year) {
+                event.events = event.events.filter(e => e.title !== title);
+                if (event.events.length === 0) {
+                    eventsArr.splice(index, 1);
                 }
-                filterRequestsByTime();
-                alert(`Request ${id} has been removed successfully!`);
             }
-        }
+        });
+        saveEvents();
+        initCalendar();
+        updateEventDisplay(activeDay);
+    }
+};
 
-        // ========== CALENDAR FUNCTIONS ==========
-        function loadEvents() {
-            const saved = localStorage.getItem("calendarEvents");
-            if (saved) {
-                eventsArr = JSON.parse(saved);
-            }
-        }
+// ========== INITIALIZATION ==========
+document.addEventListener('DOMContentLoaded', function() {
+    // Load events from localStorage
+    loadEvents();
+    
+    // Show dashboard by default
+    showSection('dashboard');
+    
+    // Initialize calendar
+    initCalendar();
+    
+    // Display student table
+    displayStudentTable(studentData);
+    
+    // Display account and practical requests
+    displayAccountRequests(accountRequests);
+    displayPracticalRequests(practicalRequests);
+    
+    // Update notification badges
+    updateNotificationBadges();
+});
 
-        function saveEvents() {
-            localStorage.setItem("calendarEvents", JSON.stringify(eventsArr));
-        }
+// ========== CALENDAR NAVIGATION ==========
+const prevBtn = document.querySelector('.prev');
+const nextBtn = document.querySelector('.next');
 
-        function initCalendar() {
-            const firstDay = new Date(year, month, 1);
-            const lastDay = new Date(year, month + 1, 0);
-            const prevLastDay = new Date(year, month, 0);
-            const prevDays = prevLastDay.getDate();
-            const lastDate = lastDay.getDate();
-            const day = firstDay.getDay();
-            const nextDays = 7 - lastDay.getDay() - 1;
-            
-            const displayMonth = document.getElementById('displayMonth');
-            if (displayMonth) {
-                displayMonth.innerHTML = months[month] + " " + year;
-            }
-            
-            let days = "";
-            
-            // Previous month days
-            for (let x = day; x > 0; x--) {
-                days += `<div class="day-cell prev-date">${prevDays - x + 1}</div>`;
-            }
-            
-            // Current month days
-            for (let i = 1; i <= lastDate; i++) {
-                let hasEvent = false;
-                eventsArr.forEach(event => {
-                    if (event.day === i && event.month === month + 1 && event.year === year) {
-                        hasEvent = true;
-                    }
-                });
-                
-                let classes = "day-cell";
-                if (i === new Date().getDate() && year === new Date().getFullYear() && month === new Date().getMonth()) {
-                    classes += " today";
-                }
-                if (hasEvent) {
-                    classes += " event";
-                }
-                
-                days += `<div class="${classes}" data-day="${i}">${i}</div>`;
-            }
-            
-            // Next month days
-            for (let j = 1; j <= nextDays; j++) {
-                days += `<div class="day-cell next-date">${j}</div>`;
-            }
-            
-            const daysGrid = document.getElementById('daysGrid');
-            if (daysGrid) {
-                daysGrid.innerHTML = days;
-            }
-            updateActiveDay();
-            
-            if (activeDay) {
-                updateEventDisplay(activeDay);
+if (prevBtn) {
+    prevBtn.addEventListener('click', () => {
+        month--;
+        if (month < 0) {
+            month = 11;
+            year--;
+        }
+        initCalendar();
+    });
+}
+
+if (nextBtn) {
+    nextBtn.addEventListener('click', () => {
+        month++;
+        if (month > 11) {
+            month = 0;
+            year++;
+        }
+        initCalendar();
+    });
+}
+
+const todayBtn = document.getElementById('todayBtn');
+if (todayBtn) {
+    todayBtn.addEventListener('click', () => {
+        const today = new Date();
+        month = today.getMonth();
+        year = today.getFullYear();
+        initCalendar();
+        updateEventDisplay(today.getDate());
+    });
+}
+
+const gotoBtn = document.getElementById('gotoBtn');
+if (gotoBtn) {
+    gotoBtn.addEventListener('click', () => {
+        const input = document.getElementById('gotoInput').value;
+        const parts = input.split('/');
+        if (parts.length === 2) {
+            const m = parseInt(parts[0]) - 1;
+            const y = parseInt(parts[1]);
+            if (m >= 0 && m < 12 && y > 0) {
+                month = m;
+                year = y;
+                initCalendar();
             } else {
-                updateEventDisplay(new Date().getDate());
+                alert('Invalid date format. Use MM/YYYY');
             }
+        } else {
+            alert('Invalid date format. Use MM/YYYY');
         }
-
-        function updateActiveDay() {
-            const dayCells = document.querySelectorAll('.day-cell');
-            dayCells.forEach(cell => {
-                cell.addEventListener('click', function(e) {
-                    if (!this.classList.contains('prev-date') && !this.classList.contains('next-date')) {
-                        dayCells.forEach(c => c.classList.remove('active'));
-                        this.classList.add('active');
-                        
-                        const day = parseInt(this.textContent);
-                        activeDay = day;
-                        updateEventDisplay(day);
-                    }
-                });
-            });
-        }
-
-        function updateEventDisplay(day) {
-            const date = new Date(year, month, day);
-            const dayName = date.toString().split(' ')[0];
-            
-            const eventDayEl = document.getElementById('eventDay');
-            const eventDateEl = document.getElementById('eventDate');
-            
-            if (eventDayEl) {
-                eventDayEl.innerHTML = dayName;
-            }
-            if (eventDateEl) {
-                eventDateEl.innerHTML = `${day} ${months[month]} ${year}`;
-            }
-            
-            let eventsHtml = "";
-            eventsArr.forEach(event => {
-                if (event.day === day && event.month === month + 1 && event.year === year) {
-                    event.events.forEach(ev => {
-                        eventsHtml += `
-                            <div class="event-item" onclick="deleteEvent(this, '${ev.title}')">
-                                <div class="title">
-                                    <i class="fas fa-circle"></i>
-                                    <span class="event-title">${ev.title}</span>
-                                </div>
-                                <div class="event-time">${ev.time}</div>
-                                <div class="event-time" style="margin-left: 28px; font-size: 0.8rem;">${ev.details || ''}</div>
-                            </div>
-                        `;
-                    });
-                }
-            });
-            
-            if (eventsHtml === "") {
-                eventsHtml = '<div class="no-event">No events scheduled</div>';
-            }
-            
-            const eventsList = document.getElementById('eventsList');
-            if (eventsList) {
-                eventsList.innerHTML = eventsHtml;
-            }
-        }
-
-        window.deleteEvent = function(element, title) {
-            if (confirm('Are you sure you want to delete this event?')) {
-                eventsArr.forEach((event, index) => {
-                    if (event.day === activeDay && event.month === month + 1 && event.year === year) {
-                        event.events = event.events.filter(e => e.title !== title);
-                        if (event.events.length === 0) {
-                            eventsArr.splice(index, 1);
-                        }
-                    }
-                });
-                saveEvents();
-                initCalendar();
-                updateEventDisplay(activeDay);
-            }
-        };
-
-        // ========== CALENDAR NAVIGATION ==========
-        const prevBtn = document.querySelector('.prev');
-        const nextBtn = document.querySelector('.next');
-
-        if (prevBtn) {
-            prevBtn.addEventListener('click', () => {
-                month--;
-                if (month < 0) {
-                    month = 11;
-                    year--;
-                }
-                initCalendar();
-            });
-        }
-
-        if (nextBtn) {
-            nextBtn.addEventListener('click', () => {
-                month++;
-                if (month > 11) {
-                    month = 0;
-                    year++;
-                }
-                initCalendar();
-            });
-        }
-
-        const todayBtn = document.getElementById('todayBtn');
-        if (todayBtn) {
-            todayBtn.addEventListener('click', () => {
-                const today = new Date();
-                month = today.getMonth();
-                year = today.getFullYear();
-                initCalendar();
-                updateEventDisplay(today.getDate());
-            });
-        }
-
-        const gotoBtn = document.getElementById('gotoBtn');
-        if (gotoBtn) {
-            gotoBtn.addEventListener('click', () => {
-                const input = document.getElementById('gotoInput').value;
-                const parts = input.split('/');
-                if (parts.length === 2) {
-                    const m = parseInt(parts[0]) - 1;
-                    const y = parseInt(parts[1]);
-                    if (m >= 0 && m < 12 && y > 0) {
-                        month = m;
-                        year = y;
-                        initCalendar();
-                    } else {
-                        alert('Invalid date format. Use MM/YYYY');
-                    }
-                } else {
-                    alert('Invalid date format. Use MM/YYYY');
-                }
-            });
-        }
-    </script>
+    });
+}
+</script>
 </body>
 
 </html>

@@ -844,30 +844,67 @@ body {
     box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
 }
 
-/* Modal */
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
+/* Notification Badge */
+.notification-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background-color: #dc3545;
+    color: white;
+    border-radius: 50%;
+    padding: 2px 6px;
+    font-size: 11px;
+    font-weight: bold;
+    min-width: 18px;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    animation: pulse 2s infinite;
 }
 
-.modal-content {
-    background: white;
-    padding: 20px;
-    margin: 8% auto;
-    width: 60%;
-    border-radius: 8px;
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
 }
 
-.close {
-    float: right;
-    font-size: 20px;
-    cursor: pointer;
+/* Status Badge */
+.status-badge {
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    display: inline-block;
+}
+
+.status-pending {
+    background-color: #ffc107;
+    color: #000;
+}
+
+.status-approved {
+    background-color: #28a745;
+    color: #fff;
+}
+
+.status-rejected {
+    background-color: #dc3545;
+    color: #fff;
+}
+
+.status-in_progress {
+    background-color: #17a2b8;
+    color: #fff;
+}
+
+/* Request Rate Badge */
+.request-rate {
+    background: #e6f7e6;
+    color: #22c55e;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 12px;
+    display: inline-block;
 }
 
 /* Responsive */
@@ -975,7 +1012,6 @@ body {
 }
     </style>
 
-
     <!-- Keep original favicon -->
     <link rel="icon" type="image/svg+xml" href="../assets/resources/flask.svg">
 </head>
@@ -1008,7 +1044,7 @@ body {
                 <button class="btn d-lg-none text-dark" onclick="toggleSidebar()">
                     <i class="bi bi-list fs-3"></i>
                 </button>
-                <h5 class="fw-bold mb-0" style="background: linear-gradient(135deg, #22c55e, #16a34a); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Technical officer Dashboard</h5>
+                <h5 class="fw-bold mb-0" style="background: linear-gradient(135deg, #22c55e, #16a34a); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Technical Officer Dashboard</h5>
             </div>
             <div class="d-flex align-items-center gap-3">
                 <span class="fw-semibold d-none d-sm-block" style="color: #166534;">Subodhi</span>
@@ -1152,34 +1188,7 @@ body {
                                 </tr>
                             </thead>
                             <tbody id="equipmentTableBody">
-                                <!-- Table rows remain the same -->
-                                <tr>
-                                    <td><img src="https://cdn-icons-png.flaticon.com/512/2941/2941514.png" style="width: 50px; height: 50px; object-fit: contain;"></td>
-                                    <td>MIC-001</td>
-                                    <td>Microscope</td>
-                                    <td><span class="badge" style="background: #22c55e; color: white;">4/8</span></td>
-                                    <td><span class="badge bg-warning">2</span></td>
-                                    <td>
-                                        <div class="progress-bar" style="width: 100px; display: inline-block;">
-                                            <div class="progress-fill" style="width: 75%"></div>
-                                        </div>
-                                        75%
-                                    </td>
-                                    <td>
-                                        <div class="action-buttons">
-                                            <button class="btn-view" onclick="viewEquipment('MIC-001')" title="View Details">
-                                                <i class="bi bi-eye"></i>
-                                            </button>
-                                            <button class="btn-edit" onclick="editEquipment('MIC-001')" title="Edit">
-                                                <i class="bi bi-pencil-square"></i>
-                                            </button>
-                                            <button class="btn-remove" onclick="removeEquipment('MIC-001')" title="Remove">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <!-- ... rest of the table rows ... -->
+                                <!-- Data will be populated by JavaScript -->
                             </tbody>
                         </table>
                     </div>
@@ -1207,29 +1216,40 @@ body {
                 </div>
             </div>
 
-            <!-- Requests Section -->
+            <!-- Requests Section - Simplified for Technical Officer -->
             <div id="activitySection" style="display: none;">
                 <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Requests</h3>
 
                 <div class="card p-4">
-                    <!-- Time Range Filter -->
-                    <div class="filter-section" style="margin-bottom: 20px;">
+                    <!-- Filter Section with Time Range and Status -->
+                    <div class="filter-section" style="margin-bottom: 20px; display: flex; gap: 15px; flex-wrap: wrap;">
+                        <!-- Time Range Filter -->
                         <select class="filter-select" id="timeRangeFilter" onchange="filterRequestsByTime()" style="min-width: 200px;">
                             <option value="all">All Time</option>
                             <option value="daily">Daily</option>
                             <option value="weekly">Weekly</option>
                             <option value="monthly">Monthly</option>
                         </select>
+
+                        <!-- Status Filter -->
+                        <select class="filter-select" id="statusFilter" onchange="filterRequestsByStatus()" style="min-width: 200px;">
+                            <option value="all">All Status</option>
+                            <option value="pending">Pending</option>
+                            <option value="approved">Checked</option>
+                            <option value="rejected">Rejected</option>
+                        </select>
                     </div>
 
-                    <!-- Requests Table -->
+                    <!-- Requests Table - Simplified Columns -->
                     <div class="table-responsive mt-3">
                         <table class="user-table">
                             <thead>
                                 <tr>
                                     <th>Request ID</th>
                                     <th>Date & Time</th>
-                                    <th></th>
+                                    <th>Student ID</th>
+                                    <th>Lab</th>
+                                    <th>Status</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
@@ -1256,6 +1276,9 @@ body {
                             <!-- Content will be populated by JavaScript -->
                         </div>
                         <div class="modal-footer">
+                            <button type="button" class="btn btn-danger" onclick="rejectRequestFromModal()" id="rejectModalBtn">
+                                <i class="bi bi-x-circle me-2"></i>Reject
+                            </button>
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                         </div>
                     </div>
@@ -1265,12 +1288,10 @@ body {
         </div> <!-- End content-area -->
     </div> <!-- End main-content -->
 
-        <!-- Scripts -->
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
-        <script>
-          
-
+    <script>
 // ========== EQUIPMENT TABLE DATA ==========
 const equipmentDataTable = [{
     code: 'MIC-001',
@@ -1369,119 +1390,113 @@ const equipmentDataTable = [{
     description: 'Digital water bath, 20L capacity'
 }];
 
-// ========== SUPERVISOR REQUESTS DATA ==========
-const supervisorRequests = [{
-    id: 'REQ001',
-    dateTime: '2026-02-20 10:30 AM',
-    timestamp: new Date('2026-02-20T10:30:00'),
-    studentName: 'John Doe',
-    studentId: 'SCI001',
-    equipment: 'Microscope (2)',
-    lab: 'Lab 01',
-    duration: '2 hours',
-    purpose: 'Final Year Research Project',
-    status: 'pending',
-    supervisor: 'Dr. Kamal Perera',
-    notes: 'Awaiting supervisor approval'
-},
-{
-    id: 'REQ002',
-    dateTime: '2026-02-20 11:00 AM',
-    timestamp: new Date('2026-02-20T11:00:00'),
-    studentName: 'Jane Smith',
-    studentId: 'SCI002',
-    equipment: 'Centrifuge (1)',
-    lab: 'Research Lab',
-    duration: '3 hours',
-    purpose: 'DNA Extraction',
-    status: 'approved',
-    supervisor: 'Prof. Malini Silva',
-    notes: 'Approved for research'
-},
-{
-    id: 'REQ003',
-    dateTime: '2026-02-19 09:15 AM',
-    timestamp: new Date('2026-02-19T09:15:00'),
-    studentName: 'Mike Johnson',
-    studentId: 'SCI003',
-    equipment: 'Incubator (1)',
-    lab: 'Lab 02',
-    duration: '4 hours',
-    purpose: 'Bacterial Culture',
-    status: 'rejected',
-    supervisor: 'Dr. Kamal Perera',
-    notes: 'Equipment under maintenance'
-},
-{
-    id: 'REQ004',
-    dateTime: '2026-02-19 04:30 PM',
-    timestamp: new Date('2026-02-19T16:30:00'),
-    studentName: 'Sarah Wilson',
-    studentId: 'SCI004',
-    equipment: 'Autoclave (1)',
-    lab: 'Lab 01',
-    duration: '1.5 hours',
-    purpose: 'Media Sterilization',
-    status: 'pending',
-    supervisor: 'Dr. Nuwan Jayawardena',
-    notes: 'Waiting for approval'
-},
-{
-    id: 'REQ005',
-    dateTime: '2026-02-18 02:00 PM',
-    timestamp: new Date('2026-02-18T14:00:00'),
-    studentName: 'Pathum Perera',
-    studentId: 'SCI005',
-    equipment: 'pH Meter (1)',
-    lab: 'Research Lab',
-    duration: '2 hours',
-    purpose: 'Solution Preparation',
-    status: 'approved',
-    supervisor: 'Prof. Malini Silva',
-    notes: 'Approved'
-},
-{
-    id: 'REQ006',
-    dateTime: '2026-02-17 03:45 PM',
-    timestamp: new Date('2026-02-17T15:45:00'),
-    studentName: 'Nimali Fernando',
-    studentId: 'SCI006',
-    equipment: 'Water Bath (1)',
-    lab: 'Lab 02',
-    duration: '2 hours',
-    purpose: 'Enzyme Study',
-    status: 'rejected',
-    supervisor: 'Dr. Kamal Perera',
-    notes: 'Schedule conflict'
-},
-{
-    id: 'REQ007',
-    dateTime: '2026-02-15 09:30 AM',
-    timestamp: new Date('2026-02-15T09:30:00'),
-    studentName: 'Tharindu Silva',
-    studentId: 'SCI007',
-    equipment: 'Microscope (1)',
-    lab: 'Lab 01',
-    duration: '3 hours',
-    purpose: 'Cell Observation',
-    status: 'approved',
-    supervisor: 'Dr. Nuwan Jayawardena',
-    notes: 'Approved'
-},
-{
-    id: 'REQ008',
-    dateTime: '2026-02-10 01:00 PM',
-    timestamp: new Date('2026-02-10T13:00:00'),
-    studentName: 'Dilini Perera',
-    studentId: 'SCI008',
-    equipment: 'Centrifuge (1)',
-    lab: 'Research Lab',
-    duration: '2 hours',
-    purpose: 'Sample Preparation',
-    status: 'approved',
-    supervisor: 'Prof. Malini Silva',
-    notes: 'Completed'
-}];
+// ========== REQUESTS DATA ==========
+const requests = [
+    {
+        id: 'REQ001',
+        dateTime: '2026-02-20 10:30 AM',
+        timestamp: new Date('2026-02-20T10:30:00'),
+        studentName: 'John Doe',
+        studentId: 'SCI001',
+        lab: 'Lab 01',
+        duration: '2 hours',
+        purpose: 'Final Year Research Project',
+        status: 'pending',
+        supervisor: 'Dr. Kamal Perera',
+        notes: 'Awaiting supervisor approval'
+    },
+    {
+        id: 'REQ002',
+        dateTime: '2026-02-20 11:00 AM',
+        timestamp: new Date('2026-02-20T11:00:00'),
+        studentName: 'Jane Smith',
+        studentId: 'SCI002',
+        lab: 'Research Lab',
+        duration: '3 hours',
+        purpose: 'DNA Extraction',
+        status: 'approved',
+        supervisor: 'Prof. Malini Silva',
+        notes: 'Approved for research'
+    },
+    {
+        id: 'REQ003',
+        dateTime: '2026-02-19 09:15 AM',
+        timestamp: new Date('2026-02-19T09:15:00'),
+        studentName: 'Mike Johnson',
+        studentId: 'SCI003',
+        lab: 'Lab 02',
+        duration: '4 hours',
+        purpose: 'Bacterial Culture',
+        status: 'rejected',
+        supervisor: 'Dr. Kamal Perera',
+        notes: 'Equipment under maintenance'
+    },
+    {
+        id: 'REQ004',
+        dateTime: '2026-02-19 04:30 PM',
+        timestamp: new Date('2026-02-19T16:30:00'),
+        studentName: 'Sarah Wilson',
+        studentId: 'SCI004',
+        lab: 'Lab 01',
+        duration: '1.5 hours',
+        purpose: 'Media Sterilization',
+        status: 'pending',
+        supervisor: 'Dr. Nuwan Jayawardena',
+        notes: 'Waiting for approval'
+    },
+    {
+        id: 'REQ005',
+        dateTime: '2026-02-18 02:00 PM',
+        timestamp: new Date('2026-02-18T14:00:00'),
+        studentName: 'Pathum Perera',
+        studentId: 'SCI005',
+        lab: 'Research Lab',
+        duration: '2 hours',
+        purpose: 'Solution Preparation',
+        status: 'approved',
+        supervisor: 'Prof. Malini Silva',
+        notes: 'Approved'
+    },
+    {
+        id: 'REQ006',
+        dateTime: '2026-02-17 03:45 PM',
+        timestamp: new Date('2026-02-17T15:45:00'),
+        studentName: 'Nimali Fernando',
+        studentId: 'SCI006',
+        lab: 'Lab 02',
+        duration: '2 hours',
+        purpose: 'Enzyme Study',
+        status: 'rejected',
+        supervisor: 'Dr. Kamal Perera',
+        notes: 'Schedule conflict'
+    },
+    {
+        id: 'REQ007',
+        dateTime: '2026-02-15 09:30 AM',
+        timestamp: new Date('2026-02-15T09:30:00'),
+        studentName: 'Tharindu Silva',
+        studentId: 'SCI007',
+        lab: 'Lab 01',
+        duration: '3 hours',
+        purpose: 'Cell Observation',
+        status: 'approved',
+        supervisor: 'Dr. Nuwan Jayawardena',
+        notes: 'Approved'
+    },
+    {
+        id: 'REQ008',
+        dateTime: '2026-02-10 01:00 PM',
+        timestamp: new Date('2026-02-10T13:00:00'),
+        studentName: 'Dilini Perera',
+        studentId: 'SCI008',
+        lab: 'Research Lab',
+        duration: '2 hours',
+        purpose: 'Sample Preparation',
+        status: 'approved',
+        supervisor: 'Prof. Malini Silva',
+        notes: 'Completed'
+    }
+];
 
 // ========== CALENDAR VARIABLES ==========
 let activeDay;
@@ -1492,28 +1507,20 @@ const months = [
     "July", "August", "September", "October", "November", "December"
 ];
 let eventsArr = [];
+let currentRequestId = null;
 
-// ========== INITIALIZATION ==========
-document.addEventListener('DOMContentLoaded', function() {
-    // Load events from localStorage
-    loadEvents();
-    
-    // Show dashboard by default
-    showSection('dashboard');
-    
-    // Initialize calendar
-    initCalendar();
-    
-    // Initialize equipment table if equipment section exists
-    if (document.getElementById('equipmentSection')) {
-        displayEquipmentTable(equipmentDataTable);
-    }
-    
-    // Initialize request table if activity section exists
-    if (document.getElementById('activitySection')) {
-        filterRequestsByTime();
-    }
-});
+// ========== DASHBOARD FUNCTIONS ==========
+function viewPendingRequests() {
+    showSection('activity');
+    document.getElementById('statusFilter').value = 'pending';
+    filterRequestsByStatus();
+}
+
+function viewTodayPracticals() {
+    showSection('activity');
+    document.getElementById('timeRangeFilter').value = 'daily';
+    filterRequestsByStatus();
+}
 
 // ========== SIDEBAR FUNCTIONS ==========
 function toggleSidebar() {
@@ -1563,11 +1570,10 @@ function displayEquipmentTable(equipment) {
     equipment.forEach(item => {
         const row = document.createElement('tr');
         
-        // Determine badge color based on availability ratio
         const ratio = item.available / item.total;
-        let badgeColor = '#22c55e'; // green
-        if (ratio < 0.3) badgeColor = '#ef4444'; // red
-        else if (ratio < 0.6) badgeColor = '#f59e0b'; // orange
+        let badgeColor = '#22c55e';
+        if (ratio < 0.3) badgeColor = '#ef4444';
+        else if (ratio < 0.6) badgeColor = '#f59e0b';
         
         row.innerHTML = `
             <td><img src="${item.image}" style="width: 50px; height: 50px; object-fit: contain;"></td>
@@ -1605,7 +1611,6 @@ function viewEquipment(code) {
     
     const detailsContent = document.getElementById('equipmentDetailsContent');
     
-    // Format dates
     const purchaseDate = new Date(equipment.purchaseDate).toLocaleDateString('en-US', {
         year: 'numeric', month: 'long', day: 'numeric'
     });
@@ -1616,7 +1621,6 @@ function viewEquipment(code) {
         year: 'numeric', month: 'long', day: 'numeric'
     });
     
-    // Check if next maintenance is overdue
     const today = new Date();
     const nextDate = new Date(equipment.nextMaintenance);
     const isOverdue = nextDate < today;
@@ -1684,47 +1688,60 @@ function removeEquipment(code) {
     }
 }
 
-// ========== REQUEST FUNCTIONS ==========
-function filterRequestsByTime() {
+// ========== REQUEST FILTER FUNCTIONS ==========
+
+// Filter by status for requests
+function filterRequestsByStatus() {
+    const statusFilter = document.getElementById('statusFilter').value;
     const timeRange = document.getElementById('timeRangeFilter').value;
     const today = new Date();
+    
     let filtered = [];
     
     switch (timeRange) {
         case 'daily':
-            filtered = supervisorRequests.filter(item =>
+            filtered = requests.filter(item =>
                 item.timestamp.toDateString() === today.toDateString()
             );
             break;
         case 'weekly':
             const weekAgo = new Date();
             weekAgo.setDate(today.getDate() - 7);
-            filtered = supervisorRequests.filter(item => item.timestamp >= weekAgo);
+            filtered = requests.filter(item => item.timestamp >= weekAgo);
             break;
         case 'monthly':
             const monthAgo = new Date();
             monthAgo.setDate(today.getDate() - 30);
-            filtered = supervisorRequests.filter(item => item.timestamp >= monthAgo);
+            filtered = requests.filter(item => item.timestamp >= monthAgo);
             break;
         case 'all':
         default:
-            filtered = supervisorRequests;
+            filtered = [...requests];
             break;
+    }
+    
+    if (statusFilter !== 'all') {
+        filtered = filtered.filter(item => item.status === statusFilter);
     }
     
     displayRequestTable(filtered);
 }
 
-function displayRequestTable(requests) {
+// Update existing filterRequestsByTime function
+function filterRequestsByTime() {
+    filterRequestsByStatus();
+}
+
+// Display request table with simplified columns
+function displayRequestTable(requestsList) {
     const tableBody = document.getElementById('requestListBody');
     if (!tableBody) return;
     
     tableBody.innerHTML = '';
     
-    // Sort by date (newest first)
-    requests.sort((a, b) => b.timestamp - a.timestamp);
+    requestsList.sort((a, b) => b.timestamp - a.timestamp);
     
-    requests.forEach(item => {
+    requestsList.forEach(item => {
         const row = document.createElement('tr');
         
         let statusClass = '';
@@ -1748,14 +1765,16 @@ function displayRequestTable(requests) {
         row.innerHTML = `
             <td>${item.id}</td>
             <td>${item.dateTime}</td>
+            <td>${item.studentId}</td>
+            <td>${item.lab}</td>
             <td><span class="badge ${statusClass}">${statusText}</span></td>
             <td>
                 <div class="action-buttons">
                     <button class="btn-view" onclick="viewRequest('${item.id}')" title="View Details">
                         <i class="bi bi-eye"></i>
                     </button>
-                    <button class="btn-remove" onclick="removeRequest('${item.id}')" title="Remove">
-                        <i class="bi bi-trash"></i>
+                    <button class="btn-remove" onclick="rejectRequest('${item.id}')" title="Reject">
+                        <i class="bi bi-x-circle"></i>
                     </button>
                 </div>
             </td>
@@ -1763,17 +1782,19 @@ function displayRequestTable(requests) {
         tableBody.appendChild(row);
     });
     
-    if (requests.length === 0) {
+    if (requestsList.length === 0) {
         const row = document.createElement('tr');
-        row.innerHTML = `<td colspan="4" class="text-center">No requests found for this time period</td>`;
+        row.innerHTML = `<td colspan="6" class="text-center">No requests found</td>`;
         tableBody.appendChild(row);
     }
 }
 
+// View request details
 function viewRequest(id) {
-    const request = supervisorRequests.find(item => item.id === id);
+    const request = requests.find(item => item.id === id);
     if (!request) return;
     
+    currentRequestId = id;
     const detailsContent = document.getElementById('requestDetailsContent');
     
     let statusBadge = '';
@@ -1802,7 +1823,6 @@ function viewRequest(id) {
                     <tr><th>Student:</th><td>${request.studentName} (${request.studentId})</td></tr>
                     <tr><th>Supervisor:</th><td>${request.supervisor}</td></tr>
                     <tr><th>Lab Location:</th><td>${request.lab}</td></tr>
-                    <tr><th>Equipment:</th><td>${request.equipment}</td></tr>
                     <tr><th>Duration:</th><td>${request.duration}</td></tr>
                     <tr><th>Purpose:</th><td>${request.purpose}</td></tr>
                     <tr><th>Notes:</th><td>${request.notes}</td></tr>
@@ -1811,17 +1831,36 @@ function viewRequest(id) {
         </div>
     `;
     
+    // Show/hide reject button based on status
+    const rejectBtn = document.getElementById('rejectModalBtn');
+    if (rejectBtn) {
+        if (request.status === 'pending') {
+            rejectBtn.style.display = 'inline-block';
+        } else {
+            rejectBtn.style.display = 'none';
+        }
+    }
+    
     new bootstrap.Modal(document.getElementById('requestDetailsModal')).show();
 }
 
-function removeRequest(id) {
-    if (confirm(`Are you sure you want to remove request ${id}?`)) {
-        const index = supervisorRequests.findIndex(item => item.id === id);
+// Reject request from table
+function rejectRequest(id) {
+    if (confirm(`Are you sure you want to reject request ${id}?`)) {
+        const index = requests.findIndex(item => item.id === id);
         if (index !== -1) {
-            supervisorRequests.splice(index, 1);
+            requests[index].status = 'rejected';
+            filterRequestsByTime();
+            alert(`Request ${id} has been rejected!`);
         }
-        filterRequestsByTime();
-        alert(`Request ${id} has been removed successfully!`);
+    }
+}
+
+// Reject request from modal
+function rejectRequestFromModal() {
+    if (currentRequestId) {
+        rejectRequest(currentRequestId);
+        bootstrap.Modal.getInstance(document.getElementById('requestDetailsModal')).hide();
     }
 }
 
@@ -1853,12 +1892,10 @@ function initCalendar() {
     
     let days = "";
     
-    // Previous month days
     for (let x = day; x > 0; x--) {
         days += `<div class="day-cell prev-date">${prevDays - x + 1}</div>`;
     }
     
-    // Current month days
     for (let i = 1; i <= lastDate; i++) {
         let hasEvent = false;
         eventsArr.forEach(event => {
@@ -1878,7 +1915,6 @@ function initCalendar() {
         days += `<div class="${classes}" data-day="${i}">${i}</div>`;
     }
     
-    // Next month days
     for (let j = 1; j <= nextDays; j++) {
         days += `<div class="day-cell next-date">${j}</div>`;
     }
@@ -2027,7 +2063,22 @@ if (gotoBtn) {
         }
     });
 }
-        </script>
+
+// ========== INITIALIZATION ==========
+document.addEventListener('DOMContentLoaded', function() {
+    loadEvents();
+    showSection('dashboard');
+    initCalendar();
+    
+    if (document.getElementById('equipmentTableBody')) {
+        displayEquipmentTable(equipmentDataTable);
+    }
+    
+    if (document.getElementById('requestListBody')) {
+        filterRequestsByStatus();
+    }
+});
+</script>
 </body>
 
 </html>
