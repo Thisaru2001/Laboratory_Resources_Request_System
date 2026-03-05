@@ -1183,6 +1183,502 @@ require_once '../config/database.php';
             background: linear-gradient(135deg, #0d6efd, #0b5ed7) !important;
         }
 
+
+
+        /* Add to your existing CSS */
+.maintenance-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.maintenance-modal.active {
+    display: flex;
+}
+
+.maintenance-modal-content {
+    background: white;
+    border-radius: 20px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+    from {
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.maintenance-modal-header {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+    padding: 20px 25px;
+    border-radius: 20px 20px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.maintenance-modal-header h3 {
+    margin: 0;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.maintenance-modal-header .close-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.maintenance-modal-header .close-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: rotate(90deg);
+}
+
+.maintenance-modal-body {
+    padding: 25px;
+}
+
+.email-section {
+    background: #f8f9fa;
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.email-field {
+    margin-bottom: 15px;
+}
+
+.email-field label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #166534;
+    font-size: 0.95rem;
+}
+
+.email-field input[type="email"] {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 14px;
+    transition: all 0.3s;
+}
+
+.email-field input[type="email"]:focus {
+    border-color: #f59e0b;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+}
+
+.email-format-section {
+    background: white;
+    border-radius: 12px;
+    padding: 15px;
+    margin: 20px 0;
+    border: 1px solid #e0e0e0;
+}
+
+.email-format-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.email-format-header h6 {
+    margin: 0;
+    font-weight: 600;
+    color: #166534;
+}
+
+.edit-format-btn {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.edit-format-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+}
+
+.email-format-preview {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 10px;
+    font-family: monospace;
+    font-size: 13px;
+    color: #333;
+    white-space: pre-wrap;
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+.email-format-edit {
+    display: none;
+}
+
+.email-format-edit.active {
+    display: block;
+}
+
+.email-format-edit textarea {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    font-family: monospace;
+    font-size: 13px;
+    min-height: 100px;
+    resize: vertical;
+}
+
+.equipment-selection-section {
+    background: #f8f9fa;
+    border-radius: 15px;
+    padding: 20px;
+    margin: 20px 0;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.section-header h6 {
+    margin: 0;
+    font-weight: 600;
+    color: #166534;
+}
+
+.add-equipment-btn {
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.add-equipment-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(34, 197, 94, 0.3);
+}
+
+.selected-equipment-list {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.equipment-item {
+    background: white;
+    border-radius: 10px;
+    padding: 12px 15px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid #e0e0e0;
+    transition: all 0.3s;
+}
+
+.equipment-item:hover {
+    border-color: #f59e0b;
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.1);
+}
+
+.equipment-item-info {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.equipment-item-name {
+    font-weight: 600;
+    color: #333;
+}
+
+.equipment-item-details {
+    display: flex;
+    gap: 15px;
+    font-size: 12px;
+    color: #666;
+}
+
+.equipment-item-qty {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.qty-input {
+    width: 60px;
+    padding: 4px 8px;
+    border: 1px solid #e0e0e0;
+    border-radius: 5px;
+    text-align: center;
+}
+
+.remove-equipment-btn {
+    background: none;
+    border: none;
+    color: #ef4444;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 5px;
+    transition: all 0.3s;
+}
+
+.remove-equipment-btn:hover {
+    transform: scale(1.2);
+    color: #dc2626;
+}
+
+.company-section {
+    background: #f8f9fa;
+    border-radius: 15px;
+    padding: 20px;
+    margin: 20px 0;
+}
+
+.company-list {
+    margin-top: 15px;
+}
+
+.company-tag {
+    background: linear-gradient(135deg, #f59e0b20, #d9770620);
+    border: 1px solid #f59e0b;
+    color: #d97706;
+    padding: 8px 15px;
+    border-radius: 30px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 8px 8px 0;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.company-tag i {
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.company-tag i:hover {
+    color: #dc2626;
+    transform: scale(1.2);
+}
+
+.add-company-input {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.add-company-input input {
+    flex: 1;
+    padding: 10px 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 13px;
+}
+
+.add-company-input input:focus {
+    border-color: #f59e0b;
+    outline: none;
+}
+
+.add-company-btn {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+    border: none;
+    padding: 0 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    white-space: nowrap;
+}
+
+.add-company-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(245, 158, 11, 0.3);
+}
+
+.maintenance-modal-footer {
+    padding: 20px 25px;
+    border-top: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.btn-cancel {
+    background: linear-gradient(135deg, #6c757d, #5a6268);
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-send {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-cancel:hover, .btn-send:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.btn-send:hover {
+    box-shadow: 0 5px 15px rgba(245, 158, 11, 0.4);
+}
+
+/* Equipment Selection Modal (Broken List) */
+.equipment-select-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+}
+
+.equipment-select-modal.active {
+    display: flex;
+}
+
+.equipment-select-content {
+    background: white;
+    border-radius: 20px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.equipment-select-header {
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: white;
+    padding: 15px 20px;
+    border-radius: 20px 20px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.equipment-list {
+    padding: 20px;
+}
+
+.equipment-select-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    border-bottom: 1px solid #f0f0f0;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.equipment-select-item:hover {
+    background: rgba(34, 197, 94, 0.05);
+}
+
+.equipment-select-item.selected {
+    background: rgba(245, 158, 11, 0.1);
+    border-left: 3px solid #f59e0b;
+}
+
+.equipment-select-info h6 {
+    margin: 0 0 5px 0;
+    font-weight: 600;
+}
+
+.equipment-select-info p {
+    margin: 0;
+    font-size: 12px;
+    color: #666;
+}
+
+.equipment-select-qty {
+    width: 70px;
+    padding: 5px;
+    border: 1px solid #e0e0e0;
+    border-radius: 5px;
+    text-align: center;
+}
+
+.equipment-select-footer {
+    padding: 15px 20px;
+    border-top: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
         .badge.bg-secondary {
             background: linear-gradient(135deg, #6c757d, #5a6268) !important;
         }
@@ -1625,7 +2121,7 @@ require_once '../config/database.php';
         }
 
 
-        .modal {
+        /* .modal {
             display: none;
             position: fixed;
             z-index: 1000;
@@ -1648,7 +2144,7 @@ require_once '../config/database.php';
             float: right;
             font-size: 20px;
             cursor: pointer;
-        }
+        } */
 
         .filter-buttons {
             margin-bottom: 15px;
@@ -1695,6 +2191,536 @@ require_once '../config/database.php';
             transform: translateY(-2px);
             box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
         }
+
+
+        /* Add this after your existing CSS - around line 860 */
+
+/* Maintenance Modal Styles */
+.maintenance-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.maintenance-modal.active {
+    display: flex;
+}
+
+.maintenance-modal-content {
+    background: white;
+    border-radius: 20px;
+    width: 90%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: modalSlideIn 0.3s ease;
+}
+
+@keyframes modalSlideIn {
+    from {
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.maintenance-modal-header {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+    padding: 20px 25px;
+    border-radius: 20px 20px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.maintenance-modal-header h3 {
+    margin: 0;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.maintenance-modal-header .close-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.maintenance-modal-header .close-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: rotate(90deg);
+}
+
+.maintenance-modal-body {
+    padding: 25px;
+}
+
+.email-section {
+    background: #f8f9fa;
+    border-radius: 15px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.email-field {
+    margin-bottom: 15px;
+}
+
+.email-field label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #166534;
+    font-size: 0.95rem;
+}
+
+.email-field input[type="email"] {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 14px;
+    transition: all 0.3s;
+}
+
+.email-field input[type="email"]:focus {
+    border-color: #f59e0b;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+}
+
+.email-format-section {
+    background: white;
+    border-radius: 12px;
+    padding: 15px;
+    margin: 20px 0;
+    border: 1px solid #e0e0e0;
+}
+
+.email-format-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.email-format-header h6 {
+    margin: 0;
+    font-weight: 600;
+    color: #166534;
+}
+
+.edit-format-btn {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.edit-format-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+}
+
+.email-format-preview {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 10px;
+    font-family: monospace;
+    font-size: 13px;
+    color: #333;
+    white-space: pre-wrap;
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+.email-format-edit {
+    display: none;
+}
+
+.email-format-edit.active {
+    display: block;
+}
+
+.email-format-edit textarea {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    font-family: monospace;
+    font-size: 13px;
+    min-height: 100px;
+    resize: vertical;
+}
+
+.equipment-selection-section {
+    background: #f8f9fa;
+    border-radius: 15px;
+    padding: 20px;
+    margin: 20px 0;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.section-header h6 {
+    margin: 0;
+    font-weight: 600;
+    color: #166534;
+}
+
+.add-equipment-btn {
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.add-equipment-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(34, 197, 94, 0.3);
+}
+
+.selected-equipment-list {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.equipment-item {
+    background: white;
+    border-radius: 10px;
+    padding: 12px 15px;
+    margin-bottom: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid #e0e0e0;
+    transition: all 0.3s;
+}
+
+.equipment-item:hover {
+    border-color: #f59e0b;
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.1);
+}
+
+.equipment-item-info {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.equipment-item-name {
+    font-weight: 600;
+    color: #333;
+}
+
+.equipment-item-details {
+    display: flex;
+    gap: 15px;
+    font-size: 12px;
+    color: #666;
+}
+
+.equipment-item-qty {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.qty-input {
+    width: 60px;
+    padding: 4px 8px;
+    border: 1px solid #e0e0e0;
+    border-radius: 5px;
+    text-align: center;
+}
+
+.remove-equipment-btn {
+    background: none;
+    border: none;
+    color: #ef4444;
+    cursor: pointer;
+    font-size: 16px;
+    padding: 5px;
+    transition: all 0.3s;
+}
+
+.remove-equipment-btn:hover {
+    transform: scale(1.2);
+    color: #dc2626;
+}
+
+.company-section {
+    background: #f8f9fa;
+    border-radius: 15px;
+    padding: 20px;
+    margin: 20px 0;
+}
+
+.company-list {
+    margin-top: 15px;
+}
+
+.company-tag {
+    background: linear-gradient(135deg, #f59e0b20, #d9770620);
+    border: 1px solid #f59e0b;
+    color: #d97706;
+    padding: 8px 15px;
+    border-radius: 30px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 8px 8px 0;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.company-tag i {
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.company-tag i:hover {
+    color: #dc2626;
+    transform: scale(1.2);
+}
+
+.add-company-input {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.add-company-input input {
+    flex: 1;
+    padding: 10px 12px;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 13px;
+}
+
+.add-company-input input:focus {
+    border-color: #f59e0b;
+    outline: none;
+}
+
+.add-company-btn {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+    border: none;
+    padding: 0 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    white-space: nowrap;
+}
+
+.add-company-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(245, 158, 11, 0.3);
+}
+
+.maintenance-modal-footer {
+    padding: 20px 25px;
+    border-top: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.btn-cancel {
+    background: linear-gradient(135deg, #6c757d, #5a6268);
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-send {
+    background: linear-gradient(135deg, #f59e0b, #d97706);
+    color: white;
+    border: none;
+    padding: 12px 30px;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-cancel:hover, .btn-send:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+.btn-send:hover {
+    box-shadow: 0 5px 15px rgba(245, 158, 11, 0.4);
+}
+
+/* Equipment Selection Modal */
+.equipment-select-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+}
+
+.equipment-select-modal.active {
+    display: flex;
+}
+
+.equipment-select-content {
+    background: white;
+    border-radius: 20px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.equipment-select-header {
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: white;
+    padding: 15px 20px;
+    border-radius: 20px 20px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.equipment-list {
+    padding: 20px;
+}
+
+.equipment-select-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    border-bottom: 1px solid #f0f0f0;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.equipment-select-item:hover {
+    background: rgba(34, 197, 94, 0.05);
+}
+
+.equipment-select-item.selected {
+    background: rgba(245, 158, 11, 0.1);
+    border-left: 3px solid #f59e0b;
+}
+
+.equipment-select-info h6 {
+    margin: 0 0 5px 0;
+    font-weight: 600;
+}
+
+.equipment-select-info p {
+    margin: 0;
+    font-size: 12px;
+    color: #666;
+}
+
+.equipment-select-qty {
+    width: 70px;
+    padding: 5px;
+    border: 1px solid #e0e0e0;
+    border-radius: 5px;
+    text-align: center;
+}
+
+.equipment-select-footer {
+    padding: 15px 20px;
+    border-top: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.company-select {
+    width: 100%;
+    padding: 6px 10px;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 12px;
+    margin-top: 5px;
+    background-color: white;
+    cursor: pointer;
+}
+
+.company-select:focus {
+    border-color: #f59e0b;
+    outline: none;
+}
+
+.company-badge {
+    background: linear-gradient(135deg, #f59e0b20, #d9770620);
+    color: #d97706;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-left: 8px;
+}
+
+.equipment-item-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+}
 
         /* Activate Button (Green) */
         .btn-activate {
@@ -2022,34 +3048,34 @@ require_once '../config/database.php';
                             <h3 class="text-warning"><?php echo $pending_count; ?></h3>
                         </div>
                     </div>
-                   <div class="col-md-3 mb-3">
-    <?php
-    // Get today's date in the same format as your database
-    $today = date('Y-m-d'); // Format: 2024-01-15
-    
-    // Count reservations for today
-    $today_query = "SELECT COUNT(*) as today_count FROM reservation WHERE DATE(request_date) = ?";
-    $types = "s";
-    $params = [$today];
-    
-    $today_result = Database::search($today_query, $types, $params);
-    $today_count = 0;
-    
-    if ($today_result && $today_result->num_rows > 0) {
-        $row = $today_result->fetch_assoc();
-        $today_count = $row['today_count'];
-    }
-    ?>
-    
-    <div class="card p-3 text-center">
-        <h6 class="text-muted">Today's Practicals
-            <button class="btn btn-sm btn-outline-primary p-1" onclick="viewPendingRequests()" style="line-height: 1;">
-                <i class="bi bi-eye"></i>
-            </button>
-        </h6>
-        <h3 class="text-info"><?php echo $today_count; ?></h3>
-    </div>
-</div>
+                    <div class="col-md-3 mb-3">
+                        <?php
+                        // Get today's date in the same format as your database
+                        $today = date('Y-m-d'); // Format: 2024-01-15
+
+                        // Count reservations for today
+                        $today_query = "SELECT COUNT(*) as today_count FROM reservation WHERE DATE(request_date) = ?";
+                        $types = "s";
+                        $params = [$today];
+
+                        $today_result = Database::search($today_query, $types, $params);
+                        $today_count = 0;
+
+                        if ($today_result && $today_result->num_rows > 0) {
+                            $row = $today_result->fetch_assoc();
+                            $today_count = $row['today_count'];
+                        }
+                        ?>
+
+                        <div class="card p-3 text-center">
+                            <h6 class="text-muted">Today's Practicals
+                                <button class="btn btn-sm btn-outline-primary p-1" onclick="viewPendingRequests()" style="line-height: 1;">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </h6>
+                            <h3 class="text-info"><?php echo $today_count; ?></h3>
+                        </div>
+                    </div>
                     <!-- <div class="col-md-3 mb-3">
                         <div class="card p-3 text-center">
                             <h6 class="text-muted">Total Equipment</h6>
@@ -2058,33 +3084,33 @@ require_once '../config/database.php';
                     </div> -->
                     <div class="col-md-3 mb-3">
                         <div class="card p-3 text-center">
-    <?php
-    // Count maintenance records with "Inprogress" status
-    $maintenance_query = "SELECT COUNT(equipment_maintenance.id) as maintenance_count 
+                            <?php
+                            // Count maintenance records with "Inprogress" status
+                            $maintenance_query = "SELECT COUNT(equipment_maintenance.id) as maintenance_count 
                           FROM equipment_maintenance 
                           INNER JOIN status_of_maintenance ON equipment_maintenance.status_of_maintenance_id = status_of_maintenance.id 
                           WHERE status_of_maintenance.status = ?";
-    
-    $types = "s";
-    $params = ["In Progress"]; // or "In Progress" depending on your exact value
-    
-    $maintenance_result = Database::search($maintenance_query, $types, $params);
-    $maintenance_count = 0;
-    
-    if ($maintenance_result && $maintenance_result->num_rows > 0) {
-        $row = $maintenance_result->fetch_assoc();
-        $maintenance_count = $row['maintenance_count'];
-    }
-    ?>
-    
-    <h6 class="text-muted">Maintenance
-        <button class="btn btn-sm btn-outline-primary p-1" onclick="viewPendingRequests()" style="line-height: 1;">
-            <i class="bi bi-eye"></i>
-        </button>
-    </h6>
 
-    <h3 class="text-danger"><?php echo $maintenance_count; ?></h3>
-</div>
+                            $types = "s";
+                            $params = ["In Progress"]; // or "In Progress" depending on your exact value
+
+                            $maintenance_result = Database::search($maintenance_query, $types, $params);
+                            $maintenance_count = 0;
+
+                            if ($maintenance_result && $maintenance_result->num_rows > 0) {
+                                $row = $maintenance_result->fetch_assoc();
+                                $maintenance_count = $row['maintenance_count'];
+                            }
+                            ?>
+
+                            <h6 class="text-muted">Maintenance
+                                <button class="btn btn-sm btn-outline-primary p-1" onclick="viewPendingRequests()" style="line-height: 1;">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </h6>
+
+                            <h3 class="text-danger"><?php echo $maintenance_count; ?></h3>
+                        </div>
                     </div>
                 </div>
 
@@ -2533,22 +3559,22 @@ require_once '../config/database.php';
             <div id="equipmentSection" style="display: none;">
                 <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Equipment Management</h3>
 
-                <!-- Search and Add Row (Outside card) -->
-                <div class="search-add-row" style="margin-bottom: 20px;">
-                    <div class="search-container">
-                        <input type="text"
-                            id="equipmentSearch"
-                            class="search-input"
-                            placeholder="Search by code, name or location..."
-                            oninput="searchEquipment()"> <!-- Real-time search -->
-                        <!-- <button class="search-btn" onclick="searchEquipment()">
-                <i class="bi bi-search"></i> Search
-            </button> -->
-                    </div>
-                    <button class="add-btn" onclick="addEquipment()">
-                        <i class="bi bi-plus-circle"></i> Add Equipment
-                    </button>
-                </div>
+             <!-- Search and Add Row (Outside card) - REPLACE the existing div at around line 1300 -->
+<div class="search-add-row" style="margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
+    <div class="search-container" style="flex: 1; max-width: 500px;">
+        <input type="text"
+            id="equipmentSearch"
+            class="search-input"
+            placeholder="Search by code, name or location..."
+            oninput="searchEquipment()">
+    </div>
+    <button class="add-btn" onclick="sendToMaintenance()" style="margin-right: 4px; background: linear-gradient(135deg, #f59e0b, #d97706);">
+        <i class="bi bi-tools"></i> Send to Maintenance
+    </button>
+    <button class="add-btn" onclick="addEquipment()" style="background: linear-gradient(135deg, #22c55e, #16a34a);">
+        <i class="bi bi-plus-circle"></i> Add Equipment
+    </button>
+</div>
 
                 <!-- Equipment Table Card -->
                 <div id="equipmentTableCard" class="card p-4"> <!-- Added ID for hiding -->
@@ -3047,6 +4073,17 @@ require_once '../config/database.php';
                                     </tbody>
                                 </table>
                             </div>
+                            <!-- Add this after the equipment usage table in analytics section (around line 1890) -->
+                            <div class="row mt-4">
+                                <div class="col-12">
+                                    <div class="card p-4">
+                                        <h5 class="fw-bold mb-3" style="color: #166534;">Equipment Usage Overview</h5>
+                                        <div class="chart-container">
+                                            <canvas id="equipmentUsageChart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -3070,26 +4107,7 @@ require_once '../config/database.php';
                 </div>
             </div>
 
-            <!-- Rejection Reason Modal -->
-            <div class="modal fade" id="rejectionReasonModal" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header bg-danger text-white">
-                            <h5 class="modal-title">
-                                <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                                Rejection Reason
-                            </h5>
-                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body" id="rejectionReasonContent">
-                            <!-- Content will be populated by JavaScript -->
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+
 
             <!-- Rejection Reason Modal -->
             <div class="modal fade" id="rejectionReasonModal" tabindex="-1" aria-hidden="true">
@@ -3558,6 +4576,8 @@ require_once '../config/database.php';
                 setTimeout(() => {
                     initCharts();
                     initAnalyticsCharts();
+                    initCalendar(); // Add this line
+                    initCalendarListeners(); // Add this line
                 }, 100);
             }
             if (section === 'history') {
@@ -3801,6 +4821,120 @@ require_once '../config/database.php';
             }
         }
 
+
+
+        // Add this function to show events for selected date
+        function showEventsForDate(date) {
+            const eventsList = document.getElementById('eventsList');
+            const dateStr = date.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+
+            // Sample events data - in real app, this would come from database
+            const events = {
+                '2026-02-15': [{
+                        title: 'Microscope Reservation - Lab 01',
+                        time: '10:00 AM - 12:00 PM',
+                        type: 'reservation'
+                    },
+                    {
+                        title: 'Centrifuge Maintenance',
+                        time: '02:00 PM - 03:00 PM',
+                        type: 'maintenance'
+                    }
+                ],
+                '2026-02-16': [{
+                        title: 'Incubator Calibration',
+                        time: '09:00 AM - 10:30 AM',
+                        type: 'maintenance'
+                    },
+                    {
+                        title: 'Student Practical - Lab 02',
+                        time: '11:00 AM - 01:00 PM',
+                        type: 'practical'
+                    },
+                    {
+                        title: 'Autoclave Sterilization',
+                        time: '02:00 PM - 04:00 PM',
+                        type: 'maintenance'
+                    }
+                ],
+                '2026-02-17': [{
+                        title: 'Research Project - DNA Extraction',
+                        time: '09:30 AM - 12:30 PM',
+                        type: 'research'
+                    },
+                    {
+                        title: 'pH Meter Calibration',
+                        time: '01:30 PM - 02:30 PM',
+                        type: 'maintenance'
+                    }
+                ]
+            };
+
+            // Get events for selected date or show default message
+            const dayEvents = events[dateStr] || [];
+
+            if (dayEvents.length === 0) {
+                eventsList.innerHTML = '<div class="no-event">No events scheduled for this date</div>';
+            } else {
+                eventsList.innerHTML = '';
+                dayEvents.forEach(event => {
+                    const eventItem = document.createElement('div');
+                    eventItem.className = 'event-item';
+
+                    // Determine icon color based on event type
+                    let iconColor = '#ffd700'; // default gold
+                    if (event.type === 'maintenance') iconColor = '#ef4444'; // red
+                    if (event.type === 'practical') iconColor = '#22c55e'; // green
+                    if (event.type === 'research') iconColor = '#3b82f6'; // blue
+
+                    eventItem.innerHTML = `
+                <div class="title">
+                    <i class="fas fa-circle" style="color: ${iconColor};"></i>
+                    <div class="event-title">${event.title}</div>
+                </div>
+                <div class="event-time">${event.time}</div>
+            `;
+
+                    eventsList.appendChild(eventItem);
+                });
+            }
+        }
+
+
+
+
+        // Add this function after showEventsForDate (around line 2220)
+        function addDayCellClickHandlers() {
+            const dayCells = document.querySelectorAll('.day-cell:not(.prev-date):not(.next-date)');
+
+            dayCells.forEach(cell => {
+                cell.addEventListener('click', function() {
+                    // Remove active class from all cells
+                    dayCells.forEach(c => c.classList.remove('active'));
+
+                    // Add active class to clicked cell
+                    this.classList.add('active');
+
+                    // Get the selected date
+                    const selectedDay = this.textContent;
+                    const selectedDate = new Date(year, month, parseInt(selectedDay));
+
+                    // Update right panel with selected date
+                    const options = {
+                        weekday: 'long'
+                    };
+                    document.getElementById('eventDay').innerHTML = selectedDate.toLocaleDateString('en-US', options);
+                    document.getElementById('eventDate').innerHTML = selectedDate.toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    });
+
+                    // Show events for this date
+                    showEventsForDate(selectedDate);
+                });
+            });
+        }
         // ========== RESERVATION DATA ==========
         const reservationData = [{
                 id: 'RES-001',
@@ -4282,129 +5416,364 @@ require_once '../config/database.php';
 
         // ========== CALENDAR FUNCTIONS ==========
         // ========== CALENDAR FUNCTIONS ==========
-let month = new Date().getMonth();
-let year = new Date().getFullYear();
-const months = ["January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December"
-];
+        let month = new Date().getMonth();
+        let year = new Date().getFullYear();
+        const months = ["January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"
+        ];
 
-function initCalendar() {
-    // Check if calendar elements exist
-    const daysGrid = document.getElementById('daysGrid');
-    const displayMonth = document.getElementById('displayMonth');
-    const eventDay = document.getElementById('eventDay');
-    const eventDate = document.getElementById('eventDate');
-    const eventsList = document.getElementById('eventsList');
-    
-    // If elements don't exist, exit silently
-    if (!daysGrid || !displayMonth || !eventDay || !eventDate || !eventsList) {
-        return;
-    }
-    
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
-    const lastDate = lastDay.getDate();
-    const day = firstDay.getDay();
+        function initCalendar() {
+            // Check if calendar elements exist
+            const daysGrid = document.getElementById('daysGrid');
+            const displayMonth = document.getElementById('displayMonth');
+            const eventDay = document.getElementById('eventDay');
+            const eventDate = document.getElementById('eventDate');
+            const eventsList = document.getElementById('eventsList');
 
-    displayMonth.innerHTML = months[month] + " " + year;
-    let days = "";
-    for (let i = 0; i < day; i++) days += `<div class="day-cell prev-date"></div>`;
-    for (let i = 1; i <= lastDate; i++) {
-        let classes = "day-cell";
-        if (i === new Date().getDate() && year === new Date().getFullYear() && month === new Date().getMonth()) classes += " today";
-        days += `<div class="${classes}">${i}</div>`;
-    }
-    daysGrid.innerHTML = days;
-    
-    // Set sample event data
-    const today = new Date();
-    const options = { weekday: 'long' };
-    eventDay.innerHTML = today.toLocaleDateString('en-US', options);
-    eventDate.innerHTML = today.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
-    
-    // Sample events
-    eventsList.innerHTML = `
-        <div class="event-item">
-            <div class="title">
-                <i class="fas fa-circle"></i>
-                <div class="event-title">Microscope Reservation - Lab 01</div>
-            </div>
-            <div class="event-time">10:00 AM - 12:00 PM</div>
-        </div>
-        <div class="event-item">
-            <div class="title">
-                <i class="fas fa-circle"></i>
-                <div class="event-title">Centrifuge Maintenance</div>
-            </div>
-            <div class="event-time">02:00 PM - 03:00 PM</div>
-        </div>
-    `;
-}
-
-// Initialize calendar when dashboard is shown
-function initCalendarListeners() {
-    const prevBtn = document.querySelector('.prev');
-    const nextBtn = document.querySelector('.next');
-    const todayBtn = document.getElementById('todayBtn');
-    const gotoBtn = document.getElementById('gotoBtn');
-    
-    if (prevBtn) {
-        prevBtn.addEventListener('click', () => {
-            month--;
-            if (month < 0) {
-                month = 11;
-                year--;
+            // If elements don't exist, exit silently
+            if (!daysGrid || !displayMonth || !eventDay || !eventDate || !eventsList) {
+                return;
             }
-            initCalendar();
-        });
-    }
-    
-    if (nextBtn) {
-        nextBtn.addEventListener('click', () => {
-            month++;
-            if (month > 11) {
-                month = 0;
-                year++;
+
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const lastDate = lastDay.getDate();
+            const day = firstDay.getDay();
+
+            displayMonth.innerHTML = months[month] + " " + year;
+            let days = "";
+            for (let i = 0; i < day; i++) days += `<div class="day-cell prev-date"></div>`;
+            for (let i = 1; i <= lastDate; i++) {
+                let classes = "day-cell";
+                if (i === new Date().getDate() && year === new Date().getFullYear() && month === new Date().getMonth()) classes += " today";
+                days += `<div class="${classes}">${i}</div>`;
             }
-            initCalendar();
-        });
-    }
-    
-    if (todayBtn) {
-        todayBtn.addEventListener('click', () => {
-            const d = new Date();
-            month = d.getMonth();
-            year = d.getFullYear();
-            initCalendar();
-        });
-    }
-    
-    if (gotoBtn) {
-        gotoBtn.addEventListener('click', () => {
-            const gotoInput = document.getElementById('gotoInput');
-            if (!gotoInput) return;
+            daysGrid.innerHTML = days;
+
+            // Set today's date in the right panel
+            const today = new Date();
+            const options = {
+                weekday: 'long'
+            };
+            eventDay.innerHTML = today.toLocaleDateString('en-US', options);
+            eventDate.innerHTML = today.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+
+            // Show events for today
+            showEventsForDate(today);
+
+            // Add click handlers to day cells
+            addDayCellClickHandlers();
+        }
+
+
+                // ========== MAINTENANCE MODAL FUNCTIONS ==========
+        let selectedEquipment = [];
+        let companies = ['TechFix Solutions', 'LabCare Services', 'MedEquip Maintenance'];
+
+        function sendToMaintenance() {
+            openMaintenanceModal();
+        }
+
+        function openMaintenanceModal() {
+            document.getElementById('maintenanceModal').classList.add('active');
+            loadCompanies();
+            updateSelectedEquipmentList();
+        }
+
+        function closeMaintenanceModal() {
+            document.getElementById('maintenanceModal').classList.remove('active');
+            document.getElementById('emailFormatEdit').classList.remove('active');
+        }
+
+        function toggleEmailFormatEdit() {
+            const editSection = document.getElementById('emailFormatEdit');
+            const previewSection = document.getElementById('emailFormatPreview');
+            editSection.classList.toggle('active');
+            if (editSection.classList.contains('active')) {
+                previewSection.style.display = 'none';
+            } else {
+                previewSection.style.display = 'block';
+            }
+        }
+
+        function openEquipmentSelectModal() {
+            const modal = document.getElementById('equipmentSelectModal');
+            const list = document.getElementById('equipmentSelectList');
             
-            const parts = gotoInput.value.split('/');
-            if (parts.length === 2) {
-                const m = parseInt(parts[0]) - 1,
-                    y = parseInt(parts[1]);
-                if (m >= 0 && m < 12 && y > 0) {
-                    month = m;
-                    year = y;
+            // Populate equipment list from your equipment data
+            list.innerHTML = '';
+            equipmentDataTable.forEach(item => {
+                if (item.maintenance > 0) { // Only show equipment with maintenance pending
+                    const div = document.createElement('div');
+                    div.className = 'equipment-select-item';
+                    div.onclick = () => toggleEquipmentSelection(item.code);
+                    
+                    // Create company dropdown
+                    let companyOptions = '<option value="">Select Company</option>';
+                    companies.forEach(c => {
+                        companyOptions += `<option value="${c}">${c}</option>`;
+                    });
+                    
+                    div.innerHTML = `
+                        <div class="equipment-select-info">
+                            <h6>${item.name} (${item.code})</h6>
+                            <p>Maintenance Pending: ${item.maintenance} units</p>
+                            <select class="company-select" onchange="updateEquipmentCompany('${item.code}', this.value)" onclick="event.stopPropagation()">
+                                ${companyOptions}
+                            </select>
+                        </div>
+                        <input type="number" class="equipment-select-qty" value="1" min="1" max="${item.maintenance}" onclick="event.stopPropagation()" onchange="updateEquipmentQty('${item.code}', this.value)">
+                    `;
+                    list.appendChild(div);
+                }
+            });
+            
+            modal.classList.add('active');
+        }
+
+        function closeEquipmentSelectModal() {
+            document.getElementById('equipmentSelectModal').classList.remove('active');
+        }
+
+        function toggleEquipmentSelection(code) {
+            const item = equipmentDataTable.find(e => e.code === code);
+            if (!item) return;
+            
+            const existing = selectedEquipment.find(e => e.code === code);
+            if (existing) {
+                selectedEquipment = selectedEquipment.filter(e => e.code !== code);
+            } else {
+                selectedEquipment.push({
+                    code: item.code,
+                    name: item.name,
+                    qty: 1,
+                    maxQty: item.maintenance,
+                    company: ''
+                });
+            }
+            updateSelectedEquipmentList();
+        }
+
+        function updateEquipmentQty(code, qty) {
+            const item = selectedEquipment.find(e => e.code === code);
+            if (item) {
+                item.qty = parseInt(qty) || 1;
+            }
+            updateSelectedEquipmentList();
+        }
+
+        function updateEquipmentCompany(code, company) {
+            const item = selectedEquipment.find(e => e.code === code);
+            if (item) {
+                item.company = company;
+            }
+            updateSelectedEquipmentList();
+        }
+
+        function addSelectedEquipment() {
+            closeEquipmentSelectModal();
+            updateSelectedEquipmentList();
+        }
+
+        function removeSelectedEquipment(code) {
+            selectedEquipment = selectedEquipment.filter(e => e.code !== code);
+            updateSelectedEquipmentList();
+        }
+
+        function updateSelectedEquipmentList() {
+            const list = document.getElementById('selectedEquipmentList');
+            
+            if (selectedEquipment.length === 0) {
+                list.innerHTML = '<p class="text-muted text-center py-3">No equipment selected</p>';
+                return;
+            }
+            
+            list.innerHTML = '';
+            selectedEquipment.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'equipment-item';
+                div.innerHTML = `
+                    <div class="equipment-item-info">
+                        <span class="equipment-item-name">${item.name} (${item.code})</span>
+                        <div class="equipment-item-details">
+                            <span>Available: ${item.maxQty} units</span>
+                            ${item.company ? `<span class="company-badge">Company: ${item.company}</span>` : ''}
+                        </div>
+                    </div>
+                    <div class="equipment-item-qty">
+                        <input type="number" class="qty-input" value="${item.qty}" min="1" max="${item.maxQty}" onchange="updateEquipmentQty('${item.code}', this.value)">
+                        <button class="remove-equipment-btn" onclick="removeSelectedEquipment('${item.code}')">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        function loadCompanies() {
+            const list = document.getElementById('companyList');
+            list.innerHTML = '';
+            companies.forEach(company => {
+                const tag = document.createElement('span');
+                tag.className = 'company-tag';
+                tag.innerHTML = `
+                    ${company}
+                    <i class="bi bi-x" onclick="removeCompany('${company}')"></i>
+                `;
+                list.appendChild(tag);
+            });
+        }
+
+        function addCompany() {
+            const input = document.getElementById('newCompany');
+            const company = input.value.trim();
+            if (company && !companies.includes(company)) {
+                companies.push(company);
+                loadCompanies();
+                input.value = '';
+            }
+        }
+
+        function removeCompany(company) {
+            companies = companies.filter(c => c !== company);
+            loadCompanies();
+        }
+
+        function sendMaintenanceRequest() {
+            const fromEmail = document.getElementById('fromEmail').value;
+            const toEmail = document.getElementById('toEmail').value;
+            const ccEmail = document.getElementById('ccEmail').value;
+            
+            if (!toEmail) {
+                alert('Please enter recipient email address');
+                return;
+            }
+            
+            if (selectedEquipment.length === 0) {
+                alert('Please select at least one equipment for maintenance');
+                return;
+            }
+            
+            // Generate equipment list text with company information
+            let equipmentList = '';
+            selectedEquipment.forEach(item => {
+                equipmentList += `- ${item.name} (${item.code}): ${item.qty} unit(s)`;
+                if (item.company) {
+                    equipmentList += ` [Company: ${item.company}]`;
+                }
+                equipmentList += '\n';
+            });
+            
+            // Get email format
+            let emailContent;
+            if (document.getElementById('emailFormatEdit').classList.contains('active')) {
+                emailContent = document.getElementById('emailFormatTextarea').value;
+            } else {
+                emailContent = document.getElementById('emailFormatPreview').innerText;
+            }
+            
+            // Replace placeholders
+            emailContent = emailContent
+                .replace('{{equipment_list}}', equipmentList)
+                .replace('{{from_email}}', fromEmail);
+            
+            // Here you would send the email via AJAX
+            console.log('Sending email to:', toEmail);
+            console.log('CC:', ccEmail);
+            console.log('Email content:', emailContent);
+            
+            // Show success message with email details
+            alert(`Maintenance request sent successfully!\n\nTo: ${toEmail}\nCC: ${ccEmail}\n\nEquipment:\n${equipmentList}`);
+            
+            closeMaintenanceModal();
+            
+            // Reset form
+            selectedEquipment = [];
+            updateSelectedEquipmentList();
+        }
+
+        // Initialize calendar when dashboard is shown
+        function initCalendarListeners() {
+            const prevBtn = document.querySelector('.prev');
+            const nextBtn = document.querySelector('.next');
+            const todayBtn = document.getElementById('todayBtn');
+            const gotoBtn = document.getElementById('gotoBtn');
+
+            if (prevBtn) {
+                prevBtn.addEventListener('click', () => {
+                    month--;
+                    if (month < 0) {
+                        month = 11;
+                        year--;
+                    }
                     initCalendar();
-                } else alert('Invalid date. Use MM/YYYY');
-            } else alert('Invalid format. Use MM/YYYY');
-        });
-    }
-}
+                    addDayCellClickHandlers(); // Re-add handlers after rendering
+                });
+            }
+
+            if (nextBtn) {
+                nextBtn.addEventListener('click', () => {
+                    month++;
+                    if (month > 11) {
+                        month = 0;
+                        year++;
+                    }
+                    initCalendar();
+                    addDayCellClickHandlers(); // Re-add handlers after rendering
+                });
+            }
+
+            if (todayBtn) {
+                todayBtn.addEventListener('click', () => {
+                    const d = new Date();
+                    month = d.getMonth();
+                    year = d.getFullYear();
+                    initCalendar();
+                    addDayCellClickHandlers(); // Re-add handlers after rendering
+
+                    // Highlight today's date
+                    setTimeout(() => {
+                        const todayCells = document.querySelectorAll('.day-cell.today');
+                        todayCells.forEach(cell => cell.classList.add('active'));
+                    }, 50);
+                });
+            }
+
+            if (gotoBtn) {
+                gotoBtn.addEventListener('click', () => {
+                    const gotoInput = document.getElementById('gotoInput');
+                    if (!gotoInput) return;
+
+                    const parts = gotoInput.value.split('/');
+                    if (parts.length === 2) {
+                        const m = parseInt(parts[0]) - 1,
+                            y = parseInt(parts[1]);
+                        if (m >= 0 && m < 12 && y > 0) {
+                            month = m;
+                            year = y;
+                            initCalendar();
+                            addDayCellClickHandlers(); // Re-add handlers after rendering
+                        } else alert('Invalid date. Use MM/YYYY');
+                    } else alert('Invalid format. Use MM/YYYY');
+                });
+            }
+        }
 
         // ========== INITIALIZATION ==========
         document.addEventListener('DOMContentLoaded', function() {
+             loadCompanies();
             updateRequestCounts();
             updateVisibleCounts('');
             initCharts();
             showSection('dashboard');
             initCalendar();
+            initCalendarListeners(); // Add this line
+            setTimeout(() => addDayCellClickHandlers(), 100);
 
             // Initialize reservation display
             displayReservationTable(reservationData);
@@ -4414,6 +5783,159 @@ function initCalendarListeners() {
             if (document.getElementById('analyticsSection')) setTimeout(initAnalyticsCharts, 500);
         });
     </script>
+
+    <!-- Add this before the closing </body> tag -->
+    <!-- Notification Dropdown -->
+    <div class="notification-dropdown" id="notificationDropdown">
+        <div class="notification-header">
+            <h6>Notifications</h6>
+            <span>3 new</span>
+        </div>
+        <div class="notification-list">
+            <div class="notification-item unread">
+                <div class="fw-bold">New Equipment Request</div>
+                <div>John Doe requested Microscope</div>
+                <div class="time">5 minutes ago</div>
+            </div>
+            <div class="notification-item unread">
+                <div class="fw-bold">Maintenance Alert</div>
+                <div>Centrifuge maintenance due</div>
+                <div class="time">1 hour ago</div>
+            </div>
+            <div class="notification-item">
+                <div class="fw-bold">Reservation Approved</div>
+                <div>Lab 01 reservation confirmed</div>
+                <div class="time">2 hours ago</div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+        <!-- Maintenance Request Modal -->
+    <div class="maintenance-modal" id="maintenanceModal">
+        <div class="maintenance-modal-content">
+            <div class="maintenance-modal-header">
+                <h3><i class="bi bi-tools"></i> Send to Maintenance</h3>
+                <button class="close-btn" onclick="closeMaintenanceModal()"><i class="bi bi-x-lg"></i></button>
+            </div>
+            <div class="maintenance-modal-body">
+                <!-- Email Section -->
+                <div class="email-section">
+                    <div class="email-field">
+                        <label><i class="bi bi-envelope-fill me-2"></i>From Email</label>
+                        <input type="email" id="fromEmail" placeholder="your.email@lab.com" value="admin@microbiolab.lk">
+                    </div>
+                    <div class="email-field">
+                        <label><i class="bi bi-envelope-fill me-2"></i>To Email (Dean's Office)</label>
+                        <input type="email" id="toEmail" placeholder="dean@science.faculty.lk" value="dean@science.faculty.lk">
+                    </div>
+                    <div class="email-field">
+                        <label><i class="bi bi-envelope-fill me-2"></i>CC (HOD Email)</label>
+                        <input type="email" id="ccEmail" placeholder="hod.microbiology@lab.lk" value="hod.microbiology@lab.lk">
+                    </div>
+                </div>
+
+                <!-- Email Format Section -->
+                <div class="email-format-section">
+                    <div class="email-format-header">
+                        <h6><i class="bi bi-envelope-paper-fill me-2"></i>Email Format</h6>
+                        <button class="edit-format-btn" onclick="toggleEmailFormatEdit()">
+                            <i class="bi bi-pencil-square"></i> Edit Format
+                        </button>
+                    </div>
+                    <div class="email-format-preview" id="emailFormatPreview">
+Dear Dean, Faculty of Science,
+
+I would like to kindly request the Dean of the Faculty of Science to arrange maintenance services for the following laboratory equipment used in the Microbiology Laboratory.
+
+The equipment requires servicing by the respective authorized companies to ensure proper functioning. The details of the equipment and their respective companies are listed below:
+
+{{equipment_list}}
+
+I would greatly appreciate it if the Dean's Office could contact the relevant companies and arrange the necessary maintenance at your earliest convenience.
+
+Equipment Location: Microbiology Laboratory
+Requested By: Lab Administrator
+
+Thank you for your support and assistance.
+
+Yours sincerely,
+Head of Department, Microbiology Department
+                    </div>
+                    <div class="email-format-edit" id="emailFormatEdit">
+                        <textarea id="emailFormatTextarea">Dear Dean, Faculty of Science,
+
+I would like to kindly request the Dean of the Faculty of Science to arrange maintenance services for the following laboratory equipment used in the Microbiology Laboratory.
+
+The equipment requires servicing by the respective authorized companies to ensure proper functioning. The details of the equipment and their respective companies are listed below:
+
+{{equipment_list}}
+
+I would greatly appreciate it if the Dean's Office could contact the relevant companies and arrange the necessary maintenance at your earliest convenience.
+
+Equipment Location: Microbiology Laboratory
+Requested By: Lab Administrator
+
+Thank you for your support and assistance.
+
+Yours sincerely,
+Head of Department, Microbiology Department</textarea>
+                    </div>
+                </div>
+
+                <!-- Equipment Selection Section -->
+                <div class="equipment-selection-section">
+                    <div class="section-header">
+                        <h6><i class="bi bi-gear-fill me-2"></i>Equipment for Maintenance</h6>
+                        <button class="add-equipment-btn" onclick="openEquipmentSelectModal()">
+                            <i class="bi bi-plus-circle"></i> Add Equipment
+                        </button>
+                    </div>
+                    <div class="selected-equipment-list" id="selectedEquipmentList">
+                        <p class="text-muted text-center py-3">No equipment selected</p>
+                    </div>
+                </div>
+
+                <!-- Company Section -->
+                <div class="company-section">
+                    <h6><i class="bi bi-building me-2"></i>Maintenance Companies</h6>
+                    <div class="company-list" id="companyList">
+                        <!-- Company tags will appear here -->
+                    </div>
+                    <div class="add-company-input">
+                        <input type="text" id="newCompany" placeholder="Enter maintenance company name">
+                        <button class="add-company-btn" onclick="addCompany()">Add</button>
+                    </div>
+                </div>
+            </div>
+            <div class="maintenance-modal-footer">
+                <button class="btn-cancel" onclick="closeMaintenanceModal()">Cancel</button>
+                <button class="btn-send" onclick="sendMaintenanceRequest()">
+                    <i class="bi bi-send-fill"></i> Send Request
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Equipment Selection Modal -->
+    <div class="equipment-select-modal" id="equipmentSelectModal">
+        <div class="equipment-select-content">
+            <div class="equipment-select-header">
+                <h5><i class="bi bi-gear-fill me-2"></i>Select Equipment</h5>
+                <button class="close-btn" onclick="closeEquipmentSelectModal()"><i class="bi bi-x-lg"></i></button>
+            </div>
+            <div class="equipment-list" id="equipmentSelectList">
+                <!-- Equipment list will be populated here -->
+            </div>
+            <div class="equipment-select-footer">
+                <button class="btn-cancel" onclick="closeEquipmentSelectModal()">Cancel</button>
+                <button class="btn-send" onclick="addSelectedEquipment()">Add Selected</button>
+            </div>
+        </div>
+    </div>
+    
 </body>
 
 </html>
