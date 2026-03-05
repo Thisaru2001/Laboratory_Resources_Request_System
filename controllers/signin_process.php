@@ -7,7 +7,7 @@ $university_id = $_POST["university_id"] ?? '';
 $password = $_POST["password"] ?? '';
 $remember_me = $_POST["remember_me"] ?? '';
 
-// Convert university_id to uppercase to match database
+// Convert university_id to uppercase to match database        
 $university_id = strtoupper(trim($university_id));
 
 if(empty($university_id)){

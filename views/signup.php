@@ -10,9 +10,6 @@ session_start();
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Microbiology Lab System - Sign Up</title>
 
-    <!-- Google reCAPTCHA -->
-    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
-
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
@@ -390,6 +387,14 @@ session_start();
             margin-top: 10px;
         }
 
+        /* Password strength indicator */
+        #passwordStrength {
+            font-size: 0.8rem;
+            margin-top: 5px;
+            display: block;
+            transition: all 0.3s;
+        }
+
         /* Remove any extra lines */
         .auth-form::before,
         .auth-form::after {
@@ -528,10 +533,7 @@ session_start();
                 <h2 class="brand text-center fw-bold">Create Account</h2>
 
                 <!-- SIGN UP FORM  -->
-                <form onsubmit="createAccount(event);">
-                  
-                   
-
+                <form onsubmit="createAccount(event); return false;">
                     <!-- First & Last Name -->
                     <div class="row mb-3">
                         <div class="col-md-6">
@@ -555,7 +557,10 @@ session_start();
                         <label class="form-label">University ID</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-card-text"></i></span>
-                            <input type="text" id="university_id" class="form-control" placeholder="SC/####/###" required>
+                            <input type="text" id="university_id" class="form-control" 
+                                   placeholder="SC/####/###" 
+                                   oninput="this.value = this.value.toUpperCase()"
+                                   required>
                         </div>
                     </div>
 
@@ -564,7 +569,11 @@ session_start();
                         <label class="form-label">Mobile Number</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-telephone"></i></span>
-                            <input type="tel" id="mobile" class="form-control" placeholder="07########" required>
+                            <input type="tel" id="mobile" class="form-control" 
+                                   placeholder="07########" 
+                                   pattern="[0-9]{10}" 
+                                   title="Please enter a valid 10-digit mobile number"
+                                   required>
                         </div>
                     </div>
 
@@ -582,8 +591,12 @@ session_start();
                         <label class="form-label">Password</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-lock"></i></span>
-                            <input type="password" id="password" class="form-control" placeholder="••••••••" required>
+                            <input type="password" id="password" class="form-control" 
+                                   placeholder="••••••••" 
+                                   onkeyup="checkPasswordStrength()"
+                                   required>
                         </div>
+                        <small class="text-muted" id="passwordStrength">Use 8+ characters with letters & numbers</small>
                     </div>
 
                     <!-- Supervisor Email -->
@@ -591,7 +604,11 @@ session_start();
                         <label class="form-label">Supervisor Email</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-envelope-check"></i></span>
-                            <input type="email" id="supervisor_email" class="form-control" placeholder="supervisor@kln.ac.lk" required>
+                            <input type="email" id="supervisor_email" class="form-control" 
+                                   placeholder="supervisor@kln.ac.lk" 
+                                   pattern=".*@kln\.ac\.lk$"
+                                   title="Please use your supervisor's @kln.ac.lk email"
+                                   required>
                         </div>
                     </div>
 
@@ -621,12 +638,9 @@ session_start();
                         <small class="text-muted d-block mt-2">Upload a profile photo (optional)</small>
                     </div>
                     
-                    <!-- reCAPTCHA - Centered with Bootstrap -->
-                    <div class="g-recaptcha text-center mb-3" data-sitekey="6LcM0HMsAAAAAGiNWLW0WX5DFTSKF4F8mlQdX5SO"></div>
-                    
-                    <!-- Submit - FIXED: Pass event to function -->
+                    <!-- Submit Button -->
                     <div class="d-grid mb-2">
-                        <button type="button" onclick="createAccount()" class="btn btn-success">
+                        <button type="submit" class="btn btn-success" id="signupBtn">
                             <i class="bi bi-person-plus me-2"></i>Create Account
                         </button>
                         <a href="../index.php"
@@ -648,41 +662,13 @@ session_start();
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     
-    <!-- Your custom script - make sure this path is correct -->
-    <script src="../assets/script/script.js"></script>
-
-    <!-- Image Preview Script -->
-    <script>
-        document.getElementById('profileImageInput').addEventListener('change', function() {
-            const file = this.files[0];
-            if (!file) return;
-
-            if (!file.type.startsWith('image/')) {
-                alert('Please select an image file');
-                return;
-            }
-
-            // Check file size (max 6MB)
-            if (file.size > 6 * 1024 * 1024) {
-                alert('File size should be less than 6MB');
-                return;
-            }
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                document.getElementById('profilePreview').src = e.target.result;
-            };
-            reader.readAsDataURL(file);
-        });
-    </script>
-
     <!-- Message Modal -->
     <div class="modal fade" id="messageModal" tabindex="-1">
         <div class="modal-dialog">
             <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="messageModalTitle">Message</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title" id="messageModalTitle">Success</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <p id="modalMessage"></p>
@@ -693,6 +679,224 @@ session_start();
             </div>
         </div>
     </div>
+
+    <!-- Error Modal -->
+    <div class="modal fade" id="errorModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">Error</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="errorMessage"></p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Image Preview Script
+        document.getElementById('profileImageInput').addEventListener('change', function() {
+            const file = this.files[0];
+            if (!file) return;
+
+            if (!file.type.startsWith('image/')) {
+                showError('Please select an image file');
+                return;
+            }
+
+            if (file.size > 6 * 1024 * 1024) {
+                showError('File size should be less than 6MB');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('profilePreview').src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+
+        // Password strength checker
+        function checkPasswordStrength() {
+            const password = document.getElementById('password').value;
+            const strengthEl = document.getElementById('passwordStrength');
+            
+            if (password.length === 0) {
+                strengthEl.innerHTML = 'Use 8+ characters with letters & numbers';
+                strengthEl.style.color = '#6b7280';
+            } else if (password.length < 8) {
+                strengthEl.innerHTML = '❌ Too short (minimum 8 characters)';
+                strengthEl.style.color = '#dc3545';
+            } else if (!/[A-Z]/.test(password)) {
+                strengthEl.innerHTML = '⚠️ Add an uppercase letter';
+                strengthEl.style.color = '#f59e0b';
+            } else if (!/[0-9]/.test(password)) {
+                strengthEl.innerHTML = '⚠️ Add a number';
+                strengthEl.style.color = '#f59e0b';
+            } else {
+                strengthEl.innerHTML = '✅ Strong password';
+                strengthEl.style.color = '#22c55e';
+            }
+        }
+
+        // Show success message
+        function showSuccess(message) {
+            document.getElementById('modalMessage').textContent = message;
+            const modal = new bootstrap.Modal(document.getElementById('messageModal'));
+            modal.show();
+        }
+
+        // Show error message
+        function showError(message) {
+            document.getElementById('errorMessage').textContent = message;
+            const modal = new bootstrap.Modal(document.getElementById('errorModal'));
+            modal.show();
+        }
+
+        // Reset button state
+        function resetButton(btn, originalContent) {
+            btn.disabled = false;
+            btn.innerHTML = originalContent;
+        }
+
+        // Main signup function
+        function createAccount(event) {
+            event.preventDefault();
+            
+            const btn = document.getElementById('signupBtn');
+            const originalContent = btn.innerHTML;
+
+            // Validate all fields
+            const firstName = document.getElementById('first_name').value.trim();
+            const lastName = document.getElementById('last_name').value.trim();
+            const universityId = document.getElementById('university_id').value.trim();
+            const mobile = document.getElementById('mobile').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const supervisorEmail = document.getElementById('supervisor_email').value.trim();
+
+            // Basic validation
+            if (!firstName || !lastName || !universityId || !mobile || !email || !password || !supervisorEmail) {
+                showError('Please fill in all required fields');
+                return;
+            }
+
+            // Mobile validation
+            if (!/^[0-9]{10}$/.test(mobile)) {
+                showError('Please enter a valid 10-digit mobile number');
+                return;
+            }
+
+            // Password validation
+            if (password.length < 8) {
+                showError('Password must be at least 8 characters long');
+                return;
+            }
+
+            if (!/[A-Z]/.test(password) || !/[0-9]/.test(password)) {
+                showError('Password must contain at least one uppercase letter and one number');
+                return;
+            }
+
+            // Supervisor email validation
+            if (!supervisorEmail.endsWith('@kln.ac.lk')) {
+                showError('Supervisor email must be a valid @kln.ac.lk address');
+                return;
+            }
+
+            // Disable button and show loading state
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Creating Account...';
+
+            const formData = new FormData();
+            formData.append('first_name', firstName);
+            formData.append('last_name', lastName);
+            formData.append('university_id', universityId);
+            formData.append('mobile', mobile);
+            formData.append('email', email);
+            formData.append('password', password);
+            formData.append('supervisor_email', supervisorEmail);
+
+            const profileImageInput = document.getElementById('profileImageInput');
+            if (profileImageInput && profileImageInput.files.length > 0) {
+                formData.append('profile_image', profileImageInput.files[0]);
+            }
+
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', '../controllers/signup_process.php', true);
+            xhr.timeout = 30000;
+
+            xhr.onload = function() {
+                resetButton(btn, originalContent);
+                
+                if (xhr.status === 200) {
+                    try {
+                        const response = JSON.parse(xhr.responseText);
+                       
+                        if (response.status_user === 'success') {
+                            showSuccess(response.message || 'Account created successfully!');
+                            
+                            // Clear form
+                            document.getElementById('first_name').value = '';
+                            document.getElementById('last_name').value = '';
+                            document.getElementById('university_id').value = '';
+                            document.getElementById('mobile').value = '';
+                            document.getElementById('email').value = '';
+                            document.getElementById('password').value = '';
+                            document.getElementById('supervisor_email').value = '';
+                            
+                            const profileInput = document.getElementById('profileImageInput');
+                            if (profileInput) profileInput.value = '';
+                            
+                            document.getElementById('profilePreview').src = 'https://ui-avatars.com/api/?name=User&background=22c55e&color=fff&size=100';
+                            
+                            // Redirect after 3 seconds
+                            setTimeout(() => {
+                                window.location.href = '../index.php';
+                            }, 3000);
+                            
+                        } else {
+                            showError(response.message || 'Account creation failed');
+                            
+                            if (response.fields && Array.isArray(response.fields)) {
+                                response.fields.forEach(field => {
+                                    const element = document.getElementById(field);
+                                    if (element) {
+                                        element.classList.add('is-invalid');
+                                    }
+                                });
+                            }
+                        }
+                    } catch (e) {
+                        console.error('Parse error:', e);
+                        showError('Server error occurred. Please try again.');
+                    }
+                } else {
+                    showError('Connection error. Please try again.');
+                }
+            };
+
+            xhr.onerror = function() {
+                resetButton(btn, originalContent);
+                showError('Network error. Please check your connection.');
+            };
+
+            xhr.ontimeout = function() {
+                resetButton(btn, originalContent);
+                showError('Request timed out. Please try again.');
+            };
+
+            xhr.send(formData);
+            
+            return false;
+        }
+    </script>
+
 </body>
 
 </html>
