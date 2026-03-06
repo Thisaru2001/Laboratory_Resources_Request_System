@@ -458,6 +458,22 @@ $password = $_COOKIE["password"] ?? '';
             padding: 20px;
         }
 
+        /* Add to your existing CSS */
+        #togglePassword {
+            border: 2px solid #e5e7eb;
+            border-left: none;
+            background: #f9fafb;
+            color: #22c55e;
+            font-weight: 500;
+            border-radius: 0 12px 12px 0;
+        }
+
+        #togglePassword:hover {
+            background: #22c55e;
+            color: white;
+            border-color: #22c55e;
+        }
+
         .brand {
             color: #166534;
             font-weight: 700;
@@ -841,14 +857,14 @@ $password = $_COOKIE["password"] ?? '';
                             <label class="form-label">New Password</label>
                             <div class="input-group">
                                 <input type="password" class="form-control" id="np" placeholder="Enter new password">
-                                <button class="btn btn-outline-secondary" type="button" onclick="showPassword1()" id="npb">Show</button>
+                                <button class="btn btn-outline-secondary" type="button" id="npb">Show</button>
                             </div>
                         </div>
                         <div class="col-6">
                             <label class="form-label">Re-type Password</label>
                             <div class="input-group">
                                 <input type="password" class="form-control" id="rnp" placeholder="Re-type password">
-                                <button class="btn btn-outline-secondary" type="button" onclick="showPassword2()" id="rnpb">Show</button>
+                                <button class="btn btn-outline-secondary" type="button" id="rnpb">Show</button>
                             </div>
                         </div>
                         <div class="col-12">
@@ -859,7 +875,7 @@ $password = $_COOKIE["password"] ?? '';
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-success" onclick="resetPassword()">
+                    <button type="button" class="btn btn-success">
                         <i class="bi bi-check-circle me-2"></i>Reset Password
                     </button>
                 </div>
@@ -916,9 +932,11 @@ $password = $_COOKIE["password"] ?? '';
                                 class="form-control"
                                 placeholder="Enter your password"
                                 required>
+                            <button class="btn btn-outline-secondary" onclick="showPassword()" type="button" id="togglePassword" style="border: 2px solid #e5e7eb; border-left: none;">
+                                <i class="bi bi-eye"></i>
+                            </button>
                         </div>
                     </div>
-
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" id="remember_me" <?= $university_id ? 'checked' : '' ?>>
@@ -926,7 +944,7 @@ $password = $_COOKIE["password"] ?? '';
                                 Remember Me
                             </label>
                         </div>
-                        <a href="#" onclick="forgotPassword(); return false;" class="small">
+                        <a href="#" class="small">
                             <i class="bi bi-question-circle"></i> Forgot password?
                         </a>
                     </div>
@@ -953,529 +971,283 @@ $password = $_COOKIE["password"] ?? '';
         </div>
     </div>
 
-  
+
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
 
     <script>
-        
+        function signin() {
+            // Get form elements
+            var university_id = document.getElementById("university_id");
+            var password = document.getElementById("password");
+            var remember_me = document.getElementById("remember_me");
+            var signinBtn = document.getElementById("signinBtn");
+            var loginText = document.getElementById("loginText");
+            var msgDiv = document.getElementById("msgdiv1");
+            var msgElement = document.getElementById("msg1");
 
- // Global variable for forgot password modal
-    var forgotPasswordModal;
+            // Clear previous messages
+            if (msgElement) msgElement.innerHTML = "";
+            if (msgDiv) msgDiv.className = "d-none";
 
-    // Sign in function
-    function signin() {
-       
-        var university_id = document.getElementById("university_id");
-        var password = document.getElementById("password");
-        var remember_me = document.getElementById("remember_me");
-
-        if (!university_id.value || !password.value) {
-            document.getElementById("msg1").innerHTML = "Please enter both University ID and Password";
-            document.getElementById("msgdiv1").className = "d-block";
-            return;
-        }
-
-        var form = new FormData();
-        form.append("university_id", university_id.value);
-        form.append("password", password.value);
-        form.append("remember_me", remember_me.checked);
-
-        var request = new XMLHttpRequest();
-
-        request.onreadystatechange = function() {
-            if (request.status == 200 && request.readyState == 4) {
-                var response = request.responseText;
-
-                if (response == "success") {
-                  
-                } else {
-                     
-                    document.getElementById("msg1").innerHTML = response;
-                    document.getElementById("msgdiv1").className = "d-block";
-                }
+            // Client-side validation
+            if (!university_id.value.trim()) {
+                showMessage("Please enter your University ID", "error");
+                university_id.focus();
+                return;
             }
-        }
 
-        request.open("POST", "/LRRS/controllers/signin_process.php", true);
-        request.send(form);
-    }
-
-    // Forgot password function
-    function forgotPassword() {
-        var university_id = document.getElementById("university_id");
-
-        if (!university_id.value) {
-            document.getElementById("msg1").innerHTML = "Please enter your University ID";
-            document.getElementById("msgdiv1").className = "d-block";
-            return;
-        }
-
-        var request = new XMLHttpRequest();
-
-        request.onreadystatechange = function() {
-            if (request.status == 200 && request.readyState == 4) {
-                var text = request.responseText;
-
-                if (text == "Success") {
-                    alert("Verification code has been sent successfully. Please check your email.");
-                    var modal = document.getElementById("fpmodal");
-                    forgotPasswordModal = new bootstrap.Modal(modal);
-                    forgotPasswordModal.show();
-                } else {
-                    document.getElementById("msg1").innerHTML = text;
-                    document.getElementById("msgdiv1").className = "d-block";
-                }
+            if (!password.value) {
+                showMessage("Please enter your Password", "error");
+                password.focus();
+                return;
             }
-        }
 
-        request.open("GET", "./functions/forgotPasswordProcess.php?university_id=" + university_id.value, true);
-        request.send();
-    }
-
-    // Show/Hide password for first field
-    function showPassword1() {
-        var textfield = document.getElementById("np");
-        var button = document.getElementById("npb");
-
-        if (textfield.type == "password") {
-            textfield.type = "text";
-            button.innerHTML = "Hide";
-        } else {
-            textfield.type = "password";
-            button.innerHTML = "Show";
-        }
-    }
-
-    // Show/Hide password for second field
-    function showPassword2() {
-        var textfield = document.getElementById("rnp");
-        var button = document.getElementById("rnpb");
-
-        if (textfield.type == "password") {
-            textfield.type = "text";
-            button.innerHTML = "Hide";
-        } else {
-            textfield.type = "password";
-            button.innerHTML = "Show";
-        }
-    }
-
-    // Reset password function
-    function resetPassword() {
-        var university_id = document.getElementById("university_id");
-        var newPassword = document.getElementById("np");
-        var retypePassword = document.getElementById("rnp");
-        var verification = document.getElementById("vcode");
-
-        if (!newPassword.value || !retypePassword.value || !verification.value) {
-            alert("Please fill in all fields");
-            return;
-        }
-
-        if (newPassword.value !== retypePassword.value) {
-            alert("Passwords do not match");
-            return;
-        }
-
-        var form = new FormData();
-        form.append("university_id", university_id.value);
-        form.append("new_password", newPassword.value);
-        form.append("retype_password", retypePassword.value);
-        form.append("verification_code", verification.value);
-
-        var request = new XMLHttpRequest();
-
-        request.onreadystatechange = function() {
-            if (request.status == 200 && request.readyState == 4) {
-                var response = request.responseText;
-                if (response == "success") {
-                    alert("Password updated successfully.");
-                    forgotPasswordModal.hide();
-                    
-                    // Clear the form
-                    document.getElementById("np").value = "";
-                    document.getElementById("rnp").value = "";
-                    document.getElementById("vcode").value = "";
-                } else {
-                    alert(response);
-                }
+            // Optional: Basic password length check
+            if (password.value.length < 6) {
+                showMessage("Password must be at least 6 characters", "error");
+                return;
             }
-        }
 
-        request.open("POST", "./functions/resetPasswordProcess.php", true);
-        request.send(form);
-    }
+            // Disable button to prevent double submission
+            if (signinBtn) {
+                signinBtn.disabled = true;
+                if (loginText) {
+                    loginText.innerHTML = 'Signing in...';
+                }
+                signinBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Signing in...';
+            }
 
+            // Prepare form data
+            var form = new FormData();
+            form.append("university_id", university_id.value.trim().toUpperCase());
+            form.append("password", password.value);
+            form.append("remember_me", remember_me.checked ? "true" : "false");
 
+            var request = new XMLHttpRequest();
 
+            // Set timeout (10 seconds)
+            request.timeout = 10000;
 
+            request.onreadystatechange = function() {
+                if (request.readyState == 4) {
 
-// Main signup function
-function createAccount(event) {
-    const btn = event ? event.target : document.querySelector('button[onclick="createAccount()"]');
-    const originalContent = btn ? btn.innerHTML : 'Create Account';
-
-    if (btn) {
-        btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Creating Account...';
-    }
-
-    const formData = new FormData();
-    
-    const firstName = document.getElementById('first_name')?.value.trim();
-    const lastName = document.getElementById('last_name')?.value.trim();
-    const universityId = document.getElementById('university_id')?.value.trim();
-    const mobile = document.getElementById('mobile')?.value.trim();
-    const email = document.getElementById('email')?.value.trim();
-    const password = document.getElementById('password')?.value;
-    const supervisorEmail = document.getElementById('supervisor_email')?.value.trim();
-
-    if (!firstName || !lastName || !universityId || !mobile || !email || !password || !supervisorEmail) {
-        showMessage('error', 'Please fill in all required fields');
-        if (btn) resetButton(btn, originalContent);
-        return;
-    }
-
-    formData.append('first_name', firstName);
-    formData.append('last_name', lastName);
-    formData.append('university_id', universityId);
-    formData.append('mobile', mobile);
-    formData.append('email', email);
-    formData.append('password', password);
-    formData.append('supervisor_email', supervisorEmail);
-
-    if (typeof grecaptcha !== 'undefined') {
-        const recaptchaResponse = grecaptcha.getResponse();
-        if (recaptchaResponse) {
-            formData.append('recaptcha_token', recaptchaResponse);
-        }
-    }
-
-    const profileImageInput = document.getElementById('profileImageInput');
-    if (profileImageInput && profileImageInput.files.length > 0) {
-        const profileImage = profileImageInput.files[0];
-        if (!profileImage.type.startsWith('image/')) {
-            showMessage('error', 'Please select a valid image file');
-            if (btn) resetButton(btn, originalContent);
-            return;
-        }
-        if (profileImage.size > 6 * 1024 * 1024) {
-            showMessage('error', 'Image size must be less than 6MB');
-            if (btn) resetButton(btn, originalContent);
-            return;
-        }
-        formData.append('profile_image', profileImage);
-    }
-
-    const xhr = new XMLHttpRequest();
-    xhr.open('POST', '../controllers/signup_process.php', true);
-    xhr.timeout = 30000;
-
-    xhr.onload = function() {
-        if (btn) resetButton(btn, originalContent);
-        
-        if (xhr.status === 200 && xhr.readyState == 4) {
-            try {
-                console.log('Server response:', xhr.responseText);
-                const response = JSON.parse(xhr.responseText);
-               
-                if (response.status_user == 'success') {
-                    showMessage('success', response.message || 'Account created successfully!');
-            
-                    document.getElementById('first_name').value = '';
-                    document.getElementById('last_name').value = '';
-                    document.getElementById('university_id').value = '';
-                    document.getElementById('mobile').value = '';
-                    document.getElementById('email').value = '';
-                    document.getElementById('password').value = '';
-                    document.getElementById('supervisor_email').value = '';
-                    
-                    const profileInput = document.getElementById('profileImageInput');
-                    if (profileInput) profileInput.value = '';
-                    
-                    const profilePreview = document.getElementById('profilePreview');
-                    if (profilePreview) {
-                        profilePreview.src = 'https://ui-avatars.com/api/?name=User&background=22c55e&color=fff&size=100';
+                    if (signinBtn) {
+                        signinBtn.disabled = false;
+                        if (loginText) {
+                            loginText.innerHTML = 'Sign In';
+                        }
+                        signinBtn.innerHTML = '<i class="bi bi-box-arrow-in-right me-2"></i><span id="loginText">Sign In</span>';
                     }
-                    
-                    if (typeof grecaptcha !== 'undefined') {
-                        grecaptcha.reset();
-                    }
-                    
-                    setTimeout(() => {
-                        window.location.href = '../index.php';
-                    }, 3000);
-                    
-                } else {
-                    showMessage('error', response.message || 'Account creation failed');
-                    
-                    if (response.fields && Array.isArray(response.fields)) {
-                        highlightFields(response.fields);
+
+                    if (request.status == 200) {
+                        var response = request.responseText.trim();
+
+                        // Handle response
+                        if (response.startsWith("success")) {
+                         
+                            var redirect = response.split("|")[1];
+                            window.location.href = redirect;
+                        } else {
+
+                            showMessage(response, "error");
+
+
+                            trackFailedAttempts();
+
+
+                            password.value = "";
+                            password.focus();
+                        }
+                    } else if (request.status == 0) {
+
+                        showMessage("Network error. Please check your connection.", "error");
+                    } else if (request.status == 429) {
+                        showMessage("Too many attempts. Please try again later.", "error");
+                    } else {
+                        showMessage("Server error. Please try again later.", "error");
                     }
                 }
-            } catch (e) {
-                console.error('Parse error:', e);
-                console.error('Raw response:', xhr.responseText);
-                showMessage('error', 'Server error occurred. Please check console for details.');
+            };
+
+            // Handle timeout
+            request.ontimeout = function() {
+                if (signinBtn) {
+                    signinBtn.disabled = false;
+                    if (loginText) {
+                        loginText.innerHTML = 'Sign In';
+                    }
+                    signinBtn.innerHTML = '<i class="bi bi-box-arrow-in-right me-2"></i><span id="loginText">Sign In</span>';
+                }
+                showMessage("Request timeout. Please try again.", "error");
+            };
+
+            // Handle network errors
+            request.onerror = function() {
+                if (signinBtn) {
+                    signinBtn.disabled = false;
+                    if (loginText) {
+                        loginText.innerHTML = 'Sign In';
+                    }
+                    signinBtn.innerHTML = '<i class="bi bi-box-arrow-in-right me-2"></i><span id="loginText">Sign In</span>';
+                }
+                showMessage("Network error. Please check your connection.", "error");
+            };
+
+            request.open("POST", "/LRRS/controllers/signin_process.php", true);
+
+            // Add headers for security
+            request.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+
+            request.send(form);
+        }
+
+        // Enhanced message display function
+        function showMessage(message, type) {
+            var msgDiv = document.getElementById("msgdiv1");
+            var msgElement = document.getElementById("msg1");
+
+            if (!msgDiv || !msgElement) return;
+
+            msgElement.innerHTML = message;
+            msgDiv.className = "d-block";
+
+            // Remove any existing alert classes
+            msgDiv.classList.remove('alert-success', 'alert-danger', 'alert-info', 'alert-warning');
+
+            // Add appropriate alert class
+            switch (type) {
+                case 'success':
+                    msgDiv.classList.add('alert-success');
+                    break;
+                case 'error':
+                    msgDiv.classList.add('alert-danger');
+                    break;
+                case 'info':
+                    msgDiv.classList.add('alert-info');
+                    break;
+                case 'warning':
+                    msgDiv.classList.add('alert-warning');
+                    break;
             }
-        } else if (xhr.status === 429) {
-            showMessage('error', 'Too many attempts. Please try again later.');
-        } else {
-            showMessage('error', 'Connection error. Please check your internet and try again.');
-        }
-    };
 
-    xhr.onerror = function() {
-        if (btn) resetButton(btn, originalContent);
-        showMessage('error', 'Network error. Please check your connection.');
-    };
-
-    xhr.ontimeout = function() {
-        if (btn) resetButton(btn, originalContent);
-        showMessage('error', 'Request timed out. Please try again.');
-    };
-
-    xhr.send(formData);
-    
-    return false;
-}
-
-
-
-// Show message function
-function showMessage(type, message) {
-    const modal = document.getElementById('messageModal');
-    const modalMessage = document.getElementById('modalMessage');
-    
-    if (modal && modalMessage) {
-        const modalTitle = document.getElementById('messageModalTitle');
-        const modalHeader = modal.querySelector('.modal-header');
-        
-        if (type === 'success') {
-            modalTitle.textContent = 'Success';
-            modalHeader.className = 'modal-header bg-success text-white';
-        } else {
-            modalTitle.textContent = 'Error';
-            modalHeader.className = 'modal-header bg-danger text-white';
-        }
-        
-        modalMessage.textContent = message;
-        
-        const modalInstance = new bootstrap.Modal(modal);
-        modalInstance.show();
-        
-        modal.addEventListener('hidden.bs.modal', function () {
-            const triggerButton = document.querySelector('button[onclick="createAccount(event)"]');
-            if (triggerButton) {
-                triggerButton.focus();
+            // Auto-hide success messages after 3 seconds
+            if (type === 'success') {
+                setTimeout(function() {
+                    if (msgDiv && msgDiv.className !== "d-none") {
+                        msgDiv.className = "d-none";
+                    }
+                }, 3000);
             }
-        }, { once: true });
-        
-    } else {
-        alert((type === 'success' ? 'Success: ' : 'Error: ') + message);
-    }
-}
-
-
-// SHOW FORGOT PASSWORD MODAL - NO reCAPTCHA
-function showForgotPassword() {
-    // Get the University ID from the signin page input
-    const universityId = document.getElementById('university_id').value.trim();
-    
-    if (!universityId) {
-        showModal("Please enter your University ID first");
-        return;
-    }
-    
-    // Store it in the global variable
-    resetUniversityId = universityId;
-    
-    // Display it in the modal
-    const displayElement = document.getElementById('displayUniversityId');
-    if (displayElement) {
-        displayElement.textContent = universityId;
-    }
-    
-    // Clear any previous error messages
-    const errorDiv = document.getElementById('resetResponse');
-    if (errorDiv) {
-        errorDiv.innerHTML = '';
-    }
-    
-    // Show the modal
-    const modal = new bootstrap.Modal(document.getElementById('forgotPasswordModal'));
-    modal.show();
-}
-
-
-// Show modal function
-function showModal(message) {
-    const modalMessage = document.getElementById("modalMessage");
-    if (modalMessage) {
-        modalMessage.textContent = message;
-    }
-
-    const modal = new bootstrap.Modal(document.getElementById("messageModal"));
-    modal.show();
-}
-
-// Helper function to highlight fields (if needed)
-function highlightFields(fields) {
-    fields.forEach(field => {
-        const element = document.getElementById(field);
-        if (element) {
-            element.classList.add('is-invalid');
         }
-    });
-}
 
-// Equipment Management Variables
-let equipmentData = [
-    {
-        code: 'MIC-001',
-        name: 'Microscope',
-        image: 'https://cdn-icons-png.flaticon.com/512/2941/2941514.png',
-        available: 4,
-        total: 8,
-        maintenance: 2,
-        usage: 75
-    },
-    {
-        code: 'CEN-002',
-        name: 'Centrifuge',
-        image: 'https://cdn-icons-png.flaticon.com/512/2941/2941543.png',
-        available: 3,
-        total: 5,
-        maintenance: 1,
-        usage: 60
-    },
-    {
-        code: 'INC-003',
-        name: 'Incubator',
-        image: 'https://cdn-icons-png.flaticon.com/512/2941/2941538.png',
-        available: 2,
-        total: 4,
-        maintenance: 3,
-        usage: 50
-    },
-    {
-        code: 'AUT-004',
-        name: 'Autoclave',
-        image: 'https://cdn-icons-png.flaticon.com/512/2941/2941521.png',
-        available: 6,
-        total: 6,
-        maintenance: 0,
-        usage: 90
-    },
-    {
-        code: 'PHM-005',
-        name: 'pH Meter',
-        image: 'https://cdn-icons-png.flaticon.com/512/2941/2941556.png',
-        available: 3,
-        total: 3,
-        maintenance: 1,
-        usage: 35
-    },
-    {
-        code: 'WAT-006',
-        name: 'Water Bath',
-        image: 'https://cdn-icons-png.flaticon.com/512/2941/2941578.png',
-        available: 5,
-        total: 7,
-        maintenance: 2,
-        usage: 70
-    }
-];
+        // Track failed login attempts
+        function trackFailedAttempts() {
+            var attempts = parseInt(sessionStorage.getItem('login_attempts') || '0');
+            attempts++;
+            sessionStorage.setItem('login_attempts', attempts);
 
-// Search equipment
-function searchEquipment() {
-    const searchTerm = document.getElementById('equipmentSearch').value.toLowerCase();
-    const tableBody = document.getElementById('equipmentTableBody');
-    
-    if (!tableBody) return;
-    
-    const filtered = equipmentData.filter(item => 
-        item.code.toLowerCase().includes(searchTerm) ||
-        item.name.toLowerCase().includes(searchTerm)
-    );
-    
-    displayEquipmentTable(filtered);
-}
+            if (attempts >= 3) {
+                showMessage("Multiple failed attempts. Please wait 30 seconds before trying again.", "warning");
 
-// Display equipment table
-function displayEquipmentTable(equipment) {
-    const tableBody = document.getElementById('equipmentTableBody');
-    if (!tableBody) return;
-    
-    tableBody.innerHTML = '';
-    
-    equipment.forEach(item => {
-        const row = document.createElement('tr');
-        
-        // Determine badge color based on availability ratio
-        const ratio = item.available / item.total;
-        let badgeColor = '#22c55e'; // green
-        if (ratio < 0.3) badgeColor = '#ef4444'; // red
-        else if (ratio < 0.6) badgeColor = '#f59e0b'; // orange
-        
-        row.innerHTML = `
-            <td><img src="${item.image}" style="width: 50px; height: 50px; object-fit: contain;"></td>
-            <td>${item.code}</td>
-            <td>${item.name}</td>
-            <td><span class="badge" style="background: ${badgeColor}; color: white;">${item.available}/${item.total}</span></td>
-            <td><span class="badge bg-warning">${item.maintenance}</span></td>
-            <td>
-                <div class="progress-bar" style="width: 100px; display: inline-block; margin-right: 10px;">
-                    <div class="progress-fill" style="width: ${item.usage}%"></div>
-                </div>
-                ${item.usage}%
-            </td>
-            <td>
-                <div class="action-buttons">
-                    <button class="btn-edit" onclick="editEquipment('${item.code}')">
-                        <i class="bi bi-pencil-square"></i>
-                    </button>
-                    <button class="btn-remove" onclick="removeEquipment('${item.code}')">
-                        <i class="bi bi-trash"></i>
-                    </button>
-                </div>
-            </td>
-        `;
-        tableBody.appendChild(row);
-    });
-}
+                // Disable button for 30 seconds
+                var signinBtn = document.getElementById("signinBtn");
+                if (signinBtn) {
+                    signinBtn.disabled = true;
+
+                    // Countdown timer
+                    var secondsLeft = 30;
+                    var loginText = document.getElementById("loginText");
+                    var originalText = loginText ? loginText.innerHTML : 'Sign In';
+
+                    var timer = setInterval(function() {
+                        secondsLeft--;
+                        if (loginText) {
+                            loginText.innerHTML = `Wait ${secondsLeft}s`;
+                        }
+
+                        if (secondsLeft <= 0) {
+                            clearInterval(timer);
+                            signinBtn.disabled = false;
+                            if (loginText) {
+                                loginText.innerHTML = originalText;
+                            }
+                            sessionStorage.removeItem('login_attempts');
+                        }
+                    }, 1000);
+                }
+            }
+        }
+
+        // Add enter key support
+        document.addEventListener('DOMContentLoaded', function() {
+            var passwordField = document.getElementById("password");
+            if (passwordField) {
+                passwordField.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        signin();
+                    }
+                });
+            }
+
+            // Clear messages when user starts typing
+            var inputs = document.querySelectorAll('#university_id, #password');
+            inputs.forEach(function(input) {
+                input.addEventListener('input', function() {
+                    var msgDiv = document.getElementById("msgdiv1");
+                    if (msgDiv) {
+                        msgDiv.className = "d-none";
+                    }
+                });
+            });
 
 
-// Add new equipment
-function addEquipment() {
-    // In a real app, this would open a modal
-    alert('Add Equipment functionality would open a form modal');
-}
-
-// Edit equipment
-function editEquipment(code) {
-    alert('Edit equipment: ' + code);
-}
-
-// Remove equipment
-function removeEquipment(code) {
-    if (confirm(`Are you sure you want to remove equipment ${code}?`)) {
-        equipmentData = equipmentData.filter(item => item.code !== code);
-        displayEquipmentTable(equipmentData);
-        alert('Equipment removed successfully!');
-    }
-}
-
-// Initialize equipment table on page load
-document.addEventListener('DOMContentLoaded', function() {
-    if (document.getElementById('equipmentSection')) {
-        displayEquipmentTable(equipmentData);
-    }
-});
+        });
 
 
+        // Password visibility toggle for main login
+        function showPassword() {
+            var textfield = document.getElementById("password");
+            var button = document.getElementById("togglePassword");
+
+            if (textfield.type == "password") {
+                textfield.type = "text";
+                button.innerHTML = '<i class="bi bi-eye-slash"></i>';
+            } else {
+                textfield.type = "password";
+                button.innerHTML = '<i class="bi bi-eye"></i>';
+            }
+        }
+
+        // Password visibility toggle for forgot password modal - first field
+        function showPassword1() {
+            var textfield = document.getElementById("np");
+            var button = document.getElementById("npb");
+
+            if (textfield.type == "password") {
+                textfield.type = "text";
+                button.innerHTML = '<i class="bi bi-eye-slash"></i>';
+            } else {
+                textfield.type = "password";
+                button.innerHTML = '<i class="bi bi-eye"></i>';
+            }
+        }
+
+        // Password visibility toggle for forgot password modal - second field
+        function showPassword2() {
+            var textfield = document.getElementById("rnp");
+            var button = document.getElementById("rnpb");
+
+            if (textfield.type == "password") {
+                textfield.type = "text";
+                button.innerHTML = '<i class="bi bi-eye-slash"></i>';
+            } else {
+                textfield.type = "password";
+                button.innerHTML = '<i class="bi bi-eye"></i>';
+            }
+        }
     </script>
 
 </body>

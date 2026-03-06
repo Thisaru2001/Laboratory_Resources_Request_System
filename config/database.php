@@ -6,9 +6,10 @@ class Database {
     private static ?mysqli $connection = null;
     private static ?string $lastError = null; // Add this to store last error
 
-    private const DB_HOST = "database-1.csnikggyo5mr.us-east-1.rds.amazonaws.com";
-    private const DB_USER = "admin";
-    private const DB_PASS = "Lrrsystem123";
+    // private const DB_HOST = "database-1.csnikggyo5mr.us-east-1.rds.amazonaws.com";
+    private const DB_HOST = "localhost";
+    private const DB_USER = "root";
+    private const DB_PASS = "root";
     private const DB_NAME = "lab_db";
     private const DB_PORT = 3306;
 
