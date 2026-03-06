@@ -1273,15 +1273,65 @@
     <form id="equipmentRequestForm">
         <!-- Lab Location, Requested Date, Continue Days - ALL IN ONE ROW -->
         <div class="row g-3 mb-3">
-            <div class="col-md-4">
-                <label class="form-label fw-semibold">Lab Location</label>
-                <select id="labLocation" class="form-select" required onchange="loadEquipmentByLab()">
-                    <option value="" disabled selected>Select Lab</option>
-                    <option value="Microbiology Lab 01">Microbiology Lab 01</option>
-                    <option value="Microbiology Lab 02">Microbiology Lab 02</option>
-                    <option value="Research Laboratory">Research Laboratory</option>
-                </select>
-            </div>
+
+
+
+
+     <div class="col-md-4">
+    <label class="form-label fw-semibold">Lab Location</label>
+    <select id="labLocation" class="form-select" required onchange="loadEquipmentByLab()">
+        <option value="" disabled selected>Select Lab</option>
+        <?php
+        // Enable error reporting for debugging (remove in production)
+        mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+        
+        try {
+            // First, check if the table exists
+            $check_table_query = "SHOW TABLES LIKE 'lab_location'";
+            $table_result = Database::search($check_table_query);
+            
+            if ($table_result && $table_result->num_rows > 0) {
+                // Table exists, now query locations
+                $location_query = "SELECT DISTINCT location FROM lab_location WHERE location IS NOT NULL AND location != '' ORDER BY location";
+                $location_result = Database::search($location_query);
+                
+                if ($location_result && $location_result->num_rows > 0) {
+                    while ($row = $location_result->fetch_assoc()) {
+                        $location = htmlspecialchars($row['location']);
+                        echo "<option value=\"$location\">$location</option>";
+                    }
+                } else {
+                    // Table exists but no data
+                    echo '<option value="" disabled>No lab locations found in database</option>';
+                    // Still show fallback options
+                    echo '<option value="Microbiology Lab 01">Microbiology Lab 01</option>';
+                    echo '<option value="Microbiology Lab 02">Microbiology Lab 02</option>';
+                    echo '<option value="Research Laboratory">Research Laboratory</option>';
+                }
+            } else {
+                // Table doesn't exist
+                echo '<option value="" disabled>Lab location table not found</option>';
+                // Show fallback options
+                echo '<option value="Microbiology Lab 01">Microbiology Lab 01</option>';
+                echo '<option value="Microbiology Lab 02">Microbiology Lab 02</option>';
+                echo '<option value="Research Laboratory">Research Laboratory</option>';
+            }
+        } catch (Exception $e) {
+            // Log error and show fallback
+            error_log("Database error in lab location dropdown: " . $e->getMessage());
+            echo '<option value="" disabled>Error loading locations</option>';
+            echo '<option value="Microbiology Lab 01">Microbiology Lab 01</option>';
+            echo '<option value="Microbiology Lab 02">Microbiology Lab 02</option>';
+            echo '<option value="Research Laboratory">Research Laboratory</option>';
+        }
+        ?>
+    </select>
+</div>
+
+
+
+
+
             <div class="col-md-4">
                 <label class="form-label fw-semibold">Requested Date</label>
                 <input type="date" id="requestDate" class="form-control" required>
