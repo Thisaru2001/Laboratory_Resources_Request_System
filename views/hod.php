@@ -4415,6 +4415,104 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
         <script>
+
+
+// ── 1. ADD this new function ─────────────────────────────────
+// Fetches equipment + AI usage % from PHP controller
+function loadEquipmentWithUsage() {
+    const tableBody = document.getElementById('equipmentTableBody');
+    if (!tableBody) return;
+
+    // Show loading spinner while Python runs
+    tableBody.innerHTML = `
+        <tr>
+            <td colspan="6" class="text-center py-4">
+                <div class="spinner-border text-success me-2" role="status"
+                     style="width:1.5rem;height:1.5rem;"></div>
+                <span style="color:#166534;font-weight:600;">
+                    🤖 AI analysing equipment usage...
+                </span>
+            </td>
+        </tr>`;
+
+    // hod.php is in LRRS/views/
+    // controller is in LRRS/controllers/
+    fetch('../controllers/get_equipment_usage.php')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                displayEquipmentTable(data.equipment);
+
+                // Update count + show last analyzed time as tooltip
+                const countEl = document.getElementById('equipmentCount');
+                if (countEl) {
+                    countEl.textContent = `(${data.count})`;
+                    countEl.title       = `AI analyzed at: ${data.analyzed_at}`;
+                }
+            } else {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center py-4 text-danger">
+                            ❌ ${data.message || 'Failed to load equipment data'}
+                        </td>
+                    </tr>`;
+            }
+        })
+        .catch(error => {
+            console.error('Equipment load error:', error);
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="text-center py-4 text-danger">
+                        ❌ Connection error — check PHP server is running.
+                    </td>
+                </tr>`;
+        });
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
             // ========== REQUEST SECTION FUNCTIONS ==========
             let currentRequestType = 'technical';
             let currentRequestId = null;
@@ -5000,11 +5098,9 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                     if (link.getAttribute('onclick')?.includes(section)) link.classList.add('active');
                 });
 
-                if (section === 'equipment') {
-
-                    console.log('Loading equipment section with data:', equipmentDataTable);
-                    displayEquipmentTable(equipmentDataTable);
-                }
+               if (section === 'equipment') {
+      loadEquipmentWithUsage();        // ← REPLACE old line
+  }
                 if (section === 'dashboard' || section === 'analytics') {
                     setTimeout(() => {
                         initCharts();
@@ -5165,80 +5261,78 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                 }
             ];
 
-            function displayEquipmentTable(equipment) {
-                const tableBody = document.getElementById('equipmentTableBody');
-                console.log('Table body element:', tableBody);
+           // ── 2. REPLACE your existing displayEquipmentTable() ─────────
+function displayEquipmentTable(equipment) {
+    const tableBody = document.getElementById('equipmentTableBody');
+    if (!tableBody) return;
 
-                if (!tableBody) {
-                    console.error('Equipment table body not found!');
-                    return;
-                }
+    tableBody.innerHTML = '';
 
-                console.log('Displaying equipment:', equipment);
-                tableBody.innerHTML = '';
+    if (!equipment || equipment.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="6" class="text-center py-4">No equipment found</td></tr>';
+        return;
+    }
+equipment.sort((a, b) => b.usage - a.usage);
+    equipment.forEach(item => {
+        const code        = item.code        || 'N/A';
+        const name        = item.name        || 'Unknown';
+        const image       = item.image       || 'https://cdn-icons-png.flaticon.com/512/2941/2941514.png';
+        const maintenance = item.maintenance || 0;
+       const usage = Math.round(parseFloat(item.usage) || 0);  // ← from Python AI
 
-                if (!equipment || equipment.length === 0) {
-                    tableBody.innerHTML = '<tr><td colspan="7" class="text-center py-4">No equipment found</td></tr>';
-                    return;
-                }
+        // Bar colour based on usage level
+     const barColor = '#22c55e';  // always green
 
-                equipment.forEach(item => {
-                    console.log('Processing item:', item); // Debug log
+        const row = document.createElement('tr');
+        row.setAttribute('data-equipment-id', code);
 
-                    // Make sure all required properties exist
-                    const available = item.available || 0;
-                    const total = item.total || 0;
-                    const ratio = total > 0 ? available / total : 0;
-
-                    let badgeColor = '#22c55e'; // green
-                    if (ratio < 0.3) badgeColor = '#ef4444'; // red
-                    else if (ratio < 0.6) badgeColor = '#f59e0b'; // orange
-
-                    const row = document.createElement('tr');
-                    row.setAttribute('data-equipment-id', item.code || '');
-
-                    // Use safe property access with fallbacks
-                    const image = item.image || 'https://cdn-icons-png.flaticon.com/512/2941/2941514.png';
-                    const code = item.code || 'N/A';
-                    const name = item.name || 'Unknown';
-                    const maintenance = item.maintenance || 0;
-                    const usage = item.usage || 0;
-
-                    row.innerHTML = `
-            <td><img src="${image}" style="width: 50px; height: 50px; object-fit: contain;" onerror="this.src='https://cdn-icons-png.flaticon.com/512/2941/2941514.png'"></td>
+        row.innerHTML = `
+            <td>
+                <img src="${image}"
+                     style="width:50px;height:50px;object-fit:contain;"
+                     onerror="this.src='https://cdn-icons-png.flaticon.com/512/2941/2941514.png'">
+            </td>
             <td>${code}</td>
             <td>${name}</td>
-       
-            <td><span class="badge bg-warning">${maintenance}</span></td>
+            <td>
+              ${maintenance > 0 ? `<span class="badge bg-warning">${maintenance}</span>` : '------'}
+            </td>
             <td>
                 <div class="d-flex align-items-center gap-2">
-                    <div class="progress-bar" style="width: 80px; height: 8px; background: #e9ecef; border-radius: 4px;">
-                        <div class="progress-fill" style="width: ${usage}%; height: 8px; background: #22c55e; border-radius: 4px;"></div>
+                    <div style="width:80px;height:8px;background:#e9ecef;
+                                border-radius:4px;overflow:hidden;">
+                        <div style="width:${usage}%;height:8px;
+                                    background:${barColor};border-radius:4px;
+                                    transition:width 0.6s ease;"></div>
                     </div>
-                    <span>${usage}%</span>
+                    <span style="font-weight:600;color:${barColor};min-width:44px;">
+                        ${usage}%
+                    </span>
                 </div>
             </td>
             <td>
                 <div class="action-buttons">
-                    <button class="btn-view" onclick="viewEquipment('${code}')" title="View Details">
+                    <button class="btn-view"
+                            onclick="viewEquipment('${code}')" title="View Details">
                         <i class="bi bi-eye"></i>
                     </button>
-                    <button class="btn-edit" onclick="editEquipment('${code}')" title="Edit">
+                    <button class="btn-edit"
+                            onclick="editEquipment('${code}')" title="Edit">
                         <i class="bi bi-pencil-square"></i>
                     </button>
-                    <button class="btn-remove" onclick="removeEquipment('${code}')" title="Remove">
+                    <button class="btn-remove"
+                            onclick="removeEquipment('${code}')" title="Remove">
                         <i class="bi bi-trash"></i>
                     </button>
                 </div>
             </td>
         `;
-                    tableBody.appendChild(row);
-                });
+        tableBody.appendChild(row);
+    });
 
-                // Update equipment count
-                document.getElementById('equipmentCount').textContent = `(${equipment.length})`;
-                console.log('Table populated with', equipment.length, 'rows');
-            }
+    document.getElementById('equipmentCount').textContent = `(${equipment.length})`;
+}
+
 
             function viewEquipment(code) {
                 const equipment = equipmentDataTable.find(item => item.code === code);
@@ -6253,7 +6347,7 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                 displayReservationTable(reservationData);
                 document.getElementById('reservationCount').textContent = '(' + reservationData.length + ')';
 
-                if (document.getElementById('equipmentSection')) displayEquipmentTable(equipmentDataTable);
+               loadEquipmentWithUsage();
                 if (document.getElementById('analyticsSection')) setTimeout(initAnalyticsCharts, 500);
             });
         </script>
