@@ -757,6 +757,25 @@ $password = $_COOKIE["password"] ?? '';
                 margin-bottom: 15px;
             }
 
+            /* Add to your style section */
+            #msg1.alert-success {
+                background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+                color: #166534;
+                border-left: 6px solid #22c55e;
+            }
+
+            #msg1.alert-danger {
+                background: linear-gradient(135deg, #fee2e2, #fecaca);
+                color: #991b1b;
+                border-left: 6px solid #ef4444;
+            }
+
+            #msg1.alert-warning {
+                background: linear-gradient(135deg, #fef3c7, #fde68a);
+                color: #92400e;
+                border-left: 6px solid #f59e0b;
+            }
+
             .brand i {
                 font-size: 1.5rem;
             }
@@ -828,56 +847,115 @@ $password = $_COOKIE["password"] ?? '';
         <div class="bubble bubble6"></div>
     </div>
 
-    <!-- Message Modal -->
-    <div class="modal fade" id="messageModal" tabindex="-1" aria-hidden="true">
+    <!-- Forgot Password Step 1 Modal - Email Sent -->
+    <div class="modal fade" id="forgotStep1Modal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
+            <div class="modal-content" style="border-radius: 24px; border: none; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);">
+                <div class="modal-header" style="background: linear-gradient(135deg, #166534, #14532d); color: white; border: none; border-radius: 24px 24px 0 0;">
+                    <h5 class="modal-title">
+                        <i class="bi bi-envelope-check me-2"></i> Verification Code Sent
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
                 <div class="modal-body text-center p-4">
-                    <i class="bi bi-check-circle-fill text-success" style="font-size: 2.5rem; margin-bottom: 15px;"></i>
-                    <p id="modalMessage" class="mb-3"></p>
-                    <button type="button" class="btn btn-success px-4" data-bs-dismiss="modal">OK</button>
+                    <div class="mb-4">
+                        <i class="bi bi-check-circle-fill" style="color: #22c55e; font-size: 4rem;"></i>
+                    </div>
+                    <h4 class="mb-3" style="color: #166534;">Check Your Email!</h4>
+                    <p class="mb-2" style="color: #4b5563;">A verification code has been sent to:</p>
+                    <p class="fw-bold" id="displayUserEmail" style="color: #22c55e; font-size: 1.1rem;">user@science.kln.ac.lk</p>
+                    <div class="alert alert-success mt-3" style="background-color: #dcfce7; color: #166534; border: none;">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Please check your inbox and enter the 6-digit code below
+                    </div>
+
+                    <div class="mt-4">
+                        <label class="form-label text-start w-100" style="color: #374151; font-weight: 600;">Verification Code</label>
+                        <div class="input-group mb-3">
+                            <span class="input-group-text" style="background: #f9fafb; border: 2px solid #e5e7eb; border-right: none;">
+                                <i class="bi bi-key" style="color: #22c55e;"></i>
+                            </span>
+                            <input type="text" class="form-control" id="verificationCode" placeholder="Enter 6-digit code" maxlength="6" style="border: 2px solid #e5e7eb; border-left: none; background: #f9fafb;">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer" style="border: none; padding: 1rem 1.5rem 1.5rem;">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="background: #6b7280; border: none; padding: 10px 25px; border-radius: 30px;">Cancel</button>
+                    <button type="button" class="btn btn-success" onclick="verifyCode()" id="verifycodebutton" style="background: linear-gradient(135deg, #22c55e, #16a34a); border: none; padding: 10px 25px; border-radius: 30px;">
+                        <i class="bi bi-check-circle me-2"></i>Verify Code
+                    </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Forgot Password Modal -->
-    <div class="modal fade" id="fpmodal" tabindex="-1" aria-hidden="true">
+    <!-- Forgot Password Step 2 Modal - Change Password -->
+    <div class="modal fade" id="forgotStep2Modal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
+            <div class="modal-content" style="border-radius: 24px; border: none; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);">
+                <div class="modal-header" style="background: linear-gradient(135deg, #166534, #14532d); color: white; border: none; border-radius: 24px 24px 0 0;">
                     <h5 class="modal-title">
-                        <i class="bi bi-key me-2"></i>Forgot Password
+                        <i class="bi bi-key me-2"></i> Change Your Password
                     </h5>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
-                    <div class="row g-3">
-                        <div class="col-6">
-                            <label class="form-label">New Password</label>
-                            <div class="input-group">
-                                <input type="password" class="form-control" id="np" placeholder="Enter new password">
-                                <button class="btn btn-outline-secondary" type="button" id="npb">Show</button>
-                            </div>
+                <div class="modal-body p-4">
+                    <div class="text-center mb-4">
+                        <i class="bi bi-shield-lock" style="color: #22c55e; font-size: 3rem;"></i>
+                        <p class="mt-2" style="color: #4b5563;">Create a new strong password</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">New Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                            <input type="password" class="form-control" id="newPassword" placeholder="Enter new password">
+                            <button class="btn btn-outline-secondary" type="button" onclick="showPassword('newPassword','togglenewPassword');" id="togglenewPassword" style="border: 2px solid #e5e7eb; border-left: none;">
+                                <i class="bi bi-eye"></i>
+                            </button>
                         </div>
-                        <div class="col-6">
-                            <label class="form-label">Re-type Password</label>
-                            <div class="input-group">
-                                <input type="password" class="form-control" id="rnp" placeholder="Re-type password">
-                                <button class="btn btn-outline-secondary" type="button" id="rnpb">Show</button>
-                            </div>
+                        <small class="text-muted">Minimum 6 characters</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Confirm Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                            <input type="password" class="form-control" id="confirmPassword" placeholder="Re-enter new password">
+                            <button class="btn btn-outline-secondary" type="button" onclick="showPassword('confirmPassword','toggleConfirmPassword');" id="toggleConfirmPassword" style="border: 2px solid #e5e7eb; border-left: none;">
+                                <i class="bi bi-eye"></i>
+                            </button>
                         </div>
-                        <div class="col-12">
-                            <label class="form-label">Verification Code</label>
-                            <input type="text" class="form-control" id="vcode" placeholder="Enter verification code">
+                    </div>
+
+                    <!-- Password strength indicator (optional but nice) -->
+                    <div class="password-strength mt-2 d-none" id="passwordStrength">
+                        <small class="text-muted">Password strength:</small>
+                        <div class="progress mt-1" style="height: 5px;">
+                            <div class="progress-bar" id="strengthBar" style="width: 0%; background: #22c55e;"></div>
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-success">
-                        <i class="bi bi-check-circle me-2"></i>Reset Password
+                <div class="modal-footer" style="border: none; padding: 1rem 1.5rem 1.5rem;">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="background: #6b7280; border: none; padding: 10px 25px; border-radius: 30px;">Cancel</button>
+                    <button type="button" class="btn btn-success" onclick="changePassword()" id="Confirm_Change" style="background: linear-gradient(135deg, #22c55e, #16a34a); border: none; padding: 10px 25px; border-radius: 30px;">
+                        <i class="bi bi-check-circle me-2"></i>Confirm Change
                     </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal (optional but nice) -->
+    <div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border-radius: 24px; border: none; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);">
+                <div class="modal-body text-center p-5">
+                    <i class="bi bi-check-circle-fill" style="color: #22c55e; font-size: 5rem;"></i>
+                    <h3 class="mt-3" style="color: #166534;">Password Changed!</h3>
+                    <p class="text-muted mb-4">Your password has been updated successfully.</p>
+                    <p class="small text-muted">We've sent a confirmation email to your inbox.</p>
+                    <button type="button" class="btn btn-success px-5" data-bs-dismiss="modal" style="background: linear-gradient(135deg, #22c55e, #16a34a); border: none; padding: 12px; border-radius: 30px;">OK</button>
                 </div>
             </div>
         </div>
@@ -902,11 +980,10 @@ $password = $_COOKIE["password"] ?? '';
 
                 <h2 class="brand">Sign In</h2>
 
-                <!-- Error Message Div -->
+                <!-- Message Div - Increased size with blue styling for info -->
                 <div class="col-12 d-none" id="msgdiv1">
-                    <div class="alert alert-danger" role="alert" id="msg1"></div>
+                    <div class="alert alert-info" role="alert" id="msg1" style="font-size: 1.2rem; font-weight: 500; padding: 18px 22px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); text-align: center; background: linear-gradient(135deg, #dbeafe, #bfdbfe); color: #1e3a8a; border-left: 6px solid #3b82f6;"></div>
                 </div>
-
                 <form>
                     <div class="mb-3">
                         <label class="form-label">University ID</label>
@@ -932,7 +1009,7 @@ $password = $_COOKIE["password"] ?? '';
                                 class="form-control"
                                 placeholder="Enter your password"
                                 required>
-                            <button class="btn btn-outline-secondary" onclick="showPassword()" type="button" id="togglePassword" style="border: 2px solid #e5e7eb; border-left: none;">
+                            <button class="btn btn-outline-secondary" onclick="showPassword('password','togglePassword')" type="button" id="togglePassword" style="border: 2px solid #e5e7eb; border-left: none;">
                                 <i class="bi bi-eye"></i>
                             </button>
                         </div>
@@ -944,7 +1021,7 @@ $password = $_COOKIE["password"] ?? '';
                                 Remember Me
                             </label>
                         </div>
-                        <a href="#" class="small">
+                        <a href="#" onclick="forgotpassword();" class="small">
                             <i class="bi bi-question-circle"></i> Forgot password?
                         </a>
                     </div>
@@ -1046,7 +1123,7 @@ $password = $_COOKIE["password"] ?? '';
 
                         // Handle response
                         if (response.startsWith("success")) {
-                         
+
                             var redirect = response.split("|")[1];
                             window.location.href = redirect;
                         } else {
@@ -1208,9 +1285,9 @@ $password = $_COOKIE["password"] ?? '';
 
 
         // Password visibility toggle for main login
-        function showPassword() {
-            var textfield = document.getElementById("password");
-            var button = document.getElementById("togglePassword");
+        function showPassword(textfields,buttonid) {
+            var textfield = document.getElementById(textfields);
+            var button = document.getElementById(buttonid);
 
             if (textfield.type == "password") {
                 textfield.type = "text";
@@ -1221,32 +1298,195 @@ $password = $_COOKIE["password"] ?? '';
             }
         }
 
-        // Password visibility toggle for forgot password modal - first field
-        function showPassword1() {
-            var textfield = document.getElementById("np");
-            var button = document.getElementById("npb");
+        // Forgot password function - Step 1: Send verification code
+        function forgotpassword() {
+            var university_id = document.getElementById("university_id").value.trim();
 
-            if (textfield.type == "password") {
-                textfield.type = "text";
-                button.innerHTML = '<i class="bi bi-eye-slash"></i>';
-            } else {
-                textfield.type = "password";
-                button.innerHTML = '<i class="bi bi-eye"></i>';
+            if (!university_id) {
+                showMessage("Please enter your University ID first", "error");
+                return;
             }
+
+            // Show loading message
+            showMessage("Sending verification code...", "info");
+
+            var form = new FormData();
+            form.append("university_id", university_id);
+
+            var request = new XMLHttpRequest();
+            request.timeout = 10000;
+
+            request.onreadystatechange = function() {
+                if (request.readyState == 4) {
+                    if (request.status == 200) {
+                        try {
+                            var response = JSON.parse(request.responseText);
+
+                            if (response.success) {
+                                // Store university ID for later use
+                                sessionStorage.setItem('reset_university_id', university_id);
+
+                                // Display user email
+                                document.getElementById('displayUserEmail').textContent = response.email;
+
+                                // Show first modal
+                                var step1Modal = new bootstrap.Modal(document.getElementById('forgotStep1Modal'));
+                                step1Modal.show();
+
+                                // Clear any previous message
+                                document.getElementById('msgdiv1').className = "d-none";
+
+
+
+                            } else {
+                                showMessage(response.message, "error");
+                            }
+                        } catch (e) {
+                            showMessage("Server error", "error");
+                        }
+                    } else {
+                        showMessage("Network error", "error");
+                    }
+                }
+            };
+
+            request.open("POST", "/LRRS/controllers/send_verification.php", true);
+            request.send(form);
         }
 
-        // Password visibility toggle for forgot password modal - second field
-        function showPassword2() {
-            var textfield = document.getElementById("rnp");
-            var button = document.getElementById("rnpb");
+        // Verify code function
+        function verifyCode() {
+            var verifycodebutton = document.getElementById('verifycodebutton');
+            verifycodebutton.disabled = true;
+            var code = document.getElementById('verificationCode').value.trim();
+            var university_id = sessionStorage.getItem('reset_university_id');
 
-            if (textfield.type == "password") {
-                textfield.type = "text";
-                button.innerHTML = '<i class="bi bi-eye-slash"></i>';
-            } else {
-                textfield.type = "password";
-                button.innerHTML = '<i class="bi bi-eye"></i>';
+            if (!code || code.length !== 6) {
+                alert('Please enter a valid 6-digit verification code');
+                 verifycodebutton.disabled = false;
+                return;
             }
+
+            var form = new FormData();
+            form.append("code", code);
+            form.append("university_id", university_id);
+
+            var request = new XMLHttpRequest();
+
+            request.onreadystatechange = function() {
+                if (request.readyState == 4) {
+                    if (request.status == 200) {
+                        try {
+                            var response = JSON.parse(request.responseText);
+
+                            if (response.success) {
+                                // Close step 1 modal
+                                var step1Modal = bootstrap.Modal.getInstance(document.getElementById('forgotStep1Modal'));
+                                  verifycodebutton.disabled = false;
+                                step1Modal.hide();
+
+                                // Open step 2 modal
+                                setTimeout(function() {
+                                    var step2Modal = new bootstrap.Modal(document.getElementById('forgotStep2Modal'));
+                                      verifycodebutton.disabled = false;
+                                    step2Modal.show();
+                                    document.getElementById('verificationCode').value = '';
+                                }, 500);
+                            } else {
+                                alert(response.message);
+                                  verifycodebutton.disabled = false;
+                            }
+                        } catch (e) {
+                            alert('Server error');
+                              verifycodebutton.disabled = false;
+                        }
+                    } else {
+                        alert('Network error');
+                          verifycodebutton.disabled = false;
+                    }
+                }
+            };
+
+            request.open("POST", "/LRRS/controllers/verify_code.php", true);
+            request.send(form);
+        }
+
+        // Change password function
+        function changePassword() {
+       var Confirm_Change = document.getElementById("Confirm_Change");
+Confirm_Change.disabled = true;
+            var newPassword = document.getElementById('newPassword').value;
+            var confirmPassword = document.getElementById('confirmPassword').value;
+            var university_id = sessionStorage.getItem('reset_university_id');
+
+            if (!newPassword || !confirmPassword) {
+                alert('Please fill in both password fields');
+                  Confirm_Change.disabled = false;
+                return;
+            }
+
+            if (newPassword.length < 6) {
+                alert('Password must be at least 6 characters');
+                  Confirm_Change.disabled = false;
+                return;
+            }
+
+            if (newPassword !== confirmPassword) {
+                alert('Passwords do not match');
+                  Confirm_Change.disabled = false;
+                return;
+            }
+
+            var form = new FormData();
+            form.append("university_id", university_id);
+            form.append("new_password", newPassword);
+            form.append("confirm_password", confirmPassword);
+
+            var request = new XMLHttpRequest();
+
+            request.onreadystatechange = function() {
+                if (request.readyState == 4) {
+                    if (request.status == 200) {
+                        try {
+                            var response = JSON.parse(request.responseText);
+
+                            if (response.success) {
+                                // Close step 2 modal
+                                var step2Modal = bootstrap.Modal.getInstance(document.getElementById('forgotStep2Modal'));
+                                step2Modal.hide();
+
+                                // Show success message
+                                setTimeout(function() {
+                                    showMessage("Password changed successfully! Please login with your new password.", "success");
+                                  Confirm_Change.disabled = false;
+
+                                    // Clear fields
+                                    document.getElementById('newPassword').value = '';
+                                    document.getElementById('confirmPassword').value = '';
+
+                                    // Clear session
+                                    sessionStorage.removeItem('reset_university_id');
+
+                                    // Focus on password field
+                                    document.getElementById('password').focus();
+                                }, 500);
+                            } else {
+                                alert(response.message);
+                                  Confirm_Change.disabled = false;
+                            }
+                        } catch (e) {
+                            alert('Server error');
+                              Confirm_Change.disabled = false;
+                        }
+                    } else {
+                        alert('Network error');
+                          Confirm_Change.disabled = false;
+                    }
+                }
+            };
+
+            request.open("POST", "/LRRS/controllers/change_password.php", true);
+            request.send(form);
         }
     </script>
 

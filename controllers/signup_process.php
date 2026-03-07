@@ -323,7 +323,7 @@ function sendSupervisorNotification($supervisor_email, $student_fname, $student_
         $mail->Host       = 'smtp.gmail.com';
         $mail->SMTPAuth   = true;
         $mail->Username   = 'microbiologylaboratorysystem@gmail.com';
-        $mail->Password   = 'oway suhf uzca geqp';
+        $mail->Password   = 'cesb lydd jord elyu';
         $mail->SMTPSecure = 'ssl';
         $mail->Port       = 465;
 

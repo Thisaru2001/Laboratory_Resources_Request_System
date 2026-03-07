@@ -1,45 +1,6 @@
 
 
- // Global variable for forgot password modal
-    var forgotPasswordModal;
 
-    // Sign in function
-    function signin() {
-       
-        var university_id = document.getElementById("university_id");
-        var password = document.getElementById("password");
-        var remember_me = document.getElementById("remember_me");
-
-        if (!university_id.value || !password.value) {
-            document.getElementById("msg1").innerHTML = "Please enter both University ID and Password";
-            document.getElementById("msgdiv1").className = "d-block";
-            return;
-        }
-
-        var form = new FormData();
-        form.append("university_id", university_id.value);
-        form.append("password", password.value);
-        form.append("remember_me", remember_me.checked);
-
-        var request = new XMLHttpRequest();
-
-        request.onreadystatechange = function() {
-            if (request.status == 200 && request.readyState == 4) {
-                var response = request.responseText;
-
-                if (response == "success") {
-                  
-                } else {
-                     
-                    document.getElementById("msg1").innerHTML = response;
-                    document.getElementById("msgdiv1").className = "d-block";
-                }
-            }
-        }
-
-        request.open("POST", "/LRRS/controllers/signin_process.php", true);
-        request.send(form);
-    }
 
     // Forgot password function
     function forgotPassword() {
@@ -73,81 +34,9 @@
         request.send();
     }
 
-    // Show/Hide password for first field
-    function showPassword1() {
-        var textfield = document.getElementById("np");
-        var button = document.getElementById("npb");
+   
 
-        if (textfield.type == "password") {
-            textfield.type = "text";
-            button.innerHTML = "Hide";
-        } else {
-            textfield.type = "password";
-            button.innerHTML = "Show";
-        }
-    }
-
-    // Show/Hide password for second field
-    function showPassword2() {
-        var textfield = document.getElementById("rnp");
-        var button = document.getElementById("rnpb");
-
-        if (textfield.type == "password") {
-            textfield.type = "text";
-            button.innerHTML = "Hide";
-        } else {
-            textfield.type = "password";
-            button.innerHTML = "Show";
-        }
-    }
-
-    // Reset password function
-    function resetPassword() {
-        var university_id = document.getElementById("university_id");
-        var newPassword = document.getElementById("np");
-        var retypePassword = document.getElementById("rnp");
-        var verification = document.getElementById("vcode");
-
-        if (!newPassword.value || !retypePassword.value || !verification.value) {
-            alert("Please fill in all fields");
-            return;
-        }
-
-        if (newPassword.value !== retypePassword.value) {
-            alert("Passwords do not match");
-            return;
-        }
-
-        var form = new FormData();
-        form.append("university_id", university_id.value);
-        form.append("new_password", newPassword.value);
-        form.append("retype_password", retypePassword.value);
-        form.append("verification_code", verification.value);
-
-        var request = new XMLHttpRequest();
-
-        request.onreadystatechange = function() {
-            if (request.status == 200 && request.readyState == 4) {
-                var response = request.responseText;
-                if (response == "success") {
-                    alert("Password updated successfully.");
-                    forgotPasswordModal.hide();
-                    
-                    // Clear the form
-                    document.getElementById("np").value = "";
-                    document.getElementById("rnp").value = "";
-                    document.getElementById("vcode").value = "";
-                } else {
-                    alert(response);
-                }
-            }
-        }
-
-        request.open("POST", "./functions/resetPasswordProcess.php", true);
-        request.send(form);
-    }
-
-
+   
 
 
 
