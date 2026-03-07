@@ -29,8 +29,6 @@ try {
         throw new Exception('Invalid request method');
     }
 
-
-
     // Get and sanitize all inputs
     $first_name = trim($_POST['first_name'] ?? '');
     $last_name = trim($_POST['last_name'] ?? '');
@@ -38,9 +36,30 @@ try {
     $mobile = trim($_POST['mobile'] ?? '');
     $email = trim($_POST['email'] ?? '');
     $password = $_POST['password'] ?? '';
-    $supervisor_email = trim($_POST['supervisor_email'] ?? '');
+    $role_email = trim($_POST['role_email'] ?? '');
+    $user_type = trim($_POST['user_type'] ?? '');
+    $supervisor_id = null;
 
-
+    // Validate User Type
+    if (empty($user_type)) {
+        $response['fields'][] = ['name' => 'user_type', 'message' => 'User type is required'];
+    } else {
+        // Map user_type to role name for database lookup
+        $role_name = '';
+        switch ($user_type) {
+            case 'student':
+                $role_name = 'Student';
+                break;
+            case 'supervisor':
+                $role_name = 'Supervisor';
+                break;
+            case 'technical_officer':
+                $role_name = 'Technical Officer';
+                break;
+            default:
+                $response['fields'][] = ['name' => 'user_type', 'message' => 'Invalid user type'];
+        }
+    }
 
     // Validate First Name
     if (empty($first_name)) {
@@ -96,58 +115,113 @@ try {
         $response['fields'][] = ['name' => 'password', 'message' => 'Password must contain at least one uppercase, one lowercase, one number, and one special character'];
     }
 
-    // Validate Supervisor Email (Required Field)
-    if (empty($supervisor_email)) {
-        $response['fields'][] = [
-            'name' => 'supervisor_email',
-            'message' => 'Supervisor email is required'
-        ];
-    } elseif (strlen($supervisor_email) > 100) {
-        $response['fields'][] = [
-            'name' => 'supervisor_email',
-            'message' => 'Supervisor email must be less than 100 characters'
-        ];
-    } elseif (!filter_var($supervisor_email, FILTER_VALIDATE_EMAIL)) {
-        $response['fields'][] = [
-            'name' => 'supervisor_email',
-            'message' => 'Invalid supervisor email format'
-        ];
-    } else {
-        // ✅ STEP 1: Check email exists in lab_user table
-        $check_supervisor_sql = "SELECT user_id FROM lab_user WHERE email = ?";
-        $check_supervisor_result = Database::search($check_supervisor_sql, "s", [$supervisor_email]);
-
-        if ($check_supervisor_result && $check_supervisor_result->num_rows === 0) {
+    // Validate Supervisor Email (only for students)
+    if ($user_type === 'student') {
+        if (empty($role_email)) {
             $response['fields'][] = [
-                'name' => 'supervisor_email',
-                'message' => 'Supervisor email not found in the system.'
+                'name' => 'role_email',
+                'message' => 'Supervisor email is required'
             ];
-        } else if ($check_supervisor_result) {
-            // ✅ Get supervisor ID
-            $supervisor_row = $check_supervisor_result->fetch_assoc();
-            $supervisor_id = $supervisor_row['user_id'];
+        } elseif (strlen($role_email) > 100) {
+            $response['fields'][] = [
+                'name' => 'role_email',
+                'message' => 'Supervisor email must be less than 100 characters'
+            ];
+        } elseif (!filter_var($role_email, FILTER_VALIDATE_EMAIL)) {
+            $response['fields'][] = [
+                'name' => 'role_email',
+                'message' => 'Invalid supervisor email format'
+            ];
+        } else {
+            // Check if supervisor exists in lab_user
+            $check_supervisor_sql = "SELECT user_id FROM lab_user WHERE email = ?";
+            $check_supervisor_result = Database::search($check_supervisor_sql, "s", [$role_email]);
 
-            // ✅ STEP 2: Check role_id = 7 using Database class
-            $check_role_sql = "SELECT 1 FROM user_has_role WHERE user_id = ? AND role_id = 7";
-            $check_role_result = Database::search($check_role_sql, "i", [$supervisor_id]);
-
-            if ($check_role_result && $check_role_result->num_rows === 0) {
+            if ($check_supervisor_result && $check_supervisor_result->num_rows === 0) {
                 $response['fields'][] = [
-                    'name' => 'supervisor_email',
-                    'message' => 'This user is not registered as a supervisor.'
+                    'name' => 'role_email',
+                    'message' => 'Supervisor email not found in the system.'
                 ];
+            } else if ($check_supervisor_result) {
+                // Get supervisor ID
+                $supervisor_row = $check_supervisor_result->fetch_assoc();
+                $supervisor_id = $supervisor_row['user_id'];
+
+                // Check if user has supervisor role (role_id = 7)
+                $check_role_sql = "SELECT 1 FROM user_has_role WHERE user_id = ? AND role_id = 7";
+                $check_role_result = Database::search($check_role_sql, "i", [$supervisor_id]);
+
+                if ($check_role_result && $check_role_result->num_rows === 0) {
+                    $response['fields'][] = [
+                        'name' => 'role_email',
+                        'message' => 'This user is not registered as a supervisor.'
+                    ];
+                }
             }
         }
     }
 
-    // If there are validation errors, return them
+    // Validate HOD Email for supervisors and technical officers
+    if ($user_type === 'supervisor' || $user_type === 'technical_officer') {
+        if (empty($role_email)) {
+            $response['fields'][] = [
+                'name' => 'role_email',
+                'message' => 'HOD email is required'
+            ];
+        } elseif (strlen($role_email) > 100) {
+            $response['fields'][] = [
+                'name' => 'role_email',
+                'message' => 'HOD email must be less than 100 characters'
+            ];
+        } elseif (!filter_var($role_email, FILTER_VALIDATE_EMAIL)) {
+            $response['fields'][] = [
+                'name' => 'role_email',
+                'message' => 'Invalid HOD email format'
+            ];
+        } else {
+            // Check if HOD exists in lab_user
+            $check_hod_sql = "SELECT user_id FROM lab_user WHERE email = ?";
+            $check_hod_result = Database::search($check_hod_sql, "s", [$role_email]);
+
+            if ($check_hod_result && $check_hod_result->num_rows === 0) {
+                $response['fields'][] = [
+                    'name' => 'role_email',
+                    'message' => 'HOD email not found in the system.'
+                ];
+            } else if ($check_hod_result) {
+                // Get HOD ID
+                $hod_row = $check_hod_result->fetch_assoc();
+                $hod_id = $hod_row['user_id'];
+
+                // Check if user has HOD role (role_id = 6)
+                $check_role_sql = "SELECT 1 FROM user_has_role WHERE user_id = ? AND role_id = 6";
+                $check_role_result = Database::search($check_role_sql, "i", [$hod_id]);
+
+                if ($check_role_result && $check_role_result->num_rows === 0) {
+                    $response['fields'][] = [
+                        'name' => 'role_email',
+                        'message' => 'This user is not registered as an HOD.'
+                    ];
+                } else {
+                    // Store HOD ID in supervisor_id for the approved_id field
+                    $supervisor_id = $hod_id;
+                }
+            }
+        }
+    }
+
+    // TEMPORARY DEBUG - Add this
+    error_log("User Type: " . $user_type);
+    error_log("Role Email: " . $role_email);
+    error_log("Validation Fields: " . print_r($response['fields'], true));
+
     if (!empty($response['fields'])) {
-        $response['message'] = 'Please correct the errors below';
+        $response['message'] = 'Please correct the errors';
         echo json_encode($response);
         exit;
     }
 
-    // ✅ FIXED: Check if user already exists using Database class
+    // Check if user already exists
     $check_sql = "SELECT user_id FROM lab_user WHERE email = ? OR mobile = ? OR university_id = ?";
     $check_result = Database::search($check_sql, "sss", [$email, $mobile, $university_id]);
 
@@ -191,23 +265,25 @@ try {
 
     // Hash the password
     $hashed_password = password_hash($password, PASSWORD_BCRYPT);
+    $remember_token = password_hash($university_id . $password, PASSWORD_BCRYPT);
+    $verification_code = '000000';
 
     // Get current date and time
+    date_default_timezone_set('Asia/Colombo');
     $joined_date = date('Y-m-d H:i:s');
 
-    // ✅ FIXED: Insert using Database class
+    // Insert into lab_user
     try {
-        // Insert into Table 1: lab_user
         $insert_sql_table1 = "INSERT INTO lab_user (
             first_name, last_name, university_id, email, mobile, 
-            password_user, img_path,request_status_request_status_id, 
-            join_datetime, status_user
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            password_user, img_path, request_status_id, 
+            join_datetime, approved_id, verification_code, remember_token, status_user
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         $request_status_id = 4; // 4 = pending
         $status_user = 1; // 1 = active
 
-        $insert_success = Database::iud($insert_sql_table1, "sssssssisi", [
+        $insert_success = Database::iud($insert_sql_table1, "sssssssissssi", [
             $first_name,
             $last_name,
             $university_id,
@@ -217,6 +293,9 @@ try {
             $profile_image_path,
             $request_status_id,
             $joined_date,
+            $supervisor_id,
+            $verification_code,
+            $remember_token,
             $status_user
         ]);
 
@@ -226,32 +305,48 @@ try {
 
         $user_id = Database::lastInsertId();
 
-        // Insert into Table 2: user_has_role
-        $insert_sql_table2 = "INSERT INTO user_has_role (user_id, role_id) VALUES (?, ?)";
-        $role_id = 8; // Role ID 2 for student/user
+        // Get the correct role_id from database based on user_type
+        $role_sql = "SELECT role_id FROM role WHERE role = ?";
+        $role_result = Database::search($role_sql, "s", [$role_name]);
 
+        if (!$role_result || $role_result->num_rows === 0) {
+            throw new Exception('Invalid role type');
+        }
+
+        $role_row = $role_result->fetch_assoc();
+        $role_id = $role_row['role_id'];
+
+        // Insert into user_has_role
+        $insert_sql_table2 = "INSERT INTO user_has_role (user_id, role_id) VALUES (?, ?)";
         $role_success = Database::iud($insert_sql_table2, "ii", [$user_id, $role_id]);
 
         if (!$role_success) {
             throw new Exception('Failed to assign user role');
         }
 
-        // After successfully inserting the student and getting $user_id
-        // And after validating supervisor email and getting $supervisor_id
+        // ========== FIXED: Send notifications for ALL user types ==========
+        
+        // For Students: Assign to supervisor and notify
+        if ($user_type === 'student' && isset($supervisor_id)) {
+            $assign_sql = "INSERT INTO supervisor_assigned (student_id, supervisor_id) VALUES (?, ?)";
+            $assign_success = Database::iud($assign_sql, "ii", [$user_id, $supervisor_id]);
 
-        // Insert into supervisor_assigned table
-        $assign_sql = "INSERT INTO supervisor_assigned (student_id, supervisor_id) VALUES (?, ?)";
-        $assign_success = Database::iud($assign_sql, "ii", [$user_id, $supervisor_id]);
-
-        if (!$assign_success) {
-            // Log error but don't stop the process
-            error_log("Failed to assign supervisor to student ID: " . $user_id);
+            if (!$assign_success) {
+                error_log("Failed to assign supervisor to student ID: " . $user_id);
+            } else {
+                error_log("📧 Sending student notification to supervisor: " . $role_email);
+                sendRoleNotification($role_email, $first_name, $last_name, $university_id, $user_type, 'supervisor');
+            }
         }
-        // Send notification to supervisor
-        sendSupervisorNotification($supervisor_email, $first_name, $last_name, $university_id);
+        
+        // For Supervisors and Technical Officers: Notify HOD
+        elseif (($user_type === 'supervisor' || $user_type === 'technical_officer') && isset($supervisor_id)) {
+            error_log("📧 Sending " . $user_type . " notification to HOD: " . $role_email);
+            sendRoleNotification($role_email, $first_name, $last_name, $university_id, $user_type, 'hod');
+        }
 
         $response['status_user'] = 'success';
-        $response['message'] = 'Account created successfully! Your request has been sent to the supervisor for approval.';
+        $response['message'] = 'Account created successfully! Your request has been sent for approval.';
     } catch (Exception $e) {
         $response['message'] = $e->getMessage();
         error_log("Signup Error: " . $e->getMessage());
@@ -263,8 +358,6 @@ try {
 
 echo json_encode($response);
 exit;
-
-
 
 function handleImageUpload($file)
 {
@@ -293,7 +386,6 @@ function handleImageUpload($file)
     // Create upload directory if it doesn't exist
     $upload_dir = '../assets/profile_images/';
 
-    // Create directory if it doesn't exist
     if (!file_exists($upload_dir)) {
         mkdir($upload_dir, 0777, true);
     }
@@ -314,7 +406,8 @@ function handleImageUpload($file)
     return $response;
 }
 
-function sendSupervisorNotification($supervisor_email, $student_fname, $student_lname, $student_id)
+// Unified notification function for all roles
+function sendRoleNotification($recipient_email, $first_name, $last_name, $user_id, $user_type, $recipient_role)
 {
     $mail = new PHPMailer(true);
 
@@ -324,20 +417,34 @@ function sendSupervisorNotification($supervisor_email, $student_fname, $student_
         $mail->SMTPAuth   = true;
         $mail->Username   = 'microbiologylaboratorysystem@gmail.com';
         $mail->Password   = 'cesb lydd jord elyu';
-        $mail->SMTPSecure = 'ssl';
-        $mail->Port       = 465;
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port = 587;
+        $mail->CharSet = 'UTF-8';
+        $mail->Encoding = 'base64';
 
         $mail->setFrom('microbiologylaboratorysystem@gmail.com', 'Microbiology Lab System');
-        $mail->addAddress($supervisor_email);
+        $mail->addAddress($recipient_email);
         $mail->addReplyTo('microbiologylaboratorysystem@gmail.com', 'Microbiology Lab System');
 
         $mail->isHTML(true);
-        $mail->Subject = 'Student Registration Pending Approval - Microbiology Lab';
+        
+        // Set subject and content based on recipient role
+        if ($recipient_role === 'supervisor') {
+            $mail->Subject = 'Student Registration Pending Approval - Microbiology Lab';
+            $greeting = 'Dear Supervisor,';
+            $role_text = 'student';
+            $dashboard_link = 'index.php';
+        } else {
+            $mail->Subject = ucfirst($user_type) . ' Registration Pending Approval - Microbiology Lab';
+            $greeting = 'Dear HOD,';
+            $role_text = $user_type;
+            $dashboard_link = 'index.php';
+        }
 
         $mail->Body = "
         <html>
         <head>
-            <title>Student Registration Approval Required</title>
+            <title>Registration Approval Required</title>
             <style>
                 body { font-family: Arial, sans-serif; }
                 .container { max-width: 600px; margin: 0 auto; padding: 20px; }
@@ -352,21 +459,21 @@ function sendSupervisorNotification($supervisor_email, $student_fname, $student_
                     <h2>Microbiology Lab System</h2>
                 </div>
                 <div class='content'>
-                    <h3>Dear Supervisor,</h3>
-                    <p>A student has registered with you as their supervisor:</p>
+                    <h3>{$greeting}</h3>
+                    <p>A {$role_text} has registered and requires your approval:</p>
                     <table style='width: 100%; border-collapse: collapse;'>
                         <tr>
-                            <td style='padding: 8px; background: #e5e7eb;'><strong>Student Name:</strong></td>
-                            <td style='padding: 8px;'>{$student_fname} {$student_lname}</td>
+                            <td style='padding: 8px; background: #e5e7eb;'><strong>Name:</strong></td>
+                            <td style='padding: 8px;'>{$first_name} {$last_name}</td>
                         </tr>
                         <tr>
-                            <td style='padding: 8px; background: #e5e7eb;'><strong>Student ID:</strong></td>
-                            <td style='padding: 8px;'>{$student_id}</td>
+                            <td style='padding: 8px; background: #e5e7eb;'><strong>University ID:</strong></td>
+                            <td style='padding: 8px;'>{$user_id}</td>
                         </tr>
                     </table>
                     <p style='margin-top: 20px;'>Please log in to the system to review and approve this registration.</p>
                     <p style='text-align: center; margin: 30px 0;'>
-                        <a href='http://" . $_SERVER['HTTP_HOST'] . "/supervisor_dashboard.php' 
+                        <a href='http://" . $_SERVER['HTTP_HOST'] . "/LRRS/{$dashboard_link}' 
                            style='background: #22c55e; color: white; padding: 10px 20px; 
                                   text-decoration: none; border-radius: 5px;'>Go to Dashboard</a>
                     </p>
@@ -380,12 +487,16 @@ function sendSupervisorNotification($supervisor_email, $student_fname, $student_
         </html>
         ";
 
-       if ($mail->send()) {
+        if ($mail->send()) {
+            error_log("✅ Email sent successfully to: " . $recipient_email);
             return ['success' => true, 'message' => 'Email sent successfully'];
         } else {
+            error_log("❌ Email failed: " . $mail->ErrorInfo);
             return ['success' => false, 'message' => 'Email sending failed'];
         }
     } catch (Exception $e) {
+        error_log("❌ Email exception: " . $e->getMessage());
         return ['success' => false, 'message' => "Mailer Error: " . $mail->ErrorInfo];
     }
 }
+?>

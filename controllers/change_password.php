@@ -66,15 +66,19 @@ $token = $university_id . $new_password;
 $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
 $hashed_token = password_hash($token, PASSWORD_DEFAULT);
 
+date_default_timezone_set('Asia/Colombo'); // Set timezone to Sri Lanka
+$now = date('Y-m-d H:i:s'); // Current date & time in Sri Lanka
+
 // Update both password and remember_token
 $update_result = Database::iud(
-    "UPDATE lab_user SET password_user = ?, remember_token = ? WHERE university_id = ?",
-    "sss",
-    [$hashed_password, $hashed_token, $university_id]
+    "UPDATE lab_user SET password_user = ?, remember_token = ?, details_updated_datetime = ? WHERE university_id = ?",
+    "ssss", // 4 strings
+    [$hashed_password, $hashed_token, $now, $university_id]
 );
 
+
 if ($update_result) {
-    // Send confirmation email using PHPMailer
+    // Send confirmation email using PHPMailer 
     $mail = new PHPMailer(true);
 
     try {
@@ -84,8 +88,10 @@ if ($update_result) {
         $mail->SMTPAuth   = true;
         $mail->Username   = 'microbiologylaboratorysystem@gmail.com';
         $mail->Password   = 'cesb lydd jord elyu';
-        $mail->SMTPSecure = 'ssl';
-        $mail->Port       = 465;
+         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+    $mail->Port = 587;
+    $mail->CharSet = 'UTF-8';
+$mail->Encoding = 'base64';
 
         // Recipients
         $mail->setFrom('microbiologylaboratorysystem@gmail.com', 'Microbiology Lab System');
@@ -96,55 +102,59 @@ if ($update_result) {
         $mail->isHTML(true);
         $mail->Subject = 'Password Changed Successfully - Microbiology Lab';
 
-        // HTML Email Template
-        $mail->Body = "
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <style>
-                body { font-family: Arial, sans-serif; background: #f9fafb; margin: 0; padding: 0; }
-                .container { max-width: 600px; margin: 20px auto; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-                .header { background: linear-gradient(135deg, #22c55e, #16a34a); padding: 30px; text-align: center; }
-                .header h2 { color: white; margin: 0; font-size: 24px; }
-                .content { padding: 40px 30px; text-align: center; }
-                .success-icon { margin-bottom: 20px; }
-                .success-icon span { font-size: 64px; }
-                .credentials { background: #f0fdf4; padding: 20px; border-radius: 10px; margin: 20px 0; text-align: left; }
-                .footer { background: #f9fafb; padding: 20px; text-align: center; color: #6b7280; font-size: 12px; border-top: 1px solid #e5e7eb; }
-                .btn { display: inline-block; background: #22c55e; color: white; padding: 12px 30px; text-decoration: none; border-radius: 30px; margin: 20px 0; }
-            </style>
-        </head>
-        <body>
-            <div class='container'>
-                <div class='header'>
-                    <h2>Microbiology Lab System</h2>
-                </div>
-                <div class='content'>
-                    <div class='success-icon'>
-                        <span>✅</span>
-                    </div>
-                    <h3 style='color: #166534;'>Password Changed Successfully!</h3>
-                    <p style='color: #4b5563;'>Your password has been updated.</p>
-                    
-                    <div class='credentials'>
-                        <p style='margin: 10px 0;'><strong>University ID:</strong> " . htmlspecialchars($university_id) . "</p>
-                        <p style='margin: 10px 0;'><strong>Name:</strong> " . htmlspecialchars($user['first_name'] . ' ' . $user['last_name']) . "</p>
-                        <p style='margin: 10px 0;'><strong>Change Time:</strong> " . date('Y-m-d H:i:s') . "</p>
-                      
-                    </div>
-                    
-                    <p style='color: #4b5563;'>If you didn't make this change, please contact your supervisor immediately.</p>
-                    
-                    <a href='http://" . $_SERVER['HTTP_HOST'] . "/LRRS/index.php' class='btn'>Login to System</a>
-                </div>
-                <div class='footer'>
-                    <p>University of Kelaniya - Department of Microbiology</p>
-                    <p>This is an automated message, please do not reply.</p>
-                    <p>&copy; " . date('Y') . " Microbiology Lab System</p>
-                </div>
-            </div>
-        </body>
-        </html>";
+       $mail->Body = '
+<table width="100%" bgcolor="#f4f4f5" cellpadding="0" cellspacing="0" style="font-family:Arial,sans-serif;">
+<tr>
+  <td align="center">
+    <table width="600" cellpadding="0" cellspacing="0" bgcolor="#ffffff" style="border:1px solid #ddd;">
+      <tr>
+        <td align="center" bgcolor="#16a34a" style="padding:30px; color:#fff; font-size:24px; font-weight:bold;">
+          Microbiology Lab System
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:30px; color:#333; font-size:16px;">
+          <p>Hello <strong>'.htmlspecialchars($user['first_name'].' '.$user['last_name']).'</strong>,</p>
+          <p>Your password has been changed successfully.</p>
+
+          <table width="100%" cellpadding="10" cellspacing="0" bgcolor="#f0fdf4" style="border:2px solid #22c55e; margin:20px 0;">
+           <tr>
+  <td style="color:#166534;">
+    <strong>University ID:</strong> '.htmlspecialchars($university_id).'<br>
+    <strong>Password:</strong> '.htmlspecialchars($new_password).'<br>
+    <strong>Date & Time:</strong> '.htmlspecialchars($now).'<br>
+  </td>
+</tr>
+          </table>
+
+          <table width="100%" cellpadding="10" cellspacing="0" bgcolor="#fff3cd" style="border:1px solid #ffc107; margin:20px 0;">
+            <tr>
+              <td style="color:#856404; font-weight:bold;">&#9888; If you didn\'t make this change, contact your supervisor immediately.</td>
+            </tr>
+          </table>
+
+          <p style="text-align: center;">
+            <a href="http://'.$_SERVER['HTTP_HOST'].'/LRRS/index.php" 
+               style="background-color:#16a34a; color:#ffffff; padding:12px 30px; 
+                      text-decoration:none; border-radius:5px; display:inline-block;">
+              Login to System
+            </a>
+          </p>
+
+          <p>Thanks,<br>The LRR system</p>
+        </td>
+      </tr>
+      <tr>
+        <td align="center" style="padding:20px; font-size:12px; color:#6b7280;">
+          University of Kelaniya - Department of Microbiology<br>
+          This is an automated message, please do not reply.<br>
+          &copy; '.date('Y').' Microbiology Lab System
+        </td>
+      </tr>
+    </table>
+  </td>
+</tr>
+</table>';
 
         $mail->send();
     } catch (Exception $e) {

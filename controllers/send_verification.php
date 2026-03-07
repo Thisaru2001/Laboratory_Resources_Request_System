@@ -59,8 +59,10 @@ try {
     $mail->SMTPAuth   = true;
     $mail->Username   = 'microbiologylaboratorysystem@gmail.com';
     $mail->Password   = 'cesb lydd jord elyu';
-    $mail->SMTPSecure = 'ssl';
-    $mail->Port       = 465;
+    $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+    $mail->Port = 587;
+    $mail->CharSet = 'UTF-8';
+$mail->Encoding = 'base64';
 
     // Recipients
     $mail->setFrom('microbiologylaboratorysystem@gmail.com', 'Microbiology Lab System');
@@ -70,74 +72,75 @@ try {
     // Content
     $mail->isHTML(true);
     $mail->Subject = 'Password Reset Verification Code - Microbiology Lab';
-    $mail->Body = "
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <style>
-            body { font-family: Arial, sans-serif; background: #f9fafb; margin: 0; padding: 0; }
-            .container { max-width: 600px; margin: 20px auto; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-            .header { background: linear-gradient(135deg, #22c55e, #16a34a); padding: 30px; text-align: center; }
-            .header h2 { color: white; margin: 0; font-size: 24px; }
-            .content { padding: 40px 30px; }
-            .code-box { background: #f0fdf4; border: 2px dashed #22c55e; padding: 20px; text-align: center; border-radius: 10px; margin: 20px 0; }
-            .code-box h1 { color: #166534; font-size: 36px; letter-spacing: 5px; margin: 0; }
-            .info { color: #4b5563; line-height: 1.6; }
-            .warning { background: #fff3cd; border: 1px solid #ffc107; padding: 15px; border-radius: 8px; margin: 20px 0; }
-            .footer { background: #f9fafb; padding: 20px; text-align: center; color: #6b7280; font-size: 12px; border-top: 1px solid #e5e7eb; }
-        </style>
-    </head>
-    <body>
-        <div class='container'>
-            <div class='header'>
-                <h2>Microbiology Lab System</h2>
-            </div>
-            <div class='content'>
-                <h3 style='color: #166534; margin-top: 0;'>Password Reset Request</h3>
-                <p class='info'>Hello <strong>" . htmlspecialchars($user['first_name'] . ' ' . $user['last_name']) . "</strong>,</p>
-                <p class='info'>We received a request to reset your password. Use the verification code below:</p>
-                
-                <div class='code-box'>
-                    <h1>" . $verification_code . "</h1>
-                </div>
-                
-                <div class='warning'>
-                    <p style='margin: 0;'><strong>⚠️ If you didn't make this change, please contact your supervisor immediately.</strong></p>
-                </div>
-                
-                <p class='info'>If you didn't request this, please ignore this email.</p>
-                
-                <table style='width: 100%; margin-top: 30px; background: #f9fafb; padding: 15px; border-radius: 8px;'>
-                    <tr>
-                        <td style='color: #4b5563; padding: 5px;'><strong>University ID:</strong></td>
-                        <td style='color: #166534; padding: 5px;'>" . htmlspecialchars($university_id) . "</td>
-                    </tr>
-                </table>
-            </div>
-            <div class='footer'>
-                <p>University of Kelaniya - Department of Microbiology</p>
-                  <p>This is an automated message, please do not reply.</p>
-                <p>&copy; " . date('Y') . " Microbiology Lab System</p>
-            </div>
-        </div>
-    </body>
-    </html>";
+    $mail->Body = '
+<table width="100%" bgcolor="#f4f4f5" cellpadding="0" cellspacing="0" style="font-family:Arial,sans-serif;">
+<tr>
+  <td align="center">
+    <!-- Main container -->
+    <table width="600" cellpadding="0" cellspacing="0" bgcolor="#ffffff" style="border:1px solid #ddd;">
+      <!-- Header -->
+      <tr>
+        <td align="center" bgcolor="#16a34a" style="padding:30px; color:#fff; font-size:24px; font-weight:bold;">
+          Microbiology Lab System
+        </td>
+      </tr>
+      <!-- Body -->
+      <tr>
+        <td style="padding:30px; color:#333; font-size:16px;">
+          <p>Hello <strong>'.htmlspecialchars($user['first_name'].' '.$user['last_name']).'</strong>,</p>
+          <p>We received a request to reset your password. Use the verification code below:</p>
+
+          <table width="100%" cellpadding="15" cellspacing="0" bgcolor="#f0fdf4" style="border:2px solid #22c55e; text-align:center; margin:20px 0;">
+            <tr>
+              <td style="font-size:36px; font-weight:bold; color:#166534; letter-spacing:5px;">
+                '.$verification_code.'
+              </td>
+            </tr>
+          </table>
+
+          <table width="100%" cellpadding="10" cellspacing="0" bgcolor="#fff3cd" style="border:1px solid #ffc107; margin:20px 0;">
+            <tr>
+              <td style="color:#856404; font-weight:bold;">&#9888; If you didn\'t make this change, contact your supervisor/HOD immediately.</td>
+            </tr>
+          </table>
+
+          <table width="100%" cellpadding="5">
+            <tr>
+              <td><strong>University ID:</strong></td>
+              <td>'.htmlspecialchars($university_id).'</td>
+            </tr>
+          </table>
+
+       <p>Thanks,<br>
+The LRR system</p>
+        </td>
+      </tr>
+      <!-- Footer -->
+      <tr>
+        <td align="center" style="padding:20px; font-size:12px; color:#6b7280;">
+          University of Kelaniya - Department of Microbiology<br>
+          This is an automated message, please do not reply.<br>
+          &copy; '.date('Y').' Microbiology Lab System
+        </td>
+      </tr>
+    </table>
+  </td>
+</tr>
+</table>';
 
     $mail->send();
-    
+
     echo json_encode([
         'success' => true,
         'message' => 'Verification code sent to your email',
         'email' => $user['email']
     ]);
-
 } catch (Exception $e) {
     error_log("Password Reset Email Error: " . $mail->ErrorInfo);
-    
+
     // ✅ FIXED: Send response back to browser!
     echo json_encode([
         'success' => false,
         'message' => 'Failed to send verification email. Please try again.'
     ]);
 }
-?>

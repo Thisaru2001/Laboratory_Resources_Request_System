@@ -88,6 +88,215 @@ session_start();
             }
         }
 
+   /* Laboratory Decorative Elements - Like Login Page */
+.lab-microscope, .lab-test-tube, .lab-alembic, .lab-petri, 
+.lab-dna, .lab-microbe, .lab-flask, .lab-beaker {
+    position: fixed;
+    font-size: 8rem;
+    opacity: 0.12; /* Very subtle */
+    z-index: 1;
+    user-select: none;
+    pointer-events: none;
+    color: rgba(255, 255, 255, 0.8);
+    text-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+    filter: none;
+    -webkit-text-stroke: 1px rgba(255, 255, 255, 0.1);
+}
+
+        /* Position them OUTSIDE the card area with DIFFERENT animations */
+        .lab-microscope { 
+            top: 2%; 
+            left: 2%; 
+            animation: float 15s infinite ease-in-out;
+            transform: rotate(-15deg); 
+        }
+
+        .lab-test-tube { 
+            top: 2%; 
+            right: 2%; 
+            animation: floatReverse 18s infinite ease-in-out;
+            transform: rotate(10deg); 
+        }
+
+        .lab-alembic { 
+            bottom: 2%; 
+            left: 2%; 
+            animation: floatSlow 20s infinite ease-in-out;
+            transform: rotate(20deg); 
+        }
+
+        .lab-petri { 
+            bottom: 2%; 
+            right: 2%; 
+            animation: floatMedium 22s infinite ease-in-out;
+            transform: rotate(-5deg); 
+        }
+
+        .lab-dna { 
+            top: 50%; 
+            left: 1%; 
+            animation: rotate 25s infinite linear;
+            transform: translateY(-50%) rotate(45deg); 
+        }
+
+        .lab-microbe { 
+            top: 50%; 
+            right: 1%; 
+            animation: bounce 8s infinite ease-in-out;
+            transform: translateY(-50%) rotate(-25deg); 
+        }
+
+        .lab-flask { 
+            bottom: 25%; 
+            left: 3%; 
+            animation: floatFlask 19s infinite ease-in-out;
+            transform: rotate(15deg); 
+        }
+
+        .lab-beaker { 
+            top: 25%; 
+            right: 3%; 
+            animation: floatBeaker 21s infinite ease-in-out;
+            transform: rotate(-10deg); 
+        }
+
+        /* Animation Keyframes - EXACTLY from Login Page */
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(30px, -30px) rotate(10deg); }
+            50% { transform: translate(50px, 0) rotate(0deg); }
+            75% { transform: translate(20px, 30px) rotate(-10deg); }
+        }
+
+        @keyframes floatReverse {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(-30px, 30px) rotate(-10deg); }
+            50% { transform: translate(-50px, 0) rotate(0deg); }
+            75% { transform: translate(-20px, -30px) rotate(10deg); }
+        }
+
+        @keyframes floatSlow {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            33% { transform: translate(40px, -20px) rotate(15deg); }
+            66% { transform: translate(-20px, 40px) rotate(-15deg); }
+        }
+
+        @keyframes floatMedium {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(-40px, 30px) scale(1.1); }
+            50% { transform: translate(30px, -40px) scale(0.9); }
+            75% { transform: translate(-30px, -30px) scale(1.05); }
+        }
+
+        @keyframes floatFlask {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            30% { transform: translateY(-40px) rotate(15deg); }
+            60% { transform: translateY(20px) rotate(-15deg); }
+        }
+
+        @keyframes floatBeaker {
+            0%, 100% { transform: translateY(0) scale(1); }
+            40% { transform: translateY(-50px) scale(1.1); }
+            80% { transform: translateY(30px) scale(0.95); }
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-60px) scale(1.2); }
+        }
+
+        /* Bubble Container - with login page bubble animations */
+        .bubble-container {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            overflow: hidden;
+            pointer-events: none;
+            z-index: 2;
+        }
+
+        .bubble {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+        }
+
+        .bubble1 {
+            width: 40px;
+            height: 40px;
+            bottom: 10%;
+            left: 15%;
+            animation: bubbleUp 12s infinite ease-out;
+        }
+
+        .bubble2 {
+            width: 25px;
+            height: 25px;
+            bottom: 20%;
+            right: 25%;
+            animation: bubbleUp 8s infinite ease-out;
+            animation-delay: 2s;
+        }
+
+        .bubble3 {
+            width: 35px;
+            height: 35px;
+            bottom: 5%;
+            left: 40%;
+            animation: bubbleUp 10s infinite ease-out;
+            animation-delay: 4s;
+        }
+
+        .bubble4 {
+            width: 20px;
+            height: 20px;
+            bottom: 30%;
+            right: 40%;
+            animation: bubbleUp 9s infinite ease-out;
+            animation-delay: 1s;
+        }
+
+        .bubble5 {
+            width: 30px;
+            height: 30px;
+            bottom: 15%;
+            left: 70%;
+            animation: bubbleUp 11s infinite ease-out;
+            animation-delay: 3s;
+        }
+
+        .bubble6 {
+            width: 45px;
+            height: 45px;
+            bottom: 25%;
+            right: 15%;
+            animation: bubbleUp 13s infinite ease-out;
+            animation-delay: 5s;
+        }
+
+        @keyframes bubbleUp {
+            0% {
+                transform: translateY(0) scale(1);
+                opacity: 0.3;
+            }
+            50% {
+                transform: translateY(-150px) scale(1.5);
+                opacity: 0.5;
+            }
+            100% {
+                transform: translateY(-300px) scale(0.5);
+                opacity: 0;
+            }
+        }
+
         .auth-card {
             background: white;
             border-radius: 40px;
@@ -95,8 +304,8 @@ session_start();
             display: flex;
             overflow: hidden;
             width: 100%;
-            max-width: 1200px;
-            height: 680px;
+            max-width: 1000px;
+            height: 600px;
             position: relative;
             z-index: 10;
             animation: slideUp 0.8s cubic-bezier(0.4, 0, 0.2, 1);
@@ -108,7 +317,6 @@ session_start();
                 opacity: 0;
                 transform: translateY(50px);
             }
-
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -134,16 +342,6 @@ session_start();
             top: -50%;
             left: -50%;
             animation: rotate 20s infinite linear;
-        }
-
-        @keyframes rotate {
-            from {
-                transform: rotate(0deg);
-            }
-
-            to {
-                transform: rotate(360deg);
-            }
         }
 
         .left-image img {
@@ -430,6 +628,18 @@ session_start();
             h2.brand {
                 font-size: 1.8rem;
             }
+
+            .lab-microscope, .lab-test-tube, .lab-alembic, .lab-petri, 
+            .lab-dna, .lab-microbe, .lab-flask, .lab-beaker {
+                font-size: 4rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .lab-microscope, .lab-test-tube, .lab-alembic, .lab-petri, 
+            .lab-dna, .lab-microbe, .lab-flask, .lab-beaker {
+                font-size: 4rem;
+            }
         }
 
         @media (max-width: 576px) {
@@ -439,6 +649,7 @@ session_start();
 
             .auth-card {
                 border-radius: 30px;
+                max-width: 95%;
             }
 
             .auth-form {
@@ -479,6 +690,11 @@ session_start();
             .col-md-6:last-child {
                 margin-bottom: 0;
             }
+
+            .lab-microscope, .lab-test-tube, .lab-alembic, .lab-petri, 
+            .lab-dna, .lab-microbe, .lab-flask, .lab-beaker {
+                font-size: 4rem;
+            }
         }
 
         @media (max-width: 380px) {
@@ -502,6 +718,11 @@ session_start();
             h2.brand {
                 font-size: 1.4rem;
             }
+
+            .lab-microscope, .lab-test-tube, .lab-alembic, .lab-petri, 
+            .lab-dna, .lab-microbe, .lab-flask, .lab-beaker {
+                font-size: 3rem;
+            }
         }
     </style>
 
@@ -511,6 +732,26 @@ session_start();
 </head>
 
 <body>
+
+    <!-- Laboratory Decorative Elements - All positioned OUTSIDE the card -->
+    <div class="lab-microscope">🔬</div>
+    <div class="lab-test-tube">🧪</div>
+    <div class="lab-alembic">⚗️</div>
+    <div class="lab-petri">🧫</div>
+    <div class="lab-dna">🧬</div>
+    <div class="lab-microbe">🦠</div>
+    <!-- <div class="lab-flask">🧪</div> -->
+    <!-- <div class="lab-beaker">🥼</div> -->
+
+    <!-- Bubble Container -->
+    <div class="bubble-container">
+        <div class="bubble bubble1"></div>
+        <div class="bubble bubble2"></div>
+        <div class="bubble bubble3"></div>
+        <div class="bubble bubble4"></div>
+        <div class="bubble bubble5"></div>
+        <div class="bubble bubble6"></div>
+    </div>
 
     <div class="auth-card">
 
@@ -552,16 +793,33 @@ session_start();
                         </div>
                     </div>
 
-                    <!-- University ID -->
-                    <div class="mb-3">
-                        <label class="form-label">University ID</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="bi bi-card-text"></i></span>
-                            <input type="text" id="university_id" class="form-control" 
-                                   placeholder="SC/####/###" 
-                                   oninput="this.value = this.value.toUpperCase()"
-                                   required>
+                    <!-- University ID & Type-->
+                    <div class="row mb-3">
+
+                        <div class="col-md-6">
+                            <label class="form-label">University ID</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-card-text"></i></span>
+                                <input type="text" id="university_id" class="form-control"
+                                    placeholder="BS/####/###"
+                                    oninput="this.value = this.value.toUpperCase()"
+                                    required>
+                            </div>
                         </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">User Type</label>
+                            <div class="input-group">
+                                <span class="input-group-text"><i class="bi bi-person"></i></span>
+                                <select id="user_type" class="form-select" onchange="updateEmailField()" required>
+                                    <option value="" selected disabled>Select Type</option>
+                                    <option value="student">Student</option>
+                                    <option value="supervisor">Supervisor</option>
+                                    <option value="technical_officer">Technical Officer</option>
+                                </select>
+                            </div>
+                        </div>
+
                     </div>
 
                     <!-- Mobile -->
@@ -569,11 +827,11 @@ session_start();
                         <label class="form-label">Mobile Number</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-telephone"></i></span>
-                            <input type="tel" id="mobile" class="form-control" 
-                                   placeholder="07########" 
-                                   pattern="[0-9]{10}" 
-                                   title="Please enter a valid 10-digit mobile number"
-                                   required>
+                            <input type="tel" id="mobile" class="form-control"
+                                placeholder="07########"
+                                pattern="[0-9]{10}"
+                                title="Please enter a valid 10-digit mobile number"
+                                required>
                         </div>
                     </div>
 
@@ -582,7 +840,7 @@ session_start();
                         <label class="form-label">Email Address</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-envelope"></i></span>
-                            <input type="email" id="email" class="form-control" placeholder="john.doe@example.com" required>
+                            <input type="email" id="email" class="form-control" placeholder="John12@gmail.com" required>
                         </div>
                     </div>
 
@@ -591,24 +849,23 @@ session_start();
                         <label class="form-label">Password</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-lock"></i></span>
-                            <input type="password" id="password" class="form-control" 
-                                   placeholder="••••••••" 
-                                   onkeyup="checkPasswordStrength()"
-                                   required>
+                            <input type="password" id="password" class="form-control"
+                                placeholder="••••••••"
+                                onkeyup="checkPasswordStrength()"
+                                required>
                         </div>
                         <small class="text-muted" id="passwordStrength">Use 8+ characters with letters & numbers</small>
                     </div>
 
                     <!-- Supervisor Email -->
-                    <div class="mb-3">
-                        <label class="form-label">Supervisor Email</label>
+                    <div class="mb-3" id="emailField">
+                        <label class="form-label" id="emailLabel">Supervisor Email</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-envelope-check"></i></span>
-                            <input type="email" id="supervisor_email" class="form-control" 
-                                   placeholder="supervisor@kln.ac.lk" 
-                                   pattern=".*@kln\.ac\.lk$"
-                                   title="Please use your supervisor's @kln.ac.lk email"
-                                   required>
+                            <input type="email" id="role_email" class="form-control"
+                                placeholder="supervisor@kln.ac.lk"
+                             
+                                required>
                         </div>
                     </div>
 
@@ -635,9 +892,9 @@ session_start();
                                 <i class="bi bi-camera me-2"></i>Choose Image
                             </button>
                         </div>
-                        <small class="text-muted d-block mt-2">Upload a profile photo (optional)</small>
+                        <small class="text-muted d-block mt-2">Upload a profile photo</small>
                     </div>
-                    
+
                     <!-- Submit Button -->
                     <div class="d-grid mb-2">
                         <button type="submit" class="btn btn-success" id="signupBtn">
@@ -652,7 +909,7 @@ session_start();
 
                     <p class="text-muted text-center small mt-3">
                         <i class="bi bi-info-circle me-1"></i>
-                        Account will be activated after Supervisor approval
+                        Account will be activated after Supervisor/Hods approval
                     </p>
                 </form>
             </div>
@@ -661,7 +918,7 @@ session_start();
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    
+
     <!-- Message Modal -->
     <div class="modal fade" id="messageModal" tabindex="-1">
         <div class="modal-dialog">
@@ -699,6 +956,24 @@ session_start();
     </div>
 
     <script>
+        var inputrole = '';
+
+        function updateEmailField() {
+            var type = document.getElementById("user_type").value;
+            var label = document.getElementById("emailLabel");
+            inputrole = document.getElementById("role_email");
+
+            if (type === "student") {
+                label.innerText = "Supervisor Email";
+                inputrole.placeholder = "supervisor@gmail.com";
+                inputrole.title = "Please use your supervisor email";
+            } else {
+                label.innerText = "HOD Email";
+                inputrole.placeholder = "hod@gmail.com";
+                inputrole.title = "Please use HOD's email";
+            }
+        }
+
         // Image Preview Script
         document.getElementById('profileImageInput').addEventListener('change', function() {
             const file = this.files[0];
@@ -725,7 +1000,7 @@ session_start();
         function checkPasswordStrength() {
             const password = document.getElementById('password').value;
             const strengthEl = document.getElementById('passwordStrength');
-            
+
             if (password.length === 0) {
                 strengthEl.innerHTML = 'Use 8+ characters with letters & numbers';
                 strengthEl.style.color = '#6b7280';
@@ -767,7 +1042,7 @@ session_start();
         // Main signup function
         function createAccount(event) {
             event.preventDefault();
-            
+
             const btn = document.getElementById('signupBtn');
             const originalContent = btn.innerHTML;
 
@@ -778,10 +1053,11 @@ session_start();
             const mobile = document.getElementById('mobile').value.trim();
             const email = document.getElementById('email').value.trim();
             const password = document.getElementById('password').value;
-            const supervisorEmail = document.getElementById('supervisor_email').value.trim();
+            const roleEmail = document.getElementById('role_email').value.trim();
+            const userType = document.getElementById('user_type').value;
 
             // Basic validation
-            if (!firstName || !lastName || !universityId || !mobile || !email || !password || !supervisorEmail) {
+            if (!firstName || !lastName || !universityId || !mobile || !email || !password || !roleEmail || !userType) {
                 showError('Please fill in all required fields');
                 return;
             }
@@ -803,11 +1079,7 @@ session_start();
                 return;
             }
 
-            // Supervisor email validation
-            if (!supervisorEmail.endsWith('@kln.ac.lk')) {
-                showError('Supervisor email must be a valid @kln.ac.lk address');
-                return;
-            }
+            // NO EMAIL DOMAIN VALIDATION - Any email allowed
 
             // Disable button and show loading state
             btn.disabled = true;
@@ -820,7 +1092,8 @@ session_start();
             formData.append('mobile', mobile);
             formData.append('email', email);
             formData.append('password', password);
-            formData.append('supervisor_email', supervisorEmail);
+            formData.append('role_email', roleEmail);
+            formData.append('user_type', userType);
 
             const profileImageInput = document.getElementById('profileImageInput');
             if (profileImageInput && profileImageInput.files.length > 0) {
@@ -833,14 +1106,14 @@ session_start();
 
             xhr.onload = function() {
                 resetButton(btn, originalContent);
-                
+
                 if (xhr.status === 200) {
                     try {
                         const response = JSON.parse(xhr.responseText);
-                       
+
                         if (response.status_user === 'success') {
                             showSuccess(response.message || 'Account created successfully!');
-                            
+
                             // Clear form
                             document.getElementById('first_name').value = '';
                             document.getElementById('last_name').value = '';
@@ -848,21 +1121,22 @@ session_start();
                             document.getElementById('mobile').value = '';
                             document.getElementById('email').value = '';
                             document.getElementById('password').value = '';
-                            document.getElementById('supervisor_email').value = '';
-                            
+                            document.getElementById('role_email').value = '';
+                            document.getElementById('user_type').value = '';
+
                             const profileInput = document.getElementById('profileImageInput');
                             if (profileInput) profileInput.value = '';
-                            
+
                             document.getElementById('profilePreview').src = 'https://ui-avatars.com/api/?name=User&background=22c55e&color=fff&size=100';
-                            
+
                             // Redirect after 3 seconds
                             setTimeout(() => {
                                 window.location.href = '../index.php';
                             }, 3000);
-                            
+
                         } else {
                             showError(response.message || 'Account creation failed');
-                            
+
                             if (response.fields && Array.isArray(response.fields)) {
                                 response.fields.forEach(field => {
                                     const element = document.getElementById(field);
@@ -892,7 +1166,7 @@ session_start();
             };
 
             xhr.send(formData);
-            
+
             return false;
         }
     </script>
