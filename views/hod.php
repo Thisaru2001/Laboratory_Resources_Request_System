@@ -3850,7 +3850,8 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                             </table>
                         </div>
                     </div>
-                    <!-- <div id="techOfficerTableCard" class="card p-4"> 
+                </div>
+                <!-- <div id="techOfficerTableCard" class="card p-4"> 
                     <h4 class="table-heading mt-0">
                         <i class="bi bi-person-gear"></i> Technical Officers
                         <span class="table-count" id="techOfficerCount">(4)</span>
@@ -3964,1072 +3965,599 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
 
 
 
-<!-- Equipment Management Section -->
-<div id="equipmentSection" style="display: none;">
-    <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Equipment Management</h3>
 
-    <div class="search-add-row" style="margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
-        <div class="search-container" style="flex: 1; max-width: 500px;">
-            <input type="text"
-                id="equipmentSearch"
-                class="search-input"
-                placeholder="Search by code, name or location..."
-                oninput="searchEquipment()">
-        </div>
-        <button class="add-btn" onclick="refreshAIAnalysis()" style="margin-right: 4px; background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
-            <i class="bi bi-robot"></i> AI Analyze
-        </button>
-        <button class="add-btn" onclick="sendToMaintenance()" style="margin-right: 4px; background: linear-gradient(135deg, #f59e0b, #d97706);">
-            <i class="bi bi-tools"></i> Send to Maintenance
-        </button>
-        <button class="add-btn" onclick="addEquipment()" style="background: linear-gradient(135deg, #22c55e, #16a34a);">
-            <i class="bi bi-plus-circle"></i> Add Equipment
-        </button>
-    </div>
 
-    <!-- Equipment Table Card -->
-    <div id="equipmentTableCard" class="card p-4">
-        <h4 class="table-heading mt-0">
-            <i class="bi bi-tools"></i> Equipment List
-            <span class="table-count" id="equipmentCount">
-                <?php
-                $eq_count_query = "SELECT COUNT(*) as total FROM equipment WHERE status = 'active'";
-                $eq_count_result = Database::search($eq_count_query);
-                $total_equipment = ($eq_count_result && $eq_count_result->num_rows > 0) ? $eq_count_result->fetch_assoc()['total'] : 0;
-                echo "($total_equipment)";
-                ?>
-            </span>
-        </h4>
-        <div class="table-responsive">
-            <table class="user-table">
-                <thead>
-                    <tr>
-                        <th>Image</th>
-                        <th>Equipment Code</th>
-                        <th>Name</th>
-                        <th>Location</th>
-                        <th>Active (Available/Total)</th>
-                        <th>Maintenance</th>
-                        <th>AI Usage %</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="equipmentTableBody">
-                    <!-- Data will be loaded by JavaScript from AI API -->
-                </tbody>
-            </table>
-        </div>
-    </div>
-</div>
+                <!-- Equipment Management Section -->
+                <div id="equipmentSection" style="display: none;">
+                    <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Equipment Management</h3>
 
-<!-- Equipment Details Modal -->
-<div class="modal fade" id="equipmentDetailsModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header bg-success text-white">
-                <h5 class="modal-title">
-                    <i class="bi bi-info-circle me-2"></i>
-                    Equipment Details & AI Analysis
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body" id="equipmentDetailsContent">
-                <!-- Content will be populated by JavaScript -->
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            </div>
-        </div>
-    </div>
-</div>
-                    <!-- Equipment Management Section -->
-                    <!-- <div id="equipmentSection" style="display: none;">
-                        <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Equipment Management</h3>
 
-                     
-                        <div class="search-add-row" style="margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
-                            <div class="search-container" style="flex: 1; max-width: 500px;">
-                                <input type="text"
-                                    id="equipmentSearch"
-                                    class="search-input"
-                                    placeholder="Search by code, name or location..."
-                                    oninput="searchEquipment()">
-                            </div>
-                            <button class="add-btn" onclick="sendToMaintenance()" style="margin-right: 4px; background: linear-gradient(135deg, #f59e0b, #d97706);">
-                                <i class="bi bi-tools"></i> Send to Maintenance
-                            </button>
-                            <button class="add-btn" onclick="addEquipment()" style="background: linear-gradient(135deg, #22c55e, #16a34a);">
-                                <i class="bi bi-plus-circle"></i> Add Equipment
-                            </button>
+                    <div class="search-add-row" style="margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
+                        <div class="search-container" style="flex: 1; max-width: 500px;">
+                            <input type="text"
+                                id="equipmentSearch"
+                                class="search-input"
+                                placeholder="Search by code, name or location..."
+                                oninput="searchEquipment()">
                         </div>
+                        <button class="add-btn" onclick="sendToMaintenance()" style="margin-right: 4px; background: linear-gradient(135deg, #f59e0b, #d97706);">
+                            <i class="bi bi-tools"></i> Send to Maintenance
+                        </button>
+                        <button class="add-btn" onclick="addEquipment()" style="background: linear-gradient(135deg, #22c55e, #16a34a);">
+                            <i class="bi bi-plus-circle"></i> Add Equipment
+                        </button>
+                    </div>
 
-                    
-                        <div id="equipmentTableCard" class="card p-4"> 
-                            <h4 class="table-heading mt-0">
-                                <i class="bi bi-tools"></i> Equipment List
-                                <span class="table-count" id="equipmentCount">(6)</span>
-                            </h4>
-                            <div class="table-responsive">
-                                <table class="user-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Image</th>
-                                            <th>Equipment Code</th>
-                                            <th>Name</th>
-                                            <th>Active (Available/Total)</th>
-                                            <th>Maintenance Pending</th>
-                                            <th>Usage %</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="equipmentTableBody">
-                                        <tr data-equipment-id="MIC-001">
-                                            <td><img src="https://cdn-icons-png.flaticon.com/512/2941/2941514.png" style="width: 50px; height: 50px; object-fit: contain;"></td>
-                                            <td>MIC-001</td>
-                                            <td>Microscope</td>
-                                            <td><span class="badge" style="background: #22c55e; color: white;">4/8</span></td>
-                                            <td><span class="badge bg-warning">2</span></td>
-                                            <td>
-                                                <div class="progress-bar" style="width: 100px; display: inline-block;">
-                                                    <div class="progress-fill" style="width: 75%"></div>
-                                                </div>
-                                                75%
-                                            </td>
-                                            <td>
-                                                <div class="action-buttons">
-                                                    <button class="btn-view" onclick="viewEquipment('MIC-001')" title="View Details">
-                                                        <i class="bi bi-eye"></i>
-                                                    </button>
-                                                    <button class="btn-edit" onclick="editEquipment('MIC-001')" title="Edit">
-                                                        <i class="bi bi-pencil-square"></i>
-                                                    </button>
-                                                    <button class="btn-remove" onclick="removeEquipment('MIC-001')" title="Remove">
-                                                        <i class="bi bi-trash"></i>
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        <tr data-equipment-id="CEN-002">
-                                            <td><img src="https://cdn-icons-png.flaticon.com/512/2941/2941543.png" style="width: 50px; height: 50px; object-fit: contain;"></td>
-                                            <td>CEN-002</td>
-                                            <td>Centrifuge</td>
-                                            <td><span class="badge" style="background: #22c55e; color: white;">3/5</span></td>
-                                            <td><span class="badge bg-warning">1</span></td>
-                                            <td>
-                                                <div class="progress-bar" style="width: 100px; display: inline-block;">
-                                                    <div class="progress-fill" style="width: 60%"></div>
-                                                </div>
-                                                60%
-                                            </td>
-                                            <td>
-                                                <div class="action-buttons">
-                                                    <button class="btn-view" onclick="viewEquipment('CEN-002')" title="View Details">
-                                                        <i class="bi bi-eye"></i>
-                                                    </button>
-                                                    <button class="btn-edit" onclick="editEquipment('CEN-002')" title="Edit">
-                                                        <i class="bi bi-pencil-square"></i>
-                                                    </button>
-                                                    <button class="btn-remove" onclick="removeEquipment('CEN-002')" title="Remove">
-                                                        <i class="bi bi-trash"></i>
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        <tr data-equipment-id="INC-003">
-                                            <td><img src="https://cdn-icons-png.flaticon.com/512/2941/2941538.png" style="width: 50px; height: 50px; object-fit: contain;"></td>
-                                            <td>INC-003</td>
-                                            <td>Incubator</td>
-                                            <td><span class="badge" style="background: #22c55e; color: white;">2/4</span></td>
-                                            <td><span class="badge bg-warning">3</span></td>
-                                            <td>
-                                                <div class="progress-bar" style="width: 100px; display: inline-block;">
-                                                    <div class="progress-fill" style="width: 50%"></div>
-                                                </div>
-                                                50%
-                                            </td>
-                                            <td>
-                                                <div class="action-buttons">
-                                                    <button class="btn-view" onclick="viewEquipment('INC-003')" title="View Details">
-                                                        <i class="bi bi-eye"></i>
-                                                    </button>
-                                                    <button class="btn-edit" onclick="editEquipment('INC-003')" title="Edit">
-                                                        <i class="bi bi-pencil-square"></i>
-                                                    </button>
-                                                    <button class="btn-remove" onclick="removeEquipment('INC-003')" title="Remove">
-                                                        <i class="bi bi-trash"></i>
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        <tr data-equipment-id="AUT-004">
-                                            <td><img src="https://cdn-icons-png.flaticon.com/512/2941/2941521.png" style="width: 50px; height: 50px; object-fit: contain;"></td>
-                                            <td>AUT-004</td>
-                                            <td>Autoclave</td>
-                                            <td><span class="badge" style="background: #22c55e; color: white;">6/6</span></td>
-                                            <td><span class="badge bg-warning">0</span></td>
-                                            <td>
-                                                <div class="progress-bar" style="width: 100px; display: inline-block;">
-                                                    <div class="progress-fill" style="width: 90%"></div>
-                                                </div>
-                                                90%
-                                            </td>
-                                            <td>
-                                                <div class="action-buttons">
-                                                    <button class="btn-view" onclick="viewEquipment('AUT-004')" title="View Details">
-                                                        <i class="bi bi-eye"></i>
-                                                    </button>
-                                                    <button class="btn-edit" onclick="editEquipment('AUT-004')" title="Edit">
-                                                        <i class="bi bi-pencil-square"></i>
-                                                    </button>
-                                                    <button class="btn-remove" onclick="removeEquipment('AUT-004')" title="Remove">
-                                                        <i class="bi bi-trash"></i>
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        <tr data-equipment-id="PHM-005">
-                                            <td><img src="https://cdn-icons-png.flaticon.com/512/2941/2941556.png" style="width: 50px; height: 50px; object-fit: contain;"></td>
-                                            <td>PHM-005</td>
-                                            <td>pH Meter</td>
-                                            <td><span class="badge" style="background: #22c55e; color: white;">3/3</span></td>
-                                            <td><span class="badge bg-warning">1</span></td>
-                                            <td>
-                                                <div class="progress-bar" style="width: 100px; display: inline-block;">
-                                                    <div class="progress-fill" style="width: 35%"></div>
-                                                </div>
-                                                35%
-                                            </td>
-                                            <td>
-                                                <div class="action-buttons">
-                                                    <button class="btn-view" onclick="viewEquipment('PHM-005')" title="View Details">
-                                                        <i class="bi bi-eye"></i>
-                                                    </button>
-                                                    <button class="btn-edit" onclick="editEquipment('PHM-005')" title="Edit">
-                                                        <i class="bi bi-pencil-square"></i>
-                                                    </button>
-                                                    <button class="btn-remove" onclick="removeEquipment('PHM-005')" title="Remove">
-                                                        <i class="bi bi-trash"></i>
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        <tr data-equipment-id="WAT-006">
-                                            <td><img src="https://cdn-icons-png.flaticon.com/512/2941/2941578.png" style="width: 50px; height: 50px; object-fit: contain;"></td>
-                                            <td>WAT-006</td>
-                                            <td>Water Bath</td>
-                                            <td><span class="badge" style="background: #22c55e; color: white;">5/7</span></td>
-                                            <td><span class="badge bg-warning">2</span></td>
-                                            <td>
-                                                <div class="progress-bar" style="width: 100px; display: inline-block;">
-                                                    <div class="progress-fill" style="width: 70%"></div>
-                                                </div>
-                                                70%
-                                            </td>
-                                            <td>
-                                                <div class="action-buttons">
-                                                    <button class="btn-view" onclick="viewEquipment('WAT-006')" title="View Details">
-                                                        <i class="bi bi-eye"></i>
-                                                    </button>
-                                                    <button class="btn-edit" onclick="editEquipment('WAT-006')" title="Edit">
-                                                        <i class="bi bi-pencil-square"></i>
-                                                    </button>
-                                                    <button class="btn-remove" onclick="removeEquipment('WAT-006')" title="Remove">
-                                                        <i class="bi bi-trash"></i>
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+
+                    <div id="equipmentTableCard" class="card p-4">
+                        <h4 class="table-heading mt-0">
+                            <i class="bi bi-tools"></i> Equipment List
+                            <span class="table-count" id="equipmentCount">(6)</span>
+                        </h4>
+                        <div class="table-responsive">
+                            <table class="user-table">
+                                <thead>
+                                    <tr>
+                                        <th>Image</th>
+                                        <th>Equipment Code</th>
+                                        <th>Name</th>
+                                      
+                                        <th>Maintenance Pending</th>
+                                        <th>Usage %</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="equipmentTableBody">
+                                    <!-- Data will be populated by JavaScript -->
+                                </tbody>
+                             
+                                       
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="modal fade" id="equipmentDetailsModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-lg modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header bg-success text-white">
+                                <h5 class="modal-title">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    Equipment Details
+                                </h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body" id="equipmentDetailsContent">
+
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                             </div>
                         </div>
                     </div>
+                </div>
 
-                  
-                    <div class="modal fade" id="equipmentDetailsModal" tabindex="-1" aria-hidden="true">
-                        <div class="modal-dialog modal-lg modal-dialog-centered">
-                            <div class="modal-content">
-                                <div class="modal-header bg-success text-white">
-                                    <h5 class="modal-title">
-                                        <i class="bi bi-info-circle me-2"></i>
-                                        Equipment Details
-                                    </h5>
-                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                                </div>
-                                <div class="modal-body" id="equipmentDetailsContent">
-                                 
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                </div>
+
+
+
+                <!-- Reservation Details Section -->
+                <div id="historySection" style="display: none;">
+                    <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Reservation Details</h3>
+
+                    <!-- Search and Filter Row (Outside card) -->
+                    <div class="search-add-row" style="margin-bottom: 20px;">
+                        <div class="search-container">
+                            <input type="text"
+                                id="reservationSearch"
+                                class="search-input"
+                                placeholder="Search by ID, student or lab..."
+                                oninput="searchReservations()"> <!-- Real-time search -->
+                            <button class="search-btn" onclick="searchReservations()">
+                                <i class="bi bi-search"></i> Search
+                            </button>
+                        </div>
+                        <div class="filter-section" style="margin-bottom: 0;">
+                            <select class="filter-select" id="statusFilter" onchange="searchReservations()" style="min-width: 150px;">
+                                <option value="all">All Status</option>
+                                <option value="ready">Ready</option>
+                                <option value="pending">Pending</option>
+                                <option value="rejected">Rejected</option>
+                            </select>
+                        </div>
+                        <!-- Add Button -->
+                        <button class="add-btn" onclick="addReservation()" style="background: linear-gradient(135deg, #22c55e, #16a34a);">
+                            <i class="bi bi-plus-circle"></i> Add Reservation
+                        </button>
+                    </div>
+
+                    <!-- Reservation Table Card -->
+                    <div id="reservationTableCard" class="card p-4">
+                        <h4 class="table-heading mt-0">
+                            <i class="bi bi-calendar-check"></i> Reservations
+                            <span class="table-count" id="reservationCount">(3)</span>
+                        </h4>
+                        <div class="table-responsive">
+                            <table class="user-table">
+                                <thead>
+                                    <tr>
+                                        <th>Reservation ID</th>
+                                        <th>Lab Location</th>
+                                        <th>Student ID</th>
+                                        <th>Status</th>
+                                        <th>Reservation Date</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="reservationTableBody">
+                                    <!-- Data will be populated by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reservation Details Modal -->
+                <div class="modal fade" id="reservationDetailsModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-lg modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header bg-success text-white">
+                                <h5 class="modal-title">
+                                    <i class="bi bi-calendar-check me-2"></i>
+                                    Reservation Details
+                                </h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body" id="reservationDetailsContent">
+                                <!-- Content will be populated by JavaScript -->
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                             </div>
                         </div>
-                    </div> -->
+                    </div>
+                </div>
 
 
 
+                <!-- Request Section -->
+                <div id="activitySection" style="display: none;">
+                    <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Requests</h3>
 
-                    <!-- Reservation Details Section -->
-                    <div id="historySection" style="display: none;">
-                        <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Reservation Details</h3>
-
-                        <!-- Search and Filter Row (Outside card) -->
-                        <div class="search-add-row" style="margin-bottom: 20px;">
-                            <div class="search-container">
-                                <input type="text"
-                                    id="reservationSearch"
-                                    class="search-input"
-                                    placeholder="Search by ID, student or lab..."
-                                    oninput="searchReservations()"> <!-- Real-time search -->
-                                <button class="search-btn" onclick="searchReservations()">
-                                    <i class="bi bi-search"></i> Search
-                                </button>
-                            </div>
-                            <div class="filter-section" style="margin-bottom: 0;">
-                                <select class="filter-select" id="statusFilter" onchange="searchReservations()" style="min-width: 150px;">
-                                    <option value="all">All Status</option>
-                                    <option value="ready">Ready</option>
-                                    <option value="pending">Pending</option>
-                                    <option value="rejected">Rejected</option>
-                                </select>
-                            </div>
-                            <!-- Add Button -->
-                            <button class="add-btn" onclick="addReservation()" style="background: linear-gradient(135deg, #22c55e, #16a34a);">
-                                <i class="bi bi-plus-circle"></i> Add Reservation
+                    <div class="card p-4">
+                        <!-- Request Type Tabs with Count Badges -->
+                        <div class="request-tabs" style="margin-bottom: 20px;">
+                            <button class="request-tab active" onclick="switchRequestType('technical')">
+                                Technical Officer Requests
+                                <span class="request-count-badge" id="technicalRequestCount">3</span>
+                            </button>
+                            <button class="request-tab" onclick="switchRequestType('supervisor')">
+                                Supervisor Requests
+                                <span class="request-count-badge" id="supervisorRequestCount">2</span>
                             </button>
                         </div>
 
-                        <!-- Reservation Table Card -->
-                        <div id="reservationTableCard" class="card p-4">
-                            <h4 class="table-heading mt-0">
-                                <i class="bi bi-calendar-check"></i> Reservations
-                                <span class="table-count" id="reservationCount">(3)</span>
-                            </h4>
-                            <div class="table-responsive">
-                                <table class="user-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Reservation ID</th>
-                                            <th>Lab Location</th>
-                                            <th>Student ID</th>
-                                            <th>Status</th>
-                                            <th>Reservation Date</th>
-                                            <th>Action</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="reservationTableBody">
-                                        <!-- Data will be populated by JavaScript -->
-                                    </tbody>
-                                </table>
+                        <!-- Time Range Filter -->
+                        <div class="filter-section" style="margin-bottom: 20px;">
+                            <select class="filter-select" id="timeRangeFilter" onchange="filterRequestsByTime()" style="min-width: 200px;">
+                                <option value="all">All Time</option>
+                                <option value="daily">Daily</option>
+                                <option value="weekly">Weekly</option>
+                                <option value="monthly">Monthly</option>
+                            </select>
+                        </div>
+
+                        <!-- Requests Table -->
+                        <div class="table-responsive mt-3">
+                            <table class="user-table">
+                                <thead>
+                                    <tr>
+                                        <th>Request ID</th>
+                                        <th>Date & Time</th>
+                                        <th>University ID</th>
+                                        <th>Name</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="requestListBody">
+                                    <!-- Data will be populated by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Request Details Modal -->
+                <div class="modal fade" id="requestDetailsModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-lg modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header bg-success text-white">
+                                <h5 class="modal-title">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    Request Details
+                                </h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body" id="requestDetailsContent">
+                                <!-- Content will be populated by JavaScript -->
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <!-- Reservation Details Modal -->
-                    <div class="modal fade" id="reservationDetailsModal" tabindex="-1" aria-hidden="true">
-                        <div class="modal-dialog modal-lg modal-dialog-centered">
-                            <div class="modal-content">
-                                <div class="modal-header bg-success text-white">
-                                    <h5 class="modal-title">
-                                        <i class="bi bi-calendar-check me-2"></i>
-                                        Reservation Details
+
+
+
+
+                <!-- Analytics Section -->
+                <div id="analyticsSection" style="display: none;">
+                    <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Analytics Dashboard</h3>
+
+                    <!-- Summary Statistics Cards -->
+                    <div class="analytics-grid">
+                        <!-- Students Card -->
+                        <div class="stat-card">
+                            <i class="bi bi-mortarboard-fill"></i>
+                            <h3>56</h3>
+                            <p>Students</p>
+                        </div>
+
+                        <!-- Supervisors/Lecturers Card -->
+                        <div class="stat-card">
+                            <i class="bi bi-person-badge-fill"></i>
+                            <h3>5</h3>
+                            <p>Supervisors/Lecturers</p>
+                        </div>
+
+                        <!-- Technical Officers Card -->
+                        <div class="stat-card">
+                            <i class="bi bi-person-gear"></i>
+                            <h3>3</h3>
+                            <p>Technical Officers</p>
+                        </div>
+
+                        <!-- Active Equipment Card -->
+                        <div class="stat-card">
+                            <i class="bi bi-tools"></i>
+                            <h3>85%</h3>
+                            <p>Equipment Utilization Rate</p>
+                        </div>
+
+                        <!-- Maintenance Card -->
+                        <div class="stat-card">
+                            <i class="bi bi-gear-wide-connected"></i>
+                            <h3>3</h3>
+                            <p>Maintenance</p>
+                        </div>
+                    </div>
+
+                    <!-- First Row: Rejected Requests Report & Equipment Usage Chart -->
+                    <div class="row">
+                        <!-- Rejected Requests Report -->
+                        <div class="col-md-6 mb-4">
+                            <div class="card p-4">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h5 class="fw-bold" style="color: #166534;">
+                                        <i class="bi bi-x-circle-fill text-danger me-2"></i>
+                                        Rejected Requests (Technical Officer)
                                     </h5>
-                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                    <button class="btn-generate" onclick="generateReport('rejected')">
+                                        <i class="bi bi-file-earmark-pdf me-2"></i>Generate Report
+                                    </button>
                                 </div>
-                                <div class="modal-body" id="reservationDetailsContent">
-                                    <!-- Content will be populated by JavaScript -->
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+
+                                <div class="table-responsive">
+                                    <table class="details-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Request ID</th>
+                                                <th>Student ID</th>
+                                                <th>Reason</th>
+                                                <th>Date & Time</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>#REQ003</td>
+                                                <td>SCI003</td>
+                                                <td>
+                                                    <button class="btn-view" onclick="viewRejectionReason('REQ003')" title="View Reason">
+                                                        <i class="bi bi-eye"></i> View
+                                                    </button>
+                                                </td>
+                                                <td>2026-02-19 09:15 AM</td>
+                                            </tr>
+                                            <tr>
+                                                <td>#REQ007</td>
+                                                <td>SCI007</td>
+                                                <td>
+                                                    <button class="btn-view" onclick="viewRejectionReason('REQ007')" title="View Reason">
+                                                        <i class="bi bi-eye"></i> View
+                                                    </button>
+                                                </td>
+                                                <td>2026-02-17 02:30 PM</td>
+                                            </tr>
+                                            <tr>
+                                                <td>#REQ012</td>
+                                                <td>SCI012</td>
+                                                <td>
+                                                    <button class="btn-view" onclick="viewRejectionReason('REQ012')" title="View Reason">
+                                                        <i class="bi bi-eye"></i> View
+                                                    </button>
+                                                </td>
+                                                <td>2026-02-15 11:45 AM</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-
-
-                    <!-- Request Section -->
-                    <div id="activitySection" style="display: none;">
-                        <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Requests</h3>
-
-                        <div class="card p-4">
-                            <!-- Request Type Tabs with Count Badges -->
-                            <div class="request-tabs" style="margin-bottom: 20px;">
-                                <button class="request-tab active" onclick="switchRequestType('technical')">
-                                    Technical Officer Requests
-                                    <span class="request-count-badge" id="technicalRequestCount">3</span>
-                                </button>
-                                <button class="request-tab" onclick="switchRequestType('supervisor')">
-                                    Supervisor Requests
-                                    <span class="request-count-badge" id="supervisorRequestCount">2</span>
-                                </button>
-                            </div>
-
-                            <!-- Time Range Filter -->
-                            <div class="filter-section" style="margin-bottom: 20px;">
-                                <select class="filter-select" id="timeRangeFilter" onchange="filterRequestsByTime()" style="min-width: 200px;">
-                                    <option value="all">All Time</option>
-                                    <option value="daily">Daily</option>
-                                    <option value="weekly">Weekly</option>
-                                    <option value="monthly">Monthly</option>
-                                </select>
-                            </div>
-
-                            <!-- Requests Table -->
-                            <div class="table-responsive mt-3">
-                                <table class="user-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Request ID</th>
-                                            <th>Date & Time</th>
-                                            <th>University ID</th>
-                                            <th>Name</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="requestListBody">
-                                        <!-- Data will be populated by JavaScript -->
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Request Details Modal -->
-                    <div class="modal fade" id="requestDetailsModal" tabindex="-1" aria-hidden="true">
-                        <div class="modal-dialog modal-lg modal-dialog-centered">
-                            <div class="modal-content">
-                                <div class="modal-header bg-success text-white">
-                                    <h5 class="modal-title">
-                                        <i class="bi bi-info-circle me-2"></i>
-                                        Request Details
+                        <!-- Equipment Usage Report with Search -->
+                        <div class="col-md-6 mb-4">
+                            <div class="card p-4">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h5 class="fw-bold" style="color: #166534;">
+                                        <i class="bi bi-bar-chart-fill text-success me-2"></i>
+                                        Equipment Usage Report
                                     </h5>
-                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                    <button class="btn-generate" onclick="generateReport('usage')">
+                                        <i class="bi bi-file-earmark-pdf me-2"></i>Generate Report
+                                    </button>
                                 </div>
-                                <div class="modal-body" id="requestDetailsContent">
-                                    <!-- Content will be populated by JavaScript -->
+
+                                <!-- Search Input for Equipment Name (Real-time) -->
+                                <div class="mb-3">
+                                    <input type="text"
+                                        id="equipmentUsageSearch"
+                                        class="form-control"
+                                        placeholder="Search equipment name..."
+                                        oninput="filterEquipmentUsage()">
                                 </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+
+                                <!-- Equipment Usage Table -->
+                                <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+                                    <table class="table table-hover">
+                                        <thead class="sticky-top bg-white">
+                                            <tr>
+                                                <th>Equipment Name</th>
+                                                <th>Usage Percentage</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="equipmentUsageTableBody">
+                                            <!-- Data will be populated by JavaScript -->
+                                        </tbody>
+                                    </table>
                                 </div>
-                            </div>
-                        </div>
-                    </div>
-
-
-
-
-
-                    <!-- Analytics Section -->
-                    <div id="analyticsSection" style="display: none;">
-                        <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Analytics Dashboard</h3>
-
-                        <!-- Summary Statistics Cards -->
-                        <div class="analytics-grid">
-                            <!-- Students Card -->
-                            <div class="stat-card">
-                                <i class="bi bi-mortarboard-fill"></i>
-                                <h3>56</h3>
-                                <p>Students</p>
-                            </div>
-
-                            <!-- Supervisors/Lecturers Card -->
-                            <div class="stat-card">
-                                <i class="bi bi-person-badge-fill"></i>
-                                <h3>5</h3>
-                                <p>Supervisors/Lecturers</p>
-                            </div>
-
-                            <!-- Technical Officers Card -->
-                            <div class="stat-card">
-                                <i class="bi bi-person-gear"></i>
-                                <h3>3</h3>
-                                <p>Technical Officers</p>
-                            </div>
-
-                            <!-- Active Equipment Card -->
-                            <div class="stat-card">
-                                <i class="bi bi-tools"></i>
-                                <h3>85%</h3>
-                                <p>Equipment Utilization Rate</p>
-                            </div>
-
-                            <!-- Maintenance Card -->
-                            <div class="stat-card">
-                                <i class="bi bi-gear-wide-connected"></i>
-                                <h3>3</h3>
-                                <p>Maintenance</p>
-                            </div>
-                        </div>
-
-                        <!-- First Row: Rejected Requests Report & Equipment Usage Chart -->
-                        <div class="row">
-                            <!-- Rejected Requests Report -->
-                            <div class="col-md-6 mb-4">
-                                <div class="card p-4">
-                                    <div class="d-flex justify-content-between align-items-center mb-3">
-                                        <h5 class="fw-bold" style="color: #166534;">
-                                            <i class="bi bi-x-circle-fill text-danger me-2"></i>
-                                            Rejected Requests (Technical Officer)
-                                        </h5>
-                                        <button class="btn-generate" onclick="generateReport('rejected')">
-                                            <i class="bi bi-file-earmark-pdf me-2"></i>Generate Report
-                                        </button>
-                                    </div>
-
-                                    <div class="table-responsive">
-                                        <table class="details-table">
-                                            <thead>
-                                                <tr>
-                                                    <th>Request ID</th>
-                                                    <th>Student ID</th>
-                                                    <th>Reason</th>
-                                                    <th>Date & Time</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <tr>
-                                                    <td>#REQ003</td>
-                                                    <td>SCI003</td>
-                                                    <td>
-                                                        <button class="btn-view" onclick="viewRejectionReason('REQ003')" title="View Reason">
-                                                            <i class="bi bi-eye"></i> View
-                                                        </button>
-                                                    </td>
-                                                    <td>2026-02-19 09:15 AM</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>#REQ007</td>
-                                                    <td>SCI007</td>
-                                                    <td>
-                                                        <button class="btn-view" onclick="viewRejectionReason('REQ007')" title="View Reason">
-                                                            <i class="bi bi-eye"></i> View
-                                                        </button>
-                                                    </td>
-                                                    <td>2026-02-17 02:30 PM</td>
-                                                </tr>
-                                                <tr>
-                                                    <td>#REQ012</td>
-                                                    <td>SCI012</td>
-                                                    <td>
-                                                        <button class="btn-view" onclick="viewRejectionReason('REQ012')" title="View Reason">
-                                                            <i class="bi bi-eye"></i> View
-                                                        </button>
-                                                    </td>
-                                                    <td>2026-02-15 11:45 AM</td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Equipment Usage Report with Search -->
-                            <div class="col-md-6 mb-4">
-                                <div class="card p-4">
-                                    <div class="d-flex justify-content-between align-items-center mb-3">
-                                        <h5 class="fw-bold" style="color: #166534;">
-                                            <i class="bi bi-bar-chart-fill text-success me-2"></i>
-                                            Equipment Usage Report
-                                        </h5>
-                                        <button class="btn-generate" onclick="generateReport('usage')">
-                                            <i class="bi bi-file-earmark-pdf me-2"></i>Generate Report
-                                        </button>
-                                    </div>
-
-                                    <!-- Search Input for Equipment Name (Real-time) -->
-                                    <div class="mb-3">
-                                        <input type="text"
-                                            id="equipmentUsageSearch"
-                                            class="form-control"
-                                            placeholder="Search equipment name..."
-                                            oninput="filterEquipmentUsage()">
-                                    </div>
-
-                                    <!-- Equipment Usage Table -->
-                                    <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
-                                        <table class="table table-hover">
-                                            <thead class="sticky-top bg-white">
-                                                <tr>
-                                                    <th>Equipment Name</th>
-                                                    <th>Usage Percentage</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody id="equipmentUsageTableBody">
-                                                <!-- Data will be populated by JavaScript -->
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                    <!-- Add this after the equipment usage table in analytics section (around line 1890) -->
-                                    <div class="row mt-4">
-                                        <div class="col-12">
-                                            <div class="card p-4">
-                                                <h5 class="fw-bold mb-3" style="color: #166534;">Equipment Usage Overview</h5>
-                                                <div class="chart-container">
-                                                    <canvas id="equipmentUsageChart"></canvas>
-                                                </div>
+                                <!-- Add this after the equipment usage table in analytics section (around line 1890) -->
+                                <!-- <div class="row mt-4">
+                                    <div class="col-12">
+                                        <div class="card p-4">
+                                            <h5 class="fw-bold mb-3" style="color: #166534;">Equipment Usage Overview</h5>
+                                            <div class="chart-container">
+                                                <canvas id="equipmentUsageChart"></canvas>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Second Row: Download Inventory Button -->
-                        <div class="row">
-                            <div class="col-12">
-                                <div class="card p-4 text-center">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <h5 class="fw-bold mb-0" style="color: #166534;">
-                                            <i class="bi bi-download me-2"></i>
-                                            Full Equipment Inventory
-                                        </h5>
-                                        <button class="btn-generate" onclick="downloadInventory()">
-                                            <i class="bi bi-file-earmark-spreadsheet me-2"></i>Download Full Inventory List
-                                        </button>
-                                    </div>
-                                    <p class="text-muted mt-2 mb-0 small">Download complete inventory of all equipment with details</p>
-                                </div>
+                                </div> -->
                             </div>
                         </div>
                     </div>
 
-
-
-                    <!-- Rejection Reason Modal -->
-                    <div class="modal fade" id="rejectionReasonModal" tabindex="-1" aria-hidden="true">
-                        <div class="modal-dialog modal-dialog-centered">
-                            <div class="modal-content">
-                                <div class="modal-header bg-danger text-white">
-                                    <h5 class="modal-title">
-                                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                                        Rejection Reason
+                    <!-- Second Row: Download Inventory Button -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card p-4 text-center">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h5 class="fw-bold mb-0" style="color: #166534;">
+                                        <i class="bi bi-download me-2"></i>
+                                        Full Equipment Inventory
                                     </h5>
-                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                    <button class="btn-generate" onclick="downloadInventory()">
+                                        <i class="bi bi-file-earmark-spreadsheet me-2"></i>Download Full Inventory List
+                                    </button>
                                 </div>
-                                <div class="modal-body" id="rejectionReasonContent">
-                                    <!-- Content will be populated by JavaScript -->
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                </div>
+                                <p class="text-muted mt-2 mb-0 small">Download complete inventory of all equipment with details</p>
                             </div>
                         </div>
                     </div>
+                </div>
 
 
 
-
-                    <!-- Add Event Modal -->
-                    <div class="add-event-wrapper" id="addEventWrapper">
-                        <div class="add-event-header">
-                            <div class="title">Equipment Request Details</div>
-                            <i class="fas fa-times close" id="closeEventBtn"></i>
-                        </div>
-                        <div class="add-event-body">
-                            <input type="text" placeholder="Equipment Request Title" id="eventName" maxlength="60">
-                            <textarea placeholder="Request Details" id="eventDetails" rows="3"></textarea>
-                            <input type="text" placeholder="Start Time (HH:MM)" id="eventTimeFrom" readonly>
-                            <input type="text" placeholder="End Time (HH:MM)" id="eventTimeTo" readonly>
-                        </div>
-                        <div class="add-event-footer">
-                            <button id="addEventSubmit">Confirm Request</button>
+                <!-- Rejection Reason Modal -->
+                <div class="modal fade" id="rejectionReasonModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header bg-danger text-white">
+                                <h5 class="modal-title">
+                                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                    Rejection Reason
+                                </h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body" id="rejectionReasonContent">
+                                <!-- Content will be populated by JavaScript -->
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Scripts -->
-            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
-            <script>
-// ========== AI-POWERED EQUIPMENT FUNCTIONS ==========
-let equipmentData = [];
 
-function loadEquipmentFromAI() {
-    const tableBody = document.getElementById('equipmentTableBody');
-    tableBody.innerHTML = '<tr><td colspan="8" class="text-center py-4"><div class="spinner-border text-success me-2"></div>AI analyzing equipment usage...</td></tr>';
-    
-    // Call Python Flask API
-    fetch('http://127.0.0.1:5000/api/analyze-equipment')
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                equipmentData = data.data;
-                displayEquipmentTable(equipmentData);
-                
-                // Log analysis info
-                console.log(`AI Analysis completed at ${data.analyzed_at}`);
-                showSuccess('AI analysis completed successfully!');
-            } else {
-                // Fallback to database data if AI fails
-                loadEquipmentFromDatabase();
-            }
-        })
-        .catch(error => {
-            console.error('AI API error:', error);
-            // Fallback to regular database query
-            loadEquipmentFromDatabase();
-        });
-}
 
-function loadEquipmentFromDatabase() {
-    // Fallback AJAX to PHP endpoint
-    const xhr = new XMLHttpRequest();
-    xhr.open('GET', '../controllers/get_equipment_list.php', true);
-    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-    
-    xhr.onload = function() {
-        if (xhr.status === 200) {
-            try {
-                const response = JSON.parse(xhr.responseText);
-                if (response.success) {
-                    equipmentData = response.data;
-                    displayEquipmentTable(equipmentData);
-                } else {
-                    showError('Failed to load equipment data');
-                }
-            } catch (e) {
-                console.error('Error:', e);
-            }
-        }
-    };
-    
-    xhr.send();
-}
-
-function displayEquipmentTable(equipment) {
-    const tableBody = document.getElementById('equipmentTableBody');
-    if (!tableBody) return;
-    
-    tableBody.innerHTML = '';
-    
-    equipment.forEach(item => {
-        // Calculate availability
-        const available = item.available || (item.total_qty - item.maintenance);
-        const total = item.total_qty;
-        
-        // Determine badge color
-        const ratio = available / total;
-        let badgeColor = '#22c55e'; // green
-        if (ratio < 0.3) badgeColor = '#ef4444'; // red
-        else if (ratio < 0.6) badgeColor = '#f59e0b'; // orange
-        
-        // Use AI color or calculate from usage
-        const usageColor = item.color || (item.usage_percentage >= 70 ? '#22c55e' : 
-                          (item.usage_percentage >= 40 ? '#f59e0b' : '#ef4444'));
-        
-        const row = document.createElement('tr');
-        row.setAttribute('data-equipment-id', item.equipment_code || item.code);
-        row.innerHTML = `
-            <td><img src="${item.image || 'https://cdn-icons-png.flaticon.com/512/2941/2941514.png'}" 
-                     style="width: 50px; height: 50px; object-fit: contain;"></td>
-            <td>${item.equipment_code || item.code || 'N/A'}</td>
-            <td>${item.equipment_name || item.name || 'Unknown'}</td>
-            <td>${item.location || 'N/A'}</td>
-            <td><span class="badge" style="background: ${badgeColor}; color: white;">${available}/${total}</span></td>
-            <td><span class="badge bg-warning">${item.maintenance || 0}</span></td>
-            <td>
-                <div class="d-flex align-items-center gap-2">
-                    <div class="progress-bar" style="width: 80px; height: 8px;">
-                        <div class="progress-fill" style="width: ${item.usage_percentage || 0}%; background: ${usageColor};"></div>
+                <!-- Add Event Modal -->
+                <div class="add-event-wrapper" id="addEventWrapper">
+                    <div class="add-event-header">
+                        <div class="title">Equipment Request Details</div>
+                        <i class="fas fa-times close" id="closeEventBtn"></i>
                     </div>
-                    <span style="color: ${usageColor}; font-weight: 600; font-size: 12px;">
-                        ${item.usage_percentage || 0}%
-                    </span>
-                    ${item.reservation_count ? 
-                      `<small class="text-muted ms-1">(${item.reservation_count} uses)</small>` : ''}
+                    <div class="add-event-body">
+                        <input type="text" placeholder="Equipment Request Title" id="eventName" maxlength="60">
+                        <textarea placeholder="Request Details" id="eventDetails" rows="3"></textarea>
+                        <input type="text" placeholder="Start Time (HH:MM)" id="eventTimeFrom" readonly>
+                        <input type="text" placeholder="End Time (HH:MM)" id="eventTimeTo" readonly>
+                    </div>
+                    <div class="add-event-footer">
+                        <button id="addEventSubmit">Confirm Request</button>
+                    </div>
                 </div>
-            </td>
-            <td>
-                <div class="action-buttons">
-                    <button class="btn-view" onclick="viewEquipmentDetails('${item.equipment_code || item.code}')" title="View Details">
-                        <i class="bi bi-eye"></i>
-                    </button>
-                    <button class="btn-edit" onclick="editEquipment('${item.equipment_code || item.code}')" title="Edit">
-                        <i class="bi bi-pencil-square"></i>
-                    </button>
-                    <button class="btn-remove" onclick="removeEquipment('${item.equipment_code || item.code}')" title="Remove">
-                        <i class="bi bi-trash"></i>
-                    </button>
-                </div>
-            </td>
-        `;
-        tableBody.appendChild(row);
-    });
-    
-    // Update equipment count
-    document.getElementById('equipmentCount').textContent = `(${equipment.length})`;
-}
-
-function viewEquipmentDetails(code) {
-    const equipment = equipmentData.find(item => (item.equipment_code || item.code) === code);
-    if (!equipment) return;
-    
-    // Try to get detailed AI analysis
-    if (equipment.equipment_id) {
-        fetch(`http://127.0.0.1:5000/api/equipment/${equipment.equipment_id}`)
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showEquipmentDetailsModal(equipment, data);
-                } else {
-                    showEquipmentDetailsModal(equipment);
-                }
-            })
-            .catch(() => {
-                showEquipmentDetailsModal(equipment);
-            });
-    } else {
-        showEquipmentDetailsModal(equipment);
-    }
-}
-
-function showEquipmentDetailsModal(equipment, aiData = null) {
-    const formatDate = (date) => date ? new Date(date).toLocaleDateString('en-US', {
-        year: 'numeric', month: 'long', day: 'numeric'
-    }) : 'N/A';
-    
-    const isOverdue = equipment.next_maintenance ? new Date(equipment.next_maintenance) < new Date() : false;
-    
-    // Generate AI insights
-    let aiInsights = '';
-    if (aiData && aiData.recent_usage && aiData.recent_usage.length > 0) {
-        const comments = aiData.recent_usage.map(u => u.comment || u.any_comment).filter(c => c).join(' • ');
-        aiInsights = `
-            <div class="mt-3 p-3" style="background: #f3f4f6; border-radius: 8px;">
-                <h6 class="text-success mb-2"><i class="bi bi-robot me-2"></i>AI Insights:</h6>
-                <p><strong>Recent comments:</strong> ${comments || 'No comments available'}</p>
-                <p><strong>Usage pattern:</strong> ${equipment.usage_percentage}% usage rate based on ${equipment.reservation_count || 0} reservations</p>
-            </div>
-        `;
-    }
-    
-    document.getElementById('equipmentDetailsContent').innerHTML = `
-        <div class="row">
-            <div class="col-md-4 text-center">
-                <img src="${equipment.image || 'https://cdn-icons-png.flaticon.com/512/2941/2941514.png'}" 
-                     style="width: 150px; height: 150px; object-fit: contain;" class="mb-3">
-                <h4>${equipment.equipment_name || equipment.name}</h4>
-                <p class="text-muted">${equipment.equipment_code || equipment.code}</p>
-                <div class="mt-2">
-                    <span class="badge" style="background: ${equipment.color || '#22c55e'}; font-size: 14px;">
-                        AI Usage: ${equipment.usage_percentage || 0}%
-                    </span>
-                </div>
-            </div>
-            <div class="col-md-8">
-                <table class="table table-borderless">
-                    <tr><th>Location:</th><td>${equipment.location || 'N/A'}</td></tr>
-                    <tr><th>Manufacturer:</th><td>${equipment.manufacturer || 'N/A'}</td></tr>
-                    <tr><th>Model:</th><td>${equipment.model || 'N/A'}</td></tr>
-                    <tr><th>Purchase Date:</th><td>${formatDate(equipment.purchase_date)}</td></tr>
-                    <tr><th>Last Maintenance:</th><td>${formatDate(equipment.last_maintenance)}</td></tr>
-                    <tr><th>Next Maintenance:</th><td>${formatDate(equipment.next_maintenance)} ${isOverdue ? '<span class="badge bg-danger ms-2">⚠️ Overdue</span>' : ''}</td></tr>
-                    <tr><th>Availability:</th><td>${equipment.available || 0}/${equipment.total_qty || 0} units</td></tr>
-                    <tr><th>Maintenance:</th><td>${equipment.maintenance || 0} pending</td></tr>
-                    <tr><th>AI Analysis:</th><td>
-                        <div class="progress-bar" style="width: 100%; height: 10px;">
-                            <div class="progress-fill" style="width: ${equipment.usage_percentage || 0}%; background: ${equipment.color || '#22c55e'};"></div>
-                        </div>
-                        <small class="text-muted">${equipment.usage_percentage || 0}% usage based on reservation history and comments</small>
-                    </td></tr>
-                    <tr><th>Description:</th><td>${equipment.description || 'No description available'}</td></tr>
-                </table>
-                ${aiInsights}
             </div>
         </div>
-    `;
-    
-    new bootstrap.Modal(document.getElementById('equipmentDetailsModal')).show();
-}
 
-function refreshAIAnalysis() {
-    showSuccess('AI analysis started...');
-    loadEquipmentFromAI();
-}
+        <!-- Scripts -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
-// Update search function to work with dynamically loaded data
-function searchEquipment() {
-    const searchTerm = document.getElementById('equipmentSearch').value.toLowerCase().trim();
-    const table = document.getElementById('equipmentTableBody');
-    if (!table) return;
-    
-    let visibleCount = 0;
-    
-    Array.from(table.getElementsByTagName('tr')).forEach(row => {
-        const text = row.textContent.toLowerCase();
-        if (searchTerm === '' || text.includes(searchTerm)) {
-            row.style.display = '';
-            visibleCount++;
-        } else {
-            row.style.display = 'none';
-        }
-    });
-    
-    // Update visible count
-    const total = table.children.length;
-    document.getElementById('equipmentCount').textContent = 
-        (visibleCount > 0 || searchTerm === '') ? `(${visibleCount}/${total})` : '(0)';
-}
+        <script>
+            // ========== REQUEST SECTION FUNCTIONS ==========
+            let currentRequestType = 'technical';
+            let currentRequestId = null;
 
-// Initialize equipment on section show
-function showSection(section) {
-    // ... existing code ...
-    
-    if (section === 'equipment') {
-        loadEquipmentFromAI(); // Load with AI analysis
-    }
-    
-    // ... rest of your code ...
-}
-
-
-
-
-                // ========== REQUEST SECTION FUNCTIONS ==========
-                let currentRequestType = 'technical';
-                let currentRequestId = null;
-
-                // Request Data with status tracking
-                const technicalRequests = [{
-                        id: 'TEC-REQ-001',
-                        dateTime: '2026-02-20 10:30 AM',
-                        timestamp: new Date('2026-02-20T10:30:00'),
-                        universityId: 'SCI001',
-                        name: 'John Doe',
-                        status: 'pending',
-                        details: {
-                            equipment: 'Microscope (2 units)',
-                            lab: 'Lab 01',
-                            duration: '2 hours',
-                            purpose: 'Final Year Research Project'
-                        }
-                    },
-                    {
-                        id: 'TEC-REQ-002',
-                        dateTime: '2026-02-20 11:00 AM',
-                        timestamp: new Date('2026-02-20T11:00:00'),
-                        universityId: 'SCI002',
-                        name: 'Jane Smith',
-                        status: 'pending',
-                        details: {
-                            equipment: 'Centrifuge (1 unit)',
-                            lab: 'Research Lab',
-                            duration: '3 hours',
-                            purpose: 'DNA Extraction'
-                        }
-                    },
-                    {
-                        id: 'TEC-REQ-003',
-                        dateTime: '2026-02-19 09:15 AM',
-                        timestamp: new Date('2026-02-19T09:15:00'),
-                        universityId: 'SCI003',
-                        name: 'Mike Johnson',
-                        status: 'pending',
-                        details: {
-                            equipment: 'Incubator (1 unit)',
-                            lab: 'Lab 02',
-                            duration: '4 hours',
-                            purpose: 'Bacterial Culture'
-                        }
+            // Request Data with status tracking
+            const technicalRequests = [{
+                    id: 'TEC-REQ-001',
+                    dateTime: '2026-02-20 10:30 AM',
+                    timestamp: new Date('2026-02-20T10:30:00'),
+                    universityId: 'SCI001',
+                    name: 'John Doe',
+                    status: 'pending',
+                    details: {
+                        equipment: 'Microscope (2 units)',
+                        lab: 'Lab 01',
+                        duration: '2 hours',
+                        purpose: 'Final Year Research Project'
                     }
-                ];
-
-                const supervisorRequests = [{
-                        id: 'SUP-REQ-001',
-                        dateTime: '2026-02-20 09:30 AM',
-                        timestamp: new Date('2026-02-20T09:30:00'),
-                        universityId: 'SCI004',
-                        name: 'Sarah Wilson',
-                        status: 'pending',
-                        details: {
-                            equipment: 'Autoclave (1 unit)',
-                            lab: 'Lab 01',
-                            duration: '1.5 hours',
-                            purpose: 'Media Sterilization',
-                            supervisor: 'Dr. Kamal Perera'
-                        }
-                    },
-                    {
-                        id: 'SUP-REQ-002',
-                        dateTime: '2026-02-19 02:00 PM',
-                        timestamp: new Date('2026-02-19T14:00:00'),
-                        universityId: 'SCI005',
-                        name: 'Pathum Perera',
-                        status: 'pending',
-                        details: {
-                            equipment: 'pH Meter (1 unit)',
-                            lab: 'Research Lab',
-                            duration: '2 hours',
-                            purpose: 'Solution Preparation',
-                            supervisor: 'Prof. Malini Silva'
-                        }
+                },
+                {
+                    id: 'TEC-REQ-002',
+                    dateTime: '2026-02-20 11:00 AM',
+                    timestamp: new Date('2026-02-20T11:00:00'),
+                    universityId: 'SCI002',
+                    name: 'Jane Smith',
+                    status: 'pending',
+                    details: {
+                        equipment: 'Centrifuge (1 unit)',
+                        lab: 'Research Lab',
+                        duration: '3 hours',
+                        purpose: 'DNA Extraction'
                     }
-                ];
-
-                // Function to update request counts
-                function updateRequestCounts() {
-                    const technicalCount = technicalRequests.filter(req => req.status === 'pending').length;
-                    const supervisorCount = supervisorRequests.filter(req => req.status === 'pending').length;
-
-                    document.getElementById('technicalRequestCount').textContent = technicalCount;
-                    document.getElementById('supervisorRequestCount').textContent = supervisorCount;
-                    document.getElementById('requestBadge').textContent = technicalCount + supervisorCount;
+                },
+                {
+                    id: 'TEC-REQ-003',
+                    dateTime: '2026-02-19 09:15 AM',
+                    timestamp: new Date('2026-02-19T09:15:00'),
+                    universityId: 'SCI003',
+                    name: 'Mike Johnson',
+                    status: 'pending',
+                    details: {
+                        equipment: 'Incubator (1 unit)',
+                        lab: 'Lab 02',
+                        duration: '4 hours',
+                        purpose: 'Bacterial Culture'
+                    }
                 }
+            ];
 
-                function switchRequestType(type) {
-                    currentRequestType = type;
-                    const tabs = document.querySelectorAll('.request-tab');
-                    tabs.forEach(tab => tab.classList.remove('active'));
-
-                    if (type === 'technical') {
-                        tabs[0].classList.add('active');
-                    } else {
-                        tabs[1].classList.add('active');
+            const supervisorRequests = [{
+                    id: 'SUP-REQ-001',
+                    dateTime: '2026-02-20 09:30 AM',
+                    timestamp: new Date('2026-02-20T09:30:00'),
+                    universityId: 'SCI004',
+                    name: 'Sarah Wilson',
+                    status: 'pending',
+                    details: {
+                        equipment: 'Autoclave (1 unit)',
+                        lab: 'Lab 01',
+                        duration: '1.5 hours',
+                        purpose: 'Media Sterilization',
+                        supervisor: 'Dr. Kamal Perera'
                     }
-                    filterRequestsByTime();
-                }
-
-                function filterRequestsByTime() {
-                    const timeRange = document.getElementById('timeRangeFilter').value;
-                    const today = new Date();
-                    let requests = currentRequestType === 'technical' ? technicalRequests : supervisorRequests;
-                    let filtered = [];
-
-                    switch (timeRange) {
-                        case 'daily':
-                            filtered = requests.filter(item =>
-                                item.timestamp.toDateString() === today.toDateString()
-                            );
-                            break;
-                        case 'weekly':
-                            const weekAgo = new Date();
-                            weekAgo.setDate(today.getDate() - 7);
-                            filtered = requests.filter(item => item.timestamp >= weekAgo);
-                            break;
-                        case 'monthly':
-                            const monthAgo = new Date();
-                            monthAgo.setDate(today.getDate() - 30);
-                            filtered = requests.filter(item => item.timestamp >= monthAgo);
-                            break;
-                        case 'all':
-                        default:
-                            filtered = requests;
-                            break;
+                },
+                {
+                    id: 'SUP-REQ-002',
+                    dateTime: '2026-02-19 02:00 PM',
+                    timestamp: new Date('2026-02-19T14:00:00'),
+                    universityId: 'SCI005',
+                    name: 'Pathum Perera',
+                    status: 'pending',
+                    details: {
+                        equipment: 'pH Meter (1 unit)',
+                        lab: 'Research Lab',
+                        duration: '2 hours',
+                        purpose: 'Solution Preparation',
+                        supervisor: 'Prof. Malini Silva'
                     }
-                    displayRequestTable(filtered);
                 }
+            ];
 
-                function displayRequestTable(requests) {
-                    const tableBody = document.getElementById('requestListBody');
-                    if (!tableBody) return;
-                    tableBody.innerHTML = '';
+            // Function to update request counts
+            function updateRequestCounts() {
+                const technicalCount = technicalRequests.filter(req => req.status === 'pending').length;
+                const supervisorCount = supervisorRequests.filter(req => req.status === 'pending').length;
 
-                    requests.sort((a, b) => b.timestamp - a.timestamp);
-                    requests.forEach(item => {
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
+                document.getElementById('technicalRequestCount').textContent = technicalCount;
+                document.getElementById('supervisorRequestCount').textContent = supervisorCount;
+                document.getElementById('requestBadge').textContent = technicalCount + supervisorCount;
+            }
+
+            function switchRequestType(type) {
+                currentRequestType = type;
+                const tabs = document.querySelectorAll('.request-tab');
+                tabs.forEach(tab => tab.classList.remove('active'));
+
+                if (type === 'technical') {
+                    tabs[0].classList.add('active');
+                } else {
+                    tabs[1].classList.add('active');
+                }
+                filterRequestsByTime();
+            }
+
+            function filterRequestsByTime() {
+                const timeRange = document.getElementById('timeRangeFilter').value;
+                const today = new Date();
+                let requests = currentRequestType === 'technical' ? technicalRequests : supervisorRequests;
+                let filtered = [];
+
+                switch (timeRange) {
+                    case 'daily':
+                        filtered = requests.filter(item =>
+                            item.timestamp.toDateString() === today.toDateString()
+                        );
+                        break;
+                    case 'weekly':
+                        const weekAgo = new Date();
+                        weekAgo.setDate(today.getDate() - 7);
+                        filtered = requests.filter(item => item.timestamp >= weekAgo);
+                        break;
+                    case 'monthly':
+                        const monthAgo = new Date();
+                        monthAgo.setDate(today.getDate() - 30);
+                        filtered = requests.filter(item => item.timestamp >= monthAgo);
+                        break;
+                    case 'all':
+                    default:
+                        filtered = requests;
+                        break;
+                }
+                displayRequestTable(filtered);
+            }
+
+            function displayRequestTable(requests) {
+                const tableBody = document.getElementById('requestListBody');
+                if (!tableBody) return;
+                tableBody.innerHTML = '';
+
+                requests.sort((a, b) => b.timestamp - a.timestamp);
+                requests.forEach(item => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
             <td>${item.id}</td>
             <td>${item.dateTime}</td>
             <td>${item.universityId}</td>
@@ -5048,24 +4576,24 @@ function showSection(section) {
                 </div>
             </td>
         `;
-                        tableBody.appendChild(row);
-                    });
+                    tableBody.appendChild(row);
+                });
 
-                    if (requests.length === 0) {
-                        const row = document.createElement('tr');
-                        row.innerHTML = `<td colspan="5" class="text-center">No requests found for this time period</td>`;
-                        tableBody.appendChild(row);
-                    }
+                if (requests.length === 0) {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `<td colspan="5" class="text-center">No requests found for this time period</td>`;
+                    tableBody.appendChild(row);
                 }
+            }
 
-                function viewRequest(id) {
-                    const requests = currentRequestType === 'technical' ? technicalRequests : supervisorRequests;
-                    const request = requests.find(item => item.id === id);
-                    if (!request) return;
+            function viewRequest(id) {
+                const requests = currentRequestType === 'technical' ? technicalRequests : supervisorRequests;
+                const request = requests.find(item => item.id === id);
+                if (!request) return;
 
-                    currentRequestId = id;
-                    const detailsContent = document.getElementById('requestDetailsContent');
-                    let detailsHtml = `
+                currentRequestId = id;
+                const detailsContent = document.getElementById('requestDetailsContent');
+                let detailsHtml = `
         <div class="row">
             <div class="col-md-12">
                 <table class="table table-borderless">
@@ -5078,610 +4606,652 @@ function showSection(section) {
                     <tr><th>Duration:</th><td>${request.details.duration}</td></tr>
                     <tr><th>Purpose:</th><td>${request.details.purpose}</td></tr>
     `;
-                    if (currentRequestType === 'supervisor' && request.details.supervisor) {
-                        detailsHtml += `<tr><th>Supervisor:</th><td>${request.details.supervisor}</td></tr>`;
-                    }
-                    detailsHtml += `</table></div></div>`;
-                    detailsContent.innerHTML = detailsHtml;
-                    new bootstrap.Modal(document.getElementById('requestDetailsModal')).show();
+                if (currentRequestType === 'supervisor' && request.details.supervisor) {
+                    detailsHtml += `<tr><th>Supervisor:</th><td>${request.details.supervisor}</td></tr>`;
                 }
-
-                function approveRequest(id) {
-                    const requestId = id || currentRequestId;
-                    if (confirm(`Are you sure you want to approve request ${requestId}?`)) {
-                        const requests = currentRequestType === 'technical' ? technicalRequests : supervisorRequests;
-                        const request = requests.find(r => r.id === requestId);
-                        if (request) request.status = 'approved';
-
-                        alert(`Request ${requestId} has been approved successfully!`);
-                        const modal = bootstrap.Modal.getInstance(document.getElementById('requestDetailsModal'));
-                        if (modal) modal.hide();
-
-                        updateRequestCounts();
-                        filterRequestsByTime();
-                    }
-                }
-
-                function rejectRequest(id) {
-                    const requestId = id || currentRequestId;
-                    const reason = prompt(`Enter rejection reason for request ${requestId}:`);
-                    if (reason) {
-                        const requests = currentRequestType === 'technical' ? technicalRequests : supervisorRequests;
-                        const request = requests.find(r => r.id === requestId);
-                        if (request) request.status = 'rejected';
-
-                        alert(`Request ${requestId} has been rejected. Reason: ${reason}`);
-                        const modal = bootstrap.Modal.getInstance(document.getElementById('requestDetailsModal'));
-                        if (modal) modal.hide();
-
-                        updateRequestCounts();
-                        filterRequestsByTime();
-                    }
-                }
-
-                // ========== EQUIPMENT SEARCH FUNCTIONS ==========
-                function searchEquipment() {
-                    const searchTerm = document.getElementById('equipmentSearch').value.toLowerCase().trim();
-                    const equipmentVisible = filterEquipmentTable('equipmentTableBody', searchTerm);
-                    toggleEquipmentVisibility('equipmentTableCard', equipmentVisible, searchTerm);
-                    updateEquipmentCount(searchTerm);
-                }
-
-                function filterEquipmentTable(tableId, searchTerm) {
-                    const table = document.getElementById(tableId);
-                    if (!table) return 0;
-                    let visibleCount = 0;
-
-                    for (let row of table.getElementsByTagName('tr')) {
-                        if (searchTerm === '' || row.textContent.toLowerCase().includes(searchTerm)) {
-                            row.style.display = '';
-                            visibleCount++;
-                        } else {
-                            row.style.display = 'none';
-                        }
-                    }
-                    return visibleCount;
-                }
-
-                function toggleEquipmentVisibility(cardId, visibleCount, searchTerm) {
-                    const card = document.getElementById(cardId);
-                    if (!card) return;
-                    card.style.display = (visibleCount === 0 && searchTerm !== '') ? 'none' : 'block';
-                }
-
-                function updateEquipmentCount(searchTerm) {
-                    const equipmentTable = document.getElementById('equipmentTableBody');
-                    if (!equipmentTable) return;
-
-                    const visibleEquipment = Array.from(equipmentTable.getElementsByTagName('tr'))
-                        .filter(row => row.style.display !== 'none').length;
-                    const totalEquipment = equipmentTable.children.length;
-
-                    document.getElementById('equipmentCount').textContent =
-                        (visibleEquipment > 0 || searchTerm === '') ?
-                        '(' + visibleEquipment + '/' + totalEquipment + ')' : '(0)';
-                }
-
-                // ========== USER MANAGEMENT FUNCTIONS ==========
-                // ========== USER ACTIVATE/DEACTIVATE FUNCTION WITH AJAX ==========
-                function toggleUserStatus(userId) {
-                    const userRow = document.querySelector(`tr[data-user-id="${userId}"]`);
-                    if (!userRow) return;
-
-                    const currentStatus = userRow.getAttribute('data-status');
-                    const actionCell = userRow.querySelector('.action-buttons');
-                    const button = actionCell.querySelector(currentStatus === 'active' ? '.btn-deactivate' : '.btn-activate');
-
-                    // Determine new status
-                    const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
-                    const action = currentStatus === 'active' ? 'deactivate' : 'activate';
-
-                    // Confirm action
-                    if (!confirm(`Are you sure you want to ${action} user ${userId}?`)) {
-                        return;
-                    }
-
-                    // Show loading state
-                    const originalButtonHtml = button.innerHTML;
-                    button.disabled = true;
-                    button.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Processing...';
-
-                    // Create FormData
-                    const formData = new FormData();
-                    formData.append('user_id', userId);
-                    formData.append('action', action);
-
-                    // Send AJAX request
-                    const xhr = new XMLHttpRequest();
-                    xhr.open('POST', '../controllers/activate_process.php', true);
-                    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
-
-                    xhr.onload = function() {
-                        button.disabled = false;
-
-                        if (xhr.status === 200) {
-                            try {
-                                const response = JSON.parse(xhr.responseText);
-
-                                if (response.success) {
-                                    // Update UI on success
-                                    userRow.setAttribute('data-status', newStatus);
-
-                                    if (newStatus === 'active') {
-                                        button.className = 'btn-deactivate';
-                                        button.innerHTML = '<i class="bi bi-person-x"></i> Deactivate';
-                                        showSuccess(`User ${userId} has been activated successfully!`);
-                                        loadUserCounts();
-                                    } else {
-                                        button.className = 'btn-activate';
-                                        button.innerHTML = '<i class="bi bi-person-check"></i> Activate';
-                                        showSuccess(`User ${userId} has been deactivated successfully!`);
-                                        loadUserCounts();
-                                    }
-
-                                    // Update counts if function exists
-                                    if (typeof updateUserCounts === 'function') {
-                                        updateUserCounts();
-                                    }
-
-                                } else {
-                                    button.innerHTML = originalButtonHtml;
-                                    showError(response.message || `Failed to ${action} user.`);
-                                }
-                            } catch (e) {
-                                console.error('Parse error:', e);
-                                button.innerHTML = originalButtonHtml;
-                                showError('Server error occurred.');
-                            }
-                        } else {
-                            button.innerHTML = originalButtonHtml;
-                            showError('Connection error. Please try again.');
-                        }
-                    };
-
-                    xhr.onerror = function() {
-                        button.disabled = false;
-                        button.innerHTML = originalButtonHtml;
-                        showError('Network error. Please check your connection.');
-                    };
-
-                    xhr.ontimeout = function() {
-                        button.disabled = false;
-                        button.innerHTML = originalButtonHtml;
-                        showError('Request timed out. Please try again.');
-                    };
-
-                    xhr.timeout = 30000;
-                    xhr.send(formData);
-                }
-
-                // Helper function to show success messages
-                function showSuccess(message) {
-                    // Check if message div exists
-                    let msgDiv = document.getElementById('messageDiv');
-
-                    if (!msgDiv) {
-                        // Create message div if it doesn't exist
-                        msgDiv = document.createElement('div');
-                        msgDiv.id = 'messageDiv';
-                        msgDiv.className = 'position-fixed top-0 end-0 m-3 p-3 rounded shadow';
-                        msgDiv.style.zIndex = '9999';
-                        document.body.appendChild(msgDiv);
-                    }
-
-                    msgDiv.className = 'position-fixed top-0 end-0 m-3 p-3 rounded shadow bg-success text-white';
-                    msgDiv.innerHTML = `<i class="bi bi-check-circle-fill me-2"></i>${message}`;
-
-                    setTimeout(() => {
-                        msgDiv.style.display = 'none';
-                    }, 3000);
-                }
-
-                // Helper function to show error messages
-                function showError(message) {
-                    // Check if message div exists
-                    let msgDiv = document.getElementById('messageDiv');
-
-                    if (!msgDiv) {
-                        // Create message div if it doesn't exist
-                        msgDiv = document.createElement('div');
-                        msgDiv.id = 'messageDiv';
-                        msgDiv.className = 'position-fixed top-0 end-0 m-3 p-3 rounded shadow';
-                        msgDiv.style.zIndex = '9999';
-                        document.body.appendChild(msgDiv);
-                    }
-
-                    msgDiv.className = 'position-fixed top-0 end-0 m-3 p-3 rounded shadow bg-danger text-white';
-                    msgDiv.innerHTML = `<i class="bi bi-exclamation-triangle-fill me-2"></i>${message}`;
-                    msgDiv.style.display = 'block';
-                }
-
-                // Optional: Function to update user counts
-                function updateUserCounts() {
-                    // You can implement this to refresh counts
-                    // For example, reload the student count
-                    console.log('User counts updated');
-                }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                function viewPendingRequests() {
-                    showSection('activity');
-                    document.getElementById('timeRangeFilter').value = 'all';
+                detailsHtml += `</table></div></div>`;
+                detailsContent.innerHTML = detailsHtml;
+                new bootstrap.Modal(document.getElementById('requestDetailsModal')).show();
+            }
+
+            function approveRequest(id) {
+                const requestId = id || currentRequestId;
+                if (confirm(`Are you sure you want to approve request ${requestId}?`)) {
+                    const requests = currentRequestType === 'technical' ? technicalRequests : supervisorRequests;
+                    const request = requests.find(r => r.id === requestId);
+                    if (request) request.status = 'approved';
+
+                    alert(`Request ${requestId} has been approved successfully!`);
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('requestDetailsModal'));
+                    if (modal) modal.hide();
+
+                    updateRequestCounts();
                     filterRequestsByTime();
                 }
+            }
 
-                function openNotificationModal() {
-                    toggleNotifications();
+            function rejectRequest(id) {
+                const requestId = id || currentRequestId;
+                const reason = prompt(`Enter rejection reason for request ${requestId}:`);
+                if (reason) {
+                    const requests = currentRequestType === 'technical' ? technicalRequests : supervisorRequests;
+                    const request = requests.find(r => r.id === requestId);
+                    if (request) request.status = 'rejected';
+
+                    alert(`Request ${requestId} has been rejected. Reason: ${reason}`);
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('requestDetailsModal'));
+                    if (modal) modal.hide();
+
+                    updateRequestCounts();
+                    filterRequestsByTime();
                 }
+            }
 
-                function searchUsers() {
-                    const searchTerm = document.getElementById('userSearch').value.toLowerCase().trim();
+            // ========== EQUIPMENT SEARCH FUNCTIONS ==========
+            function searchEquipment() {
+                const searchTerm = document.getElementById('equipmentSearch').value.toLowerCase().trim();
+                const equipmentVisible = filterEquipmentTable('equipmentTableBody', searchTerm);
+                toggleEquipmentVisibility('equipmentTableCard', equipmentVisible, searchTerm);
+                updateEquipmentCount(searchTerm);
+            }
 
-                    const studentVisible = filterTable('studentTableBody', searchTerm);
-                    const supervisorVisible = filterTable('supervisorTableBody', searchTerm);
-                    const techVisible = filterTable('techOfficerTableBody', searchTerm);
+            function filterEquipmentTable(tableId, searchTerm) {
+                const table = document.getElementById(tableId);
+                if (!table) return 0;
+                let visibleCount = 0;
 
-                    toggleTableVisibility('studentTableCard', studentVisible, searchTerm);
-                    toggleTableVisibility('supervisorTableCard', supervisorVisible, searchTerm);
-                    toggleTableVisibility('techOfficerTableCard', techVisible, searchTerm);
-
-                    updateVisibleCounts(searchTerm);
-                }
-
-                function filterTable(tableId, searchTerm) {
-                    const table = document.getElementById(tableId);
-                    if (!table) return 0;
-                    let visibleCount = 0;
-
-                    for (let row of table.getElementsByTagName('tr')) {
-                        if (searchTerm === '' || row.textContent.toLowerCase().includes(searchTerm)) {
-                            row.style.display = '';
-                            visibleCount++;
-                        } else {
-                            row.style.display = 'none';
-                        }
+                for (let row of table.getElementsByTagName('tr')) {
+                    if (searchTerm === '' || row.textContent.toLowerCase().includes(searchTerm)) {
+                        row.style.display = '';
+                        visibleCount++;
+                    } else {
+                        row.style.display = 'none';
                     }
-                    return visibleCount;
+                }
+                return visibleCount;
+            }
+
+            function toggleEquipmentVisibility(cardId, visibleCount, searchTerm) {
+                const card = document.getElementById(cardId);
+                if (!card) return;
+                card.style.display = (visibleCount === 0 && searchTerm !== '') ? 'none' : 'block';
+            }
+
+            function updateEquipmentCount(searchTerm) {
+                const equipmentTable = document.getElementById('equipmentTableBody');
+                if (!equipmentTable) return;
+
+                const visibleEquipment = Array.from(equipmentTable.getElementsByTagName('tr'))
+                    .filter(row => row.style.display !== 'none').length;
+                const totalEquipment = equipmentTable.children.length;
+
+                document.getElementById('equipmentCount').textContent =
+                    (visibleEquipment > 0 || searchTerm === '') ?
+                    '(' + visibleEquipment + '/' + totalEquipment + ')' : '(0)';
+            }
+
+            // ========== USER MANAGEMENT FUNCTIONS ==========
+            // ========== USER ACTIVATE/DEACTIVATE FUNCTION WITH AJAX ==========
+            function toggleUserStatus(userId) {
+                const userRow = document.querySelector(`tr[data-user-id="${userId}"]`);
+                if (!userRow) return;
+
+                const currentStatus = userRow.getAttribute('data-status');
+                const actionCell = userRow.querySelector('.action-buttons');
+                const button = actionCell.querySelector(currentStatus === 'active' ? '.btn-deactivate' : '.btn-activate');
+
+                // Determine new status
+                const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+                const action = currentStatus === 'active' ? 'deactivate' : 'activate';
+
+                // Confirm action
+                if (!confirm(`Are you sure you want to ${action} user ${userId}?`)) {
+                    return;
                 }
 
-                function toggleTableVisibility(cardId, visibleCount, searchTerm) {
-                    const card = document.getElementById(cardId);
-                    if (!card) return;
-                    card.style.display = (visibleCount === 0 && searchTerm !== '') ? 'none' : 'block';
-                }
+                // Show loading state
+                const originalButtonHtml = button.innerHTML;
+                button.disabled = true;
+                button.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Processing...';
 
-                function updateVisibleCounts(searchTerm) {
-                    const tables = [{
-                            id: 'studentTableBody',
-                            countId: 'studentCount'
-                        },
-                        {
-                            id: 'supervisorTableBody',
-                            countId: 'supervisorCount'
-                        },
-                        {
-                            id: 'techOfficerTableBody',
-                            countId: 'techOfficerCount'
-                        }
-                    ];
+                // Create FormData
+                const formData = new FormData();
+                formData.append('user_id', userId);
+                formData.append('action', action);
 
-                    tables.forEach(table => {
-                        const tbody = document.getElementById(table.id);
-                        if (!tbody) return;
+                // Send AJAX request
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', '../controllers/activate_process.php', true);
+                xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
 
-                        const visible = Array.from(tbody.getElementsByTagName('tr'))
-                            .filter(row => row.style.display !== 'none').length;
-                        const total = tbody.children.length;
+                xhr.onload = function() {
+                    button.disabled = false;
 
-                        document.getElementById(table.countId).textContent =
-                            (visible > 0 || searchTerm === '') ? '(' + visible + '/' + total + ')' : '(0)';
-                    });
-                }
+                    if (xhr.status === 200) {
+                        try {
+                            const response = JSON.parse(xhr.responseText);
 
-                function loadUserCounts() {
-                    const xhr = new XMLHttpRequest();
-                    xhr.open('GET', '../controllers/get_user_counts.php', true);
-                    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+                            if (response.success) {
+                                // Update UI on success
+                                userRow.setAttribute('data-status', newStatus);
 
-                    xhr.onload = function() {
-                        if (xhr.status === 200) {
-                            try {
-                                const response = JSON.parse(xhr.responseText);
-                                if (response.success) {
-                                    // Update student counts
-                                    document.getElementById('studentCount').innerHTML =
-                                        `(${response.students.active}/${response.students.total})`;
-
-                                    // Update supervisor counts
-                                    document.getElementById('supervisorCount').innerHTML =
-                                        `(${response.supervisors.active}/${response.supervisors.total})`;
-
-                                    // Update technical officer counts
-                                    document.getElementById('techOfficerCount').innerHTML =
-                                        `(${response.technical.active}/${response.technical.total})`;
+                                if (newStatus === 'active') {
+                                    button.className = 'btn-deactivate';
+                                    button.innerHTML = '<i class="bi bi-person-x"></i> Deactivate';
+                                    showSuccess(`User ${userId} has been activated successfully!`);
+                                    loadUserCounts();
+                                } else {
+                                    button.className = 'btn-activate';
+                                    button.innerHTML = '<i class="bi bi-person-check"></i> Activate';
+                                    showSuccess(`User ${userId} has been deactivated successfully!`);
+                                    loadUserCounts();
                                 }
-                            } catch (e) {
-                                console.error('Error loading user counts:', e);
+
+                                // Update counts if function exists
+                                if (typeof updateUserCounts === 'function') {
+                                    updateUserCounts();
+                                }
+
+                            } else {
+                                button.innerHTML = originalButtonHtml;
+                                showError(response.message || `Failed to ${action} user.`);
                             }
+                        } catch (e) {
+                            console.error('Parse error:', e);
+                            button.innerHTML = originalButtonHtml;
+                            showError('Server error occurred.');
                         }
-                    };
-
-                    xhr.send();
-                }
-
-                function addNewUser() {
-                    alert('Add User modal would open here');
-                }
-
-                function editUser(userId) {
-                    alert('Edit user: ' + userId);
-                }
-
-                // ========== SIDEBAR & NAVIGATION ==========
-                function toggleSidebar() {
-                    document.getElementById("sidebar").classList.toggle("active");
-                    document.getElementById("sidebarOverlay").classList.toggle("active");
-                }
-
-                function toggleNotifications() {
-                    document.getElementById("notificationDropdown").classList.toggle("show");
-                }
-
-                document.addEventListener('click', function(event) {
-                    const bell = document.querySelector('.notification-bell:last-child');
-                    const dropdown = document.getElementById('notificationDropdown');
-                    if (bell && dropdown && !bell.contains(event.target) && !dropdown.contains(event.target)) {
-                        dropdown.classList.remove('show');
+                    } else {
+                        button.innerHTML = originalButtonHtml;
+                        showError('Connection error. Please try again.');
                     }
+                };
+
+                xhr.onerror = function() {
+                    button.disabled = false;
+                    button.innerHTML = originalButtonHtml;
+                    showError('Network error. Please check your connection.');
+                };
+
+                xhr.ontimeout = function() {
+                    button.disabled = false;
+                    button.innerHTML = originalButtonHtml;
+                    showError('Request timed out. Please try again.');
+                };
+
+                xhr.timeout = 30000;
+                xhr.send(formData);
+            }
+
+            // Helper function to show success messages
+            function showSuccess(message) {
+                // Check if message div exists
+                let msgDiv = document.getElementById('messageDiv');
+
+                if (!msgDiv) {
+                    // Create message div if it doesn't exist
+                    msgDiv = document.createElement('div');
+                    msgDiv.id = 'messageDiv';
+                    msgDiv.className = 'position-fixed top-0 end-0 m-3 p-3 rounded shadow';
+                    msgDiv.style.zIndex = '9999';
+                    document.body.appendChild(msgDiv);
+                }
+
+                msgDiv.className = 'position-fixed top-0 end-0 m-3 p-3 rounded shadow bg-success text-white';
+                msgDiv.innerHTML = `<i class="bi bi-check-circle-fill me-2"></i>${message}`;
+
+                setTimeout(() => {
+                    msgDiv.style.display = 'none';
+                }, 3000);
+            }
+
+            // Helper function to show error messages
+            function showError(message) {
+                // Check if message div exists
+                let msgDiv = document.getElementById('messageDiv');
+
+                if (!msgDiv) {
+                    // Create message div if it doesn't exist
+                    msgDiv = document.createElement('div');
+                    msgDiv.id = 'messageDiv';
+                    msgDiv.className = 'position-fixed top-0 end-0 m-3 p-3 rounded shadow';
+                    msgDiv.style.zIndex = '9999';
+                    document.body.appendChild(msgDiv);
+                }
+
+                msgDiv.className = 'position-fixed top-0 end-0 m-3 p-3 rounded shadow bg-danger text-white';
+                msgDiv.innerHTML = `<i class="bi bi-exclamation-triangle-fill me-2"></i>${message}`;
+                msgDiv.style.display = 'block';
+            }
+
+            // Optional: Function to update user counts
+            function updateUserCounts() {
+                // You can implement this to refresh counts
+                // For example, reload the student count
+                console.log('User counts updated');
+            }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            function viewPendingRequests() {
+                showSection('activity');
+                document.getElementById('timeRangeFilter').value = 'all';
+                filterRequestsByTime();
+            }
+
+            function openNotificationModal() {
+                toggleNotifications();
+            }
+
+            function searchUsers() {
+                const searchTerm = document.getElementById('userSearch').value.toLowerCase().trim();
+
+                const studentVisible = filterTable('studentTableBody', searchTerm);
+                const supervisorVisible = filterTable('supervisorTableBody', searchTerm);
+                const techVisible = filterTable('techOfficerTableBody', searchTerm);
+
+                toggleTableVisibility('studentTableCard', studentVisible, searchTerm);
+                toggleTableVisibility('supervisorTableCard', supervisorVisible, searchTerm);
+                toggleTableVisibility('techOfficerTableCard', techVisible, searchTerm);
+
+                updateVisibleCounts(searchTerm);
+            }
+
+            function filterTable(tableId, searchTerm) {
+                const table = document.getElementById(tableId);
+                if (!table) return 0;
+                let visibleCount = 0;
+
+                for (let row of table.getElementsByTagName('tr')) {
+                    if (searchTerm === '' || row.textContent.toLowerCase().includes(searchTerm)) {
+                        row.style.display = '';
+                        visibleCount++;
+                    } else {
+                        row.style.display = 'none';
+                    }
+                }
+                return visibleCount;
+            }
+
+            function toggleTableVisibility(cardId, visibleCount, searchTerm) {
+                const card = document.getElementById(cardId);
+                if (!card) return;
+                card.style.display = (visibleCount === 0 && searchTerm !== '') ? 'none' : 'block';
+            }
+
+            function updateVisibleCounts(searchTerm) {
+                const tables = [{
+                        id: 'studentTableBody',
+                        countId: 'studentCount'
+                    },
+                    {
+                        id: 'supervisorTableBody',
+                        countId: 'supervisorCount'
+                    },
+                    {
+                        id: 'techOfficerTableBody',
+                        countId: 'techOfficerCount'
+                    }
+                ];
+
+                tables.forEach(table => {
+                    const tbody = document.getElementById(table.id);
+                    if (!tbody) return;
+
+                    const visible = Array.from(tbody.getElementsByTagName('tr'))
+                        .filter(row => row.style.display !== 'none').length;
+                    const total = tbody.children.length;
+
+                    document.getElementById(table.countId).textContent =
+                        (visible > 0 || searchTerm === '') ? '(' + visible + '/' + total + ')' : '(0)';
+                });
+            }
+
+            function loadUserCounts() {
+                const xhr = new XMLHttpRequest();
+                xhr.open('GET', '../controllers/get_user_counts.php', true);
+                xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+
+                xhr.onload = function() {
+                    if (xhr.status === 200) {
+                        try {
+                            const response = JSON.parse(xhr.responseText);
+                            if (response.success) {
+                                // Update student counts
+                                document.getElementById('studentCount').innerHTML =
+                                    `(${response.students.active}/${response.students.total})`;
+
+                                // Update supervisor counts
+                                document.getElementById('supervisorCount').innerHTML =
+                                    `(${response.supervisors.active}/${response.supervisors.total})`;
+
+                                // Update technical officer counts
+                                document.getElementById('techOfficerCount').innerHTML =
+                                    `(${response.technical.active}/${response.technical.total})`;
+                            }
+                        } catch (e) {
+                            console.error('Error loading user counts:', e);
+                        }
+                    }
+                };
+
+                xhr.send();
+            }
+
+            function addNewUser() {
+                alert('Add User modal would open here');
+            }
+
+            function editUser(userId) {
+                alert('Edit user: ' + userId);
+            }
+
+            // ========== SIDEBAR & NAVIGATION ==========
+            function toggleSidebar() {
+                document.getElementById("sidebar").classList.toggle("active");
+                document.getElementById("sidebarOverlay").classList.toggle("active");
+            }
+
+            function toggleNotifications() {
+                document.getElementById("notificationDropdown").classList.toggle("show");
+            }
+
+            document.addEventListener('click', function(event) {
+                const bell = document.querySelector('.notification-bell:last-child');
+                const dropdown = document.getElementById('notificationDropdown');
+                if (bell && dropdown && !bell.contains(event.target) && !dropdown.contains(event.target)) {
+                    dropdown.classList.remove('show');
+                }
+            });
+
+            function showSection(section) {
+                const sections = ['dashboard', 'userManagement', 'equipment', 'history', 'activity', 'analytics'];
+                sections.forEach(s => document.getElementById(s + 'Section').style.display = 'none');
+
+                const sectionElement = document.getElementById(section + 'Section');
+                if (sectionElement) sectionElement.style.display = 'block';
+
+                document.querySelectorAll('.sidebar a').forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('onclick')?.includes(section)) link.classList.add('active');
                 });
 
-                function showSection(section) {
-                    const sections = ['dashboard', 'userManagement', 'equipment', 'history', 'activity', 'analytics'];
-                    sections.forEach(s => document.getElementById(s + 'Section').style.display = 'none');
+                if (section === 'equipment') {
 
-                    const sectionElement = document.getElementById(section + 'Section');
-                    if (sectionElement) sectionElement.style.display = 'block';
+                    console.log('Loading equipment section with data:', equipmentDataTable);
+                    displayEquipmentTable(equipmentDataTable);
+                }
+                if (section === 'dashboard' || section === 'analytics') {
+                    setTimeout(() => {
+                        initCharts();
+                        initAnalyticsCharts();
+                        initCalendar(); // Add this line
+                        initCalendarListeners(); // Add this line
+                    }, 100);
+                }
+                if (section === 'history') {
+                    // Reset filters when showing section
+                    document.getElementById('reservationSearch').value = '';
+                    document.getElementById('statusFilter').value = 'all';
+                    searchReservations();
+                }
+                if (section === 'activity') filterRequestsByTime();
+            }
 
-                    document.querySelectorAll('.sidebar a').forEach(link => {
-                        link.classList.remove('active');
-                        if (link.getAttribute('onclick')?.includes(section)) link.classList.add('active');
-                    });
+            // ========== EQUIPMENT FUNCTIONS ==========
+            const equipmentGridData = [{
+                    name: 'Microscope',
+                    image: 'https://cdn-icons-png.flaticon.com/512/2941/2941514.png',
+                    location: 'Microbiology Lab 01',
+                    status: 'available',
+                    lab: 'lab1'
+                },
+                {
+                    name: 'Centrifuge',
+                    image: 'https://cdn-icons-png.flaticon.com/512/2941/2941543.png',
+                    location: 'Research Laboratory',
+                    status: 'in-use',
+                    lab: 'research'
+                },
+                {
+                    name: 'Incubator',
+                    image: 'https://cdn-icons-png.flaticon.com/512/2941/2941538.png',
+                    location: 'Microbiology Lab 02',
+                    status: 'maintenance',
+                    lab: 'lab2'
+                },
+                {
+                    name: 'Autoclave',
+                    image: 'https://cdn-icons-png.flaticon.com/512/2941/2941521.png',
+                    location: 'Microbiology Lab 01',
+                    status: 'available',
+                    lab: 'lab1'
+                },
+                {
+                    name: 'pH Meter',
+                    image: 'https://cdn-icons-png.flaticon.com/512/2941/2941556.png',
+                    location: 'Research Laboratory',
+                    status: 'available',
+                    lab: 'research'
+                },
+                {
+                    name: 'Water Bath',
+                    image: 'https://cdn-icons-png.flaticon.com/512/2941/2941578.png',
+                    location: 'Microbiology Lab 02',
+                    status: 'in-use',
+                    lab: 'lab2'
+                }
+            ];
 
-                    if (section === 'equipment') {
-                        displayEquipmentTable(equipmentDataTable);
-                    }
-                    if (section === 'dashboard' || section === 'analytics') {
-                        setTimeout(() => {
-                            initCharts();
-                            initAnalyticsCharts();
-                            initCalendar(); // Add this line
-                            initCalendarListeners(); // Add this line
-                        }, 100);
-                    }
-                    if (section === 'history') {
-                        // Reset filters when showing section
-                        document.getElementById('reservationSearch').value = '';
-                        document.getElementById('statusFilter').value = 'all';
-                        searchReservations();
-                    }
-                    if (section === 'activity') filterRequestsByTime();
+            const equipmentDataTable = [{
+                    code: 'MIC-001',
+                    name: 'Microscope',
+                    image: 'https://cdn-icons-png.flaticon.com/512/2941/2941514.png',
+                    available: 4,
+                    total: 8,
+                    maintenance: 2,
+                    usage: 75,
+                    location: 'Microbiology Lab 01',
+                    manufacturer: 'Olympus',
+                    model: 'CX23',
+                    purchaseDate: '2024-01-15',
+                    lastMaintenance: '2026-02-01',
+                    nextMaintenance: '2026-05-01',
+                    description: 'Binocular microscope with LED illumination, 4 objective lenses (4x, 10x, 40x, 100x)'
+                },
+                {
+                    code: 'CEN-002',
+                    name: 'Centrifuge',
+                    image: 'https://cdn-icons-png.flaticon.com/512/2941/2941543.png',
+                    available: 3,
+                    total: 5,
+                    maintenance: 1,
+                    usage: 60,
+                    location: 'Research Laboratory',
+                    manufacturer: 'Eppendorf',
+                    model: '5424R',
+                    purchaseDate: '2023-11-20',
+                    lastMaintenance: '2026-01-15',
+                    nextMaintenance: '2026-04-15',
+                    description: 'Refrigerated microcentrifuge, max speed 15,000 rpm'
+                },
+                {
+                    code: 'INC-003',
+                    name: 'Incubator',
+                    image: 'https://cdn-icons-png.flaticon.com/512/2941/2941538.png',
+                    available: 2,
+                    total: 4,
+                    maintenance: 3,
+                    usage: 50,
+                    location: 'Microbiology Lab 02',
+                    manufacturer: 'Thermo Scientific',
+                    model: 'Heratherm',
+                    purchaseDate: '2023-09-10',
+                    lastMaintenance: '2026-02-10',
+                    nextMaintenance: '2026-03-10',
+                    description: 'Microbiological incubator, 100L capacity'
+                },
+                {
+                    code: 'AUT-004',
+                    name: 'Autoclave',
+                    image: 'https://cdn-icons-png.flaticon.com/512/2941/2941521.png',
+                    available: 6,
+                    total: 6,
+                    maintenance: 0,
+                    usage: 90,
+                    location: 'Microbiology Lab 01',
+                    manufacturer: 'Hirayama',
+                    model: 'HVE-50',
+                    purchaseDate: '2024-02-01',
+                    lastMaintenance: '2026-01-20',
+                    nextMaintenance: '2026-04-20',
+                    description: 'Vertical sterilization autoclave, 50L capacity'
+                },
+                {
+                    code: 'PHM-005',
+                    name: 'pH Meter',
+                    image: 'https://cdn-icons-png.flaticon.com/512/2941/2941556.png',
+                    available: 3,
+                    total: 3,
+                    maintenance: 1,
+                    usage: 35,
+                    location: 'Research Laboratory',
+                    manufacturer: 'Mettler Toledo',
+                    model: 'FiveEasy',
+                    purchaseDate: '2024-03-05',
+                    lastMaintenance: '2026-02-05',
+                    nextMaintenance: '2026-05-05',
+                    description: 'Digital pH meter with automatic temperature compensation'
+                },
+                {
+                    code: 'WAT-006',
+                    name: 'Water Bath',
+                    image: 'https://cdn-icons-png.flaticon.com/512/2941/2941578.png',
+                    available: 5,
+                    total: 7,
+                    maintenance: 2,
+                    usage: 70,
+                    location: 'Microbiology Lab 02',
+                    manufacturer: 'Memmert',
+                    model: 'WNB 14',
+                    purchaseDate: '2023-10-12',
+                    lastMaintenance: '2026-01-25',
+                    nextMaintenance: '2026-02-25',
+                    description: 'Digital water bath, 20L capacity'
+                }
+            ];
+
+            function displayEquipmentTable(equipment) {
+                const tableBody = document.getElementById('equipmentTableBody');
+                console.log('Table body element:', tableBody);
+
+                if (!tableBody) {
+                    console.error('Equipment table body not found!');
+                    return;
                 }
 
-                // ========== EQUIPMENT FUNCTIONS ==========
-                const equipmentGridData = [{
-                        name: 'Microscope',
-                        image: 'https://cdn-icons-png.flaticon.com/512/2941/2941514.png',
-                        location: 'Microbiology Lab 01',
-                        status: 'available',
-                        lab: 'lab1'
-                    },
-                    {
-                        name: 'Centrifuge',
-                        image: 'https://cdn-icons-png.flaticon.com/512/2941/2941543.png',
-                        location: 'Research Laboratory',
-                        status: 'in-use',
-                        lab: 'research'
-                    },
-                    {
-                        name: 'Incubator',
-                        image: 'https://cdn-icons-png.flaticon.com/512/2941/2941538.png',
-                        location: 'Microbiology Lab 02',
-                        status: 'maintenance',
-                        lab: 'lab2'
-                    },
-                    {
-                        name: 'Autoclave',
-                        image: 'https://cdn-icons-png.flaticon.com/512/2941/2941521.png',
-                        location: 'Microbiology Lab 01',
-                        status: 'available',
-                        lab: 'lab1'
-                    },
-                    {
-                        name: 'pH Meter',
-                        image: 'https://cdn-icons-png.flaticon.com/512/2941/2941556.png',
-                        location: 'Research Laboratory',
-                        status: 'available',
-                        lab: 'research'
-                    },
-                    {
-                        name: 'Water Bath',
-                        image: 'https://cdn-icons-png.flaticon.com/512/2941/2941578.png',
-                        location: 'Microbiology Lab 02',
-                        status: 'in-use',
-                        lab: 'lab2'
-                    }
-                ];
+                console.log('Displaying equipment:', equipment);
+                tableBody.innerHTML = '';
 
-                const equipmentDataTable = [{
-                        code: 'MIC-001',
-                        name: 'Microscope',
-                        image: 'https://cdn-icons-png.flaticon.com/512/2941/2941514.png',
-                        available: 4,
-                        total: 8,
-                        maintenance: 2,
-                        usage: 75,
-                        location: 'Microbiology Lab 01',
-                        manufacturer: 'Olympus',
-                        model: 'CX23',
-                        purchaseDate: '2024-01-15',
-                        lastMaintenance: '2026-02-01',
-                        nextMaintenance: '2026-05-01',
-                        description: 'Binocular microscope with LED illumination, 4 objective lenses (4x, 10x, 40x, 100x)'
-                    },
-                    {
-                        code: 'CEN-002',
-                        name: 'Centrifuge',
-                        image: 'https://cdn-icons-png.flaticon.com/512/2941/2941543.png',
-                        available: 3,
-                        total: 5,
-                        maintenance: 1,
-                        usage: 60,
-                        location: 'Research Laboratory',
-                        manufacturer: 'Eppendorf',
-                        model: '5424R',
-                        purchaseDate: '2023-11-20',
-                        lastMaintenance: '2026-01-15',
-                        nextMaintenance: '2026-04-15',
-                        description: 'Refrigerated microcentrifuge, max speed 15,000 rpm'
-                    },
-                    {
-                        code: 'INC-003',
-                        name: 'Incubator',
-                        image: 'https://cdn-icons-png.flaticon.com/512/2941/2941538.png',
-                        available: 2,
-                        total: 4,
-                        maintenance: 3,
-                        usage: 50,
-                        location: 'Microbiology Lab 02',
-                        manufacturer: 'Thermo Scientific',
-                        model: 'Heratherm',
-                        purchaseDate: '2023-09-10',
-                        lastMaintenance: '2026-02-10',
-                        nextMaintenance: '2026-03-10',
-                        description: 'Microbiological incubator, 100L capacity'
-                    },
-                    {
-                        code: 'AUT-004',
-                        name: 'Autoclave',
-                        image: 'https://cdn-icons-png.flaticon.com/512/2941/2941521.png',
-                        available: 6,
-                        total: 6,
-                        maintenance: 0,
-                        usage: 90,
-                        location: 'Microbiology Lab 01',
-                        manufacturer: 'Hirayama',
-                        model: 'HVE-50',
-                        purchaseDate: '2024-02-01',
-                        lastMaintenance: '2026-01-20',
-                        nextMaintenance: '2026-04-20',
-                        description: 'Vertical sterilization autoclave, 50L capacity'
-                    },
-                    {
-                        code: 'PHM-005',
-                        name: 'pH Meter',
-                        image: 'https://cdn-icons-png.flaticon.com/512/2941/2941556.png',
-                        available: 3,
-                        total: 3,
-                        maintenance: 1,
-                        usage: 35,
-                        location: 'Research Laboratory',
-                        manufacturer: 'Mettler Toledo',
-                        model: 'FiveEasy',
-                        purchaseDate: '2024-03-05',
-                        lastMaintenance: '2026-02-05',
-                        nextMaintenance: '2026-05-05',
-                        description: 'Digital pH meter with automatic temperature compensation'
-                    },
-                    {
-                        code: 'WAT-006',
-                        name: 'Water Bath',
-                        image: 'https://cdn-icons-png.flaticon.com/512/2941/2941578.png',
-                        available: 5,
-                        total: 7,
-                        maintenance: 2,
-                        usage: 70,
-                        location: 'Microbiology Lab 02',
-                        manufacturer: 'Memmert',
-                        model: 'WNB 14',
-                        purchaseDate: '2023-10-12',
-                        lastMaintenance: '2026-01-25',
-                        nextMaintenance: '2026-02-25',
-                        description: 'Digital water bath, 20L capacity'
-                    }
-                ];
+                if (!equipment || equipment.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="7" class="text-center py-4">No equipment found</td></tr>';
+                    return;
+                }
 
-                function displayEquipmentTable(equipment) {
-                    const tableBody = document.getElementById('equipmentTableBody');
-                    if (!tableBody) return;
-                    tableBody.innerHTML = '';
+                equipment.forEach(item => {
+                    console.log('Processing item:', item); // Debug log
 
-                    equipment.forEach(item => {
-                        const ratio = item.available / item.total;
-                        let badgeColor = '#22c55e';
-                        if (ratio < 0.3) badgeColor = '#ef4444';
-                        else if (ratio < 0.6) badgeColor = '#f59e0b';
+                    // Make sure all required properties exist
+                    const available = item.available || 0;
+                    const total = item.total || 0;
+                    const ratio = total > 0 ? available / total : 0;
 
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
-            <td><img src="${item.image}" style="width: 50px; height: 50px; object-fit: contain;"></td>
-            <td>${item.code}</td>
-            <td>${item.name}</td>
-            <td><span class="badge" style="background: ${badgeColor}; color: white;">${item.available}/${item.total}</span></td>
-            <td><span class="badge bg-warning">${item.maintenance}</span></td>
+                    let badgeColor = '#22c55e'; // green
+                    if (ratio < 0.3) badgeColor = '#ef4444'; // red
+                    else if (ratio < 0.6) badgeColor = '#f59e0b'; // orange
+
+                    const row = document.createElement('tr');
+                    row.setAttribute('data-equipment-id', item.code || '');
+
+                    // Use safe property access with fallbacks
+                    const image = item.image || 'https://cdn-icons-png.flaticon.com/512/2941/2941514.png';
+                    const code = item.code || 'N/A';
+                    const name = item.name || 'Unknown';
+                    const maintenance = item.maintenance || 0;
+                    const usage = item.usage || 0;
+
+                    row.innerHTML = `
+            <td><img src="${image}" style="width: 50px; height: 50px; object-fit: contain;" onerror="this.src='https://cdn-icons-png.flaticon.com/512/2941/2941514.png'"></td>
+            <td>${code}</td>
+            <td>${name}</td>
+       
+            <td><span class="badge bg-warning">${maintenance}</span></td>
             <td>
-                <div class="progress-bar" style="width: 100px; display: inline-block;">
-                    <div class="progress-fill" style="width: ${item.usage}%"></div>
-                </div> ${item.usage}%
+                <div class="d-flex align-items-center gap-2">
+                    <div class="progress-bar" style="width: 80px; height: 8px; background: #e9ecef; border-radius: 4px;">
+                        <div class="progress-fill" style="width: ${usage}%; height: 8px; background: #22c55e; border-radius: 4px;"></div>
+                    </div>
+                    <span>${usage}%</span>
+                </div>
             </td>
             <td>
                 <div class="action-buttons">
-                    <button class="btn-view" onclick="viewEquipment('${item.code}')" title="View Details"><i class="bi bi-eye"></i></button>
-                    <button class="btn-edit" onclick="editEquipment('${item.code}')" title="Edit"><i class="bi bi-pencil-square"></i></button>
-                    <button class="btn-remove" onclick="removeEquipment('${item.code}')" title="Remove"><i class="bi bi-trash"></i></button>
+                    <button class="btn-view" onclick="viewEquipment('${code}')" title="View Details">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                    <button class="btn-edit" onclick="editEquipment('${code}')" title="Edit">
+                        <i class="bi bi-pencil-square"></i>
+                    </button>
+                    <button class="btn-remove" onclick="removeEquipment('${code}')" title="Remove">
+                        <i class="bi bi-trash"></i>
+                    </button>
                 </div>
             </td>
         `;
-                        tableBody.appendChild(row);
-                    });
-                }
+                    tableBody.appendChild(row);
+                });
 
-                function viewEquipment(code) {
-                    const equipment = equipmentDataTable.find(item => item.code === code);
-                    if (!equipment) return;
+                // Update equipment count
+                document.getElementById('equipmentCount').textContent = `(${equipment.length})`;
+                console.log('Table populated with', equipment.length, 'rows');
+            }
 
-                    const formatDate = (date) => new Date(date).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                    });
-                    const isOverdue = new Date(equipment.nextMaintenance) < new Date();
+            function viewEquipment(code) {
+                const equipment = equipmentDataTable.find(item => item.code === code);
+                if (!equipment) return;
 
-                    document.getElementById('equipmentDetailsContent').innerHTML = `
+                const formatDate = (date) => new Date(date).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+                const isOverdue = new Date(equipment.nextMaintenance) < new Date();
+
+                document.getElementById('equipmentDetailsContent').innerHTML = `
         <div class="row">
             <div class="col-md-4 text-center">
                 <img src="${equipment.image}" style="width: 150px; height: 150px; object-fit: contain;" class="mb-3">
@@ -5704,93 +5274,93 @@ function showSection(section) {
             </div>
         </div>
     `;
-                    new bootstrap.Modal(document.getElementById('equipmentDetailsModal')).show();
+                new bootstrap.Modal(document.getElementById('equipmentDetailsModal')).show();
+            }
+
+            function addEquipment() {
+                alert('Add Equipment modal would open here');
+            }
+
+            function editEquipment(code) {
+                alert('Edit equipment: ' + code);
+            }
+
+            function removeEquipment(code) {
+                if (confirm(`Remove equipment ${code}?`)) {
+                    const index = equipmentDataTable.findIndex(item => item.code === code);
+                    if (index !== -1) equipmentDataTable.splice(index, 1);
+                    displayEquipmentTable(equipmentDataTable);
+                    alert('Equipment removed!');
                 }
-
-                function addEquipment() {
-                    alert('Add Equipment modal would open here');
-                }
-
-                function editEquipment(code) {
-                    alert('Edit equipment: ' + code);
-                }
-
-                function removeEquipment(code) {
-                    if (confirm(`Remove equipment ${code}?`)) {
-                        const index = equipmentDataTable.findIndex(item => item.code === code);
-                        if (index !== -1) equipmentDataTable.splice(index, 1);
-                        displayEquipmentTable(equipmentDataTable);
-                        alert('Equipment removed!');
-                    }
-                }
+            }
 
 
 
-                // Add this function to show events for selected date
-                function showEventsForDate(date) {
-                    const eventsList = document.getElementById('eventsList');
-                    const dateStr = date.toISOString().split('T')[0]; // Format: YYYY-MM-DD
+            // Add this function to show events for selected date
+            function showEventsForDate(date) {
+                const eventsList = document.getElementById('eventsList');
+                const dateStr = date.toISOString().split('T')[0]; // Format: YYYY-MM-DD
 
-                    // Sample events data - in real app, this would come from database
-                    const events = {
-                        '2026-02-15': [{
-                                title: 'Microscope Reservation - Lab 01',
-                                time: '10:00 AM - 12:00 PM',
-                                type: 'reservation'
-                            },
-                            {
-                                title: 'Centrifuge Maintenance',
-                                time: '02:00 PM - 03:00 PM',
-                                type: 'maintenance'
-                            }
-                        ],
-                        '2026-02-16': [{
-                                title: 'Incubator Calibration',
-                                time: '09:00 AM - 10:30 AM',
-                                type: 'maintenance'
-                            },
-                            {
-                                title: 'Student Practical - Lab 02',
-                                time: '11:00 AM - 01:00 PM',
-                                type: 'practical'
-                            },
-                            {
-                                title: 'Autoclave Sterilization',
-                                time: '02:00 PM - 04:00 PM',
-                                type: 'maintenance'
-                            }
-                        ],
-                        '2026-02-17': [{
-                                title: 'Research Project - DNA Extraction',
-                                time: '09:30 AM - 12:30 PM',
-                                type: 'research'
-                            },
-                            {
-                                title: 'pH Meter Calibration',
-                                time: '01:30 PM - 02:30 PM',
-                                type: 'maintenance'
-                            }
-                        ]
-                    };
+                // Sample events data - in real app, this would come from database
+                const events = {
+                    '2026-02-15': [{
+                            title: 'Microscope Reservation - Lab 01',
+                            time: '10:00 AM - 12:00 PM',
+                            type: 'reservation'
+                        },
+                        {
+                            title: 'Centrifuge Maintenance',
+                            time: '02:00 PM - 03:00 PM',
+                            type: 'maintenance'
+                        }
+                    ],
+                    '2026-02-16': [{
+                            title: 'Incubator Calibration',
+                            time: '09:00 AM - 10:30 AM',
+                            type: 'maintenance'
+                        },
+                        {
+                            title: 'Student Practical - Lab 02',
+                            time: '11:00 AM - 01:00 PM',
+                            type: 'practical'
+                        },
+                        {
+                            title: 'Autoclave Sterilization',
+                            time: '02:00 PM - 04:00 PM',
+                            type: 'maintenance'
+                        }
+                    ],
+                    '2026-02-17': [{
+                            title: 'Research Project - DNA Extraction',
+                            time: '09:30 AM - 12:30 PM',
+                            type: 'research'
+                        },
+                        {
+                            title: 'pH Meter Calibration',
+                            time: '01:30 PM - 02:30 PM',
+                            type: 'maintenance'
+                        }
+                    ]
+                };
 
-                    // Get events for selected date or show default message
-                    const dayEvents = events[dateStr] || [];
+                // Get events for selected date or show default message
+                const dayEvents = events[dateStr] || [];
 
-                    if (dayEvents.length === 0) {
-                        eventsList.innerHTML = '<div class="no-event">No events scheduled for this date</div>';
-                    } else {
-                        eventsList.innerHTML = '';
-                        dayEvents.forEach(event => {
-                            const eventItem = document.createElement('div');
-                            eventItem.className = 'event-item';
+                if (dayEvents.length === 0) {
+                    eventsList.innerHTML = '<div class="no-event">No events scheduled for this date</div>';
+                } else {
+                    eventsList.innerHTML = '';
+                    dayEvents.forEach(event => {
+                        const eventItem = document.createElement('div');
+                        eventItem.className = 'event-item';
 
-                            // Determine icon color based on event type
-                            let iconColor = '#ffd700'; // default gold
-                            if (event.type === 'maintenance') iconColor = '#ef4444'; // red
-                            if (event.type === 'practical') iconColor = '#22c55e'; // green
-                            if (event.type === 'research') iconColor = '#3b82f6'; // blue
+                        // Determine icon color based on event type
+                        let iconColor = '#ffd700'; // default gold
+                        if (event.type === 'maintenance') iconColor = '#ef4444'; // red
+                        if (event.type === 'practical') iconColor = '#22c55e'; // green
+                        if (event.type === 'research') iconColor = '#3b82f6'; // blue
 
-                            eventItem.innerHTML = `
+                        eventItem.innerHTML = `
                 <div class="title">
                     <i class="fas fa-circle" style="color: ${iconColor};"></i>
                     <div class="event-title">${event.title}</div>
@@ -5798,159 +5368,159 @@ function showSection(section) {
                 <div class="event-time">${event.time}</div>
             `;
 
-                            eventsList.appendChild(eventItem);
+                        eventsList.appendChild(eventItem);
+                    });
+                }
+            }
+
+
+
+
+            // Add this function after showEventsForDate (around line 2220)
+            function addDayCellClickHandlers() {
+                const dayCells = document.querySelectorAll('.day-cell:not(.prev-date):not(.next-date)');
+
+                dayCells.forEach(cell => {
+                    cell.addEventListener('click', function() {
+                        // Remove active class from all cells
+                        dayCells.forEach(c => c.classList.remove('active'));
+
+                        // Add active class to clicked cell
+                        this.classList.add('active');
+
+                        // Get the selected date
+                        const selectedDay = this.textContent;
+                        const selectedDate = new Date(year, month, parseInt(selectedDay));
+
+                        // Update right panel with selected date
+                        const options = {
+                            weekday: 'long'
+                        };
+                        document.getElementById('eventDay').innerHTML = selectedDate.toLocaleDateString('en-US', options);
+                        document.getElementById('eventDate').innerHTML = selectedDate.toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
                         });
-                    }
-                }
 
-
-
-
-                // Add this function after showEventsForDate (around line 2220)
-                function addDayCellClickHandlers() {
-                    const dayCells = document.querySelectorAll('.day-cell:not(.prev-date):not(.next-date)');
-
-                    dayCells.forEach(cell => {
-                        cell.addEventListener('click', function() {
-                            // Remove active class from all cells
-                            dayCells.forEach(c => c.classList.remove('active'));
-
-                            // Add active class to clicked cell
-                            this.classList.add('active');
-
-                            // Get the selected date
-                            const selectedDay = this.textContent;
-                            const selectedDate = new Date(year, month, parseInt(selectedDay));
-
-                            // Update right panel with selected date
-                            const options = {
-                                weekday: 'long'
-                            };
-                            document.getElementById('eventDay').innerHTML = selectedDate.toLocaleDateString('en-US', options);
-                            document.getElementById('eventDate').innerHTML = selectedDate.toLocaleDateString('en-US', {
-                                year: 'numeric',
-                                month: 'long',
-                                day: 'numeric'
-                            });
-
-                            // Show events for this date
-                            showEventsForDate(selectedDate);
-                        });
+                        // Show events for this date
+                        showEventsForDate(selectedDate);
                     });
+                });
+            }
+            // ========== RESERVATION DATA ==========
+            const reservationData = [{
+                    id: 'RES-001',
+                    lab: 'Microbiology Lab 01',
+                    studentId: 'SCI001',
+                    studentName: 'John Doe',
+                    status: 'ready',
+                    date: '2026-02-25',
+                    time: '10:00 - 12:00',
+                    equipment: 'Microscope (2), Slides (10)',
+                    purpose: 'Final Year Research Project',
+                    technicalOfficer: 'Mr. Sunil Rathnayake',
+                    notes: 'All equipment verified and ready'
+                },
+                {
+                    id: 'RES-002',
+                    lab: 'Research Laboratory',
+                    studentId: 'SCI002',
+                    studentName: 'Jane Smith',
+                    status: 'pending',
+                    date: '2026-02-26',
+                    time: '14:00 - 16:00',
+                    equipment: 'Centrifuge (1), Test Tubes (5)',
+                    purpose: 'DNA Extraction Practical',
+                    technicalOfficer: 'Mrs. Chamari Weerasinghe',
+                    notes: 'Waiting for equipment availability'
+                },
+                {
+                    id: 'RES-003',
+                    lab: 'Microbiology Lab 02',
+                    studentId: 'SCI003',
+                    studentName: 'Mike Johnson',
+                    status: 'rejected',
+                    date: '2026-02-24',
+                    time: '09:00 - 11:00',
+                    equipment: 'Incubator (1), Culture Media (2)',
+                    purpose: 'Bacterial Culture Experiment',
+                    technicalOfficer: 'Mr. Prasanna Kumara',
+                    notes: 'Equipment under maintenance'
                 }
-                // ========== RESERVATION DATA ==========
-                const reservationData = [{
-                        id: 'RES-001',
-                        lab: 'Microbiology Lab 01',
-                        studentId: 'SCI001',
-                        studentName: 'John Doe',
-                        status: 'ready',
-                        date: '2026-02-25',
-                        time: '10:00 - 12:00',
-                        equipment: 'Microscope (2), Slides (10)',
-                        purpose: 'Final Year Research Project',
-                        technicalOfficer: 'Mr. Sunil Rathnayake',
-                        notes: 'All equipment verified and ready'
-                    },
-                    {
-                        id: 'RES-002',
-                        lab: 'Research Laboratory',
-                        studentId: 'SCI002',
-                        studentName: 'Jane Smith',
-                        status: 'pending',
-                        date: '2026-02-26',
-                        time: '14:00 - 16:00',
-                        equipment: 'Centrifuge (1), Test Tubes (5)',
-                        purpose: 'DNA Extraction Practical',
-                        technicalOfficer: 'Mrs. Chamari Weerasinghe',
-                        notes: 'Waiting for equipment availability'
-                    },
-                    {
-                        id: 'RES-003',
-                        lab: 'Microbiology Lab 02',
-                        studentId: 'SCI003',
-                        studentName: 'Mike Johnson',
-                        status: 'rejected',
-                        date: '2026-02-24',
-                        time: '09:00 - 11:00',
-                        equipment: 'Incubator (1), Culture Media (2)',
-                        purpose: 'Bacterial Culture Experiment',
-                        technicalOfficer: 'Mr. Prasanna Kumara',
-                        notes: 'Equipment under maintenance'
-                    }
-                ];
+            ];
 
-                // ========== RESERVATION FUNCTIONS ==========
-                function searchReservations() {
-                    const searchTerm = document.getElementById('reservationSearch').value.toLowerCase().trim();
-                    const statusFilter = document.getElementById('statusFilter').value;
+            // ========== RESERVATION FUNCTIONS ==========
+            function searchReservations() {
+                const searchTerm = document.getElementById('reservationSearch').value.toLowerCase().trim();
+                const statusFilter = document.getElementById('statusFilter').value;
 
-                    console.log('Searching reservations:', {
-                        searchTerm,
-                        statusFilter
-                    });
+                console.log('Searching reservations:', {
+                    searchTerm,
+                    statusFilter
+                });
 
-                    // Filter reservations based on search term and status
-                    const filtered = reservationData.filter(item => {
-                        // Check status filter
-                        if (statusFilter !== 'all' && item.status !== statusFilter) {
-                            return false;
-                        }
-
-                        // Check search term (if not empty)
-                        if (searchTerm !== '') {
-                            return (
-                                item.id.toLowerCase().includes(searchTerm) ||
-                                item.studentId.toLowerCase().includes(searchTerm) ||
-                                item.studentName.toLowerCase().includes(searchTerm) ||
-                                item.lab.toLowerCase().includes(searchTerm)
-                            );
-                        }
-
-                        return true; // Passes all filters
-                    });
-
-                    // Display filtered results
-                    displayReservationTable(filtered);
-
-                    // Update visibility and count
-                    updateReservationVisibility(filtered.length, searchTerm, statusFilter);
-                }
-
-                // This function is called by the select onchange
-                function filterReservations() {
-                    searchReservations();
-                }
-
-                function displayReservationTable(reservations) {
-                    const tableBody = document.getElementById('reservationTableBody');
-                    if (!tableBody) return;
-
-                    tableBody.innerHTML = '';
-
-                    if (reservations.length === 0) {
-                        const row = document.createElement('tr');
-                        row.innerHTML = `<td colspan="6" class="text-center py-4">No reservations found</td>`;
-                        tableBody.appendChild(row);
-                        return;
+                // Filter reservations based on search term and status
+                const filtered = reservationData.filter(item => {
+                    // Check status filter
+                    if (statusFilter !== 'all' && item.status !== statusFilter) {
+                        return false;
                     }
 
-                    reservations.forEach(item => {
-                        let statusClass = '';
-                        switch (item.status) {
-                            case 'ready':
-                                statusClass = 'bg-success';
-                                break;
-                            case 'pending':
-                                statusClass = 'bg-warning';
-                                break;
-                            case 'rejected':
-                                statusClass = 'bg-danger';
-                                break;
-                        }
+                    // Check search term (if not empty)
+                    if (searchTerm !== '') {
+                        return (
+                            item.id.toLowerCase().includes(searchTerm) ||
+                            item.studentId.toLowerCase().includes(searchTerm) ||
+                            item.studentName.toLowerCase().includes(searchTerm) ||
+                            item.lab.toLowerCase().includes(searchTerm)
+                        );
+                    }
 
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
+                    return true; // Passes all filters
+                });
+
+                // Display filtered results
+                displayReservationTable(filtered);
+
+                // Update visibility and count
+                updateReservationVisibility(filtered.length, searchTerm, statusFilter);
+            }
+
+            // This function is called by the select onchange
+            function filterReservations() {
+                searchReservations();
+            }
+
+            function displayReservationTable(reservations) {
+                const tableBody = document.getElementById('reservationTableBody');
+                if (!tableBody) return;
+
+                tableBody.innerHTML = '';
+
+                if (reservations.length === 0) {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `<td colspan="6" class="text-center py-4">No reservations found</td>`;
+                    tableBody.appendChild(row);
+                    return;
+                }
+
+                reservations.forEach(item => {
+                    let statusClass = '';
+                    switch (item.status) {
+                        case 'ready':
+                            statusClass = 'bg-success';
+                            break;
+                        case 'pending':
+                            statusClass = 'bg-warning';
+                            break;
+                        case 'rejected':
+                            statusClass = 'bg-danger';
+                            break;
+                    }
+
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
             <td>${item.id}</td>
             <td>${item.lab}</td>
             <td>${item.studentId}</td>
@@ -5962,53 +5532,53 @@ function showSection(section) {
                 </button>
             </td>
         `;
-                        tableBody.appendChild(row);
-                    });
+                    tableBody.appendChild(row);
+                });
+            }
+
+            function updateReservationVisibility(visibleCount, searchTerm, statusFilter) {
+                const card = document.getElementById('reservationTableCard');
+                const countElement = document.getElementById('reservationCount');
+
+                if (!card || !countElement) return;
+
+                const totalReservations = reservationData.length;
+
+                // Update count display
+                if (visibleCount > 0 || (searchTerm === '' && statusFilter === 'all')) {
+                    countElement.textContent = '(' + visibleCount + '/' + totalReservations + ')';
+                } else {
+                    countElement.textContent = '(0)';
                 }
 
-                function updateReservationVisibility(visibleCount, searchTerm, statusFilter) {
-                    const card = document.getElementById('reservationTableCard');
-                    const countElement = document.getElementById('reservationCount');
+                // Hide card if no results AND (search is active OR filter is active)
+                if (visibleCount === 0 && (searchTerm !== '' || statusFilter !== 'all')) {
+                    card.style.display = 'none';
+                } else {
+                    card.style.display = 'block';
+                }
+            }
 
-                    if (!card || !countElement) return;
+            function viewReservation(id) {
+                const reservation = reservationData.find(item => item.id === id);
+                if (!reservation) return;
 
-                    const totalReservations = reservationData.length;
+                const detailsContent = document.getElementById('reservationDetailsContent');
 
-                    // Update count display
-                    if (visibleCount > 0 || (searchTerm === '' && statusFilter === 'all')) {
-                        countElement.textContent = '(' + visibleCount + '/' + totalReservations + ')';
-                    } else {
-                        countElement.textContent = '(0)';
-                    }
-
-                    // Hide card if no results AND (search is active OR filter is active)
-                    if (visibleCount === 0 && (searchTerm !== '' || statusFilter !== 'all')) {
-                        card.style.display = 'none';
-                    } else {
-                        card.style.display = 'block';
-                    }
+                let statusBadge = '';
+                switch (reservation.status) {
+                    case 'ready':
+                        statusBadge = '<span class="badge bg-success">Ready</span>';
+                        break;
+                    case 'pending':
+                        statusBadge = '<span class="badge bg-warning">Pending</span>';
+                        break;
+                    case 'rejected':
+                        statusBadge = '<span class="badge bg-danger">Rejected</span>';
+                        break;
                 }
 
-                function viewReservation(id) {
-                    const reservation = reservationData.find(item => item.id === id);
-                    if (!reservation) return;
-
-                    const detailsContent = document.getElementById('reservationDetailsContent');
-
-                    let statusBadge = '';
-                    switch (reservation.status) {
-                        case 'ready':
-                            statusBadge = '<span class="badge bg-success">Ready</span>';
-                            break;
-                        case 'pending':
-                            statusBadge = '<span class="badge bg-warning">Pending</span>';
-                            break;
-                        case 'rejected':
-                            statusBadge = '<span class="badge bg-danger">Rejected</span>';
-                            break;
-                    }
-
-                    detailsContent.innerHTML = `
+                detailsContent.innerHTML = `
         <div class="row">
             <div class="col-md-12">
                 <div class="d-flex justify-content-between align-items-center mb-3">
@@ -6030,119 +5600,65 @@ function showSection(section) {
         </div>
     `;
 
-                    new bootstrap.Modal(document.getElementById('reservationDetailsModal')).show();
+                new bootstrap.Modal(document.getElementById('reservationDetailsModal')).show();
+            }
+
+            function addReservation() {
+                alert('Add Reservation modal would open here');
+            }
+
+            // ========== ANALYTICS FUNCTIONS ==========
+            let usageChart, monthlyChart, equipmentUsageChart;
+            let equipmentUsageData = [{
+                    name: 'Microscope',
+                    usage: 80
+                },
+                {
+                    name: 'Centrifuge',
+                    usage: 65
+                },
+                {
+                    name: 'Incubator',
+                    usage: 45
+                },
+                {
+                    name: 'Autoclave',
+                    usage: 70
+                },
+                {
+                    name: 'pH Meter',
+                    usage: 35
+                },
+                {
+                    name: 'Water Bath',
+                    usage: 20
+                },
+                {
+                    name: 'Shaker',
+                    usage: 55
+                },
+                {
+                    name: 'Hot Plate',
+                    usage: 30
+                },
+                {
+                    name: 'Balance',
+                    usage: 25
                 }
+            ];
 
-                function addReservation() {
-                    alert('Add Reservation modal would open here');
-                }
-
-                // ========== ANALYTICS FUNCTIONS ==========
-                let usageChart, monthlyChart, equipmentUsageChart;
-                let equipmentUsageData = [{
-                        name: 'Microscope',
-                        usage: 80
-                    },
-                    {
-                        name: 'Centrifuge',
-                        usage: 65
-                    },
-                    {
-                        name: 'Incubator',
-                        usage: 45
-                    },
-                    {
-                        name: 'Autoclave',
-                        usage: 70
-                    },
-                    {
-                        name: 'pH Meter',
-                        usage: 35
-                    },
-                    {
-                        name: 'Water Bath',
-                        usage: 20
-                    },
-                    {
-                        name: 'Shaker',
-                        usage: 55
-                    },
-                    {
-                        name: 'Hot Plate',
-                        usage: 30
-                    },
-                    {
-                        name: 'Balance',
-                        usage: 25
-                    }
-                ];
-
-                function initCharts() {
-                    const usageCtx = document.getElementById('usageChart')?.getContext('2d');
-                    if (usageCtx) {
-                        if (usageChart) usageChart.destroy();
-                        usageChart = new Chart(usageCtx, {
-                            type: 'bar',
-                            data: {
-                                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-                                datasets: [{
-                                    label: 'Completed Practicals',
-                                    data: [45, 32, 28, 20, 15, 10, 5],
-                                    backgroundColor: '#22c55e',
-                                    borderRadius: 8
-                                }]
-                            },
-                            options: {
-                                responsive: true,
-                                maintainAspectRatio: false,
-                                plugins: {
-                                    legend: {
-                                        display: false
-                                    }
-                                }
-                            }
-                        });
-                    }
-
-                    const monthlyCtx = document.getElementById('monthlyChart')?.getContext('2d');
-                    if (monthlyCtx) {
-                        if (monthlyChart) monthlyChart.destroy();
-                        monthlyChart = new Chart(monthlyCtx, {
-                            type: 'line',
-                            data: {
-                                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-                                datasets: [{
-                                    label: 'System Usage',
-                                    data: [12, 19, 15, 25, 22, 30],
-                                    borderColor: '#22c55e',
-                                    backgroundColor: 'rgba(34, 197, 94, 0.1)',
-                                    tension: 0.4,
-                                    fill: true
-                                }]
-                            },
-                            options: {
-                                responsive: true,
-                                maintainAspectRatio: false
-                            }
-                        });
-                    }
-
-                    // Initialize equipment usage table
-                    displayEquipmentUsageTable(equipmentUsageData);
-                }
-
-                function initAnalyticsCharts() {
-                    const ctx = document.getElementById('equipmentUsageChart')?.getContext('2d');
-                    if (!ctx) return;
-                    if (equipmentUsageChart) equipmentUsageChart.destroy();
-                    equipmentUsageChart = new Chart(ctx, {
+            function initCharts() {
+                const usageCtx = document.getElementById('usageChart')?.getContext('2d');
+                if (usageCtx) {
+                    if (usageChart) usageChart.destroy();
+                    usageChart = new Chart(usageCtx, {
                         type: 'bar',
                         data: {
-                            labels: ['Microscope', 'Centrifuge', 'Incubator', 'Autoclave', 'pH Meter', 'Water Bath'],
+                            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
                             datasets: [{
-                                label: 'Usage Percentage',
-                                data: [80, 65, 45, 70, 35, 20],
-                                backgroundColor: ['#22c55e', '#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899', '#ef4444'],
+                                label: 'Completed Practicals',
+                                data: [45, 32, 28, 20, 15, 10, 5],
+                                backgroundColor: '#22c55e',
                                 borderRadius: 8
                             }]
                         },
@@ -6153,52 +5669,106 @@ function showSection(section) {
                                 legend: {
                                     display: false
                                 }
-                            },
-                            scales: {
-                                y: {
-                                    beginAtZero: true,
-                                    max: 100,
-                                    title: {
-                                        display: true,
-                                        text: 'Usage %'
-                                    }
-                                }
                             }
                         }
                     });
                 }
 
-                // Filter equipment usage table (real-time search)
-                function filterEquipmentUsage() {
-                    const searchTerm = document.getElementById('equipmentUsageSearch').value.toLowerCase().trim();
-
-                    const filtered = equipmentUsageData.filter(item =>
-                        item.name.toLowerCase().includes(searchTerm)
-                    );
-
-                    displayEquipmentUsageTable(filtered);
+                const monthlyCtx = document.getElementById('monthlyChart')?.getContext('2d');
+                if (monthlyCtx) {
+                    if (monthlyChart) monthlyChart.destroy();
+                    monthlyChart = new Chart(monthlyCtx, {
+                        type: 'line',
+                        data: {
+                            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                            datasets: [{
+                                label: 'System Usage',
+                                data: [12, 19, 15, 25, 22, 30],
+                                borderColor: '#22c55e',
+                                backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                                tension: 0.4,
+                                fill: true
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false
+                        }
+                    });
                 }
 
-                // Display equipment usage table
-                function displayEquipmentUsageTable(data) {
-                    const tableBody = document.getElementById('equipmentUsageTableBody');
-                    if (!tableBody) return;
+                // Initialize equipment usage table
+                displayEquipmentUsageTable(equipmentUsageData);
+            }
 
-                    tableBody.innerHTML = '';
-
-                    if (data.length === 0) {
-                        tableBody.innerHTML = '<tr><td colspan="2" class="text-center py-4">No equipment found</td></tr>';
-                        return;
+            function initAnalyticsCharts() {
+                const ctx = document.getElementById('equipmentUsageChart')?.getContext('2d');
+                if (!ctx) return;
+                if (equipmentUsageChart) equipmentUsageChart.destroy();
+                equipmentUsageChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['Microscope', 'Centrifuge', 'Incubator', 'Autoclave', 'pH Meter', 'Water Bath'],
+                        datasets: [{
+                            label: 'Usage Percentage',
+                            data: [80, 65, 45, 70, 35, 20],
+                            backgroundColor: ['#22c55e', '#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899', '#ef4444'],
+                            borderRadius: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                max: 100,
+                                title: {
+                                    display: true,
+                                    text: 'Usage %'
+                                }
+                            }
+                        }
                     }
+                });
+            }
 
-                    data.forEach(item => {
-                        // Determine color based on usage percentage
-                        let color = '#22c55e'; // green
-                        if (item.usage < 30) color = '#ef4444'; // red
-                        else if (item.usage < 60) color = '#f59e0b'; // orange
+            // Filter equipment usage table (real-time search)
+            function filterEquipmentUsage() {
+                const searchTerm = document.getElementById('equipmentUsageSearch').value.toLowerCase().trim();
 
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
+                const filtered = equipmentUsageData.filter(item =>
+                    item.name.toLowerCase().includes(searchTerm)
+                );
+
+                displayEquipmentUsageTable(filtered);
+            }
+
+            // Display equipment usage table
+            function displayEquipmentUsageTable(data) {
+                const tableBody = document.getElementById('equipmentUsageTableBody');
+                if (!tableBody) return;
+
+                tableBody.innerHTML = '';
+
+                if (data.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="2" class="text-center py-4">No equipment found</td></tr>';
+                    return;
+                }
+
+                data.forEach(item => {
+                    // Determine color based on usage percentage
+                    let color = '#22c55e'; // green
+                    if (item.usage < 30) color = '#ef4444'; // red
+                    else if (item.usage < 60) color = '#f59e0b'; // orange
+
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
             <td>${item.name}</td>
             <td>
                 <div class="d-flex align-items-center gap-2">
@@ -6209,63 +5779,63 @@ function showSection(section) {
                 </div>
             </td>
         `;
-                        tableBody.appendChild(row);
-                    });
+                    tableBody.appendChild(row);
+                });
+            }
+
+            // Download full inventory
+            function downloadInventory() {
+                // Create CSV content
+                let csv = "Equipment Code,Equipment Name,Available/Total,Maintenance Pending,Usage %,Location,Manufacturer,Model\n";
+
+                equipmentDataTable.forEach(item => {
+                    csv += `${item.code},${item.name},${item.available}/${item.total},${item.maintenance},${item.usage}%,${item.location},${item.manufacturer},${item.model}\n`;
+                });
+
+                // Create download link
+                const blob = new Blob([csv], {
+                    type: 'text/csv'
+                });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'equipment_inventory.csv';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+
+                alert('Inventory list downloaded successfully!');
+            }
+
+            const rejectionReasons = {
+                'REQ003': {
+                    studentName: 'Mike Johnson',
+                    studentId: 'SCI003',
+                    reason: 'Equipment under maintenance - Scheduled for repair on 2026-02-25',
+                    rejectedBy: 'Mr. Prasanna Kumara',
+                    dateTime: '2026-02-19 09:15 AM'
+                },
+                'REQ007': {
+                    studentName: 'Alice Brown',
+                    studentId: 'SCI007',
+                    reason: 'Technical issue reported - Motor malfunction, awaiting spare parts',
+                    rejectedBy: 'Mrs. Chamari Weerasinghe',
+                    dateTime: '2026-02-17 02:30 PM'
+                },
+                'REQ012': {
+                    studentName: 'Tharindu Silva',
+                    studentId: 'SCI012',
+                    reason: 'Calibration required - Device giving inaccurate readings',
+                    rejectedBy: 'Mr. Sunil Rathnayake',
+                    dateTime: '2026-02-15 11:45 AM'
                 }
+            };
 
-                // Download full inventory
-                function downloadInventory() {
-                    // Create CSV content
-                    let csv = "Equipment Code,Equipment Name,Available/Total,Maintenance Pending,Usage %,Location,Manufacturer,Model\n";
-
-                    equipmentDataTable.forEach(item => {
-                        csv += `${item.code},${item.name},${item.available}/${item.total},${item.maintenance},${item.usage}%,${item.location},${item.manufacturer},${item.model}\n`;
-                    });
-
-                    // Create download link
-                    const blob = new Blob([csv], {
-                        type: 'text/csv'
-                    });
-                    const url = window.URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = 'equipment_inventory.csv';
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                    window.URL.revokeObjectURL(url);
-
-                    alert('Inventory list downloaded successfully!');
-                }
-
-                const rejectionReasons = {
-                    'REQ003': {
-                        studentName: 'Mike Johnson',
-                        studentId: 'SCI003',
-                        reason: 'Equipment under maintenance - Scheduled for repair on 2026-02-25',
-                        rejectedBy: 'Mr. Prasanna Kumara',
-                        dateTime: '2026-02-19 09:15 AM'
-                    },
-                    'REQ007': {
-                        studentName: 'Alice Brown',
-                        studentId: 'SCI007',
-                        reason: 'Technical issue reported - Motor malfunction, awaiting spare parts',
-                        rejectedBy: 'Mrs. Chamari Weerasinghe',
-                        dateTime: '2026-02-17 02:30 PM'
-                    },
-                    'REQ012': {
-                        studentName: 'Tharindu Silva',
-                        studentId: 'SCI012',
-                        reason: 'Calibration required - Device giving inaccurate readings',
-                        rejectedBy: 'Mr. Sunil Rathnayake',
-                        dateTime: '2026-02-15 11:45 AM'
-                    }
-                };
-
-                function viewRejectionReason(requestId) {
-                    const r = rejectionReasons[requestId];
-                    if (!r) return;
-                    document.getElementById('rejectionReasonContent').innerHTML = `
+            function viewRejectionReason(requestId) {
+                const r = rejectionReasons[requestId];
+                if (!r) return;
+                document.getElementById('rejectionReasonContent').innerHTML = `
         <p><strong>Request ID:</strong> ${requestId}</p>
         <p><strong>Student:</strong> ${r.studentName} (${r.studentId})</p>
         <p><strong>Rejected By:</strong> ${r.rejectedBy}</p>
@@ -6274,154 +5844,154 @@ function showSection(section) {
             <i class="bi bi-info-circle-fill me-2"></i> ${r.reason}
         </div>
     `;
-                    new bootstrap.Modal(document.getElementById('rejectionReasonModal')).show();
-                }
+                new bootstrap.Modal(document.getElementById('rejectionReasonModal')).show();
+            }
 
-                function generateReport(type) {
-                    if (type === 'rejected') {
-                        // Generate rejected requests report
-                        let report = "REJECTED REQUESTS REPORT\n";
-                        report += "=======================\n\n";
-                        report += "Request ID | Student ID | Reason | Date & Time\n";
-                        report += "----------------------------------------\n";
+            function generateReport(type) {
+                if (type === 'rejected') {
+                    // Generate rejected requests report
+                    let report = "REJECTED REQUESTS REPORT\n";
+                    report += "=======================\n\n";
+                    report += "Request ID | Student ID | Reason | Date & Time\n";
+                    report += "----------------------------------------\n";
 
-                        Object.keys(rejectionReasons).forEach(reqId => {
-                            const r = rejectionReasons[reqId];
-                            report += `${reqId} | ${r.studentId} | ${r.reason} | ${r.dateTime}\n`;
-                        });
-
-                        console.log(report);
-                        alert('Rejected requests report generated! Check console for preview.');
-
-                    } else if (type === 'usage') {
-                        // Generate equipment usage report
-                        let report = "EQUIPMENT USAGE REPORT\n";
-                        report += "======================\n\n";
-                        report += "Equipment Name | Usage Percentage\n";
-                        report += "--------------------------------\n";
-
-                        equipmentUsageData.forEach(item => {
-                            report += `${item.name} | ${item.usage}%\n`;
-                        });
-
-                        console.log(report);
-                        alert('Equipment usage report generated! Check console for preview.');
-                    }
-
-                    // Show success message
-                    const msg = document.createElement('div');
-                    msg.className = 'alert alert-success position-fixed top-0 end-0 m-3';
-                    msg.style.zIndex = '9999';
-                    msg.innerHTML = `${type.charAt(0).toUpperCase() + type.slice(1)} report generated!`;
-                    document.body.appendChild(msg);
-                    setTimeout(() => msg.remove(), 3000);
-                }
-
-                // ========== CALENDAR FUNCTIONS ==========
-                // ========== CALENDAR FUNCTIONS ==========
-                let month = new Date().getMonth();
-                let year = new Date().getFullYear();
-                const months = ["January", "February", "March", "April", "May", "June",
-                    "July", "August", "September", "October", "November", "December"
-                ];
-
-                function initCalendar() {
-                    // Check if calendar elements exist
-                    const daysGrid = document.getElementById('daysGrid');
-                    const displayMonth = document.getElementById('displayMonth');
-                    const eventDay = document.getElementById('eventDay');
-                    const eventDate = document.getElementById('eventDate');
-                    const eventsList = document.getElementById('eventsList');
-
-                    // If elements don't exist, exit silently
-                    if (!daysGrid || !displayMonth || !eventDay || !eventDate || !eventsList) {
-                        return;
-                    }
-
-                    const firstDay = new Date(year, month, 1);
-                    const lastDay = new Date(year, month + 1, 0);
-                    const lastDate = lastDay.getDate();
-                    const day = firstDay.getDay();
-
-                    displayMonth.innerHTML = months[month] + " " + year;
-                    let days = "";
-                    for (let i = 0; i < day; i++) days += `<div class="day-cell prev-date"></div>`;
-                    for (let i = 1; i <= lastDate; i++) {
-                        let classes = "day-cell";
-                        if (i === new Date().getDate() && year === new Date().getFullYear() && month === new Date().getMonth()) classes += " today";
-                        days += `<div class="${classes}">${i}</div>`;
-                    }
-                    daysGrid.innerHTML = days;
-
-                    // Set today's date in the right panel
-                    const today = new Date();
-                    const options = {
-                        weekday: 'long'
-                    };
-                    eventDay.innerHTML = today.toLocaleDateString('en-US', options);
-                    eventDate.innerHTML = today.toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
+                    Object.keys(rejectionReasons).forEach(reqId => {
+                        const r = rejectionReasons[reqId];
+                        report += `${reqId} | ${r.studentId} | ${r.reason} | ${r.dateTime}\n`;
                     });
 
-                    // Show events for today
-                    showEventsForDate(today);
+                    console.log(report);
+                    alert('Rejected requests report generated! Check console for preview.');
 
-                    // Add click handlers to day cells
-                    addDayCellClickHandlers();
+                } else if (type === 'usage') {
+                    // Generate equipment usage report
+                    let report = "EQUIPMENT USAGE REPORT\n";
+                    report += "======================\n\n";
+                    report += "Equipment Name | Usage Percentage\n";
+                    report += "--------------------------------\n";
+
+                    equipmentUsageData.forEach(item => {
+                        report += `${item.name} | ${item.usage}%\n`;
+                    });
+
+                    console.log(report);
+                    alert('Equipment usage report generated! Check console for preview.');
                 }
 
+                // Show success message
+                const msg = document.createElement('div');
+                msg.className = 'alert alert-success position-fixed top-0 end-0 m-3';
+                msg.style.zIndex = '9999';
+                msg.innerHTML = `${type.charAt(0).toUpperCase() + type.slice(1)} report generated!`;
+                document.body.appendChild(msg);
+                setTimeout(() => msg.remove(), 3000);
+            }
 
-                // ========== MAINTENANCE MODAL FUNCTIONS ==========
-                let selectedEquipment = [];
-                let companies = ['TechFix Solutions', 'LabCare Services', 'MedEquip Maintenance'];
+            // ========== CALENDAR FUNCTIONS ==========
+            // ========== CALENDAR FUNCTIONS ==========
+            let month = new Date().getMonth();
+            let year = new Date().getFullYear();
+            const months = ["January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"
+            ];
 
-                function sendToMaintenance() {
-                    openMaintenanceModal();
+            function initCalendar() {
+                // Check if calendar elements exist
+                const daysGrid = document.getElementById('daysGrid');
+                const displayMonth = document.getElementById('displayMonth');
+                const eventDay = document.getElementById('eventDay');
+                const eventDate = document.getElementById('eventDate');
+                const eventsList = document.getElementById('eventsList');
+
+                // If elements don't exist, exit silently
+                if (!daysGrid || !displayMonth || !eventDay || !eventDate || !eventsList) {
+                    return;
                 }
 
-                function openMaintenanceModal() {
-                    document.getElementById('maintenanceModal').classList.add('active');
-                    loadCompanies();
-                    updateSelectedEquipmentList();
+                const firstDay = new Date(year, month, 1);
+                const lastDay = new Date(year, month + 1, 0);
+                const lastDate = lastDay.getDate();
+                const day = firstDay.getDay();
+
+                displayMonth.innerHTML = months[month] + " " + year;
+                let days = "";
+                for (let i = 0; i < day; i++) days += `<div class="day-cell prev-date"></div>`;
+                for (let i = 1; i <= lastDate; i++) {
+                    let classes = "day-cell";
+                    if (i === new Date().getDate() && year === new Date().getFullYear() && month === new Date().getMonth()) classes += " today";
+                    days += `<div class="${classes}">${i}</div>`;
                 }
+                daysGrid.innerHTML = days;
 
-                function closeMaintenanceModal() {
-                    document.getElementById('maintenanceModal').classList.remove('active');
-                    document.getElementById('emailFormatEdit').classList.remove('active');
+                // Set today's date in the right panel
+                const today = new Date();
+                const options = {
+                    weekday: 'long'
+                };
+                eventDay.innerHTML = today.toLocaleDateString('en-US', options);
+                eventDate.innerHTML = today.toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                });
+
+                // Show events for today
+                showEventsForDate(today);
+
+                // Add click handlers to day cells
+                addDayCellClickHandlers();
+            }
+
+
+            // ========== MAINTENANCE MODAL FUNCTIONS ==========
+            let selectedEquipment = [];
+            let companies = ['TechFix Solutions', 'LabCare Services', 'MedEquip Maintenance'];
+
+            function sendToMaintenance() {
+                openMaintenanceModal();
+            }
+
+            function openMaintenanceModal() {
+                document.getElementById('maintenanceModal').classList.add('active');
+                loadCompanies();
+                updateSelectedEquipmentList();
+            }
+
+            function closeMaintenanceModal() {
+                document.getElementById('maintenanceModal').classList.remove('active');
+                document.getElementById('emailFormatEdit').classList.remove('active');
+            }
+
+            function toggleEmailFormatEdit() {
+                const editSection = document.getElementById('emailFormatEdit');
+                const previewSection = document.getElementById('emailFormatPreview');
+                editSection.classList.toggle('active');
+                if (editSection.classList.contains('active')) {
+                    previewSection.style.display = 'none';
+                } else {
+                    previewSection.style.display = 'block';
                 }
+            }
 
-                function toggleEmailFormatEdit() {
-                    const editSection = document.getElementById('emailFormatEdit');
-                    const previewSection = document.getElementById('emailFormatPreview');
-                    editSection.classList.toggle('active');
-                    if (editSection.classList.contains('active')) {
-                        previewSection.style.display = 'none';
-                    } else {
-                        previewSection.style.display = 'block';
-                    }
-                }
+            function openEquipmentSelectModal() {
+                const modal = document.getElementById('equipmentSelectModal');
+                const list = document.getElementById('equipmentSelectList');
 
-                function openEquipmentSelectModal() {
-                    const modal = document.getElementById('equipmentSelectModal');
-                    const list = document.getElementById('equipmentSelectList');
+                // Populate equipment list from your equipment data
+                list.innerHTML = '';
+                equipmentDataTable.forEach(item => {
+                    if (item.maintenance > 0) { // Only show equipment with maintenance pending
+                        const div = document.createElement('div');
+                        div.className = 'equipment-select-item';
+                        div.onclick = () => toggleEquipmentSelection(item.code);
 
-                    // Populate equipment list from your equipment data
-                    list.innerHTML = '';
-                    equipmentDataTable.forEach(item => {
-                        if (item.maintenance > 0) { // Only show equipment with maintenance pending
-                            const div = document.createElement('div');
-                            div.className = 'equipment-select-item';
-                            div.onclick = () => toggleEquipmentSelection(item.code);
+                        // Create company dropdown
+                        let companyOptions = '<option value="">Select Company</option>';
+                        companies.forEach(c => {
+                            companyOptions += `<option value="${c}">${c}</option>`;
+                        });
 
-                            // Create company dropdown
-                            let companyOptions = '<option value="">Select Company</option>';
-                            companies.forEach(c => {
-                                companyOptions += `<option value="${c}">${c}</option>`;
-                            });
-
-                            div.innerHTML = `
+                        div.innerHTML = `
                         <div class="equipment-select-info">
                             <h6>${item.name} (${item.code})</h6>
                             <p>Maintenance Pending: ${item.maintenance} units</p>
@@ -6431,75 +6001,75 @@ function showSection(section) {
                         </div>
                         <input type="number" class="equipment-select-qty" value="1" min="1" max="${item.maintenance}" onclick="event.stopPropagation()" onchange="updateEquipmentQty('${item.code}', this.value)">
                     `;
-                            list.appendChild(div);
-                        }
-                    });
-
-                    modal.classList.add('active');
-                }
-
-                function closeEquipmentSelectModal() {
-                    document.getElementById('equipmentSelectModal').classList.remove('active');
-                }
-
-                function toggleEquipmentSelection(code) {
-                    const item = equipmentDataTable.find(e => e.code === code);
-                    if (!item) return;
-
-                    const existing = selectedEquipment.find(e => e.code === code);
-                    if (existing) {
-                        selectedEquipment = selectedEquipment.filter(e => e.code !== code);
-                    } else {
-                        selectedEquipment.push({
-                            code: item.code,
-                            name: item.name,
-                            qty: 1,
-                            maxQty: item.maintenance,
-                            company: ''
-                        });
+                        list.appendChild(div);
                     }
-                    updateSelectedEquipmentList();
-                }
+                });
 
-                function updateEquipmentQty(code, qty) {
-                    const item = selectedEquipment.find(e => e.code === code);
-                    if (item) {
-                        item.qty = parseInt(qty) || 1;
-                    }
-                    updateSelectedEquipmentList();
-                }
+                modal.classList.add('active');
+            }
 
-                function updateEquipmentCompany(code, company) {
-                    const item = selectedEquipment.find(e => e.code === code);
-                    if (item) {
-                        item.company = company;
-                    }
-                    updateSelectedEquipmentList();
-                }
+            function closeEquipmentSelectModal() {
+                document.getElementById('equipmentSelectModal').classList.remove('active');
+            }
 
-                function addSelectedEquipment() {
-                    closeEquipmentSelectModal();
-                    updateSelectedEquipmentList();
-                }
+            function toggleEquipmentSelection(code) {
+                const item = equipmentDataTable.find(e => e.code === code);
+                if (!item) return;
 
-                function removeSelectedEquipment(code) {
+                const existing = selectedEquipment.find(e => e.code === code);
+                if (existing) {
                     selectedEquipment = selectedEquipment.filter(e => e.code !== code);
-                    updateSelectedEquipmentList();
+                } else {
+                    selectedEquipment.push({
+                        code: item.code,
+                        name: item.name,
+                        qty: 1,
+                        maxQty: item.maintenance,
+                        company: ''
+                    });
+                }
+                updateSelectedEquipmentList();
+            }
+
+            function updateEquipmentQty(code, qty) {
+                const item = selectedEquipment.find(e => e.code === code);
+                if (item) {
+                    item.qty = parseInt(qty) || 1;
+                }
+                updateSelectedEquipmentList();
+            }
+
+            function updateEquipmentCompany(code, company) {
+                const item = selectedEquipment.find(e => e.code === code);
+                if (item) {
+                    item.company = company;
+                }
+                updateSelectedEquipmentList();
+            }
+
+            function addSelectedEquipment() {
+                closeEquipmentSelectModal();
+                updateSelectedEquipmentList();
+            }
+
+            function removeSelectedEquipment(code) {
+                selectedEquipment = selectedEquipment.filter(e => e.code !== code);
+                updateSelectedEquipmentList();
+            }
+
+            function updateSelectedEquipmentList() {
+                const list = document.getElementById('selectedEquipmentList');
+
+                if (selectedEquipment.length === 0) {
+                    list.innerHTML = '<p class="text-muted text-center py-3">No equipment selected</p>';
+                    return;
                 }
 
-                function updateSelectedEquipmentList() {
-                    const list = document.getElementById('selectedEquipmentList');
-
-                    if (selectedEquipment.length === 0) {
-                        list.innerHTML = '<p class="text-muted text-center py-3">No equipment selected</p>';
-                        return;
-                    }
-
-                    list.innerHTML = '';
-                    selectedEquipment.forEach(item => {
-                        const div = document.createElement('div');
-                        div.className = 'equipment-item';
-                        div.innerHTML = `
+                list.innerHTML = '';
+                selectedEquipment.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'equipment-item';
+                    div.innerHTML = `
                     <div class="equipment-item-info">
                         <span class="equipment-item-name">${item.name} (${item.code})</span>
                         <div class="equipment-item-details">
@@ -6514,262 +6084,262 @@ function showSection(section) {
                         </button>
                     </div>
                 `;
-                        list.appendChild(div);
-                    });
-                }
+                    list.appendChild(div);
+                });
+            }
 
-                function loadCompanies() {
-                    const list = document.getElementById('companyList');
-                    list.innerHTML = '';
-                    companies.forEach(company => {
-                        const tag = document.createElement('span');
-                        tag.className = 'company-tag';
-                        tag.innerHTML = `
+            function loadCompanies() {
+                const list = document.getElementById('companyList');
+                list.innerHTML = '';
+                companies.forEach(company => {
+                    const tag = document.createElement('span');
+                    tag.className = 'company-tag';
+                    tag.innerHTML = `
                     ${company}
                     <i class="bi bi-x" onclick="removeCompany('${company}')"></i>
                 `;
-                        list.appendChild(tag);
-                    });
-                }
-
-                function addCompany() {
-                    const input = document.getElementById('newCompany');
-                    const company = input.value.trim();
-                    if (company && !companies.includes(company)) {
-                        companies.push(company);
-                        loadCompanies();
-                        input.value = '';
-                    }
-                }
-
-                function removeCompany(company) {
-                    companies = companies.filter(c => c !== company);
-                    loadCompanies();
-                }
-
-                function sendMaintenanceRequest() {
-                    const fromEmail = document.getElementById('fromEmail').value;
-                    const toEmail = document.getElementById('toEmail').value;
-                    const ccEmail = document.getElementById('ccEmail').value;
-
-                    if (!toEmail) {
-                        alert('Please enter recipient email address');
-                        return;
-                    }
-
-                    if (selectedEquipment.length === 0) {
-                        alert('Please select at least one equipment for maintenance');
-                        return;
-                    }
-
-                    // Generate equipment list text with company information
-                    let equipmentList = '';
-                    selectedEquipment.forEach(item => {
-                        equipmentList += `- ${item.name} (${item.code}): ${item.qty} unit(s)`;
-                        if (item.company) {
-                            equipmentList += ` [Company: ${item.company}]`;
-                        }
-                        equipmentList += '\n';
-                    });
-
-                    // Get email format
-                    let emailContent;
-                    if (document.getElementById('emailFormatEdit').classList.contains('active')) {
-                        emailContent = document.getElementById('emailFormatTextarea').value;
-                    } else {
-                        emailContent = document.getElementById('emailFormatPreview').innerText;
-                    }
-
-                    // Replace placeholders
-                    emailContent = emailContent
-                        .replace('{{equipment_list}}', equipmentList)
-                        .replace('{{from_email}}', fromEmail);
-
-                    // Here you would send the email via AJAX
-                    console.log('Sending email to:', toEmail);
-                    console.log('CC:', ccEmail);
-                    console.log('Email content:', emailContent);
-
-                    // Show success message with email details
-                    alert(`Maintenance request sent successfully!\n\nTo: ${toEmail}\nCC: ${ccEmail}\n\nEquipment:\n${equipmentList}`);
-
-                    closeMaintenanceModal();
-
-                    // Reset form
-                    selectedEquipment = [];
-                    updateSelectedEquipmentList();
-                }
-
-                // Initialize calendar when dashboard is shown
-                function initCalendarListeners() {
-                    const prevBtn = document.querySelector('.prev');
-                    const nextBtn = document.querySelector('.next');
-                    const todayBtn = document.getElementById('todayBtn');
-                    const gotoBtn = document.getElementById('gotoBtn');
-
-                    if (prevBtn) {
-                        prevBtn.addEventListener('click', () => {
-                            month--;
-                            if (month < 0) {
-                                month = 11;
-                                year--;
-                            }
-                            initCalendar();
-                            addDayCellClickHandlers(); // Re-add handlers after rendering
-                        });
-                    }
-
-                    if (nextBtn) {
-                        nextBtn.addEventListener('click', () => {
-                            month++;
-                            if (month > 11) {
-                                month = 0;
-                                year++;
-                            }
-                            initCalendar();
-                            addDayCellClickHandlers(); // Re-add handlers after rendering
-                        });
-                    }
-
-                    if (todayBtn) {
-                        todayBtn.addEventListener('click', () => {
-                            const d = new Date();
-                            month = d.getMonth();
-                            year = d.getFullYear();
-                            initCalendar();
-                            addDayCellClickHandlers(); // Re-add handlers after rendering
-
-                            // Highlight today's date
-                            setTimeout(() => {
-                                const todayCells = document.querySelectorAll('.day-cell.today');
-                                todayCells.forEach(cell => cell.classList.add('active'));
-                            }, 50);
-                        });
-                    }
-
-                    if (gotoBtn) {
-                        gotoBtn.addEventListener('click', () => {
-                            const gotoInput = document.getElementById('gotoInput');
-                            if (!gotoInput) return;
-
-                            const parts = gotoInput.value.split('/');
-                            if (parts.length === 2) {
-                                const m = parseInt(parts[0]) - 1,
-                                    y = parseInt(parts[1]);
-                                if (m >= 0 && m < 12 && y > 0) {
-                                    month = m;
-                                    year = y;
-                                    initCalendar();
-                                    addDayCellClickHandlers(); // Re-add handlers after rendering
-                                } else alert('Invalid date. Use MM/YYYY');
-                            } else alert('Invalid format. Use MM/YYYY');
-                        });
-                    }
-                }
-
-                // ========== INITIALIZATION ==========
-                document.addEventListener('DOMContentLoaded', function() {
-                    loadCompanies();
-                    updateRequestCounts();
-                    updateVisibleCounts('');
-                    initCharts();
-                    showSection('dashboard');
-                    initCalendar();
-                    initCalendarListeners(); // Add this line
-                    loadUserCounts();
-                    setTimeout(() => addDayCellClickHandlers(), 100);
-
-                    // Initialize reservation display
-                    displayReservationTable(reservationData);
-                    document.getElementById('reservationCount').textContent = '(' + reservationData.length + ')';
-
-                    if (document.getElementById('equipmentSection')) displayEquipmentTable(equipmentDataTable);
-                    if (document.getElementById('analyticsSection')) setTimeout(initAnalyticsCharts, 500);
+                    list.appendChild(tag);
                 });
-            </script>
+            }
 
-            <!-- Add this before the closing </body> tag -->
-            <!-- Notification Dropdown -->
-            <div class="notification-dropdown" id="notificationDropdown">
-                <div class="notification-header">
-                    <h6>Notifications</h6>
-                    <span>3 new</span>
+            function addCompany() {
+                const input = document.getElementById('newCompany');
+                const company = input.value.trim();
+                if (company && !companies.includes(company)) {
+                    companies.push(company);
+                    loadCompanies();
+                    input.value = '';
+                }
+            }
+
+            function removeCompany(company) {
+                companies = companies.filter(c => c !== company);
+                loadCompanies();
+            }
+
+            function sendMaintenanceRequest() {
+                const fromEmail = document.getElementById('fromEmail').value;
+                const toEmail = document.getElementById('toEmail').value;
+                const ccEmail = document.getElementById('ccEmail').value;
+
+                if (!toEmail) {
+                    alert('Please enter recipient email address');
+                    return;
+                }
+
+                if (selectedEquipment.length === 0) {
+                    alert('Please select at least one equipment for maintenance');
+                    return;
+                }
+
+                // Generate equipment list text with company information
+                let equipmentList = '';
+                selectedEquipment.forEach(item => {
+                    equipmentList += `- ${item.name} (${item.code}): ${item.qty} unit(s)`;
+                    if (item.company) {
+                        equipmentList += ` [Company: ${item.company}]`;
+                    }
+                    equipmentList += '\n';
+                });
+
+                // Get email format
+                let emailContent;
+                if (document.getElementById('emailFormatEdit').classList.contains('active')) {
+                    emailContent = document.getElementById('emailFormatTextarea').value;
+                } else {
+                    emailContent = document.getElementById('emailFormatPreview').innerText;
+                }
+
+                // Replace placeholders
+                emailContent = emailContent
+                    .replace('{{equipment_list}}', equipmentList)
+                    .replace('{{from_email}}', fromEmail);
+
+                // Here you would send the email via AJAX
+                console.log('Sending email to:', toEmail);
+                console.log('CC:', ccEmail);
+                console.log('Email content:', emailContent);
+
+                // Show success message with email details
+                alert(`Maintenance request sent successfully!\n\nTo: ${toEmail}\nCC: ${ccEmail}\n\nEquipment:\n${equipmentList}`);
+
+                closeMaintenanceModal();
+
+                // Reset form
+                selectedEquipment = [];
+                updateSelectedEquipmentList();
+            }
+
+            // Initialize calendar when dashboard is shown
+            function initCalendarListeners() {
+                const prevBtn = document.querySelector('.prev');
+                const nextBtn = document.querySelector('.next');
+                const todayBtn = document.getElementById('todayBtn');
+                const gotoBtn = document.getElementById('gotoBtn');
+
+                if (prevBtn) {
+                    prevBtn.addEventListener('click', () => {
+                        month--;
+                        if (month < 0) {
+                            month = 11;
+                            year--;
+                        }
+                        initCalendar();
+                        addDayCellClickHandlers(); // Re-add handlers after rendering
+                    });
+                }
+
+                if (nextBtn) {
+                    nextBtn.addEventListener('click', () => {
+                        month++;
+                        if (month > 11) {
+                            month = 0;
+                            year++;
+                        }
+                        initCalendar();
+                        addDayCellClickHandlers(); // Re-add handlers after rendering
+                    });
+                }
+
+                if (todayBtn) {
+                    todayBtn.addEventListener('click', () => {
+                        const d = new Date();
+                        month = d.getMonth();
+                        year = d.getFullYear();
+                        initCalendar();
+                        addDayCellClickHandlers(); // Re-add handlers after rendering
+
+                        // Highlight today's date
+                        setTimeout(() => {
+                            const todayCells = document.querySelectorAll('.day-cell.today');
+                            todayCells.forEach(cell => cell.classList.add('active'));
+                        }, 50);
+                    });
+                }
+
+                if (gotoBtn) {
+                    gotoBtn.addEventListener('click', () => {
+                        const gotoInput = document.getElementById('gotoInput');
+                        if (!gotoInput) return;
+
+                        const parts = gotoInput.value.split('/');
+                        if (parts.length === 2) {
+                            const m = parseInt(parts[0]) - 1,
+                                y = parseInt(parts[1]);
+                            if (m >= 0 && m < 12 && y > 0) {
+                                month = m;
+                                year = y;
+                                initCalendar();
+                                addDayCellClickHandlers(); // Re-add handlers after rendering
+                            } else alert('Invalid date. Use MM/YYYY');
+                        } else alert('Invalid format. Use MM/YYYY');
+                    });
+                }
+            }
+
+            // ========== INITIALIZATION ==========
+            document.addEventListener('DOMContentLoaded', function() {
+                loadCompanies();
+                updateRequestCounts();
+                updateVisibleCounts('');
+                initCharts();
+                showSection('dashboard');
+                initCalendar();
+                initCalendarListeners(); // Add this line
+                loadUserCounts();
+                setTimeout(() => addDayCellClickHandlers(), 100);
+
+                // Initialize reservation display
+                displayReservationTable(reservationData);
+                document.getElementById('reservationCount').textContent = '(' + reservationData.length + ')';
+
+                if (document.getElementById('equipmentSection')) displayEquipmentTable(equipmentDataTable);
+                if (document.getElementById('analyticsSection')) setTimeout(initAnalyticsCharts, 500);
+            });
+        </script>
+
+        <!-- Add this before the closing </body> tag -->
+        <!-- Notification Dropdown -->
+        <div class="notification-dropdown" id="notificationDropdown">
+            <div class="notification-header">
+                <h6>Notifications</h6>
+                <span>3 new</span>
+            </div>
+            <div class="notification-list">
+                <div class="notification-item unread">
+                    <div class="fw-bold">New Equipment Request</div>
+                    <div>John Doe requested Microscope</div>
+                    <div class="time">5 minutes ago</div>
                 </div>
-                <div class="notification-list">
-                    <div class="notification-item unread">
-                        <div class="fw-bold">New Equipment Request</div>
-                        <div>John Doe requested Microscope</div>
-                        <div class="time">5 minutes ago</div>
-                    </div>
-                    <div class="notification-item unread">
-                        <div class="fw-bold">Maintenance Alert</div>
-                        <div>Centrifuge maintenance due</div>
-                        <div class="time">1 hour ago</div>
-                    </div>
-                    <div class="notification-item">
-                        <div class="fw-bold">Reservation Approved</div>
-                        <div>Lab 01 reservation confirmed</div>
-                        <div class="time">2 hours ago</div>
-                    </div>
+                <div class="notification-item unread">
+                    <div class="fw-bold">Maintenance Alert</div>
+                    <div>Centrifuge maintenance due</div>
+                    <div class="time">1 hour ago</div>
+                </div>
+                <div class="notification-item">
+                    <div class="fw-bold">Reservation Approved</div>
+                    <div>Lab 01 reservation confirmed</div>
+                    <div class="time">2 hours ago</div>
                 </div>
             </div>
+        </div>
 
 
 
 
-            <!-- Maintenance Request Modal -->
-            <div class="maintenance-modal" id="maintenanceModal">
-                <div class="maintenance-modal-content">
-                    <div class="maintenance-modal-header">
-                        <h3><i class="bi bi-tools"></i> Send to Maintenance</h3>
-                        <button class="close-btn" onclick="closeMaintenanceModal()"><i class="bi bi-x-lg"></i></button>
-                    </div>
-                    <div class="maintenance-modal-body">
-                        <!-- Email Section -->
-                        <div class="email-section">
-                            <div class="email-field">
-                                <label><i class="bi bi-envelope-fill me-2"></i>From Email</label>
-                                <input type="email" id="fromEmail" placeholder="your.email@lab.com" value="admin@microbiolab.lk">
-                            </div>
-                            <div class="email-field">
-                                <label><i class="bi bi-envelope-fill me-2"></i>To Email (Dean's Office)</label>
-                                <input type="email" id="toEmail" placeholder="dean@science.faculty.lk" value="dean@science.faculty.lk">
-                            </div>
-                            <div class="email-field">
-                                <label><i class="bi bi-envelope-fill me-2"></i>CC (HOD Email)</label>
-                                <input type="email" id="ccEmail" placeholder="hod.microbiology@lab.lk" value="hod.microbiology@lab.lk">
-                            </div>
+        <!-- Maintenance Request Modal -->
+        <div class="maintenance-modal" id="maintenanceModal">
+            <div class="maintenance-modal-content">
+                <div class="maintenance-modal-header">
+                    <h3><i class="bi bi-tools"></i> Send to Maintenance</h3>
+                    <button class="close-btn" onclick="closeMaintenanceModal()"><i class="bi bi-x-lg"></i></button>
+                </div>
+                <div class="maintenance-modal-body">
+                    <!-- Email Section -->
+                    <div class="email-section">
+                        <div class="email-field">
+                            <label><i class="bi bi-envelope-fill me-2"></i>From Email</label>
+                            <input type="email" id="fromEmail" placeholder="your.email@lab.com" value="admin@microbiolab.lk">
                         </div>
+                        <div class="email-field">
+                            <label><i class="bi bi-envelope-fill me-2"></i>To Email (Dean's Office)</label>
+                            <input type="email" id="toEmail" placeholder="dean@science.faculty.lk" value="dean@science.faculty.lk">
+                        </div>
+                        <div class="email-field">
+                            <label><i class="bi bi-envelope-fill me-2"></i>CC (HOD Email)</label>
+                            <input type="email" id="ccEmail" placeholder="hod.microbiology@lab.lk" value="hod.microbiology@lab.lk">
+                        </div>
+                    </div>
 
-                        <!-- Email Format Section -->
-                        <div class="email-format-section">
-                            <div class="email-format-header">
-                                <h6><i class="bi bi-envelope-paper-fill me-2"></i>Email Format</h6>
-                                <button class="edit-format-btn" onclick="toggleEmailFormatEdit()">
-                                    <i class="bi bi-pencil-square"></i> Edit Format
-                                </button>
-                            </div>
-                            <div class="email-format-preview" id="emailFormatPreview">
-                                Dear Dean, Faculty of Science,
+                    <!-- Email Format Section -->
+                    <div class="email-format-section">
+                        <div class="email-format-header">
+                            <h6><i class="bi bi-envelope-paper-fill me-2"></i>Email Format</h6>
+                            <button class="edit-format-btn" onclick="toggleEmailFormatEdit()">
+                                <i class="bi bi-pencil-square"></i> Edit Format
+                            </button>
+                        </div>
+                        <div class="email-format-preview" id="emailFormatPreview">
+                            Dear Dean, Faculty of Science,
 
-                                I would like to kindly request the Dean of the Faculty of Science to arrange maintenance services for the following laboratory equipment used in the Microbiology Laboratory.
+                            I would like to kindly request the Dean of the Faculty of Science to arrange maintenance services for the following laboratory equipment used in the Microbiology Laboratory.
 
-                                The equipment requires servicing by the respective authorized companies to ensure proper functioning. The details of the equipment and their respective companies are listed below:
+                            The equipment requires servicing by the respective authorized companies to ensure proper functioning. The details of the equipment and their respective companies are listed below:
 
-                                {{equipment_list}}
+                            {{equipment_list}}
 
-                                I would greatly appreciate it if the Dean's Office could contact the relevant companies and arrange the necessary maintenance at your earliest convenience.
+                            I would greatly appreciate it if the Dean's Office could contact the relevant companies and arrange the necessary maintenance at your earliest convenience.
 
-                                Equipment Location: Microbiology Laboratory
-                                Requested By: Lab Administrator
+                            Equipment Location: Microbiology Laboratory
+                            Requested By: Lab Administrator
 
-                                Thank you for your support and assistance.
+                            Thank you for your support and assistance.
 
-                                Yours sincerely,
-                                Head of Department, Microbiology Department
-                            </div>
-                            <div class="email-format-edit" id="emailFormatEdit">
-                                <textarea id="emailFormatTextarea">Dear Dean, Faculty of Science,
+                            Yours sincerely,
+                            Head of Department, Microbiology Department
+                        </div>
+                        <div class="email-format-edit" id="emailFormatEdit">
+                            <textarea id="emailFormatTextarea">Dear Dean, Faculty of Science,
 
 I would like to kindly request the Dean of the Faculty of Science to arrange maintenance services for the following laboratory equipment used in the Microbiology Laboratory.
 
@@ -6786,59 +6356,59 @@ Thank you for your support and assistance.
 
 Yours sincerely,
 Head of Department, Microbiology Department</textarea>
-                            </div>
-                        </div>
-
-                        <!-- Equipment Selection Section -->
-                        <div class="equipment-selection-section">
-                            <div class="section-header">
-                                <h6><i class="bi bi-gear-fill me-2"></i>Equipment for Maintenance</h6>
-                                <button class="add-equipment-btn" onclick="openEquipmentSelectModal()">
-                                    <i class="bi bi-plus-circle"></i> Add Equipment
-                                </button>
-                            </div>
-                            <div class="selected-equipment-list" id="selectedEquipmentList">
-                                <p class="text-muted text-center py-3">No equipment selected</p>
-                            </div>
-                        </div>
-
-                        <!-- Company Section -->
-                        <div class="company-section">
-                            <h6><i class="bi bi-building me-2"></i>Maintenance Companies</h6>
-                            <div class="company-list" id="companyList">
-                                <!-- Company tags will appear here -->
-                            </div>
-                            <div class="add-company-input">
-                                <input type="text" id="newCompany" placeholder="Enter maintenance company name">
-                                <button class="add-company-btn" onclick="addCompany()">Add</button>
-                            </div>
                         </div>
                     </div>
-                    <div class="maintenance-modal-footer">
-                        <button class="btn-cancel" onclick="closeMaintenanceModal()">Cancel</button>
-                        <button class="btn-send" onclick="sendMaintenanceRequest()">
-                            <i class="bi bi-send-fill"></i> Send Request
-                        </button>
+
+                    <!-- Equipment Selection Section -->
+                    <div class="equipment-selection-section">
+                        <div class="section-header">
+                            <h6><i class="bi bi-gear-fill me-2"></i>Equipment for Maintenance</h6>
+                            <button class="add-equipment-btn" onclick="openEquipmentSelectModal()">
+                                <i class="bi bi-plus-circle"></i> Add Equipment
+                            </button>
+                        </div>
+                        <div class="selected-equipment-list" id="selectedEquipmentList">
+                            <p class="text-muted text-center py-3">No equipment selected</p>
+                        </div>
+                    </div>
+
+                    <!-- Company Section -->
+                    <div class="company-section">
+                        <h6><i class="bi bi-building me-2"></i>Maintenance Companies</h6>
+                        <div class="company-list" id="companyList">
+                            <!-- Company tags will appear here -->
+                        </div>
+                        <div class="add-company-input">
+                            <input type="text" id="newCompany" placeholder="Enter maintenance company name">
+                            <button class="add-company-btn" onclick="addCompany()">Add</button>
+                        </div>
                     </div>
                 </div>
-            </div>
-
-            <!-- Equipment Selection Modal -->
-            <div class="equipment-select-modal" id="equipmentSelectModal">
-                <div class="equipment-select-content">
-                    <div class="equipment-select-header">
-                        <h5><i class="bi bi-gear-fill me-2"></i>Select Equipment</h5>
-                        <button class="close-btn" onclick="closeEquipmentSelectModal()"><i class="bi bi-x-lg"></i></button>
-                    </div>
-                    <div class="equipment-list" id="equipmentSelectList">
-                        <!-- Equipment list will be populated here -->
-                    </div>
-                    <div class="equipment-select-footer">
-                        <button class="btn-cancel" onclick="closeEquipmentSelectModal()">Cancel</button>
-                        <button class="btn-send" onclick="addSelectedEquipment()">Add Selected</button>
-                    </div>
+                <div class="maintenance-modal-footer">
+                    <button class="btn-cancel" onclick="closeMaintenanceModal()">Cancel</button>
+                    <button class="btn-send" onclick="sendMaintenanceRequest()">
+                        <i class="bi bi-send-fill"></i> Send Request
+                    </button>
                 </div>
             </div>
+        </div>
+
+        <!-- Equipment Selection Modal -->
+        <div class="equipment-select-modal" id="equipmentSelectModal">
+            <div class="equipment-select-content">
+                <div class="equipment-select-header">
+                    <h5><i class="bi bi-gear-fill me-2"></i>Select Equipment</h5>
+                    <button class="close-btn" onclick="closeEquipmentSelectModal()"><i class="bi bi-x-lg"></i></button>
+                </div>
+                <div class="equipment-list" id="equipmentSelectList">
+                    <!-- Equipment list will be populated here -->
+                </div>
+                <div class="equipment-select-footer">
+                    <button class="btn-cancel" onclick="closeEquipmentSelectModal()">Cancel</button>
+                    <button class="btn-send" onclick="addSelectedEquipment()">Add Selected</button>
+                </div>
+            </div>
+        </div>
 
     </body>
 
