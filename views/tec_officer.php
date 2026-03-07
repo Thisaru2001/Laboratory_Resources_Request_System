@@ -1,6 +1,8 @@
 <?php
+session_start();
 require_once '../config/database.php';
-require_once 'auth_check.php';
+if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user_role"] === 'Technical Officer') {
+
 ?>
 
 <!DOCTYPE html>
@@ -2087,3 +2089,11 @@ document.addEventListener('DOMContentLoaded', function() {
 </body>
 
 </html>
+
+<?php
+} else {
+    // If not HOD, redirect to login
+    header("Location: ../index.php");
+    exit();
+}
+?>

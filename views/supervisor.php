@@ -1,6 +1,8 @@
 <?php
+session_start();
 require_once '../config/database.php';
-require_once 'auth_check.php';
+
+if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user_role"] === 'Supervisor') {
 ?>
 
 <!DOCTYPE html>
@@ -2450,3 +2452,13 @@ if (gotoBtn) {
 </body>
 
 </html>
+
+
+
+<?php
+} else {
+    // If not HOD, redirect to login
+    header("Location: ../index.php");
+    exit();
+}
+?>

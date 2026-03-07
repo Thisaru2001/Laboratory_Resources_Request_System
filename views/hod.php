@@ -1,2128 +1,2170 @@
 <?php
+session_start();
 require_once '../config/database.php';
-require_once 'auth_check.php';  
+
+if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user_role"] === 'HOD') {
 ?>
 
 
-<!DOCTYPE html>
-<html lang="en">
+    <!DOCTYPE html>
+    <html lang="en">
 
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>Microbiology Lab System - Admin Dashboard</title>
-    <!-- Bootstrap & Icons -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
+        <title>Microbiology Lab System - Admin Dashboard</title>
+        <!-- Bootstrap & Icons -->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
 
-    <!-- Chart.js for analytics -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+        <!-- Chart.js for analytics -->
+        <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Inter', 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
-            overflow-x: hidden;
-        }
-
-        /* Sidebar Overlay */
-        .sidebar-overlay {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(5px);
-            z-index: 999;
-        }
-
-        .sidebar-overlay.active {
-            display: block;
-            animation: fadeIn 0.3s;
-        }
-
-        /* Sidebar */
-        .sidebar {
-            width: 280px;
-            min-height: 100vh;
-            background: linear-gradient(180deg, #166534 0%, #14532d 100%);
-            color: white;
-            position: fixed;
-            left: 0;
-            top: 0;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            z-index: 1000;
-            box-shadow: 4px 0 20px rgba(0, 0, 0, 0.2);
-            border-radius: 0 30px 30px 0;
-            overflow-y: auto;
-        }
-
-        .sidebar::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 100%;
-            background: linear-gradient(45deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%);
-            pointer-events: none;
-        }
-
-        .sidebar a {
-            color: rgba(255, 255, 255, 0.9);
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 14px 24px;
-            text-decoration: none;
-            transition: all 0.3s;
-            border-radius: 12px;
-            margin: 4px 16px;
-            font-weight: 500;
-            position: relative;
-            overflow: hidden;
-            cursor: pointer;
-        }
-
-        .sidebar a i {
-            font-size: 1.2rem;
-            width: 24px;
-            text-align: center;
-        }
-
-        .sidebar a:hover {
-            background: rgba(255, 255, 255, 0.15);
-            transform: translateX(8px);
-            color: white;
-        }
-
-        .sidebar a.active {
-            background: rgba(255, 255, 255, 0.2);
-            border-left: 3px solid #ffd700;
-        }
-
-        .sidebar h4 {
-            padding: 28px 24px;
-            margin-bottom: 20px;
-            font-size: 1.5rem;
-            font-weight: 600;
-            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
-            letter-spacing: 1px;
-        }
-
-        .sidebar h4 i {
-            margin-right: 10px;
-            color: #ffd700;
-        }
-
-        .sidebar-footer {
-            padding: 20px;
-            margin-top: 30px;
-            text-align: center;
-            background: rgba(0, 0, 0, 0.2);
-            font-size: 0.85rem;
-            color: rgba(255, 255, 255, 0.7);
-        }
-
-        /* Main content */
-        .main-content {
-            margin-left: 280px;
-            transition: all 0.3s ease;
-            min-height: 100vh;
-        }
-
-        /* Modern Topbar with Rounded Navbar */
-        .topbar {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            padding: 12px 30px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: sticky;
-            top: 15px;
-            z-index: 999;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
-            border-radius: 50px;
-            margin: 15px 25px 0 25px;
-            width: calc(100% - 50px);
-            animation: slideDown 0.5s ease;
-        }
-
-        @keyframes slideDown {
-            from {
-                transform: translateY(-100%);
-                opacity: 0;
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
             }
 
-            to {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-
-        @keyframes fadeIn {
-            from {
-                opacity: 0;
+            body {
+                font-family: 'Inter', 'Segoe UI', sans-serif;
+                background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+                overflow-x: hidden;
             }
 
-            to {
-                opacity: 1;
-            }
-        }
-
-        .profile-img {
-            width: 45px;
-            height: 45px;
-            border-radius: 12px;
-            object-fit: cover;
-            border: 3px solid #22c55e;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-
-        .profile-img:hover {
-            transform: scale(1.1);
-            border-color: #ffd700;
-        }
-
-        /* Notification Bell */
-        .notification-bell {
-            position: relative;
-            cursor: pointer;
-            margin-right: 15px;
-        }
-
-        .notification-bell i {
-            font-size: 1.5rem;
-            color: #166534;
-            transition: all 0.3s;
-        }
-
-        .notification-bell:hover i {
-            transform: rotate(15deg);
-            color: #22c55e;
-        }
-
-        .request-badge {
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            background: #dd1818;
-            color: white;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.7rem;
-            font-weight: 600;
-            animation: pulse 2s infinite;
-        }
-
-        .notification-badge {
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            background: #206106;
-            color: white;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.7rem;
-            font-weight: 600;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-
-            0%,
-            100% {
-                transform: scale(1);
-            }
-
-            50% {
-                transform: scale(1.2);
-            }
-        }
-
-        /* Notification Dropdown */
-        .notification-dropdown {
-            position: absolute;
-            top: 60px;
-            right: 20px;
-            width: 350px;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-            display: none;
-            z-index: 1000;
-            overflow: hidden;
-            animation: slideIn 0.3s ease;
-        }
-
-        .notification-dropdown.show {
-            display: block;
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .notification-header {
-            padding: 20px;
-            background: linear-gradient(135deg, #22c55e, #16a34a);
-            color: white;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .notification-header h6 {
-            margin: 0;
-            font-weight: 600;
-        }
-
-        .notification-header span {
-            background: rgba(255, 255, 255, 0.2);
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-        }
-
-        .notification-list {
-            max-height: 300px;
-            overflow-y: auto;
-        }
-
-        .notification-item {
-            padding: 15px 20px;
-            border-bottom: 1px solid #f0f0f0;
-            transition: all 0.3s;
-            cursor: pointer;
-        }
-
-        .notification-item:hover {
-            background: #f8f9fa;
-            transform: translateX(5px);
-        }
-
-        .notification-item.unread {
-            background: rgba(34, 197, 94, 0.1);
-        }
-
-        .notification-item .time {
-            font-size: 0.75rem;
-            color: #999;
-            margin-top: 5px;
-        }
-
-        .content-area {
-            padding: 30px;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            min-height: calc(100vh - 80px);
-        }
-
-        /* Modern Cards */
-        .card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 24px;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            overflow: hidden;
-        }
-
-        .card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.15);
-        }
-
-        /* Analytics Cards */
-        .analytics-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        .stat-card {
-            background: linear-gradient(135deg, #22c55e, #16a34a);
-            border-radius: 20px;
-            padding: 25px;
-            color: white;
-            position: relative;
-            overflow: hidden;
-            transition: all 0.3s;
-        }
-
-        .stat-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(34, 197, 94, 0.4);
-        }
-
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            right: -50%;
-            width: 200%;
-            height: 200%;
-            background: rgba(255, 255, 255, 0.1);
-            transform: rotate(45deg);
-            transition: all 0.3s;
-        }
-
-        .stat-card:hover::before {
-            transform: rotate(45deg) translate(10%, 10%);
-        }
-
-        .stat-card i {
-            font-size: 2.5rem;
-            margin-bottom: 15px;
-        }
-
-        .stat-card h3 {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-bottom: 5px;
-        }
-
-        .stat-card p {
-            margin: 0;
-            opacity: 0.9;
-            font-size: 0.95rem;
-        }
-
-        /* Equipment Browser */
-        .filter-section {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-
-        .filter-select {
-            padding: 12px 20px;
-            border: 2px solid #f0f0f0;
-            border-radius: 16px;
-            outline: none;
-            transition: all 0.3s;
-            min-width: 200px;
-        }
-
-        .filter-select:focus {
-            border-color: #22c55e;
-            box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.1);
-        }
-
-        .equipment-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
-        }
-
-        .equipment-card {
-            background: white;
-            border-radius: 20px;
-            overflow: hidden;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
-            transition: all 0.3s;
-            cursor: pointer;
-        }
-
-        .equipment-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(34, 197, 94, 0.2);
-        }
-
-        .equipment-image {
-            height: 180px;
-            background: linear-gradient(135deg, #22c55e20, #16a34a20);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-        }
-
-        .equipment-image img {
-            max-width: 80%;
-            max-height: 80%;
-            object-fit: contain;
-        }
-
-        .status-indicator {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            animation: blink 2s infinite;
-        }
-
-        .status-indicator.available {
-            background: #22c55e;
-            box-shadow: 0 0 10px #22c55e;
-        }
-
-        .status-indicator.in-use {
-            background: #f59e0b;
-            box-shadow: 0 0 10px #f59e0b;
-        }
-
-        .status-indicator.maintenance {
-            background: #ef4444;
-            box-shadow: 0 0 10px #ef4444;
-        }
-
-        @keyframes blink {
-
-            0%,
-            100% {
-                opacity: 1;
-            }
-
-            50% {
-                opacity: 0.5;
-            }
-        }
-
-        .equipment-info {
-            padding: 20px;
-        }
-
-        .equipment-info h5 {
-            font-weight: 600;
-            margin-bottom: 8px;
-            color: #166534;
-        }
-
-        .equipment-info p {
-            color: #666;
-            font-size: 0.9rem;
-            margin-bottom: 5px;
-        }
-
-        .equipment-info .location {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            color: #22c55e;
-            font-weight: 500;
-        }
-
-        /* Request List Table */
-        .request-table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0 10px;
-        }
-
-        .request-table th {
-            padding: 15px 20px;
-            text-align: left;
-            color: #166534;
-            font-weight: 600;
-        }
-
-        .request-table td {
-            background: white;
-            padding: 15px 20px;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-        }
-
-        .request-table tr:hover td {
-            transform: scale(1.01);
-            box-shadow: 0 5px 20px rgba(34, 197, 94, 0.2);
-            transition: all 0.3s;
-        }
-
-        .action-buttons {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .btn-approve {
-            background: linear-gradient(135deg, #22c55e, #16a34a);
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 12px;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-
-        .btn-approve:hover {
-            transform: scale(1.05);
-            box-shadow: 0 5px 15px rgba(34, 197, 94, 0.4);
-        }
-
-        .btn-reject {
-            background: linear-gradient(135deg, #ef4444, #dc2626);
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 12px;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-
-        .btn-reject:hover {
-            transform: scale(1.05);
-            box-shadow: 0 5px 15px rgba(239, 68, 68, 0.4);
-        }
-
-        /* Equipment Details Table */
-        .details-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .details-table th {
-            background: linear-gradient(135deg, #22c55e, #16a34a);
-            color: white;
-            padding: 15px;
-            font-weight: 600;
-            text-align: left;
-        }
-
-        .details-table td {
-            padding: 12px 15px;
-            border-bottom: 1px solid #f0f0f0;
-        }
-
-        .details-table tr:hover td {
-            background: rgba(34, 197, 94, 0.05);
-        }
-
-        .progress-bar {
-            width: 100%;
-            height: 8px;
-            background: #f0f0f0;
-            border-radius: 4px;
-            overflow: hidden;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(135deg, #22c55e, #16a34a);
-            border-radius: 4px;
-            transition: width 0.3s;
-        }
-
-        /* Activity Timeline */
-        .activity-table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0 10px;
-        }
-
-        .activity-table td {
-            background: white;
-            padding: 15px 20px;
-            border-radius: 12px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-        }
-
-        .activity-badge {
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 600;
-        }
-
-        .activity-badge.created {
-            background: #e8f5e9;
-            color: #2e7d32;
-        }
-
-        .activity-badge.approved {
-            background: #e3f2fd;
-            color: #1565c0;
-        }
-
-        .activity-badge.rejected {
-            background: #ffebee;
-            color: #c62828;
-        }
-
-        .activity-badge.returned {
-            background: #fff3e0;
-            color: #ef6c00;
-        }
-
-        .activity-badge.maintenance {
-            background: #f3e5f5;
-            color: #7b1fa2;
-        }
-
-        .btn-view {
-            background: linear-gradient(135deg, #3b82f6, #2563eb);
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 8px;
-            font-size: 0.85rem;
-            transition: all 0.3s;
-        }
-
-        .btn-view:hover {
-            transform: scale(1.05);
-            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
-        }
-
-        /* Report Card */
-        .report-card {
-            background: white;
-            border-radius: 20px;
-            padding: 20px;
-            margin-bottom: 20px;
-            transition: all 0.3s;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
-        }
-
-        .report-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 30px rgba(34, 197, 94, 0.2);
-        }
-
-        .report-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #f0f0f0;
-        }
-
-        .report-title {
-            font-size: 1.2rem;
-            font-weight: 600;
-            color: #166534;
-        }
-
-        .btn-generate {
-            background: linear-gradient(135deg, #22c55e, #16a34a);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 12px;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-
-        .btn-generate:hover {
-            transform: scale(1.05);
-            box-shadow: 0 5px 15px rgba(34, 197, 94, 0.4);
-        }
-
-        /* Calendar Section */
-        .calendar-container {
-            background: linear-gradient(135deg, #166534 0%, #14532d 100%);
-            border-radius: 32px;
-            padding: 24px;
-            margin: 30px 0;
-            color: white;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-        }
-
-        .calendar-wrapper {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            background: white;
-            border-radius: 24px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-        }
-
-        .calendar-left {
-            flex: 1.5;
-            min-width: 300px;
-            background: white;
-            padding: 25px;
-        }
-
-        .calendar-right {
-            flex: 1;
-            min-width: 280px;
-            background: linear-gradient(135deg, #166534 0%, #14532d 100%);
-            padding: 30px;
-            color: #fff;
-        }
-
-        .calendar-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 25px;
-            padding: 0 5px;
-        }
-
-        .calendar-header .month {
-            font-size: 1.6rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #22c55e, #16a34a);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .calendar-header i {
-            font-size: 1.3rem;
-            cursor: pointer;
-            background: linear-gradient(135deg, #22c55e, #16a34a);
-            color: white;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 12px;
-            transition: all 0.3s;
-            box-shadow: 0 5px 15px rgba(34, 197, 94, 0.4);
-        }
-
-        .calendar-header i:hover {
-            transform: scale(1.1);
-            box-shadow: 0 8px 25px rgba(34, 197, 94, 0.6);
-        }
-
-        .weekdays {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            text-align: center;
-            font-weight: 600;
-            color: #666;
-            margin-bottom: 15px;
-            padding: 10px 0;
-            border-bottom: 2px solid #f0f0f0;
-        }
-
-        .days-grid {
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            gap: 8px;
-            margin-bottom: 20px;
-        }
-
-        .day-cell {
-            aspect-ratio: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            border-radius: 12px;
-            transition: all 0.3s;
-            font-size: 0.95rem;
-            color: #333;
-            position: relative;
-            font-weight: 500;
-        }
-
-        .day-cell:hover:not(.prev-date):not(.next-date) {
-            background: linear-gradient(135deg, #22c55e, #16a34a);
-            color: white;
-            transform: scale(1.05);
-            box-shadow: 0 5px 15px rgba(34, 197, 94, 0.4);
-        }
-
-        .day-cell.prev-date,
-        .day-cell.next-date {
-            color: #ccc;
-        }
-
-        .day-cell.active {
-            background: linear-gradient(135deg, #22c55e, #16a34a);
-            color: white;
-            font-weight: 600;
-            box-shadow: 0 5px 15px rgba(34, 197, 94, 0.4);
-        }
-
-        .day-cell.today {
-            font-weight: 700;
-            border: 2px solid #22c55e;
-            color: #22c55e;
-        }
-
-        .day-cell.event::after {
-            content: '•';
-            position: absolute;
-            bottom: 2px;
-            font-size: 1.2rem;
-            color: #ffd700;
-        }
-
-        .goto-section {
-            display: flex;
-            gap: 12px;
-            margin-top: 20px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-
-        .goto-input {
-            flex: 1;
-            min-width: 120px;
-            padding: 12px 16px;
-            border: 2px solid #f0f0f0;
-            border-radius: 16px;
-            outline: none;
-            transition: all 0.3s;
-            font-size: 0.95rem;
-        }
-
-        .goto-input:focus {
-            border-color: #22c55e;
-            box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.1);
-        }
-
-        .goto-btn,
-        .today-btn {
-            padding: 12px 20px;
-            border: none;
-            border-radius: 16px;
-            background: linear-gradient(135deg, #22c55e, #16a34a);
-            color: white;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-size: 0.95rem;
-            font-weight: 600;
-            white-space: nowrap;
-            box-shadow: 0 5px 15px rgba(34, 197, 94, 0.4);
-        }
-
-        .goto-btn:hover,
-        .today-btn:hover {
-            transform: scale(1.05);
-            box-shadow: 0 8px 25px rgba(34, 197, 94, 0.6);
-        }
-
-        .right-header {
-            margin-bottom: 25px;
-        }
-
-        .event-day {
-            font-size: 2.2rem;
-            font-weight: 700;
-            text-transform: capitalize;
-            margin-bottom: 5px;
-        }
-
-        .event-date {
-            color: rgba(255, 255, 255, 0.7);
-            font-size: 1.1rem;
-        }
-
-        .events-list {
-            max-height: 400px;
-            overflow-y: auto;
-            padding-right: 10px;
-        }
-
-        .event-item {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            padding: 18px 20px;
-            border-radius: 16px;
-            margin-bottom: 12px;
-            cursor: pointer;
-            transition: all 0.3s;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .event-item:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: translateX(8px);
-        }
-
-        .event-item .title {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 8px;
-        }
-
-        .event-item i {
-            color: #ffd700;
-            font-size: 0.8rem;
-        }
-
-        .event-item .event-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            word-break: break-word;
-        }
-
-        .event-item .event-time {
-            font-size: 0.9rem;
-            color: rgba(255, 255, 255, 0.7);
-            margin-left: 28px;
-        }
-
-        /* Modal */
-        .add-event-wrapper {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 90%;
-            max-width: 450px;
-            background: white;
-            border-radius: 32px;
-            padding: 30px;
-            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
-            z-index: 2000;
-            display: none;
-        }
-
-        .add-event-wrapper.active {
-            display: block;
-            animation: modalPop 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        @keyframes modalPop {
-            0% {
-                opacity: 0;
-                transform: translate(-50%, -50%) scale(0.8);
-            }
-
-            100% {
-                opacity: 1;
-                transform: translate(-50%, -50%) scale(1);
-            }
-        }
-
-        .add-event-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 25px;
-            padding-bottom: 15px;
-            border-bottom: 2px solid #f0f0f0;
-        }
-
-        .add-event-header .title {
-            font-size: 1.4rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #22c55e, #16a34a);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .add-event-header .close {
-            cursor: pointer;
-            font-size: 1.3rem;
-            color: #999;
-            transition: all 0.3s;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 12px;
-            background: #f5f5f5;
-        }
-
-        .add-event-header .close:hover {
-            background: linear-gradient(135deg, #22c55e, #16a34a);
-            color: white;
-            transform: rotate(90deg);
-        }
-
-        .add-event-body {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
-
-        .add-event-body input,
-        .add-event-body textarea {
-            width: 100%;
-            padding: 16px 18px;
-            border: 2px solid #f0f0f0;
-            border-radius: 18px;
-            outline: none;
-            transition: all 0.3s;
-            font-size: 1rem;
-            font-family: inherit;
-        }
-
-        .add-event-body textarea {
-            min-height: 100px;
-            resize: vertical;
-        }
-
-        .add-event-body input:focus,
-        .add-event-body textarea:focus {
-            border-color: #22c55e;
-            box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.1);
-        }
-
-        .add-event-footer {
-            margin-top: 20px;
-        }
-
-        .add-event-footer button {
-            width: 100%;
-            padding: 16px;
-            border: none;
-            border-radius: 18px;
-            background: linear-gradient(135deg, #22c55e, #16a34a);
-            color: white;
-            font-weight: 700;
-            font-size: 1.1rem;
-            cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: 0 10px 20px rgba(34, 197, 94, 0.3);
-        }
-
-        .add-event-footer button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 30px rgba(34, 197, 94, 0.5);
-        }
-
-        .no-event {
-            text-align: center;
-            padding: 50px 20px;
-            color: rgba(255, 255, 255, 0.5);
-            font-size: 1.1rem;
-        }
-
-        /* Buttons */
-        .btn-success {
-            background: linear-gradient(135deg, #22c55e, #16a34a);
-            border: none;
-            padding: 12px 24px;
-            border-radius: 50px;
-            font-weight: 600;
-            transition: all 0.3s;
-            box-shadow: 0 5px 15px rgba(34, 197, 94, 0.4);
-        }
-
-        .btn-success:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(34, 197, 94, 0.6);
-        }
-
-        .btn-secondary {
-            background: linear-gradient(135deg, #6c757d, #5a6268);
-            border: none;
-            padding: 12px 24px;
-            border-radius: 50px;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-
-        .btn-secondary:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        .btn-danger {
-            border-radius: 12px !important;
-            padding: 8px 12px !important;
-            transition: all 0.3s !important;
-        }
-
-        .btn-danger:hover {
-            transform: scale(1.1);
-            background: linear-gradient(135deg, #dc3545, #c82333) !important;
-        }
-
-        /* Badges */
-        .badge {
-            padding: 8px 14px;
-            border-radius: 30px;
-            font-weight: 600;
-            font-size: 0.85rem;
-            letter-spacing: 0.3px;
-        }
-
-        .badge.bg-warning {
-            background: linear-gradient(135deg, #f39c12, #e67e22) !important;
-            color: white;
-        }
-
-        .badge.bg-success {
-            background: linear-gradient(135deg, #22c55e, #16a34a) !important;
-        }
-
-        .badge.bg-danger {
-            background: linear-gradient(135deg, #dc3545, #c82333) !important;
-        }
-
-        .badge.bg-primary {
-            background: linear-gradient(135deg, #0d6efd, #0b5ed7) !important;
-        }
-
-
-
-        /* Add to your existing CSS */
-.maintenance-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: none;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
-}
-
-.maintenance-modal.active {
-    display: flex;
-}
-
-.maintenance-modal-content {
-    background: white;
-    border-radius: 20px;
-    width: 90%;
-    max-width: 600px;
-    max-height: 90vh;
-    overflow-y: auto;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-    animation: modalSlideIn 0.3s ease;
-}
-
-@keyframes modalSlideIn {
-    from {
-        transform: translateY(-50px);
-        opacity: 0;
-    }
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
-}
-
-.maintenance-modal-header {
-    background: linear-gradient(135deg, #f59e0b, #d97706);
-    color: white;
-    padding: 20px 25px;
-    border-radius: 20px 20px 0 0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.maintenance-modal-header h3 {
-    margin: 0;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.maintenance-modal-header .close-btn {
-    background: rgba(255, 255, 255, 0.2);
-    border: none;
-    color: white;
-    width: 35px;
-    height: 35px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.3s;
-}
-
-.maintenance-modal-header .close-btn:hover {
-    background: rgba(255, 255, 255, 0.3);
-    transform: rotate(90deg);
-}
-
-.maintenance-modal-body {
-    padding: 25px;
-}
-
-.email-section {
-    background: #f8f9fa;
-    border-radius: 15px;
-    padding: 20px;
-    margin-bottom: 20px;
-}
-
-.email-field {
-    margin-bottom: 15px;
-}
-
-.email-field label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: 600;
-    color: #166534;
-    font-size: 0.95rem;
-}
-
-.email-field input[type="email"] {
-    width: 100%;
-    padding: 12px 15px;
-    border: 2px solid #e0e0e0;
-    border-radius: 10px;
-    font-size: 14px;
-    transition: all 0.3s;
-}
-
-.email-field input[type="email"]:focus {
-    border-color: #f59e0b;
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
-}
-
-.email-format-section {
-    background: white;
-    border-radius: 12px;
-    padding: 15px;
-    margin: 20px 0;
-    border: 1px solid #e0e0e0;
-}
-
-.email-format-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-}
-
-.email-format-header h6 {
-    margin: 0;
-    font-weight: 600;
-    color: #166534;
-}
-
-.edit-format-btn {
-    background: linear-gradient(135deg, #3b82f6, #2563eb);
-    color: white;
-    border: none;
-    padding: 6px 12px;
-    border-radius: 8px;
-    font-size: 12px;
-    cursor: pointer;
-    transition: all 0.3s;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.edit-format-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
-}
-
-.email-format-preview {
-    background: #f8f9fa;
-    padding: 15px;
-    border-radius: 10px;
-    font-family: monospace;
-    font-size: 13px;
-    color: #333;
-    white-space: pre-wrap;
-    max-height: 150px;
-    overflow-y: auto;
-}
-
-.email-format-edit {
-    display: none;
-}
-
-.email-format-edit.active {
-    display: block;
-}
-
-.email-format-edit textarea {
-    width: 100%;
-    padding: 12px;
-    border: 2px solid #e0e0e0;
-    border-radius: 10px;
-    font-family: monospace;
-    font-size: 13px;
-    min-height: 100px;
-    resize: vertical;
-}
-
-.equipment-selection-section {
-    background: #f8f9fa;
-    border-radius: 15px;
-    padding: 20px;
-    margin: 20px 0;
-}
-
-.section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-}
-
-.section-header h6 {
-    margin: 0;
-    font-weight: 600;
-    color: #166534;
-}
-
-.add-equipment-btn {
-    background: linear-gradient(135deg, #22c55e, #16a34a);
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 8px;
-    font-size: 13px;
-    cursor: pointer;
-    transition: all 0.3s;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.add-equipment-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(34, 197, 94, 0.3);
-}
-
-.selected-equipment-list {
-    max-height: 200px;
-    overflow-y: auto;
-}
-
-.equipment-item {
-    background: white;
-    border-radius: 10px;
-    padding: 12px 15px;
-    margin-bottom: 10px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border: 1px solid #e0e0e0;
-    transition: all 0.3s;
-}
-
-.equipment-item:hover {
-    border-color: #f59e0b;
-    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.1);
-}
-
-.equipment-item-info {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
-
-.equipment-item-name {
-    font-weight: 600;
-    color: #333;
-}
-
-.equipment-item-details {
-    display: flex;
-    gap: 15px;
-    font-size: 12px;
-    color: #666;
-}
-
-.equipment-item-qty {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.qty-input {
-    width: 60px;
-    padding: 4px 8px;
-    border: 1px solid #e0e0e0;
-    border-radius: 5px;
-    text-align: center;
-}
-
-.remove-equipment-btn {
-    background: none;
-    border: none;
-    color: #ef4444;
-    cursor: pointer;
-    font-size: 16px;
-    padding: 5px;
-    transition: all 0.3s;
-}
-
-.remove-equipment-btn:hover {
-    transform: scale(1.2);
-    color: #dc2626;
-}
-
-.company-section {
-    background: #f8f9fa;
-    border-radius: 15px;
-    padding: 20px;
-    margin: 20px 0;
-}
-
-.company-list {
-    margin-top: 15px;
-}
-
-.company-tag {
-    background: linear-gradient(135deg, #f59e0b20, #d9770620);
-    border: 1px solid #f59e0b;
-    color: #d97706;
-    padding: 8px 15px;
-    border-radius: 30px;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    margin: 0 8px 8px 0;
-    font-size: 13px;
-    font-weight: 500;
-}
-
-.company-tag i {
-    cursor: pointer;
-    transition: all 0.3s;
-}
-
-.company-tag i:hover {
-    color: #dc2626;
-    transform: scale(1.2);
-}
-
-.add-company-input {
-    display: flex;
-    gap: 10px;
-    margin-top: 10px;
-}
-
-.add-company-input input {
-    flex: 1;
-    padding: 10px 12px;
-    border: 2px solid #e0e0e0;
-    border-radius: 8px;
-    font-size: 13px;
-}
-
-.add-company-input input:focus {
-    border-color: #f59e0b;
-    outline: none;
-}
-
-.add-company-btn {
-    background: linear-gradient(135deg, #f59e0b, #d97706);
-    color: white;
-    border: none;
-    padding: 0 20px;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s;
-    white-space: nowrap;
-}
-
-.add-company-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(245, 158, 11, 0.3);
-}
-
-.maintenance-modal-footer {
-    padding: 20px 25px;
-    border-top: 1px solid #e0e0e0;
-    display: flex;
-    justify-content: flex-end;
-    gap: 12px;
-}
-
-.btn-cancel {
-    background: linear-gradient(135deg, #6c757d, #5a6268);
-    color: white;
-    border: none;
-    padding: 12px 25px;
-    border-radius: 10px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s;
-}
-
-.btn-send {
-    background: linear-gradient(135deg, #f59e0b, #d97706);
-    color: white;
-    border: none;
-    padding: 12px 30px;
-    border-radius: 10px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.btn-cancel:hover, .btn-send:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-}
-
-.btn-send:hover {
-    box-shadow: 0 5px 15px rgba(245, 158, 11, 0.4);
-}
-
-/* Equipment Selection Modal (Broken List) */
-.equipment-select-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: none;
-    justify-content: center;
-    align-items: center;
-    z-index: 10000;
-}
-
-.equipment-select-modal.active {
-    display: flex;
-}
-
-.equipment-select-content {
-    background: white;
-    border-radius: 20px;
-    width: 90%;
-    max-width: 500px;
-    max-height: 80vh;
-    overflow-y: auto;
-}
-
-.equipment-select-header {
-    background: linear-gradient(135deg, #22c55e, #16a34a);
-    color: white;
-    padding: 15px 20px;
-    border-radius: 20px 20px 0 0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.equipment-list {
-    padding: 20px;
-}
-
-.equipment-select-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px;
-    border-bottom: 1px solid #f0f0f0;
-    cursor: pointer;
-    transition: all 0.3s;
-}
-
-.equipment-select-item:hover {
-    background: rgba(34, 197, 94, 0.05);
-}
-
-.equipment-select-item.selected {
-    background: rgba(245, 158, 11, 0.1);
-    border-left: 3px solid #f59e0b;
-}
-
-.equipment-select-info h6 {
-    margin: 0 0 5px 0;
-    font-weight: 600;
-}
-
-.equipment-select-info p {
-    margin: 0;
-    font-size: 12px;
-    color: #666;
-}
-
-.equipment-select-qty {
-    width: 70px;
-    padding: 5px;
-    border: 1px solid #e0e0e0;
-    border-radius: 5px;
-    text-align: center;
-}
-
-.equipment-select-footer {
-    padding: 15px 20px;
-    border-top: 1px solid #e0e0e0;
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-}
-
-        .badge.bg-secondary {
-            background: linear-gradient(135deg, #6c757d, #5a6268) !important;
-        }
-
-        .badge.bg-info {
-            background: linear-gradient(135deg, #0dcaf0, #0aa2c0) !important;
-            color: white;
-        }
-
-        /* Table Styles */
-        .table {
-            border-radius: 18px;
-            overflow: hidden;
-        }
-
-        .table thead th {
-            background: linear-gradient(135deg, #22c55e, #16a34a);
-            color: white;
-            font-weight: 600;
-            border: none;
-            padding: 15px;
-        }
-
-        .table tbody tr {
-            transition: all 0.3s;
-        }
-
-        .table tbody tr:hover {
-            background: rgba(34, 197, 94, 0.05);
-            transform: scale(1.01);
-        }
-
-        /* Form Elements */
-        .form-control,
-        .form-select {
-            border: 2px solid #f0f0f0;
-            border-radius: 16px;
-            padding: 12px 16px;
-            transition: all 0.3s;
-        }
-
-        .form-control:focus,
-        .form-select:focus {
-            border-color: #22c55e;
-            box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.1);
-        }
-
-        /* Comment Textarea */
-        .comment-textarea {
-            width: 100%;
-            padding: 16px 18px;
-            border: 2px solid #f0f0f0;
-            border-radius: 18px;
-            outline: none;
-            transition: all 0.3s;
-            font-size: 1rem;
-            font-family: inherit;
-            min-height: 100px;
-            resize: vertical;
-        }
-
-        .comment-textarea:focus {
-            border-color: #22c55e;
-            box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.1);
-        }
-
-        /* Chart Container */
-        .chart-container {
-            height: 300px;
-            margin-top: 20px;
-            position: relative;
-        }
-
-        /* Responsive */
-        @media (max-width: 1200px) {
-            .calendar-wrapper {
-                flex-direction: row;
-            }
-        }
-
-        @media (max-width: 992px) {
-            .calendar-wrapper {
-                flex-direction: column;
-            }
-        }
-
-        @media (max-width: 991px) {
-            .sidebar {
-                left: -280px;
-                border-radius: 0 20px 20px 0;
-            }
-
-            .sidebar.active {
+            /* Sidebar Overlay */
+            .sidebar-overlay {
+                display: none;
+                position: fixed;
+                top: 0;
                 left: 0;
+                right: 0;
+                bottom: 0;
+                background: rgba(0, 0, 0, 0.5);
+                backdrop-filter: blur(5px);
+                z-index: 999;
             }
 
-            .main-content {
-                margin-left: 0;
-            }
-
-            .topbar {
-                margin: 10px;
-                width: calc(100% - 20px);
-            }
-
-            .content-area {
-                padding: 20px;
-            }
-
-            .request-table td {
+            .sidebar-overlay.active {
                 display: block;
+                animation: fadeIn 0.3s;
             }
 
-            .request-table td::before {
-                content: attr(data-label);
+            /* Sidebar */
+            .sidebar {
+                width: 280px;
+                min-height: 100vh;
+                background: linear-gradient(180deg, #166534 0%, #14532d 100%);
+                color: white;
+                position: fixed;
+                left: 0;
+                top: 0;
+                transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                z-index: 1000;
+                box-shadow: 4px 0 20px rgba(0, 0, 0, 0.2);
+                border-radius: 0 30px 30px 0;
+                overflow-y: auto;
+            }
+
+            .sidebar::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 100%;
+                background: linear-gradient(45deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 100%);
+                pointer-events: none;
+            }
+
+            .sidebar a {
+                color: rgba(255, 255, 255, 0.9);
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 14px 24px;
+                text-decoration: none;
+                transition: all 0.3s;
+                border-radius: 12px;
+                margin: 4px 16px;
+                font-weight: 500;
+                position: relative;
+                overflow: hidden;
+                cursor: pointer;
+            }
+
+            .sidebar a i {
+                font-size: 1.2rem;
+                width: 24px;
+                text-align: center;
+            }
+
+            .sidebar a:hover {
+                background: rgba(255, 255, 255, 0.15);
+                transform: translateX(8px);
+                color: white;
+            }
+
+            .sidebar a.active {
+                background: rgba(255, 255, 255, 0.2);
+                border-left: 3px solid #ffd700;
+            }
+
+            .sidebar h4 {
+                padding: 28px 24px;
+                margin-bottom: 20px;
+                font-size: 1.5rem;
                 font-weight: 600;
+                border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+                letter-spacing: 1px;
+            }
+
+            .sidebar h4 i {
+                margin-right: 10px;
+                color: #ffd700;
+            }
+
+            .sidebar-footer {
+                padding: 20px;
+                margin-top: 30px;
+                text-align: center;
+                background: rgba(0, 0, 0, 0.2);
+                font-size: 0.85rem;
+                color: rgba(255, 255, 255, 0.7);
+            }
+
+            /* Main content */
+            .main-content {
+                margin-left: 280px;
+                transition: all 0.3s ease;
+                min-height: 100vh;
+            }
+
+            /* Modern Topbar with Rounded Navbar */
+            .topbar {
+                background: rgba(255, 255, 255, 0.95);
+                backdrop-filter: blur(10px);
+                padding: 12px 30px;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                position: sticky;
+                top: 15px;
+                z-index: 999;
+                border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+                border-radius: 50px;
+                margin: 15px 25px 0 25px;
+                width: calc(100% - 50px);
+                animation: slideDown 0.5s ease;
+            }
+
+            @keyframes slideDown {
+                from {
+                    transform: translateY(-100%);
+                    opacity: 0;
+                }
+
+                to {
+                    transform: translateY(0);
+                    opacity: 1;
+                }
+            }
+
+            @keyframes fadeIn {
+                from {
+                    opacity: 0;
+                }
+
+                to {
+                    opacity: 1;
+                }
+            }
+
+            .profile-img {
+                width: 45px;
+                height: 45px;
+                border-radius: 12px;
+                object-fit: cover;
+                border: 3px solid #22c55e;
+                cursor: pointer;
+                transition: all 0.3s;
+            }
+
+            .profile-img:hover {
+                transform: scale(1.1);
+                border-color: #ffd700;
+            }
+
+            /* Notification Bell */
+            .notification-bell {
+                position: relative;
+                cursor: pointer;
+                margin-right: 15px;
+            }
+
+            .notification-bell i {
+                font-size: 1.5rem;
                 color: #166534;
-                display: block;
-                margin-bottom: 5px;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .analytics-grid {
-                grid-template-columns: 1fr;
+                transition: all 0.3s;
             }
 
-            .equipment-grid {
-                grid-template-columns: 1fr;
+            .notification-bell:hover i {
+                transform: rotate(15deg);
+                color: #22c55e;
             }
 
+            .request-badge {
+                position: absolute;
+                top: -8px;
+                right: -8px;
+                background: #dd1818;
+                color: white;
+                border-radius: 50%;
+                width: 20px;
+                height: 20px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 0.7rem;
+                font-weight: 600;
+                animation: pulse 2s infinite;
+            }
+
+            .notification-badge {
+                position: absolute;
+                top: -8px;
+                right: -8px;
+                background: #206106;
+                color: white;
+                border-radius: 50%;
+                width: 20px;
+                height: 20px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 0.7rem;
+                font-weight: 600;
+                animation: pulse 2s infinite;
+            }
+
+            @keyframes pulse {
+
+                0%,
+                100% {
+                    transform: scale(1);
+                }
+
+                50% {
+                    transform: scale(1.2);
+                }
+            }
+
+            /* Notification Dropdown */
             .notification-dropdown {
-                width: 300px;
-                right: 10px;
+                position: absolute;
+                top: 60px;
+                right: 20px;
+                width: 350px;
+                background: white;
+                border-radius: 20px;
+                box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+                display: none;
+                z-index: 1000;
+                overflow: hidden;
+                animation: slideIn 0.3s ease;
             }
 
-            .event-day {
-                font-size: 1.8rem;
+            .notification-dropdown.show {
+                display: block;
             }
 
-            .filter-section {
-                flex-direction: column;
+            @keyframes slideIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(-10px);
+                }
+
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
             }
 
-            .filter-select {
-                width: 100%;
+            .notification-header {
+                padding: 20px;
+                background: linear-gradient(135deg, #22c55e, #16a34a);
+                color: white;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
             }
-        }
 
-        @media (max-width: 576px) {
+            .notification-header h6 {
+                margin: 0;
+                font-weight: 600;
+            }
+
+            .notification-header span {
+                background: rgba(255, 255, 255, 0.2);
+                padding: 4px 12px;
+                border-radius: 20px;
+                font-size: 0.85rem;
+            }
+
+            .notification-list {
+                max-height: 300px;
+                overflow-y: auto;
+            }
+
+            .notification-item {
+                padding: 15px 20px;
+                border-bottom: 1px solid #f0f0f0;
+                transition: all 0.3s;
+                cursor: pointer;
+            }
+
+            .notification-item:hover {
+                background: #f8f9fa;
+                transform: translateX(5px);
+            }
+
+            .notification-item.unread {
+                background: rgba(34, 197, 94, 0.1);
+            }
+
+            .notification-item .time {
+                font-size: 0.75rem;
+                color: #999;
+                margin-top: 5px;
+            }
+
             .content-area {
-                padding: 15px;
+                padding: 30px;
+                background: rgba(255, 255, 255, 0.1);
+                backdrop-filter: blur(10px);
+                min-height: calc(100vh - 80px);
             }
 
+            /* Modern Cards */
             .card {
-                padding: 15px !important;
+                background: rgba(255, 255, 255, 0.95);
+                backdrop-filter: blur(10px);
+                border-radius: 24px;
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+                border: 1px solid rgba(255, 255, 255, 0.3);
+                transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+                overflow: hidden;
+            }
+
+            .card:hover {
+                transform: translateY(-8px);
+                box-shadow: 0 30px 60px rgba(0, 0, 0, 0.15);
+            }
+
+            /* Analytics Cards */
+            .analytics-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 20px;
+                margin-bottom: 30px;
             }
 
             .stat-card {
-                padding: 20px;
+                background: linear-gradient(135deg, #22c55e, #16a34a);
+                border-radius: 20px;
+                padding: 25px;
+                color: white;
+                position: relative;
+                overflow: hidden;
+                transition: all 0.3s;
+            }
+
+            .stat-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 15px 30px rgba(34, 197, 94, 0.4);
+            }
+
+            .stat-card::before {
+                content: '';
+                position: absolute;
+                top: -50%;
+                right: -50%;
+                width: 200%;
+                height: 200%;
+                background: rgba(255, 255, 255, 0.1);
+                transform: rotate(45deg);
+                transition: all 0.3s;
+            }
+
+            .stat-card:hover::before {
+                transform: rotate(45deg) translate(10%, 10%);
+            }
+
+            .stat-card i {
+                font-size: 2.5rem;
+                margin-bottom: 15px;
             }
 
             .stat-card h3 {
-                font-size: 1.5rem;
+                font-size: 2rem;
+                font-weight: 700;
+                margin-bottom: 5px;
+            }
+
+            .stat-card p {
+                margin: 0;
+                opacity: 0.9;
+                font-size: 0.95rem;
+            }
+
+            /* Equipment Browser */
+            .filter-section {
+                display: flex;
+                gap: 15px;
+                margin-bottom: 20px;
+                flex-wrap: wrap;
+            }
+
+            .filter-select {
+                padding: 12px 20px;
+                border: 2px solid #f0f0f0;
+                border-radius: 16px;
+                outline: none;
+                transition: all 0.3s;
+                min-width: 200px;
+            }
+
+            .filter-select:focus {
+                border-color: #22c55e;
+                box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.1);
+            }
+
+            .equipment-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+                gap: 20px;
+                margin-top: 20px;
+            }
+
+            .equipment-card {
+                background: white;
+                border-radius: 20px;
+                overflow: hidden;
+                box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+                transition: all 0.3s;
+                cursor: pointer;
+            }
+
+            .equipment-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 15px 30px rgba(34, 197, 94, 0.2);
+            }
+
+            .equipment-image {
+                height: 180px;
+                background: linear-gradient(135deg, #22c55e20, #16a34a20);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                position: relative;
+            }
+
+            .equipment-image img {
+                max-width: 80%;
+                max-height: 80%;
+                object-fit: contain;
+            }
+
+            .status-indicator {
+                position: absolute;
+                top: 15px;
+                right: 15px;
+                width: 12px;
+                height: 12px;
+                border-radius: 50%;
+                animation: blink 2s infinite;
+            }
+
+            .status-indicator.available {
+                background: #22c55e;
+                box-shadow: 0 0 10px #22c55e;
+            }
+
+            .status-indicator.in-use {
+                background: #f59e0b;
+                box-shadow: 0 0 10px #f59e0b;
+            }
+
+            .status-indicator.maintenance {
+                background: #ef4444;
+                box-shadow: 0 0 10px #ef4444;
+            }
+
+            @keyframes blink {
+
+                0%,
+                100% {
+                    opacity: 1;
+                }
+
+                50% {
+                    opacity: 0.5;
+                }
+            }
+
+            .equipment-info {
+                padding: 20px;
+            }
+
+            .equipment-info h5 {
+                font-weight: 600;
+                margin-bottom: 8px;
+                color: #166534;
+            }
+
+            .equipment-info p {
+                color: #666;
+                font-size: 0.9rem;
+                margin-bottom: 5px;
+            }
+
+            .equipment-info .location {
+                display: flex;
+                align-items: center;
+                gap: 5px;
+                color: #22c55e;
+                font-weight: 500;
+            }
+
+            /* Request List Table */
+            .request-table {
+                width: 100%;
+                border-collapse: separate;
+                border-spacing: 0 10px;
+            }
+
+            .request-table th {
+                padding: 15px 20px;
+                text-align: left;
+                color: #166534;
+                font-weight: 600;
+            }
+
+            .request-table td {
+                background: white;
+                padding: 15px 20px;
+                border-radius: 12px;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            }
+
+            .request-table tr:hover td {
+                transform: scale(1.01);
+                box-shadow: 0 5px 20px rgba(34, 197, 94, 0.2);
+                transition: all 0.3s;
             }
 
             .action-buttons {
-                flex-direction: column;
+                display: flex;
+                gap: 10px;
+                flex-wrap: wrap;
             }
 
-            .btn-approve,
+            .btn-approve {
+                background: linear-gradient(135deg, #22c55e, #16a34a);
+                color: white;
+                border: none;
+                padding: 8px 16px;
+                border-radius: 12px;
+                font-weight: 600;
+                transition: all 0.3s;
+            }
+
+            .btn-approve:hover {
+                transform: scale(1.05);
+                box-shadow: 0 5px 15px rgba(34, 197, 94, 0.4);
+            }
+
             .btn-reject {
-                width: 100%;
+                background: linear-gradient(135deg, #ef4444, #dc2626);
+                color: white;
+                border: none;
+                padding: 8px 16px;
+                border-radius: 12px;
+                font-weight: 600;
+                transition: all 0.3s;
             }
-        }
 
-        /* Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-        }
+            .btn-reject:hover {
+                transform: scale(1.05);
+                box-shadow: 0 5px 15px rgba(239, 68, 68, 0.4);
+            }
 
-        ::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 10px;
-        }
+            /* Equipment Details Table */
+            .details-table {
+                width: 100%;
+                border-collapse: collapse;
+            }
 
-        ::-webkit-scrollbar-thumb {
-            background: linear-gradient(135deg, #22c55e, #16a34a);
-            border-radius: 10px;
-        }
+            .details-table th {
+                background: linear-gradient(135deg, #22c55e, #16a34a);
+                color: white;
+                padding: 15px;
+                font-weight: 600;
+                text-align: left;
+            }
 
-        ::-webkit-scrollbar-thumb:hover {
-            background: linear-gradient(135deg, #16a34a, #22c55e);
-        }
+            .details-table td {
+                padding: 12px 15px;
+                border-bottom: 1px solid #f0f0f0;
+            }
 
-        /* User Management Styles */
-        .search-add-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
+            .details-table tr:hover td {
+                background: rgba(34, 197, 94, 0.05);
+            }
 
-        .search-container {
-            display: flex;
-            gap: 10px;
-            flex: 1;
-            max-width: 500px;
-        }
+            .progress-bar {
+                width: 100%;
+                height: 8px;
+                background: #f0f0f0;
+                border-radius: 4px;
+                overflow: hidden;
+            }
 
-        .search-input {
-            flex: 1;
-            padding: 10px 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 14px;
-            transition: all 0.3s ease;
-        }
+            .progress-fill {
+                height: 100%;
+                background: linear-gradient(135deg, #22c55e, #16a34a);
+                border-radius: 4px;
+                transition: width 0.3s;
+            }
 
-        .search-input:focus {
-            border-color: #22c55e;
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
-        }
+            /* Activity Timeline */
+            .activity-table {
+                width: 100%;
+                border-collapse: separate;
+                border-spacing: 0 10px;
+            }
 
-        .search-btn {
-            background: linear-gradient(135deg, #22c55e, #16a34a);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
+            .activity-table td {
+                background: white;
+                padding: 15px 20px;
+                border-radius: 12px;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            }
 
-        .search-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
-        }
+            .activity-badge {
+                padding: 6px 12px;
+                border-radius: 20px;
+                font-size: 0.85rem;
+                font-weight: 600;
+            }
 
-        .add-btn {
-            background: linear-gradient(135deg, #3b82f6, #2563eb);
-            color: white;
-            border: none;
-            padding: 10px 25px;
-            border-radius: 8px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            white-space: nowrap;
-        }
+            .activity-badge.created {
+                background: #e8f5e9;
+                color: #2e7d32;
+            }
 
-        .add-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-        }
+            .activity-badge.approved {
+                background: #e3f2fd;
+                color: #1565c0;
+            }
 
-        .table-heading {
-            color: #333;
-            font-size: 1.2rem;
-            margin-bottom: 15px;
-            padding-bottom: 8px;
-            border-bottom: 2px solid #e0e0e0;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
+            .activity-badge.rejected {
+                background: #ffebee;
+                color: #c62828;
+            }
 
-        .table-heading i {
-            color: #22c55e;
-            font-size: 1.4rem;
-        }
+            .activity-badge.returned {
+                background: #fff3e0;
+                color: #ef6c00;
+            }
 
-        .table-count {
-            background: #e0e0e0;
-            padding: 3px 10px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            color: #666;
-            margin-left: auto;
-        }
+            .activity-badge.maintenance {
+                background: #f3e5f5;
+                color: #7b1fa2;
+            }
 
-        /* User Table */
-        .user-table {
-            width: 100%;
-            border-collapse: collapse;
-            background: white;
-            border-radius: 10px;
-            overflow: hidden;
-        }
+            .btn-view {
+                background: linear-gradient(135deg, #3b82f6, #2563eb);
+                color: white;
+                border: none;
+                padding: 6px 12px;
+                border-radius: 8px;
+                font-size: 0.85rem;
+                transition: all 0.3s;
+            }
 
-        .user-table thead {
-            background: linear-gradient(135deg, #22c55e, #16a34a);
-            color: white;
-        }
+            .btn-view:hover {
+                transform: scale(1.05);
+                box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
+            }
 
-        .user-table th {
-            padding: 15px;
-            text-align: left;
-            font-weight: 600;
-            font-size: 14px;
-        }
+            /* Report Card */
+            .report-card {
+                background: white;
+                border-radius: 20px;
+                padding: 20px;
+                margin-bottom: 20px;
+                transition: all 0.3s;
+                box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+            }
 
-        .user-table td {
-            padding: 15px;
-            border-bottom: 1px solid #e0e0e0;
-            vertical-align: middle;
-        }
+            .report-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 10px 30px rgba(34, 197, 94, 0.2);
+            }
 
-        .user-table tbody tr:hover {
-            background: #f9f9f9;
-        }
+            .report-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 15px;
+                padding-bottom: 10px;
+                border-bottom: 2px solid #f0f0f0;
+            }
 
-        /* Booking Badge */
-        .booking-badge {
-            background: #e6f7e6;
-            color: #22c55e;
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-weight: 600;
-            font-size: 12px;
-            display: inline-block;
-        }
+            .report-title {
+                font-size: 1.2rem;
+                font-weight: 600;
+                color: #166534;
+            }
 
-        /* Action Buttons */
-        .action-buttons {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
+            .btn-generate {
+                background: linear-gradient(135deg, #22c55e, #16a34a);
+                color: white;
+                border: none;
+                padding: 10px 20px;
+                border-radius: 12px;
+                font-weight: 600;
+                transition: all 0.3s;
+            }
 
-        .btn-edit {
-            background: linear-gradient(135deg, #3b82f6, #2563eb);
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 12px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-        }
+            .btn-generate:hover {
+                transform: scale(1.05);
+                box-shadow: 0 5px 15px rgba(34, 197, 94, 0.4);
+            }
 
-        .btn-edit:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
-        }
+            /* Calendar Section */
+            .calendar-container {
+                background: linear-gradient(135deg, #166534 0%, #14532d 100%);
+                border-radius: 32px;
+                padding: 24px;
+                margin: 30px 0;
+                color: white;
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            }
 
-        .btn-remove {
-            background: linear-gradient(135deg, #ef4444, #dc2626);
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 12px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-        }
+            .calendar-wrapper {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 20px;
+                background: white;
+                border-radius: 24px;
+                overflow: hidden;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            }
 
-        .btn-remove:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
-        }
+            .calendar-left {
+                flex: 1.5;
+                min-width: 300px;
+                background: white;
+                padding: 25px;
+            }
 
-        /* Responsive */
-        @media (max-width: 768px) {
-            .search-add-row {
+            .calendar-right {
+                flex: 1;
+                min-width: 280px;
+                background: linear-gradient(135deg, #166534 0%, #14532d 100%);
+                padding: 30px;
+                color: #fff;
+            }
+
+            .calendar-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 25px;
+                padding: 0 5px;
+            }
+
+            .calendar-header .month {
+                font-size: 1.6rem;
+                font-weight: 700;
+                background: linear-gradient(135deg, #22c55e, #16a34a);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+            }
+
+            .calendar-header i {
+                font-size: 1.3rem;
+                cursor: pointer;
+                background: linear-gradient(135deg, #22c55e, #16a34a);
+                color: white;
+                width: 40px;
+                height: 40px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 12px;
+                transition: all 0.3s;
+                box-shadow: 0 5px 15px rgba(34, 197, 94, 0.4);
+            }
+
+            .calendar-header i:hover {
+                transform: scale(1.1);
+                box-shadow: 0 8px 25px rgba(34, 197, 94, 0.6);
+            }
+
+            .weekdays {
+                display: grid;
+                grid-template-columns: repeat(7, 1fr);
+                text-align: center;
+                font-weight: 600;
+                color: #666;
+                margin-bottom: 15px;
+                padding: 10px 0;
+                border-bottom: 2px solid #f0f0f0;
+            }
+
+            .days-grid {
+                display: grid;
+                grid-template-columns: repeat(7, 1fr);
+                gap: 8px;
+                margin-bottom: 20px;
+            }
+
+            .day-cell {
+                aspect-ratio: 1;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                border-radius: 12px;
+                transition: all 0.3s;
+                font-size: 0.95rem;
+                color: #333;
+                position: relative;
+                font-weight: 500;
+            }
+
+            .day-cell:hover:not(.prev-date):not(.next-date) {
+                background: linear-gradient(135deg, #22c55e, #16a34a);
+                color: white;
+                transform: scale(1.05);
+                box-shadow: 0 5px 15px rgba(34, 197, 94, 0.4);
+            }
+
+            .day-cell.prev-date,
+            .day-cell.next-date {
+                color: #ccc;
+            }
+
+            .day-cell.active {
+                background: linear-gradient(135deg, #22c55e, #16a34a);
+                color: white;
+                font-weight: 600;
+                box-shadow: 0 5px 15px rgba(34, 197, 94, 0.4);
+            }
+
+            .day-cell.today {
+                font-weight: 700;
+                border: 2px solid #22c55e;
+                color: #22c55e;
+            }
+
+            .day-cell.event::after {
+                content: '•';
+                position: absolute;
+                bottom: 2px;
+                font-size: 1.2rem;
+                color: #ffd700;
+            }
+
+            .goto-section {
+                display: flex;
+                gap: 12px;
+                margin-top: 20px;
+                align-items: center;
+                flex-wrap: wrap;
+            }
+
+            .goto-input {
+                flex: 1;
+                min-width: 120px;
+                padding: 12px 16px;
+                border: 2px solid #f0f0f0;
+                border-radius: 16px;
+                outline: none;
+                transition: all 0.3s;
+                font-size: 0.95rem;
+            }
+
+            .goto-input:focus {
+                border-color: #22c55e;
+                box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.1);
+            }
+
+            .goto-btn,
+            .today-btn {
+                padding: 12px 20px;
+                border: none;
+                border-radius: 16px;
+                background: linear-gradient(135deg, #22c55e, #16a34a);
+                color: white;
+                cursor: pointer;
+                transition: all 0.3s;
+                font-size: 0.95rem;
+                font-weight: 600;
+                white-space: nowrap;
+                box-shadow: 0 5px 15px rgba(34, 197, 94, 0.4);
+            }
+
+            .goto-btn:hover,
+            .today-btn:hover {
+                transform: scale(1.05);
+                box-shadow: 0 8px 25px rgba(34, 197, 94, 0.6);
+            }
+
+            .right-header {
+                margin-bottom: 25px;
+            }
+
+            .event-day {
+                font-size: 2.2rem;
+                font-weight: 700;
+                text-transform: capitalize;
+                margin-bottom: 5px;
+            }
+
+            .event-date {
+                color: rgba(255, 255, 255, 0.7);
+                font-size: 1.1rem;
+            }
+
+            .events-list {
+                max-height: 400px;
+                overflow-y: auto;
+                padding-right: 10px;
+            }
+
+            .event-item {
+                background: rgba(255, 255, 255, 0.1);
+                backdrop-filter: blur(10px);
+                padding: 18px 20px;
+                border-radius: 16px;
+                margin-bottom: 12px;
+                cursor: pointer;
+                transition: all 0.3s;
+                border: 1px solid rgba(255, 255, 255, 0.2);
+            }
+
+            .event-item:hover {
+                background: rgba(255, 255, 255, 0.2);
+                transform: translateX(8px);
+            }
+
+            .event-item .title {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                margin-bottom: 8px;
+            }
+
+            .event-item i {
+                color: #ffd700;
+                font-size: 0.8rem;
+            }
+
+            .event-item .event-title {
+                font-size: 1.1rem;
+                font-weight: 600;
+                word-break: break-word;
+            }
+
+            .event-item .event-time {
+                font-size: 0.9rem;
+                color: rgba(255, 255, 255, 0.7);
+                margin-left: 28px;
+            }
+
+            /* Modal */
+            .add-event-wrapper {
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                width: 90%;
+                max-width: 450px;
+                background: white;
+                border-radius: 32px;
+                padding: 30px;
+                box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+                z-index: 2000;
+                display: none;
+            }
+
+            .add-event-wrapper.active {
+                display: block;
+                animation: modalPop 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+
+            @keyframes modalPop {
+                0% {
+                    opacity: 0;
+                    transform: translate(-50%, -50%) scale(0.8);
+                }
+
+                100% {
+                    opacity: 1;
+                    transform: translate(-50%, -50%) scale(1);
+                }
+            }
+
+            .add-event-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 25px;
+                padding-bottom: 15px;
+                border-bottom: 2px solid #f0f0f0;
+            }
+
+            .add-event-header .title {
+                font-size: 1.4rem;
+                font-weight: 700;
+                background: linear-gradient(135deg, #22c55e, #16a34a);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+            }
+
+            .add-event-header .close {
+                cursor: pointer;
+                font-size: 1.3rem;
+                color: #999;
+                transition: all 0.3s;
+                width: 40px;
+                height: 40px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                border-radius: 12px;
+                background: #f5f5f5;
+            }
+
+            .add-event-header .close:hover {
+                background: linear-gradient(135deg, #22c55e, #16a34a);
+                color: white;
+                transform: rotate(90deg);
+            }
+
+            .add-event-body {
+                display: flex;
                 flex-direction: column;
-                align-items: stretch;
+                gap: 20px;
+            }
+
+            .add-event-body input,
+            .add-event-body textarea {
+                width: 100%;
+                padding: 16px 18px;
+                border: 2px solid #f0f0f0;
+                border-radius: 18px;
+                outline: none;
+                transition: all 0.3s;
+                font-size: 1rem;
+                font-family: inherit;
+            }
+
+            .add-event-body textarea {
+                min-height: 100px;
+                resize: vertical;
+            }
+
+            .add-event-body input:focus,
+            .add-event-body textarea:focus {
+                border-color: #22c55e;
+                box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.1);
+            }
+
+            .add-event-footer {
+                margin-top: 20px;
+            }
+
+            .add-event-footer button {
+                width: 100%;
+                padding: 16px;
+                border: none;
+                border-radius: 18px;
+                background: linear-gradient(135deg, #22c55e, #16a34a);
+                color: white;
+                font-weight: 700;
+                font-size: 1.1rem;
+                cursor: pointer;
+                transition: all 0.3s;
+                box-shadow: 0 10px 20px rgba(34, 197, 94, 0.3);
+            }
+
+            .add-event-footer button:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 15px 30px rgba(34, 197, 94, 0.5);
+            }
+
+            .no-event {
+                text-align: center;
+                padding: 50px 20px;
+                color: rgba(255, 255, 255, 0.5);
+                font-size: 1.1rem;
+            }
+
+            /* Buttons */
+            .btn-success {
+                background: linear-gradient(135deg, #22c55e, #16a34a);
+                border: none;
+                padding: 12px 24px;
+                border-radius: 50px;
+                font-weight: 600;
+                transition: all 0.3s;
+                box-shadow: 0 5px 15px rgba(34, 197, 94, 0.4);
+            }
+
+            .btn-success:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 8px 25px rgba(34, 197, 94, 0.6);
+            }
+
+            .btn-secondary {
+                background: linear-gradient(135deg, #6c757d, #5a6268);
+                border: none;
+                padding: 12px 24px;
+                border-radius: 50px;
+                font-weight: 600;
+                transition: all 0.3s;
+            }
+
+            .btn-secondary:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            }
+
+            .btn-danger {
+                border-radius: 12px !important;
+                padding: 8px 12px !important;
+                transition: all 0.3s !important;
+            }
+
+            .btn-danger:hover {
+                transform: scale(1.1);
+                background: linear-gradient(135deg, #dc3545, #c82333) !important;
+            }
+
+            /* Badges */
+            .badge {
+                padding: 8px 14px;
+                border-radius: 30px;
+                font-weight: 600;
+                font-size: 0.85rem;
+                letter-spacing: 0.3px;
+            }
+
+            .badge.bg-warning {
+                background: linear-gradient(135deg, #f39c12, #e67e22) !important;
+                color: white;
+            }
+
+            .badge.bg-success {
+                background: linear-gradient(135deg, #22c55e, #16a34a) !important;
+            }
+
+            .badge.bg-danger {
+                background: linear-gradient(135deg, #dc3545, #c82333) !important;
+            }
+
+            .badge.bg-primary {
+                background: linear-gradient(135deg, #0d6efd, #0b5ed7) !important;
+            }
+
+
+
+            /* Add to your existing CSS */
+            .maintenance-modal {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.5);
+                display: none;
+                justify-content: center;
+                align-items: center;
+                z-index: 9999;
+            }
+
+            .maintenance-modal.active {
+                display: flex;
+            }
+
+            .maintenance-modal-content {
+                background: white;
+                border-radius: 20px;
+                width: 90%;
+                max-width: 600px;
+                max-height: 90vh;
+                overflow-y: auto;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+                animation: modalSlideIn 0.3s ease;
+            }
+
+            @keyframes modalSlideIn {
+                from {
+                    transform: translateY(-50px);
+                    opacity: 0;
+                }
+
+                to {
+                    transform: translateY(0);
+                    opacity: 1;
+                }
+            }
+
+            .maintenance-modal-header {
+                background: linear-gradient(135deg, #f59e0b, #d97706);
+                color: white;
+                padding: 20px 25px;
+                border-radius: 20px 20px 0 0;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .maintenance-modal-header h3 {
+                margin: 0;
+                font-weight: 600;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+
+            .maintenance-modal-header .close-btn {
+                background: rgba(255, 255, 255, 0.2);
+                border: none;
+                color: white;
+                width: 35px;
+                height: 35px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                transition: all 0.3s;
+            }
+
+            .maintenance-modal-header .close-btn:hover {
+                background: rgba(255, 255, 255, 0.3);
+                transform: rotate(90deg);
+            }
+
+            .maintenance-modal-body {
+                padding: 25px;
+            }
+
+            .email-section {
+                background: #f8f9fa;
+                border-radius: 15px;
+                padding: 20px;
+                margin-bottom: 20px;
+            }
+
+            .email-field {
+                margin-bottom: 15px;
+            }
+
+            .email-field label {
+                display: block;
+                margin-bottom: 8px;
+                font-weight: 600;
+                color: #166534;
+                font-size: 0.95rem;
+            }
+
+            .email-field input[type="email"] {
+                width: 100%;
+                padding: 12px 15px;
+                border: 2px solid #e0e0e0;
+                border-radius: 10px;
+                font-size: 14px;
+                transition: all 0.3s;
+            }
+
+            .email-field input[type="email"]:focus {
+                border-color: #f59e0b;
+                outline: none;
+                box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+            }
+
+            .email-format-section {
+                background: white;
+                border-radius: 12px;
+                padding: 15px;
+                margin: 20px 0;
+                border: 1px solid #e0e0e0;
+            }
+
+            .email-format-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 15px;
+            }
+
+            .btn-activate {
+                background: linear-gradient(135deg, #22c55e, #16a34a);
+                color: white;
+                border: none;
+                padding: 6px 12px;
+                border-radius: 6px;
+                font-size: 12px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                display: inline-flex;
+                align-items: center;
+                gap: 4px;
+            }
+
+            .btn-activate:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 8px rgba(34, 197, 94, 0.3);
+            }
+
+            .btn-deactivate {
+                background: linear-gradient(135deg, #ef4444, #dc2626);
+                color: white;
+                border: none;
+                padding: 6px 12px;
+                border-radius: 6px;
+                font-size: 12px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                display: inline-flex;
+                align-items: center;
+                gap: 4px;
+            }
+
+            .btn-deactivate:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
+            }
+
+            .email-format-header h6 {
+                margin: 0;
+                font-weight: 600;
+                color: #166534;
+            }
+
+            .edit-format-btn {
+                background: linear-gradient(135deg, #3b82f6, #2563eb);
+                color: white;
+                border: none;
+                padding: 6px 12px;
+                border-radius: 8px;
+                font-size: 12px;
+                cursor: pointer;
+                transition: all 0.3s;
+                display: flex;
+                align-items: center;
+                gap: 5px;
+            }
+
+            .edit-format-btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+            }
+
+            .email-format-preview {
+                background: #f8f9fa;
+                padding: 15px;
+                border-radius: 10px;
+                font-family: monospace;
+                font-size: 13px;
+                color: #333;
+                white-space: pre-wrap;
+                max-height: 150px;
+                overflow-y: auto;
+            }
+
+            .email-format-edit {
+                display: none;
+            }
+
+            .email-format-edit.active {
+                display: block;
+            }
+
+            .email-format-edit textarea {
+                width: 100%;
+                padding: 12px;
+                border: 2px solid #e0e0e0;
+                border-radius: 10px;
+                font-family: monospace;
+                font-size: 13px;
+                min-height: 100px;
+                resize: vertical;
+            }
+
+            .equipment-selection-section {
+                background: #f8f9fa;
+                border-radius: 15px;
+                padding: 20px;
+                margin: 20px 0;
+            }
+
+            .section-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 15px;
+            }
+
+            .section-header h6 {
+                margin: 0;
+                font-weight: 600;
+                color: #166534;
+            }
+
+            .add-equipment-btn {
+                background: linear-gradient(135deg, #22c55e, #16a34a);
+                color: white;
+                border: none;
+                padding: 8px 16px;
+                border-radius: 8px;
+                font-size: 13px;
+                cursor: pointer;
+                transition: all 0.3s;
+                display: flex;
+                align-items: center;
+                gap: 5px;
+            }
+
+            .add-equipment-btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 8px rgba(34, 197, 94, 0.3);
+            }
+
+            .selected-equipment-list {
+                max-height: 200px;
+                overflow-y: auto;
+            }
+
+            .equipment-item {
+                background: white;
+                border-radius: 10px;
+                padding: 12px 15px;
+                margin-bottom: 10px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                border: 1px solid #e0e0e0;
+                transition: all 0.3s;
+            }
+
+            .equipment-item:hover {
+                border-color: #f59e0b;
+                box-shadow: 0 2px 8px rgba(245, 158, 11, 0.1);
+            }
+
+            .equipment-item-info {
+                display: flex;
+                flex-direction: column;
+                gap: 5px;
+            }
+
+            .equipment-item-name {
+                font-weight: 600;
+                color: #333;
+            }
+
+            .equipment-item-details {
+                display: flex;
+                gap: 15px;
+                font-size: 12px;
+                color: #666;
+            }
+
+            .equipment-item-qty {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .qty-input {
+                width: 60px;
+                padding: 4px 8px;
+                border: 1px solid #e0e0e0;
+                border-radius: 5px;
+                text-align: center;
+            }
+
+            .remove-equipment-btn {
+                background: none;
+                border: none;
+                color: #ef4444;
+                cursor: pointer;
+                font-size: 16px;
+                padding: 5px;
+                transition: all 0.3s;
+            }
+
+            .remove-equipment-btn:hover {
+                transform: scale(1.2);
+                color: #dc2626;
+            }
+
+            .company-section {
+                background: #f8f9fa;
+                border-radius: 15px;
+                padding: 20px;
+                margin: 20px 0;
+            }
+
+            .company-list {
+                margin-top: 15px;
+            }
+
+            .company-tag {
+                background: linear-gradient(135deg, #f59e0b20, #d9770620);
+                border: 1px solid #f59e0b;
+                color: #d97706;
+                padding: 8px 15px;
+                border-radius: 30px;
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                margin: 0 8px 8px 0;
+                font-size: 13px;
+                font-weight: 500;
+            }
+
+            .company-tag i {
+                cursor: pointer;
+                transition: all 0.3s;
+            }
+
+            .company-tag i:hover {
+                color: #dc2626;
+                transform: scale(1.2);
+            }
+
+            .add-company-input {
+                display: flex;
+                gap: 10px;
+                margin-top: 10px;
+            }
+
+            .add-company-input input {
+                flex: 1;
+                padding: 10px 12px;
+                border: 2px solid #e0e0e0;
+                border-radius: 8px;
+                font-size: 13px;
+            }
+
+            .add-company-input input:focus {
+                border-color: #f59e0b;
+                outline: none;
+            }
+
+            .add-company-btn {
+                background: linear-gradient(135deg, #f59e0b, #d97706);
+                color: white;
+                border: none;
+                padding: 0 20px;
+                border-radius: 8px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s;
+                white-space: nowrap;
+            }
+
+            .add-company-btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 8px rgba(245, 158, 11, 0.3);
+            }
+
+            .maintenance-modal-footer {
+                padding: 20px 25px;
+                border-top: 1px solid #e0e0e0;
+                display: flex;
+                justify-content: flex-end;
+                gap: 12px;
+            }
+
+            .btn-cancel {
+                background: linear-gradient(135deg, #6c757d, #5a6268);
+                color: white;
+                border: none;
+                padding: 12px 25px;
+                border-radius: 10px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s;
+            }
+
+            .btn-send {
+                background: linear-gradient(135deg, #f59e0b, #d97706);
+                color: white;
+                border: none;
+                padding: 12px 30px;
+                border-radius: 10px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .btn-cancel:hover,
+            .btn-send:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            }
+
+            .btn-send:hover {
+                box-shadow: 0 5px 15px rgba(245, 158, 11, 0.4);
+            }
+
+            /* Equipment Selection Modal (Broken List) */
+            .equipment-select-modal {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.5);
+                display: none;
+                justify-content: center;
+                align-items: center;
+                z-index: 10000;
+            }
+
+            .equipment-select-modal.active {
+                display: flex;
+            }
+
+            .equipment-select-content {
+                background: white;
+                border-radius: 20px;
+                width: 90%;
+                max-width: 500px;
+                max-height: 80vh;
+                overflow-y: auto;
+            }
+
+            .equipment-select-header {
+                background: linear-gradient(135deg, #22c55e, #16a34a);
+                color: white;
+                padding: 15px 20px;
+                border-radius: 20px 20px 0 0;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .equipment-list {
+                padding: 20px;
+            }
+
+            .equipment-select-item {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 12px;
+                border-bottom: 1px solid #f0f0f0;
+                cursor: pointer;
+                transition: all 0.3s;
+            }
+
+            .equipment-select-item:hover {
+                background: rgba(34, 197, 94, 0.05);
+            }
+
+            .equipment-select-item.selected {
+                background: rgba(245, 158, 11, 0.1);
+                border-left: 3px solid #f59e0b;
+            }
+
+            .equipment-select-info h6 {
+                margin: 0 0 5px 0;
+                font-weight: 600;
+            }
+
+            .equipment-select-info p {
+                margin: 0;
+                font-size: 12px;
+                color: #666;
+            }
+
+            .equipment-select-qty {
+                width: 70px;
+                padding: 5px;
+                border: 1px solid #e0e0e0;
+                border-radius: 5px;
+                text-align: center;
+            }
+
+            .equipment-select-footer {
+                padding: 15px 20px;
+                border-top: 1px solid #e0e0e0;
+                display: flex;
+                justify-content: flex-end;
+                gap: 10px;
+            }
+
+            .badge.bg-secondary {
+                background: linear-gradient(135deg, #6c757d, #5a6268) !important;
+            }
+
+            .badge.bg-info {
+                background: linear-gradient(135deg, #0dcaf0, #0aa2c0) !important;
+                color: white;
+            }
+
+            /* Table Styles */
+            .table {
+                border-radius: 18px;
+                overflow: hidden;
+            }
+
+            .table thead th {
+                background: linear-gradient(135deg, #22c55e, #16a34a);
+                color: white;
+                font-weight: 600;
+                border: none;
+                padding: 15px;
+            }
+
+            .table tbody tr {
+                transition: all 0.3s;
+            }
+
+            .table tbody tr:hover {
+                background: rgba(34, 197, 94, 0.05);
+                transform: scale(1.01);
+            }
+
+            /* Form Elements */
+            .form-control,
+            .form-select {
+                border: 2px solid #f0f0f0;
+                border-radius: 16px;
+                padding: 12px 16px;
+                transition: all 0.3s;
+            }
+
+            .form-control:focus,
+            .form-select:focus {
+                border-color: #22c55e;
+                box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.1);
+            }
+
+            /* Comment Textarea */
+            .comment-textarea {
+                width: 100%;
+                padding: 16px 18px;
+                border: 2px solid #f0f0f0;
+                border-radius: 18px;
+                outline: none;
+                transition: all 0.3s;
+                font-size: 1rem;
+                font-family: inherit;
+                min-height: 100px;
+                resize: vertical;
+            }
+
+            .comment-textarea:focus {
+                border-color: #22c55e;
+                box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.1);
+            }
+
+            /* Chart Container */
+            .chart-container {
+                height: 300px;
+                margin-top: 20px;
+                position: relative;
+            }
+
+            /* Responsive */
+            @media (max-width: 1200px) {
+                .calendar-wrapper {
+                    flex-direction: row;
+                }
+            }
+
+            @media (max-width: 992px) {
+                .calendar-wrapper {
+                    flex-direction: column;
+                }
+            }
+
+            @media (max-width: 991px) {
+                .sidebar {
+                    left: -280px;
+                    border-radius: 0 20px 20px 0;
+                }
+
+                .sidebar.active {
+                    left: 0;
+                }
+
+                .main-content {
+                    margin-left: 0;
+                }
+
+                .topbar {
+                    margin: 10px;
+                    width: calc(100% - 20px);
+                }
+
+                .content-area {
+                    padding: 20px;
+                }
+
+                .request-table td {
+                    display: block;
+                }
+
+                .request-table td::before {
+                    content: attr(data-label);
+                    font-weight: 600;
+                    color: #166534;
+                    display: block;
+                    margin-bottom: 5px;
+                }
+            }
+
+            @media (max-width: 768px) {
+                .analytics-grid {
+                    grid-template-columns: 1fr;
+                }
+
+                .equipment-grid {
+                    grid-template-columns: 1fr;
+                }
+
+                .notification-dropdown {
+                    width: 300px;
+                    right: 10px;
+                }
+
+                .event-day {
+                    font-size: 1.8rem;
+                }
+
+                .filter-section {
+                    flex-direction: column;
+                }
+
+                .filter-select {
+                    width: 100%;
+                }
+            }
+
+            @media (max-width: 576px) {
+                .content-area {
+                    padding: 15px;
+                }
+
+                .card {
+                    padding: 15px !important;
+                }
+
+                .stat-card {
+                    padding: 20px;
+                }
+
+                .stat-card h3 {
+                    font-size: 1.5rem;
+                }
+
+                .action-buttons {
+                    flex-direction: column;
+                }
+
+                .btn-approve,
+                .btn-reject {
+                    width: 100%;
+                }
+            }
+
+            /* Scrollbar */
+            ::-webkit-scrollbar {
+                width: 8px;
+            }
+
+            ::-webkit-scrollbar-track {
+                background: #f1f1f1;
+                border-radius: 10px;
+            }
+
+            ::-webkit-scrollbar-thumb {
+                background: linear-gradient(135deg, #22c55e, #16a34a);
+                border-radius: 10px;
+            }
+
+            ::-webkit-scrollbar-thumb:hover {
+                background: linear-gradient(135deg, #16a34a, #22c55e);
+            }
+
+            /* User Management Styles */
+            .search-add-row {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 20px;
+                flex-wrap: wrap;
+                gap: 15px;
             }
 
             .search-container {
-                max-width: 100%;
+                display: flex;
+                gap: 10px;
+                flex: 1;
+                max-width: 500px;
             }
 
+            .search-input {
+                flex: 1;
+                padding: 10px 15px;
+                border: 2px solid #e0e0e0;
+                border-radius: 8px;
+                font-size: 14px;
+                transition: all 0.3s ease;
+            }
+
+            .search-input:focus {
+                border-color: #22c55e;
+                outline: none;
+                box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+            }
+
+            .search-btn {
+                background: linear-gradient(135deg, #22c55e, #16a34a);
+                color: white;
+                border: none;
+                padding: 10px 20px;
+                border-radius: 8px;
+                font-weight: 500;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                display: flex;
+                align-items: center;
+                gap: 5px;
+            }
+
+            .search-btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+            }
+
+            .add-btn {
+                background: linear-gradient(135deg, #3b82f6, #2563eb);
+                color: white;
+                border: none;
+                padding: 10px 25px;
+                border-radius: 8px;
+                font-weight: 500;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                white-space: nowrap;
+            }
+
+            .add-btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+            }
+
+            .table-heading {
+                color: #333;
+                font-size: 1.2rem;
+                margin-bottom: 15px;
+                padding-bottom: 8px;
+                border-bottom: 2px solid #e0e0e0;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+
+            .table-heading i {
+                color: #22c55e;
+                font-size: 1.4rem;
+            }
+
+            .table-count {
+                background: #e0e0e0;
+                padding: 3px 10px;
+                border-radius: 20px;
+                font-size: 0.9rem;
+                color: #666;
+                margin-left: auto;
+            }
+
+            /* User Table */
             .user-table {
+                width: 100%;
+                border-collapse: collapse;
+                background: white;
+                border-radius: 10px;
+                overflow: hidden;
+            }
+
+            .user-table thead {
+                background: linear-gradient(135deg, #22c55e, #16a34a);
+                color: white;
+            }
+
+            .user-table th {
+                padding: 15px;
+                text-align: left;
+                font-weight: 600;
                 font-size: 14px;
             }
 
             .user-table td {
-                padding: 10px;
+                padding: 15px;
+                border-bottom: 1px solid #e0e0e0;
+                vertical-align: middle;
             }
 
+            .user-table tbody tr:hover {
+                background: #f9f9f9;
+            }
+
+            /* Booking Badge */
+            .booking-badge {
+                background: #e6f7e6;
+                color: #22c55e;
+                padding: 5px 10px;
+                border-radius: 20px;
+                font-weight: 600;
+                font-size: 12px;
+                display: inline-block;
+            }
+
+            /* Action Buttons */
             .action-buttons {
-                flex-direction: column;
+                display: flex;
+                gap: 8px;
+                flex-wrap: wrap;
             }
 
-            .btn-edit,
+            .btn-edit {
+                background: linear-gradient(135deg, #3b82f6, #2563eb);
+                color: white;
+                border: none;
+                padding: 6px 12px;
+                border-radius: 6px;
+                font-size: 12px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                display: inline-flex;
+                align-items: center;
+                gap: 4px;
+            }
+
+            .btn-edit:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+            }
+
             .btn-remove {
-                width: 100%;
+                background: linear-gradient(135deg, #ef4444, #dc2626);
+                color: white;
+                border: none;
+                padding: 6px 12px;
+                border-radius: 6px;
+                font-size: 12px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                display: inline-flex;
+                align-items: center;
+                gap: 4px;
+            }
+
+            .btn-remove:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
+            }
+
+            /* Responsive */
+            @media (max-width: 768px) {
+                .search-add-row {
+                    flex-direction: column;
+                    align-items: stretch;
+                }
+
+                .search-container {
+                    max-width: 100%;
+                }
+
+                .user-table {
+                    font-size: 14px;
+                }
+
+                .user-table td {
+                    padding: 10px;
+                }
+
+                .action-buttons {
+                    flex-direction: column;
+                }
+
+                .btn-edit,
+                .btn-remove {
+                    width: 100%;
+                    justify-content: center;
+                }
+            }
+
+
+            /* View Button Style */
+            .btn-view {
+                background: linear-gradient(135deg, #3b82f6, #2563eb);
+                color: white;
+                border: none;
+                padding: 6px 12px;
+                border-radius: 6px;
+                font-size: 12px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                display: inline-flex;
+                align-items: center;
+                gap: 4px;
+            }
+
+            .btn-view:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+            }
+
+            /* Update action buttons container for 3 buttons */
+            .action-buttons {
+                display: flex;
+                gap: 5px;
+                flex-wrap: wrap;
+            }
+
+            .action-buttons button {
+                min-width: 36px;
                 justify-content: center;
             }
-        }
 
 
-        /* View Button Style */
-        .btn-view {
-            background: linear-gradient(135deg, #3b82f6, #2563eb);
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 12px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .btn-view:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
-        }
-
-        /* Update action buttons container for 3 buttons */
-        .action-buttons {
-            display: flex;
-            gap: 5px;
-            flex-wrap: wrap;
-        }
-
-        .action-buttons button {
-            min-width: 36px;
-            justify-content: center;
-        }
-
-
-        /* .modal {
+            /* .modal {
             display: none;
             position: fixed;
             z-index: 1000;
@@ -2147,774 +2189,773 @@ require_once 'auth_check.php';
             cursor: pointer;
         } */
 
-        .filter-buttons {
-            margin-bottom: 15px;
-        }
-
-        .filter-buttons button {
-            margin-right: 5px;
-            padding: 5px 10px;
-        }
-
-        /* Profile image in tables */
-        .user-table td img {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid #22c55e;
-            transition: all 0.3s ease;
-        }
-
-        .user-table td img:hover {
-            transform: scale(1.1);
-            border-color: #ffd700;
-        }
-
-        /* Add this to your CSS file - place it near other button styles */
-
-        /* Deactivate Button (Red) */
-        .btn-deactivate {
-            background: linear-gradient(135deg, #ef4444, #dc2626);
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 12px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        .btn-deactivate:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
-        }
-
-
-        /* Add this after your existing CSS - around line 860 */
-
-/* Maintenance Modal Styles */
-.maintenance-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: none;
-    justify-content: center;
-    align-items: center;
-    z-index: 9999;
-}
-
-.maintenance-modal.active {
-    display: flex;
-}
-
-.maintenance-modal-content {
-    background: white;
-    border-radius: 20px;
-    width: 90%;
-    max-width: 600px;
-    max-height: 90vh;
-    overflow-y: auto;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-    animation: modalSlideIn 0.3s ease;
-}
-
-@keyframes modalSlideIn {
-    from {
-        transform: translateY(-50px);
-        opacity: 0;
-    }
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
-}
-
-.maintenance-modal-header {
-    background: linear-gradient(135deg, #f59e0b, #d97706);
-    color: white;
-    padding: 20px 25px;
-    border-radius: 20px 20px 0 0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.maintenance-modal-header h3 {
-    margin: 0;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.maintenance-modal-header .close-btn {
-    background: rgba(255, 255, 255, 0.2);
-    border: none;
-    color: white;
-    width: 35px;
-    height: 35px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.3s;
-}
-
-.maintenance-modal-header .close-btn:hover {
-    background: rgba(255, 255, 255, 0.3);
-    transform: rotate(90deg);
-}
-
-.maintenance-modal-body {
-    padding: 25px;
-}
-
-.email-section {
-    background: #f8f9fa;
-    border-radius: 15px;
-    padding: 20px;
-    margin-bottom: 20px;
-}
-
-.email-field {
-    margin-bottom: 15px;
-}
-
-.email-field label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: 600;
-    color: #166534;
-    font-size: 0.95rem;
-}
-
-.email-field input[type="email"] {
-    width: 100%;
-    padding: 12px 15px;
-    border: 2px solid #e0e0e0;
-    border-radius: 10px;
-    font-size: 14px;
-    transition: all 0.3s;
-}
-
-.email-field input[type="email"]:focus {
-    border-color: #f59e0b;
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
-}
-
-.email-format-section {
-    background: white;
-    border-radius: 12px;
-    padding: 15px;
-    margin: 20px 0;
-    border: 1px solid #e0e0e0;
-}
-
-.email-format-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-}
-
-.email-format-header h6 {
-    margin: 0;
-    font-weight: 600;
-    color: #166534;
-}
-
-.edit-format-btn {
-    background: linear-gradient(135deg, #3b82f6, #2563eb);
-    color: white;
-    border: none;
-    padding: 6px 12px;
-    border-radius: 8px;
-    font-size: 12px;
-    cursor: pointer;
-    transition: all 0.3s;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.edit-format-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
-}
-
-.email-format-preview {
-    background: #f8f9fa;
-    padding: 15px;
-    border-radius: 10px;
-    font-family: monospace;
-    font-size: 13px;
-    color: #333;
-    white-space: pre-wrap;
-    max-height: 150px;
-    overflow-y: auto;
-}
-
-.email-format-edit {
-    display: none;
-}
-
-.email-format-edit.active {
-    display: block;
-}
-
-.email-format-edit textarea {
-    width: 100%;
-    padding: 12px;
-    border: 2px solid #e0e0e0;
-    border-radius: 10px;
-    font-family: monospace;
-    font-size: 13px;
-    min-height: 100px;
-    resize: vertical;
-}
-
-.equipment-selection-section {
-    background: #f8f9fa;
-    border-radius: 15px;
-    padding: 20px;
-    margin: 20px 0;
-}
-
-.section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-}
-
-.section-header h6 {
-    margin: 0;
-    font-weight: 600;
-    color: #166534;
-}
-
-.add-equipment-btn {
-    background: linear-gradient(135deg, #22c55e, #16a34a);
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 8px;
-    font-size: 13px;
-    cursor: pointer;
-    transition: all 0.3s;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-.add-equipment-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(34, 197, 94, 0.3);
-}
-
-.selected-equipment-list {
-    max-height: 200px;
-    overflow-y: auto;
-}
-
-.equipment-item {
-    background: white;
-    border-radius: 10px;
-    padding: 12px 15px;
-    margin-bottom: 10px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border: 1px solid #e0e0e0;
-    transition: all 0.3s;
-}
-
-.equipment-item:hover {
-    border-color: #f59e0b;
-    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.1);
-}
-
-.equipment-item-info {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-}
-
-.equipment-item-name {
-    font-weight: 600;
-    color: #333;
-}
-
-.equipment-item-details {
-    display: flex;
-    gap: 15px;
-    font-size: 12px;
-    color: #666;
-}
-
-.equipment-item-qty {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.qty-input {
-    width: 60px;
-    padding: 4px 8px;
-    border: 1px solid #e0e0e0;
-    border-radius: 5px;
-    text-align: center;
-}
-
-.remove-equipment-btn {
-    background: none;
-    border: none;
-    color: #ef4444;
-    cursor: pointer;
-    font-size: 16px;
-    padding: 5px;
-    transition: all 0.3s;
-}
-
-.remove-equipment-btn:hover {
-    transform: scale(1.2);
-    color: #dc2626;
-}
-
-.company-section {
-    background: #f8f9fa;
-    border-radius: 15px;
-    padding: 20px;
-    margin: 20px 0;
-}
-
-.company-list {
-    margin-top: 15px;
-}
-
-.company-tag {
-    background: linear-gradient(135deg, #f59e0b20, #d9770620);
-    border: 1px solid #f59e0b;
-    color: #d97706;
-    padding: 8px 15px;
-    border-radius: 30px;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    margin: 0 8px 8px 0;
-    font-size: 13px;
-    font-weight: 500;
-}
-
-.company-tag i {
-    cursor: pointer;
-    transition: all 0.3s;
-}
-
-.company-tag i:hover {
-    color: #dc2626;
-    transform: scale(1.2);
-}
-
-.add-company-input {
-    display: flex;
-    gap: 10px;
-    margin-top: 10px;
-}
-
-.add-company-input input {
-    flex: 1;
-    padding: 10px 12px;
-    border: 2px solid #e0e0e0;
-    border-radius: 8px;
-    font-size: 13px;
-}
-
-.add-company-input input:focus {
-    border-color: #f59e0b;
-    outline: none;
-}
-
-.add-company-btn {
-    background: linear-gradient(135deg, #f59e0b, #d97706);
-    color: white;
-    border: none;
-    padding: 0 20px;
-    border-radius: 8px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s;
-    white-space: nowrap;
-}
-
-.add-company-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(245, 158, 11, 0.3);
-}
-
-.maintenance-modal-footer {
-    padding: 20px 25px;
-    border-top: 1px solid #e0e0e0;
-    display: flex;
-    justify-content: flex-end;
-    gap: 12px;
-}
-
-.btn-cancel {
-    background: linear-gradient(135deg, #6c757d, #5a6268);
-    color: white;
-    border: none;
-    padding: 12px 25px;
-    border-radius: 10px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s;
-}
-
-.btn-send {
-    background: linear-gradient(135deg, #f59e0b, #d97706);
-    color: white;
-    border: none;
-    padding: 12px 30px;
-    border-radius: 10px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.btn-cancel:hover, .btn-send:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-}
-
-.btn-send:hover {
-    box-shadow: 0 5px 15px rgba(245, 158, 11, 0.4);
-}
-
-/* Equipment Selection Modal */
-.equipment-select-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: none;
-    justify-content: center;
-    align-items: center;
-    z-index: 10000;
-}
-
-.equipment-select-modal.active {
-    display: flex;
-}
-
-.equipment-select-content {
-    background: white;
-    border-radius: 20px;
-    width: 90%;
-    max-width: 500px;
-    max-height: 80vh;
-    overflow-y: auto;
-}
-
-.equipment-select-header {
-    background: linear-gradient(135deg, #22c55e, #16a34a);
-    color: white;
-    padding: 15px 20px;
-    border-radius: 20px 20px 0 0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.equipment-list {
-    padding: 20px;
-}
-
-.equipment-select-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 12px;
-    border-bottom: 1px solid #f0f0f0;
-    cursor: pointer;
-    transition: all 0.3s;
-}
-
-.equipment-select-item:hover {
-    background: rgba(34, 197, 94, 0.05);
-}
-
-.equipment-select-item.selected {
-    background: rgba(245, 158, 11, 0.1);
-    border-left: 3px solid #f59e0b;
-}
-
-.equipment-select-info h6 {
-    margin: 0 0 5px 0;
-    font-weight: 600;
-}
-
-.equipment-select-info p {
-    margin: 0;
-    font-size: 12px;
-    color: #666;
-}
-
-.equipment-select-qty {
-    width: 70px;
-    padding: 5px;
-    border: 1px solid #e0e0e0;
-    border-radius: 5px;
-    text-align: center;
-}
-
-.equipment-select-footer {
-    padding: 15px 20px;
-    border-top: 1px solid #e0e0e0;
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-}
-
-.company-select {
-    width: 100%;
-    padding: 6px 10px;
-    border: 1px solid #e0e0e0;
-    border-radius: 6px;
-    font-size: 12px;
-    margin-top: 5px;
-    background-color: white;
-    cursor: pointer;
-}
-
-.company-select:focus {
-    border-color: #f59e0b;
-    outline: none;
-}
-
-.company-badge {
-    background: linear-gradient(135deg, #f59e0b20, #d9770620);
-    color: #d97706;
-    padding: 3px 8px;
-    border-radius: 12px;
-    font-size: 11px;
-    font-weight: 600;
-    margin-left: 8px;
-}
-
-.equipment-item-details {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    align-items: center;
-}
-
-        /* Activate Button (Green) */
-        .btn-activate {
-            background: linear-gradient(135deg, #22c55e, #16a34a);
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 6px;
-            font-size: 12px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-        }
-
-        /* Request Count Badges */
-        .request-count-badge {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            background-color: #dc3545;
-            color: white;
-            font-size: 0.7rem;
-            font-weight: 600;
-            min-width: 20px;
-            height: 20px;
-            border-radius: 10px;
-            padding: 0 5px;
-            margin-left: 8px;
-            animation: pulse 2s infinite;
-            box-shadow: 0 2px 5px rgba(220, 53, 69, 0.3);
-        }
-
-        .request-tab.active .request-count-badge {
-            background-color: white;
-            color: #dc3545;
-        }
-
-        @keyframes pulse {
-
-            0%,
-            100% {
-                transform: scale(1);
+            .filter-buttons {
+                margin-bottom: 15px;
             }
 
-            50% {
+            .filter-buttons button {
+                margin-right: 5px;
+                padding: 5px 10px;
+            }
+
+            /* Profile image in tables */
+            .user-table td img {
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                object-fit: cover;
+                border: 2px solid #22c55e;
+                transition: all 0.3s ease;
+            }
+
+            .user-table td img:hover {
                 transform: scale(1.1);
+                border-color: #ffd700;
             }
-        }
 
-        .btn-activate:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(34, 197, 94, 0.3);
-        }
+            /* Add this to your CSS file - place it near other button styles */
 
-        /* Update responsive section */
-        @media (max-width: 768px) {
-            .action-buttons {
+            /* Deactivate Button (Red) */
+            .btn-deactivate {
+                background: linear-gradient(135deg, #ef4444, #dc2626);
+                color: white;
+                border: none;
+                padding: 6px 12px;
+                border-radius: 6px;
+                font-size: 12px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                display: inline-flex;
+                align-items: center;
+                gap: 4px;
+            }
+
+            .btn-deactivate:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3);
+            }
+
+
+            /* Add this after your existing CSS - around line 860 */
+
+            /* Maintenance Modal Styles */
+            .maintenance-modal {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.5);
+                display: none;
+                justify-content: center;
+                align-items: center;
+                z-index: 9999;
+            }
+
+            .maintenance-modal.active {
+                display: flex;
+            }
+
+            .maintenance-modal-content {
+                background: white;
+                border-radius: 20px;
+                width: 90%;
+                max-width: 600px;
+                max-height: 90vh;
+                overflow-y: auto;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+                animation: modalSlideIn 0.3s ease;
+            }
+
+            @keyframes modalSlideIn {
+                from {
+                    transform: translateY(-50px);
+                    opacity: 0;
+                }
+
+                to {
+                    transform: translateY(0);
+                    opacity: 1;
+                }
+            }
+
+            .maintenance-modal-header {
+                background: linear-gradient(135deg, #f59e0b, #d97706);
+                color: white;
+                padding: 20px 25px;
+                border-radius: 20px 20px 0 0;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .maintenance-modal-header h3 {
+                margin: 0;
+                font-weight: 600;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+
+            .maintenance-modal-header .close-btn {
+                background: rgba(255, 255, 255, 0.2);
+                border: none;
+                color: white;
+                width: 35px;
+                height: 35px;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                transition: all 0.3s;
+            }
+
+            .maintenance-modal-header .close-btn:hover {
+                background: rgba(255, 255, 255, 0.3);
+                transform: rotate(90deg);
+            }
+
+            .maintenance-modal-body {
+                padding: 25px;
+            }
+
+            .email-section {
+                background: #f8f9fa;
+                border-radius: 15px;
+                padding: 20px;
+                margin-bottom: 20px;
+            }
+
+            .email-field {
+                margin-bottom: 15px;
+            }
+
+            .email-field label {
+                display: block;
+                margin-bottom: 8px;
+                font-weight: 600;
+                color: #166534;
+                font-size: 0.95rem;
+            }
+
+            .email-field input[type="email"] {
+                width: 100%;
+                padding: 12px 15px;
+                border: 2px solid #e0e0e0;
+                border-radius: 10px;
+                font-size: 14px;
+                transition: all 0.3s;
+            }
+
+            .email-field input[type="email"]:focus {
+                border-color: #f59e0b;
+                outline: none;
+                box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.1);
+            }
+
+            .email-format-section {
+                background: white;
+                border-radius: 12px;
+                padding: 15px;
+                margin: 20px 0;
+                border: 1px solid #e0e0e0;
+            }
+
+            .email-format-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 15px;
+            }
+
+            .email-format-header h6 {
+                margin: 0;
+                font-weight: 600;
+                color: #166534;
+            }
+
+            .edit-format-btn {
+                background: linear-gradient(135deg, #3b82f6, #2563eb);
+                color: white;
+                border: none;
+                padding: 6px 12px;
+                border-radius: 8px;
+                font-size: 12px;
+                cursor: pointer;
+                transition: all 0.3s;
+                display: flex;
+                align-items: center;
+                gap: 5px;
+            }
+
+            .edit-format-btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+            }
+
+            .email-format-preview {
+                background: #f8f9fa;
+                padding: 15px;
+                border-radius: 10px;
+                font-family: monospace;
+                font-size: 13px;
+                color: #333;
+                white-space: pre-wrap;
+                max-height: 150px;
+                overflow-y: auto;
+            }
+
+            .email-format-edit {
+                display: none;
+            }
+
+            .email-format-edit.active {
+                display: block;
+            }
+
+            .email-format-edit textarea {
+                width: 100%;
+                padding: 12px;
+                border: 2px solid #e0e0e0;
+                border-radius: 10px;
+                font-family: monospace;
+                font-size: 13px;
+                min-height: 100px;
+                resize: vertical;
+            }
+
+            .equipment-selection-section {
+                background: #f8f9fa;
+                border-radius: 15px;
+                padding: 20px;
+                margin: 20px 0;
+            }
+
+            .section-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 15px;
+            }
+
+            .section-header h6 {
+                margin: 0;
+                font-weight: 600;
+                color: #166534;
+            }
+
+            .add-equipment-btn {
+                background: linear-gradient(135deg, #22c55e, #16a34a);
+                color: white;
+                border: none;
+                padding: 8px 16px;
+                border-radius: 8px;
+                font-size: 13px;
+                cursor: pointer;
+                transition: all 0.3s;
+                display: flex;
+                align-items: center;
+                gap: 5px;
+            }
+
+            .add-equipment-btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 8px rgba(34, 197, 94, 0.3);
+            }
+
+            .selected-equipment-list {
+                max-height: 200px;
+                overflow-y: auto;
+            }
+
+            .equipment-item {
+                background: white;
+                border-radius: 10px;
+                padding: 12px 15px;
+                margin-bottom: 10px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                border: 1px solid #e0e0e0;
+                transition: all 0.3s;
+            }
+
+            .equipment-item:hover {
+                border-color: #f59e0b;
+                box-shadow: 0 2px 8px rgba(245, 158, 11, 0.1);
+            }
+
+            .equipment-item-info {
+                display: flex;
                 flex-direction: column;
+                gap: 5px;
             }
 
-            .btn-edit,
-            .btn-remove,
-            .btn-deactivate,
+            .equipment-item-name {
+                font-weight: 600;
+                color: #333;
+            }
+
+            .equipment-item-details {
+                display: flex;
+                gap: 15px;
+                font-size: 12px;
+                color: #666;
+            }
+
+            .equipment-item-qty {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .qty-input {
+                width: 60px;
+                padding: 4px 8px;
+                border: 1px solid #e0e0e0;
+                border-radius: 5px;
+                text-align: center;
+            }
+
+            .remove-equipment-btn {
+                background: none;
+                border: none;
+                color: #ef4444;
+                cursor: pointer;
+                font-size: 16px;
+                padding: 5px;
+                transition: all 0.3s;
+            }
+
+            .remove-equipment-btn:hover {
+                transform: scale(1.2);
+                color: #dc2626;
+            }
+
+            .company-section {
+                background: #f8f9fa;
+                border-radius: 15px;
+                padding: 20px;
+                margin: 20px 0;
+            }
+
+            .company-list {
+                margin-top: 15px;
+            }
+
+            .company-tag {
+                background: linear-gradient(135deg, #f59e0b20, #d9770620);
+                border: 1px solid #f59e0b;
+                color: #d97706;
+                padding: 8px 15px;
+                border-radius: 30px;
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                margin: 0 8px 8px 0;
+                font-size: 13px;
+                font-weight: 500;
+            }
+
+            .company-tag i {
+                cursor: pointer;
+                transition: all 0.3s;
+            }
+
+            .company-tag i:hover {
+                color: #dc2626;
+                transform: scale(1.2);
+            }
+
+            .add-company-input {
+                display: flex;
+                gap: 10px;
+                margin-top: 10px;
+            }
+
+            .add-company-input input {
+                flex: 1;
+                padding: 10px 12px;
+                border: 2px solid #e0e0e0;
+                border-radius: 8px;
+                font-size: 13px;
+            }
+
+            .add-company-input input:focus {
+                border-color: #f59e0b;
+                outline: none;
+            }
+
+            .add-company-btn {
+                background: linear-gradient(135deg, #f59e0b, #d97706);
+                color: white;
+                border: none;
+                padding: 0 20px;
+                border-radius: 8px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s;
+                white-space: nowrap;
+            }
+
+            .add-company-btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 8px rgba(245, 158, 11, 0.3);
+            }
+
+            .maintenance-modal-footer {
+                padding: 20px 25px;
+                border-top: 1px solid #e0e0e0;
+                display: flex;
+                justify-content: flex-end;
+                gap: 12px;
+            }
+
+            .btn-cancel {
+                background: linear-gradient(135deg, #6c757d, #5a6268);
+                color: white;
+                border: none;
+                padding: 12px 25px;
+                border-radius: 10px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s;
+            }
+
+            .btn-send {
+                background: linear-gradient(135deg, #f59e0b, #d97706);
+                color: white;
+                border: none;
+                padding: 12px 30px;
+                border-radius: 10px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+
+            .btn-cancel:hover,
+            .btn-send:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            }
+
+            .btn-send:hover {
+                box-shadow: 0 5px 15px rgba(245, 158, 11, 0.4);
+            }
+
+            /* Equipment Selection Modal */
+            .equipment-select-modal {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0, 0, 0, 0.5);
+                display: none;
+                justify-content: center;
+                align-items: center;
+                z-index: 10000;
+            }
+
+            .equipment-select-modal.active {
+                display: flex;
+            }
+
+            .equipment-select-content {
+                background: white;
+                border-radius: 20px;
+                width: 90%;
+                max-width: 500px;
+                max-height: 80vh;
+                overflow-y: auto;
+            }
+
+            .equipment-select-header {
+                background: linear-gradient(135deg, #22c55e, #16a34a);
+                color: white;
+                padding: 15px 20px;
+                border-radius: 20px 20px 0 0;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .equipment-list {
+                padding: 20px;
+            }
+
+            .equipment-select-item {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 12px;
+                border-bottom: 1px solid #f0f0f0;
+                cursor: pointer;
+                transition: all 0.3s;
+            }
+
+            .equipment-select-item:hover {
+                background: rgba(34, 197, 94, 0.05);
+            }
+
+            .equipment-select-item.selected {
+                background: rgba(245, 158, 11, 0.1);
+                border-left: 3px solid #f59e0b;
+            }
+
+            .equipment-select-info h6 {
+                margin: 0 0 5px 0;
+                font-weight: 600;
+            }
+
+            .equipment-select-info p {
+                margin: 0;
+                font-size: 12px;
+                color: #666;
+            }
+
+            .equipment-select-qty {
+                width: 70px;
+                padding: 5px;
+                border: 1px solid #e0e0e0;
+                border-radius: 5px;
+                text-align: center;
+            }
+
+            .equipment-select-footer {
+                padding: 15px 20px;
+                border-top: 1px solid #e0e0e0;
+                display: flex;
+                justify-content: flex-end;
+                gap: 10px;
+            }
+
+            .company-select {
+                width: 100%;
+                padding: 6px 10px;
+                border: 1px solid #e0e0e0;
+                border-radius: 6px;
+                font-size: 12px;
+                margin-top: 5px;
+                background-color: white;
+                cursor: pointer;
+            }
+
+            .company-select:focus {
+                border-color: #f59e0b;
+                outline: none;
+            }
+
+            .company-badge {
+                background: linear-gradient(135deg, #f59e0b20, #d9770620);
+                color: #d97706;
+                padding: 3px 8px;
+                border-radius: 12px;
+                font-size: 11px;
+                font-weight: 600;
+                margin-left: 8px;
+            }
+
+            .equipment-item-details {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 10px;
+                align-items: center;
+            }
+
+            /* Activate Button (Green) */
             .btn-activate {
-                width: 100%;
+                background: linear-gradient(135deg, #22c55e, #16a34a);
+                color: white;
+                border: none;
+                padding: 6px 12px;
+                border-radius: 6px;
+                font-size: 12px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                display: inline-flex;
+                align-items: center;
+                gap: 4px;
+            }
+
+            /* Request Count Badges */
+            .request-count-badge {
+                display: inline-flex;
+                align-items: center;
                 justify-content: center;
-            }
-        }
-
-        /* Request Tabs */
-        .request-tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-
-        .request-tab {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 30px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            background: white;
-            color: #166534;
-        }
-
-        .request-tab:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(34, 197, 94, 0.2);
-        }
-
-        .request-tab.active {
-            background: linear-gradient(135deg, #22c55e, #16a34a);
-            color: white;
-        }
-
-
-        @media (max-width: 768px) {
-            .action-buttons {
-                flex-direction: column;
+                background-color: #dc3545;
+                color: white;
+                font-size: 0.7rem;
+                font-weight: 600;
+                min-width: 20px;
+                height: 20px;
+                border-radius: 10px;
+                padding: 0 5px;
+                margin-left: 8px;
+                animation: pulse 2s infinite;
+                box-shadow: 0 2px 5px rgba(220, 53, 69, 0.3);
             }
 
-            .btn-edit,
-            .btn-remove,
-            .btn-deactivate,
-            .btn-activate,
-            .btn-view,
-            .btn-approve,
-            .btn-reject {
-                width: 100%;
-                justify-content: center;
+            .request-tab.active .request-count-badge {
+                background-color: white;
+                color: #dc3545;
             }
 
+            @keyframes pulse {
+
+                0%,
+                100% {
+                    transform: scale(1);
+                }
+
+                50% {
+                    transform: scale(1.1);
+                }
+            }
+
+            .btn-activate:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 8px rgba(34, 197, 94, 0.3);
+            }
+
+            /* Update responsive section */
+            @media (max-width: 768px) {
+                .action-buttons {
+                    flex-direction: column;
+                }
+
+                .btn-edit,
+                .btn-remove,
+                .btn-deactivate,
+                .btn-activate {
+                    width: 100%;
+                    justify-content: center;
+                }
+            }
+
+            /* Request Tabs */
             .request-tabs {
-                flex-direction: column;
+                display: flex;
+                gap: 10px;
+                margin-bottom: 20px;
+                flex-wrap: wrap;
             }
 
             .request-tab {
-                width: 100%;
+                padding: 10px 20px;
+                border: none;
+                border-radius: 30px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                background: white;
+                color: #166534;
             }
-        }
-    </style>
+
+            .request-tab:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 5px 15px rgba(34, 197, 94, 0.2);
+            }
+
+            .request-tab.active {
+                background: linear-gradient(135deg, #22c55e, #16a34a);
+                color: white;
+            }
 
 
-    <!-- Keep original favicon -->
-    <link rel="icon" type="image/svg+xml" href="../assets/resources/flask.svg">
-</head>
+            @media (max-width: 768px) {
+                .action-buttons {
+                    flex-direction: column;
+                }
 
-<body>
-    <!-- Sidebar Overlay -->
-    <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+                .btn-edit,
+                .btn-remove,
+                .btn-deactivate,
+                .btn-activate,
+                .btn-view,
+                .btn-approve,
+                .btn-reject {
+                    width: 100%;
+                    justify-content: center;
+                }
 
-    <!-- SIDEBAR - Updated for Admin -->
-    <div class="sidebar" id="sidebar">
-        <h4><i class="bi bi-flask"></i> MicroLab</h4>
-        <a onclick="showSection('dashboard')" class="active"><i class="bi bi-speedometer2"></i> Dashboard</a>
-        <a onclick="showSection('userManagement')"><i class="bi bi-people"></i> User Manage</a>
-        <!-- <a onclick="showSection('requestList')"><i class="bi bi-list-check"></i> Request List</a> -->
-        <a onclick="showSection('equipment')"><i class="bi bi-tools"></i> Equipment Manage</a>
-        <a onclick="showSection('history')"><i class="bi bi-clock-history"></i> Rservation Details</a>
-        <a onclick="showSection('activity')"><i class="bi bi-activity"></i> Requests</a>
-        <a onclick="showSection('analytics')"><i class="bi bi-graph-up"></i> Analytics</a>
-        <!-- <a onclick="showSection('reports')"><i class="bi bi-file-text"></i> Reports</a> -->
-        <a href="logout.php"><i class="bi bi-box-arrow-right"></i> Logout</a>
+                .request-tabs {
+                    flex-direction: column;
+                }
 
-        <div class="sidebar-footer">
-            <i class="bi bi-building"></i><br>
-            Microbiology Lab<br>
-            University of Kelaniya
-        </div>
-    </div>
+                .request-tab {
+                    width: 100%;
+                }
+            }
+        </style>
 
-    <!-- MAIN -->
-    <div class="main-content">
 
-        <!-- TOPBAR with Notification Bell -->
-        <div class="topbar">
-            <div class="d-flex align-items-center gap-3">
-                <button class="btn d-lg-none text-dark" onclick="toggleSidebar()">
-                    <i class="bi bi-list fs-3"></i>
-                </button>
-                <h5 class="fw-bold mb-0" style="background: linear-gradient(135deg, #22c55e, #16a34a); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Admin Dashboard</h5>
+        <!-- Keep original favicon -->
+        <link rel="icon" type="image/svg+xml" href="../assets/resources/flask.svg">
+    </head>
+
+    <body>
+        <!-- Sidebar Overlay -->
+        <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+        <!-- SIDEBAR - Updated for Admin -->
+        <div class="sidebar" id="sidebar">
+            <h4><i class="bi bi-flask"></i> MicroLab</h4>
+            <a onclick="showSection('dashboard')" class="active"><i class="bi bi-speedometer2"></i> Dashboard</a>
+            <a onclick="showSection('userManagement')"><i class="bi bi-people"></i> User Manage</a>
+            <!-- <a onclick="showSection('requestList')"><i class="bi bi-list-check"></i> Request List</a> -->
+            <a onclick="showSection('equipment')"><i class="bi bi-tools"></i> Equipment Manage</a>
+            <a onclick="showSection('history')"><i class="bi bi-clock-history"></i> Rservation Details</a>
+            <a onclick="showSection('activity')"><i class="bi bi-activity"></i> Requests</a>
+            <a onclick="showSection('analytics')"><i class="bi bi-graph-up"></i> Analytics</a>
+            <!-- <a onclick="showSection('reports')"><i class="bi bi-file-text"></i> Reports</a> -->
+            <a href="logout.php"><i class="bi bi-box-arrow-right"></i> Logout</a>
+
+            <div class="sidebar-footer">
+                <i class="bi bi-building"></i><br>
+                Microbiology Lab<br>
+                University of Kelaniya
             </div>
-            <div class="d-flex align-items-center gap-3">
-                <!-- equipment management -->
-                <!-- <div class="notification-bell" onclick="toggleNotifications()">
+        </div>
+
+        <!-- MAIN -->
+        <div class="main-content">
+
+            <!-- TOPBAR with Notification Bell -->
+            <div class="topbar">
+                <div class="d-flex align-items-center gap-3">
+                    <button class="btn d-lg-none text-dark" onclick="toggleSidebar()">
+                        <i class="bi bi-list fs-3"></i>
+                    </button>
+                    <h5 class="fw-bold mb-0" style="background: linear-gradient(135deg, #22c55e, #16a34a); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Admin Dashboard</h5>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                    <!-- equipment management -->
+                    <!-- <div class="notification-bell" onclick="toggleNotifications()">
                     <i class="bi bi-database-add"></i>
                 </div> -->
 
-                <!-- create account -->
-                <!-- <div class="notification-bell" onclick="toggleNotifications()">
+                    <!-- create account -->
+                    <!-- <div class="notification-bell" onclick="toggleNotifications()">
                     <i class="bi bi-person-add"></i>
                 </div> -->
 
-                <!-- request badge -->
-                <div class="notification-bell" onclick="showSection('activity')">
-                    <i class="bi bi-journal-check"></i>
-                    <span class="request-badge" id="requestBadge">4</span>
-                </div>
+                    <!-- request badge -->
+                    <div class="notification-bell" onclick="showSection('activity')">
+                        <i class="bi bi-journal-check"></i>
+                        <span class="request-badge" id="requestBadge">4</span>
+                    </div>
 
 
-                <!-- Notification Bell -->
-                <div class="notification-bell" onclick="openNotificationModal()">
-                    <i class="bi bi-bell"></i>
-                    <span class="notification-badge" id="notificationBadge">3</span>
-                </div>
-
-
-
+                    <!-- Notification Bell -->
+                    <div class="notification-bell" onclick="openNotificationModal()">
+                        <i class="bi bi-bell"></i>
+                        <span class="notification-badge" id="notificationBadge">3</span>
+                    </div>
 
 
 
@@ -2924,279 +2965,420 @@ require_once 'auth_check.php';
 
 
 
-                <span class="fw-semibold d-none d-sm-block" style="color: #166534;">Surangi</span>
-                <div class="dropdown">
-                    <img src="https://ui-avatars.com/api/?name=Admin+User&background=22c55e&color=fff&size=100" class="profile-img dropdown-toggle" data-bs-toggle="dropdown">
-                    <ul class="dropdown-menu dropdown-menu-end" style="border-radius: 16px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
-                        <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i>Profile</a></li>
-                        <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i>Settings</a></li>
-                        <li>
-                            <hr class="dropdown-divider">
-                        </li>
-                        <li><a class="dropdown-item text-danger" href="logout.php"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
-                    </ul>
+
+
+
+                    <span class="fw-semibold d-none d-sm-block" style="color: #166534;">Surangi</span>
+                    <div class="dropdown">
+                        <img src="https://ui-avatars.com/api/?name=Admin+User&background=22c55e&color=fff&size=100" class="profile-img dropdown-toggle" data-bs-toggle="dropdown">
+                        <ul class="dropdown-menu dropdown-menu-end" style="border-radius: 16px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+                            <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i>Profile</a></li>
+                            <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i>Settings</a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><a class="dropdown-item text-danger" href="logout.php"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                        </ul>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- CONTENT AREA -->
-        <div class="content-area">
+            <!-- CONTENT AREA -->
+            <div class="content-area">
 
-            <!-- Dashboard Section -->
-            <div id="dashboardSection">
-                <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Dashboard Overview</h3>
+                <!-- Dashboard Section -->
+                <div id="dashboardSection">
+                    <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Dashboard Overview</h3>
 
-                <div class="analytics-grid">
-                    <?php
-                    // Define the function for role counts
-                    function getCountByRole(string $role): int
-                    {
-                        $query = "SELECT COUNT(lab_user.user_id) as count 
+                    <div class="analytics-grid">
+                        <?php
+                        // Define the function for role counts
+                        function getCountByRole(string $role): int
+                        {
+                            $query = "SELECT COUNT(lab_user.user_id) as count 
                   FROM lab_user 
                   INNER JOIN user_has_role ON lab_user.user_id = user_has_role.user_id 
                   INNER JOIN role ON user_has_role.role_id = role.role_id 
                   WHERE role.role = ?";
 
-                        $types = "s";
-                        $params = [$role];
+                            $types = "s";
+                            $params = [$role];
 
-                        $result = Database::search($query, $types, $params);
+                            $result = Database::search($query, $types, $params);
 
-                        if ($result && $result->num_rows > 0) {
-                            $row = $result->fetch_assoc();
-                            return (int)$row['count'];
+                            if ($result && $result->num_rows > 0) {
+                                $row = $result->fetch_assoc();
+                                return (int)$row['count'];
+                            }
+
+                            return 0;
                         }
 
-                        return 0;
-                    }
+                        // Get user counts by role
+                        $student_count = getCountByRole('Student');
+                        $supervisor_count = getCountByRole('Supervisor');
+                        $technical_count = getCountByRole('Technical Officer');
 
-                    // Get user counts by role
-                    $student_count = getCountByRole('Student');
-                    $supervisor_count = getCountByRole('Supervisor');
-                    $technical_count = getCountByRole('Technical Officer');
-
-                    // Calculate Equipment Utilization Rate
-                    $utilization_query = "
+                        // Calculate Equipment Utilization Rate
+                        $utilization_query = "
         SELECT 
             (SELECT COALESCE(SUM(qty), 0) FROM equipment) as total_qty,
             (SELECT COALESCE(SUM(qty), 0) FROM broken) as broken_qty,
             (SELECT COALESCE(SUM(qty), 0) FROM equipment_maintenance) as maintenance_qty
     ";
 
-                    $utilization_result = Database::search($utilization_query);
-                    $utilization_rate = 0;
+                        $utilization_result = Database::search($utilization_query);
+                        $utilization_rate = 0;
 
-                    if ($utilization_result && $utilization_result->num_rows > 0) {
-                        $row = $utilization_result->fetch_assoc();
-                        $total_qty = (int)$row['total_qty'];
-                        $broken_qty = (int)$row['broken_qty'];
-                        $maintenance_qty = (int)$row['maintenance_qty'];
+                        if ($utilization_result && $utilization_result->num_rows > 0) {
+                            $row = $utilization_result->fetch_assoc();
+                            $total_qty = (int)$row['total_qty'];
+                            $broken_qty = (int)$row['broken_qty'];
+                            $maintenance_qty = (int)$row['maintenance_qty'];
 
-                        $available_qty = $total_qty - ($broken_qty + $maintenance_qty);
+                            $available_qty = $total_qty - ($broken_qty + $maintenance_qty);
 
-                        if ($total_qty > 0) {
-                            $utilization_rate = round(($available_qty / $total_qty) * 100);
-                        }
-                    }
-                    ?>
-
-                    <div class="stat-card">
-                        <i class="bi bi-mortarboard-fill"></i>
-                        <h3><?php echo $student_count; ?></h3>
-                        <p>Students</p>
-                    </div>
-
-                    <div class="stat-card">
-                        <i class="bi bi-person-badge-fill"></i>
-                        <h3><?php echo $supervisor_count; ?></h3>
-                        <p>Supervisors</p>
-                    </div>
-
-                    <div class="stat-card">
-                        <i class="bi bi-person-gear"></i>
-                        <h3><?php echo $technical_count; ?></h3>
-                        <p>Technical Officer</p>
-                    </div>
-
-                    <div class="stat-card">
-                        <i class="bi bi-graph-up"></i>
-                        <h3><?php echo $utilization_rate; ?>%</h3>
-                        <p>Equipment Utilization Rate</p>
-                    </div>
-                </div>
-
-                <!-- Quick Stats -->
-                <div class="row mb-4 justify-content-center">
-                    <div class="col-md-3 mb-3">
-                        <?php
-                        // Count pending reservations
-                        $pending_query = "SELECT COUNT(*) as pending_count FROM reservation WHERE status = 'Pending'";
-                        $pending_result = Database::search($pending_query);
-                        $pending_count = 0;
-
-                        if ($pending_result && $pending_result->num_rows > 0) {
-                            $row = $pending_result->fetch_assoc();
-                            $pending_count = $row['pending_count'];
+                            if ($total_qty > 0) {
+                                $utilization_rate = round(($available_qty / $total_qty) * 100);
+                            }
                         }
                         ?>
 
-                        <div class="card p-3 text-center">
-                            <h6 class="text-muted">Technical officer Pending
-                                <button class="btn btn-sm btn-outline-primary p-1" onclick="viewPendingRequests()" style="line-height: 1;">
-                                    <i class="bi bi-eye"></i>
-                                </button>
-                            </h6>
-                            <h3 class="text-warning"><?php echo $pending_count; ?></h3>
+                        <div class="stat-card">
+                            <i class="bi bi-mortarboard-fill"></i>
+                            <h3><?php echo $student_count; ?></h3>
+                            <p>Students</p>
+                        </div>
+
+                        <div class="stat-card">
+                            <i class="bi bi-person-badge-fill"></i>
+                            <h3><?php echo $supervisor_count; ?></h3>
+                            <p>Supervisors</p>
+                        </div>
+
+                        <div class="stat-card">
+                            <i class="bi bi-person-gear"></i>
+                            <h3><?php echo $technical_count; ?></h3>
+                            <p>Technical Officer</p>
+                        </div>
+
+                        <div class="stat-card">
+                            <i class="bi bi-graph-up"></i>
+                            <h3><?php echo $utilization_rate; ?>%</h3>
+                            <p>Equipment Utilization Rate</p>
                         </div>
                     </div>
-                    <div class="col-md-3 mb-3">
-                        <?php
-                        // Get today's date in the same format as your database
-                        $today = date('Y-m-d'); // Format: 2024-01-15
 
-                        // Count reservations for today
-                        $today_query = "SELECT COUNT(*) as today_count FROM reservation WHERE DATE(request_date) = ?";
-                        $types = "s";
-                        $params = [$today];
+                    <!-- Quick Stats -->
+                    <div class="row mb-4 justify-content-center">
+                        <div class="col-md-3 mb-3">
+                            <?php
+                            // Count pending reservations
+                            $pending_query = "SELECT COUNT(*) as pending_count FROM reservation WHERE status = 'Pending'";
+                            $pending_result = Database::search($pending_query);
+                            $pending_count = 0;
 
-                        $today_result = Database::search($today_query, $types, $params);
-                        $today_count = 0;
+                            if ($pending_result && $pending_result->num_rows > 0) {
+                                $row = $pending_result->fetch_assoc();
+                                $pending_count = $row['pending_count'];
+                            }
+                            ?>
 
-                        if ($today_result && $today_result->num_rows > 0) {
-                            $row = $today_result->fetch_assoc();
-                            $today_count = $row['today_count'];
-                        }
-                        ?>
-
-                        <div class="card p-3 text-center">
-                            <h6 class="text-muted">Today's Practicals
-                                <button class="btn btn-sm btn-outline-primary p-1" onclick="viewPendingRequests()" style="line-height: 1;">
-                                    <i class="bi bi-eye"></i>
-                                </button>
-                            </h6>
-                            <h3 class="text-info"><?php echo $today_count; ?></h3>
+                            <div class="card p-3 text-center">
+                                <h6 class="text-muted">Technical officer Pending
+                                    <button class="btn btn-sm btn-outline-primary p-1" onclick="viewPendingRequests()" style="line-height: 1;">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </h6>
+                                <h3 class="text-warning"><?php echo $pending_count; ?></h3>
+                            </div>
                         </div>
-                    </div>
-                    <!-- <div class="col-md-3 mb-3">
+                        <div class="col-md-3 mb-3">
+                            <?php
+                            // Get today's date in the same format as your database
+                            $today = date('Y-m-d'); // Format: 2024-01-15
+
+                            // Count reservations for today
+                            $today_query = "SELECT COUNT(*) as today_count FROM reservation WHERE DATE(request_date) = ?";
+                            $types = "s";
+                            $params = [$today];
+
+                            $today_result = Database::search($today_query, $types, $params);
+                            $today_count = 0;
+
+                            if ($today_result && $today_result->num_rows > 0) {
+                                $row = $today_result->fetch_assoc();
+                                $today_count = $row['today_count'];
+                            }
+                            ?>
+
+                            <div class="card p-3 text-center">
+                                <h6 class="text-muted">Today's Practicals
+                                    <button class="btn btn-sm btn-outline-primary p-1" onclick="viewPendingRequests()" style="line-height: 1;">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </h6>
+                                <h3 class="text-info"><?php echo $today_count; ?></h3>
+                            </div>
+                        </div>
+                        <!-- <div class="col-md-3 mb-3">
                         <div class="card p-3 text-center">
                             <h6 class="text-muted">Total Equipment</h6>
                             <h3 class="text-success">3</h3>
                         </div>
                     </div> -->
-                    <div class="col-md-3 mb-3">
-                        <div class="card p-3 text-center">
-                            <?php
-                            // Count maintenance records with "Inprogress" status
-                            $maintenance_query = "SELECT COUNT(equipment_maintenance.id) as maintenance_count 
+                        <div class="col-md-3 mb-3">
+                            <div class="card p-3 text-center">
+                                <?php
+                                // Count maintenance records with "Inprogress" status
+                                $maintenance_query = "SELECT COUNT(equipment_maintenance.equipment_maintenance_id) as maintenance_count 
                           FROM equipment_maintenance 
-                          INNER JOIN status_of_maintenance ON equipment_maintenance.status_of_maintenance_id = status_of_maintenance.id 
+                          INNER JOIN status_of_maintenance ON equipment_maintenance.status_of_maintenance_id = status_of_maintenance.status_of_maintenance_id 
                           WHERE status_of_maintenance.status = ?";
 
-                            $types = "s";
-                            $params = ["In Progress"]; // or "In Progress" depending on your exact value
+                                $types = "s";
+                                $params = ["In Progress"]; // or "In Progress" depending on your exact value
 
-                            $maintenance_result = Database::search($maintenance_query, $types, $params);
-                            $maintenance_count = 0;
+                                $maintenance_result = Database::search($maintenance_query, $types, $params);
+                                $maintenance_count = 0;
 
-                            if ($maintenance_result && $maintenance_result->num_rows > 0) {
-                                $row = $maintenance_result->fetch_assoc();
-                                $maintenance_count = $row['maintenance_count'];
-                            }
-                            ?>
+                                if ($maintenance_result && $maintenance_result->num_rows > 0) {
+                                    $row = $maintenance_result->fetch_assoc();
+                                    $maintenance_count = $row['maintenance_count'];
+                                }
+                                ?>
 
-                            <h6 class="text-muted">Maintenance
-                                <button class="btn btn-sm btn-outline-primary p-1" onclick="viewPendingRequests()" style="line-height: 1;">
-                                    <i class="bi bi-eye"></i>
-                                </button>
-                            </h6>
+                                <h6 class="text-muted">Maintenance
+                                    <button class="btn btn-sm btn-outline-primary p-1" onclick="viewPendingRequests()" style="line-height: 1;">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </h6>
 
-                            <h3 class="text-danger"><?php echo $maintenance_count; ?></h3>
+                                <h3 class="text-danger"><?php echo $maintenance_count; ?></h3>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Most Used Equipment -->
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <div class="card p-4">
+                                <h5 class="fw-bold mb-3" style="color: #166534;">Completed Practicals/Research</h5>
+                                <div class="chart-container">
+                                    <canvas id="usageChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Monthly Activity Chart -->
+                        <div class="col-md-6 mb-4">
+                            <div class="card p-4">
+                                <h5 class="fw-bold mb-3" style="color: #166534;">System Progress</h5>
+                                <div class="chart-container">
+                                    <canvas id="monthlyChart"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Calendar Section -->
+                    <h3 class="mb-4 mt-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Equipment & Lab Schedule</h3>
+                    <div class="calendar-container">
+                        <div class="calendar-wrapper">
+                            <div class="calendar-left">
+                                <div class="calendar-header">
+                                    <i class="fas fa-angle-left prev"></i>
+                                    <div class="month" id="displayMonth"></div>
+                                    <i class="fas fa-angle-right next"></i>
+                                </div>
+                                <div class="weekdays">
+                                    <div>Sun</div>
+                                    <div>Mon</div>
+                                    <div>Tue</div>
+                                    <div>Wed</div>
+                                    <div>Thu</div>
+                                    <div>Fri</div>
+                                    <div>Sat</div>
+                                </div>
+                                <div class="days-grid" id="daysGrid"></div>
+                                <div class="goto-section">
+                                    <input type="text" placeholder="MM/YYYY" class="goto-input" id="gotoInput" maxlength="7">
+                                    <button class="goto-btn" id="gotoBtn">Go</button>
+                                    <button class="today-btn" id="todayBtn">Today</button>
+                                </div>
+                            </div>
+                            <div class="calendar-right">
+                                <div class="right-header">
+                                    <div class="event-day" id="eventDay"></div>
+                                    <div class="event-date" id="eventDate"></div>
+                                </div>
+                                <div class="events-list" id="eventsList"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Most Used Equipment -->
-                <div class="row">
-                    <div class="col-md-6 mb-4">
-                        <div class="card p-4">
-                            <h5 class="fw-bold mb-3" style="color: #166534;">Completed Practicals/Research</h5>
-                            <div class="chart-container">
-                                <canvas id="usageChart"></canvas>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Monthly Activity Chart -->
-                    <div class="col-md-6 mb-4">
-                        <div class="card p-4">
-                            <h5 class="fw-bold mb-3" style="color: #166534;">System Progress</h5>
-                            <div class="chart-container">
-                                <canvas id="monthlyChart"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Calendar Section -->
-                <h3 class="mb-4 mt-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Equipment & Lab Schedule</h3>
-                <div class="calendar-container">
-                    <div class="calendar-wrapper">
-                        <div class="calendar-left">
-                            <div class="calendar-header">
-                                <i class="fas fa-angle-left prev"></i>
-                                <div class="month" id="displayMonth"></div>
-                                <i class="fas fa-angle-right next"></i>
-                            </div>
-                            <div class="weekdays">
-                                <div>Sun</div>
-                                <div>Mon</div>
-                                <div>Tue</div>
-                                <div>Wed</div>
-                                <div>Thu</div>
-                                <div>Fri</div>
-                                <div>Sat</div>
-                            </div>
-                            <div class="days-grid" id="daysGrid"></div>
-                            <div class="goto-section">
-                                <input type="text" placeholder="MM/YYYY" class="goto-input" id="gotoInput" maxlength="7">
-                                <button class="goto-btn" id="gotoBtn">Go</button>
-                                <button class="today-btn" id="todayBtn">Today</button>
-                            </div>
-                        </div>
-                        <div class="calendar-right">
-                            <div class="right-header">
-                                <div class="event-day" id="eventDay"></div>
-                                <div class="event-date" id="eventDate"></div>
-                            </div>
-                            <div class="events-list" id="eventsList"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- User Management Section -->
-            <div id="userManagementSection" style="display: none;">
-                <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">User Management</h3>
-                <!-- Search and Add Row (Outside cards - common for all tables) -->
-                <div class="search-add-row" style="margin-bottom: 20px;">
-                    <div class="search-container">
-                        <input type="text"
-                            id="userSearch"
-                            class="search-input"
-                            placeholder="Search by ID, name or email..."
-                            oninput="searchUsers()"> <!-- This triggers on EVERY keystroke, including backspace -->
-                        <!-- <button class="search-btn" onclick="searchUsers()">
+                <!-- User Management Section -->
+                <div id="userManagementSection" style="display: none;">
+                    <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">User Management</h3>
+                    <!-- Search and Add Row (Outside cards - common for all tables) -->
+                    <div class="search-add-row" style="margin-bottom: 20px;">
+                        <div class="search-container">
+                            <input type="text"
+                                id="userSearch"
+                                class="search-input"
+                                placeholder="Search by ID, mobile, name or email..."
+                                oninput="searchUsers()"> <!-- This triggers on EVERY keystroke, including backspace -->
+                            <!-- <button class="search-btn" onclick="searchUsers()">
             <i class="bi bi-search"></i> Search
         </button> -->
-                    </div>
-                    <button class="add-btn" onclick="addNewUser()">
+                        </div>
+                        <!-- <button class="add-btn" onclick="addNewUser()">
                         <i class="bi bi-plus-circle"></i> Add User
-                    </button>
-                </div>
+                    </button> -->
+                    </div>
 
-                <!-- Student Table Card -->
-                <div id="studentTableCard" class="card p-4 mb-4"> <!-- Added ID -->
-                    <h4 class="table-heading mt-0">
+                    <!-- Student Table Card -->
+
+
+
+                    <div id="studentTableCard" class="card p-4 mb-4">
+                        <h4 class="table-heading mt-0">
+                            <i class="bi bi-person-badge"></i> Students
+                            <span class="table-count" id="studentCount">
+                                <?php
+                                // Get counts for both active and total
+                                // $count_query = "SELECT 
+                                //                     COUNT(*) as total,
+                                //                     SUM(CASE WHEN lu.status_user = 1 THEN 1 ELSE 0 END) as active
+                                //                FROM lab_user lu
+                                //                INNER JOIN user_has_role uhr ON lu.user_id = uhr.user_id
+                                //                INNER JOIN role r ON uhr.role_id = r.role_id
+                                //                WHERE r.role = 'Student' 
+                                //                AND lu.request_status_id = 5 
+                                //                AND lu.approved_datetime IS NOT NULL";
+
+                                // $count_result = Database::search($count_query);
+
+                                // if ($count_result && $count_result->num_rows > 0) {
+                                //     $row = $count_result->fetch_assoc();
+                                //     $total_students = $row['total'];
+                                //     $active_students = $row['active'];
+                                //     echo "($active_students/$total_students)";
+
+                                // } else {
+                                //     echo "(0/0)";
+                                // }
+                                ?>
+                            </span>
+                        </h4>
+                        <div class="table-responsive">
+                            <table class="user-table">
+                                <thead>
+                                    <tr>
+                                        <th>Profile Image</th>
+                                        <th>University ID</th>
+                                        <th>Name</th>
+                                        <th>Mobile</th>
+                                        <th>Email</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="studentTableBody">
+                                    <?php
+                                    // Query to get ALL approved students (both active and inactive)
+                                    $query = "SELECT 
+                            lu.user_id,
+                            lu.first_name,
+                            lu.last_name,
+                            lu.university_id,
+                            lu.mobile,
+                            lu.email,
+                            lu.img_path,
+                            lu.status_user,
+                            lu.request_status_id,
+                            lu.approved_datetime
+                          FROM lab_user lu
+                          INNER JOIN user_has_role uhr ON lu.user_id = uhr.user_id
+                          INNER JOIN role r ON uhr.role_id = r.role_id
+                          WHERE r.role = 'Student' 
+                          AND lu.request_status_id = 5 
+                          AND lu.approved_datetime IS NOT NULL
+                          ORDER BY lu.status_user DESC, lu.join_datetime DESC"; // Active first, then inactive
+
+                                    $result = Database::search($query);
+
+                                    if ($result && $result->num_rows > 0) {
+                                        while ($row = $result->fetch_assoc()) {
+                                            $user_id = $row['user_id'];
+                                            $full_name = $row['first_name'] . ' ' . $row['last_name'];
+
+                                            // Fix image path
+                                            $profile_image = !empty($row['img_path'])
+                                                ? '../' . $row['img_path']
+                                                : 'https://ui-avatars.com/api/?name=' . urlencode($full_name) . '&background=22c55e&color=fff&size=50';
+
+                                            // Format mobile number
+                                            $mobile = $row['mobile'];
+                                            if (strlen($mobile) == 10) {
+                                                $mobile = substr($mobile, 0, 3) . '-' . substr($mobile, 3, 3) . '-' . substr($mobile, 6, 4);
+                                            }
+
+                                            // Set status based on database value
+                                            $status = ($row['status_user'] == 1) ? 'active' : 'inactive';
+
+                                            // Output the row with dynamic status
+                                            echo '<tr data-user-id="' . htmlspecialchars($row['university_id']) . '" data-status="' . $status . '">';
+                                            echo '<td>';
+                                            echo '<img src="' . htmlspecialchars($profile_image) . '" 
+                                   style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid #22c55e;">';
+                                            echo '</td>';
+                                            echo '<td>' . htmlspecialchars($row['university_id']) . '</td>';
+                                            echo '<td>' . htmlspecialchars($full_name) . '</td>';
+                                            echo '<td>' . htmlspecialchars($mobile) . '</td>';
+                                            echo '<td>' . htmlspecialchars($row['email']) . '</td>';
+                                            echo '<td>';
+                                            echo '<div class="action-buttons">';
+                                            echo '<button class="btn-edit" onclick="editUser(\'' . htmlspecialchars($row['university_id']) . '\')">';
+                                            echo '<i class="bi bi-pencil-square"></i> Edit';
+                                            echo '</button>';
+
+                                            // ✅ Show appropriate button based on status_user
+                                            if ($row['status_user'] == 1) {
+                                                // ACTIVE user - show RED Deactivate button
+                                                echo '<button class="btn-deactivate" onclick="toggleUserStatus(\'' . htmlspecialchars($row['university_id']) . '\')">';
+                                                echo '<i class="bi bi-person-x"></i> Deactivate';
+                                                echo '</button>';
+                                            } else {
+                                                // INACTIVE user - show GREEN Activate button
+                                                echo '<button class="btn-activate" onclick="toggleUserStatus(\'' . htmlspecialchars($row['university_id']) . '\')">';
+                                                echo '<i class="bi bi-person-check"></i> Activate';
+                                                echo '</button>';
+                                            }
+
+                                            echo '</div>';
+                                            echo '</td>';
+                                            echo '</tr>';
+                                        }
+                                    } else {
+                                        echo '<tr><td colspan="6" class="text-center py-4">No approved students found</td></tr>';
+                                    }
+                                    ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+
+
+
+
+
+
+
+
+                    <!-- <div id="studentTableCard" class="card p-4 mb-4">  -->
+                    <!-- <h4 class="table-heading mt-0">
                         <i class="bi bi-person-badge"></i> Students
                         <span class="table-count" id="studentCount">(24)</span>
                     </h4>
@@ -3336,10 +3518,114 @@ require_once 'auth_check.php';
                             </tbody>
                         </table>
                     </div>
-                </div>
+                </div> -->
 
-                <!-- Supervisor/Lecturer Table Card -->
-                <div id="supervisorTableCard" class="card p-4 mb-4"> <!-- Added ID -->
+                    <!-- Supervisor/Lecturer Table Card -->
+
+                    <!-- Supervisor/Lecturer Table Card -->
+                    <div id="supervisorTableCard" class="card p-4 mb-4">
+                        <h4 class="table-heading mt-0">
+                            <i class="bi bi-person-workspace"></i> Supervisors & Lecturers
+                            <span class="table-count" id="supervisorCount">
+
+                            </span>
+                        </h4>
+                        <div class="table-responsive">
+                            <table class="user-table">
+                                <thead>
+                                    <tr>
+                                        <th>Profile Image</th>
+                                        <th>University ID</th>
+                                        <th>Name</th>
+                                        <th>Mobile</th>
+                                        <th>Email</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="supervisorTableBody">
+                                    <?php
+                                    // Query to get ALL approved supervisors (both active and inactive)
+                                    $sup_query = "SELECT 
+                                lu.user_id,
+                                lu.first_name,
+                                lu.last_name,
+                                lu.university_id,
+                                lu.mobile,
+                                lu.email,
+                                lu.img_path,
+                                lu.status_user,
+                                lu.request_status_id,
+                                lu.approved_datetime
+                              FROM lab_user lu
+                              INNER JOIN user_has_role uhr ON lu.user_id = uhr.user_id
+                              INNER JOIN role r ON uhr.role_id = r.role_id
+                              WHERE r.role = 'Supervisor' 
+                              AND lu.request_status_id = 5 
+                              AND lu.approved_datetime IS NOT NULL
+                              ORDER BY lu.status_user DESC, lu.join_datetime DESC";
+
+                                    $sup_result = Database::search($sup_query);
+
+                                    if ($sup_result && $sup_result->num_rows > 0) {
+                                        while ($row = $sup_result->fetch_assoc()) {
+                                            $full_name = $row['first_name'] . ' ' . $row['last_name'];
+
+                                            // Fix image path
+                                            $profile_image = !empty($row['img_path'])
+                                                ? '../' . $row['img_path']
+                                                : 'https://ui-avatars.com/api/?name=' . urlencode($full_name) . '&background=22c55e&color=fff&size=50';
+
+                                            // Format mobile number
+                                            $mobile = $row['mobile'];
+                                            if (strlen($mobile) == 10) {
+                                                $mobile = substr($mobile, 0, 3) . '-' . substr($mobile, 3, 3) . '-' . substr($mobile, 6, 4);
+                                            }
+
+                                            // Set status based on database value
+                                            $status = ($row['status_user'] == 1) ? 'active' : 'inactive';
+
+                                            // Output the row with dynamic status
+                                            echo '<tr data-user-id="' . htmlspecialchars($row['university_id']) . '" data-status="' . $status . '">';
+                                            echo '<td>';
+                                            echo '<img src="' . htmlspecialchars($profile_image) . '" 
+                                   style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid #22c55e;">';
+                                            echo '</td>';
+                                            echo '<td>' . htmlspecialchars($row['university_id']) . '</td>';
+                                            echo '<td>' . htmlspecialchars($full_name) . '</td>';
+                                            echo '<td>' . htmlspecialchars($mobile) . '</td>';
+                                            echo '<td>' . htmlspecialchars($row['email']) . '</td>';
+                                            echo '<td>';
+                                            echo '<div class="action-buttons">';
+                                            echo '<button class="btn-edit" onclick="editUser(\'' . htmlspecialchars($row['university_id']) . '\')">';
+                                            echo '<i class="bi bi-pencil-square"></i> Edit';
+                                            echo '</button>';
+
+                                            // Show appropriate button based on status_user
+                                            if ($row['status_user'] == 1) {
+                                                // ACTIVE user - show RED Deactivate button
+                                                echo '<button class="btn-deactivate" onclick="toggleUserStatus(\'' . htmlspecialchars($row['university_id']) . '\')">';
+                                                echo '<i class="bi bi-person-x"></i> Deactivate';
+                                                echo '</button>';
+                                            } else {
+                                                // INACTIVE user - show GREEN Activate button
+                                                echo '<button class="btn-activate" onclick="toggleUserStatus(\'' . htmlspecialchars($row['university_id']) . '\')">';
+                                                echo '<i class="bi bi-person-check"></i> Activate';
+                                                echo '</button>';
+                                            }
+
+                                            echo '</div>';
+                                            echo '</td>';
+                                            echo '</tr>';
+                                        }
+                                    } else {
+                                        echo '<tr><td colspan="6" class="text-center py-4">No approved supervisors found</td></tr>';
+                                    }
+                                    ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <!-- <div id="supervisorTableCard" class="card p-4 mb-4">
                     <h4 class="table-heading mt-0">
                         <i class="bi bi-person-workspace"></i> Supervisors & Lecturers
                         <span class="table-count" id="supervisorCount">(8)</span>
@@ -3445,10 +3731,126 @@ require_once 'auth_check.php';
                             </tbody>
                         </table>
                     </div>
-                </div>
+                </div> -->
 
-                <!-- Technical Officer Table Card -->
-                <div id="techOfficerTableCard" class="card p-4"> <!-- Added ID -->
+
+
+
+
+
+
+
+
+
+
+
+
+                    <!-- Technical Officer Table Card -->
+
+                    <!-- Technical Officer Table Card -->
+                    <div id="techOfficerTableCard" class="card p-4">
+                        <h4 class="table-heading mt-0">
+                            <i class="bi bi-person-gear"></i> Technical Officers
+                            <span class="table-count" id="techOfficerCount">
+
+                            </span>
+                        </h4>
+                        <div class="table-responsive">
+                            <table class="user-table">
+                                <thead>
+                                    <tr>
+                                        <th>Profile Image</th>
+                                        <th>University ID</th>
+                                        <th>Name</th>
+                                        <th>Mobile</th>
+                                        <th>Email</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="techOfficerTableBody">
+                                    <?php
+                                    // Query to get ALL approved technical officers (both active and inactive)
+                                    $tech_query = "SELECT 
+                                lu.user_id,
+                                lu.first_name,
+                                lu.last_name,
+                                lu.university_id,
+                                lu.mobile,
+                                lu.email,
+                                lu.img_path,
+                                lu.status_user,
+                                lu.request_status_id,
+                                lu.approved_datetime
+                              FROM lab_user lu
+                              INNER JOIN user_has_role uhr ON lu.user_id = uhr.user_id
+                              INNER JOIN role r ON uhr.role_id = r.role_id
+                              WHERE r.role = 'Technical Officer' 
+                              AND lu.request_status_id = 5 
+                              AND lu.approved_datetime IS NOT NULL
+                              ORDER BY lu.status_user DESC, lu.join_datetime DESC";
+
+                                    $tech_result = Database::search($tech_query);
+
+                                    if ($tech_result && $tech_result->num_rows > 0) {
+                                        while ($row = $tech_result->fetch_assoc()) {
+                                            $full_name = $row['first_name'] . ' ' . $row['last_name'];
+
+                                            // Fix image path
+                                            $profile_image = !empty($row['img_path'])
+                                                ? '../' . $row['img_path']
+                                                : 'https://ui-avatars.com/api/?name=' . urlencode($full_name) . '&background=22c55e&color=fff&size=50';
+
+                                            // Format mobile number
+                                            $mobile = $row['mobile'];
+                                            if (strlen($mobile) == 10) {
+                                                $mobile = substr($mobile, 0, 3) . '-' . substr($mobile, 3, 3) . '-' . substr($mobile, 6, 4);
+                                            }
+
+                                            // Set status based on database value
+                                            $status = ($row['status_user'] == 1) ? 'active' : 'inactive';
+
+                                            // Output the row with dynamic status
+                                            echo '<tr data-user-id="' . htmlspecialchars($row['university_id']) . '" data-status="' . $status . '">';
+                                            echo '<td>';
+                                            echo '<img src="' . htmlspecialchars($profile_image) . '" 
+                                   style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid #22c55e;">';
+                                            echo '</td>';
+                                            echo '<td>' . htmlspecialchars($row['university_id']) . '</td>';
+                                            echo '<td>' . htmlspecialchars($full_name) . '</td>';
+                                            echo '<td>' . htmlspecialchars($mobile) . '</td>';
+                                            echo '<td>' . htmlspecialchars($row['email']) . '</td>';
+                                            echo '<td>';
+                                            echo '<div class="action-buttons">';
+                                            echo '<button class="btn-edit" onclick="editUser(\'' . htmlspecialchars($row['university_id']) . '\')">';
+                                            echo '<i class="bi bi-pencil-square"></i> Edit';
+                                            echo '</button>';
+
+                                            // Show appropriate button based on status_user
+                                            if ($row['status_user'] == 1) {
+                                                // ACTIVE user - show RED Deactivate button
+                                                echo '<button class="btn-deactivate" onclick="toggleUserStatus(\'' . htmlspecialchars($row['university_id']) . '\')">';
+                                                echo '<i class="bi bi-person-x"></i> Deactivate';
+                                                echo '</button>';
+                                            } else {
+                                                // INACTIVE user - show GREEN Activate button
+                                                echo '<button class="btn-activate" onclick="toggleUserStatus(\'' . htmlspecialchars($row['university_id']) . '\')">';
+                                                echo '<i class="bi bi-person-check"></i> Activate';
+                                                echo '</button>';
+                                            }
+
+                                            echo '</div>';
+                                            echo '</td>';
+                                            echo '</tr>';
+                                        }
+                                    } else {
+                                        echo '<tr><td colspan="6" class="text-center py-4">No approved technical officers found</td></tr>';
+                                    }
+                                    ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <!-- <div id="techOfficerTableCard" class="card p-4"> 
                     <h4 class="table-heading mt-0">
                         <i class="bi bi-person-gear"></i> Technical Officers
                         <span class="table-count" id="techOfficerCount">(4)</span>
@@ -3555,482 +3957,287 @@ require_once 'auth_check.php';
                         </table>
                     </div>
                 </div>
-            </div>
-            <!-- Equipment Management Section -->
-            <div id="equipmentSection" style="display: none;">
-                <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Equipment Management</h3>
+            </div> -->
 
-             <!-- Search and Add Row (Outside card) - REPLACE the existing div at around line 1300 -->
-<div class="search-add-row" style="margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
-    <div class="search-container" style="flex: 1; max-width: 500px;">
-        <input type="text"
-            id="equipmentSearch"
-            class="search-input"
-            placeholder="Search by code, name or location..."
-            oninput="searchEquipment()">
+
+
+
+
+
+<!-- Equipment Management Section -->
+<div id="equipmentSection" style="display: none;">
+    <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Equipment Management</h3>
+
+    <div class="search-add-row" style="margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
+        <div class="search-container" style="flex: 1; max-width: 500px;">
+            <input type="text"
+                id="equipmentSearch"
+                class="search-input"
+                placeholder="Search by code, name or location..."
+                oninput="searchEquipment()">
+        </div>
+        <button class="add-btn" onclick="refreshAIAnalysis()" style="margin-right: 4px; background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
+            <i class="bi bi-robot"></i> AI Analyze
+        </button>
+        <button class="add-btn" onclick="sendToMaintenance()" style="margin-right: 4px; background: linear-gradient(135deg, #f59e0b, #d97706);">
+            <i class="bi bi-tools"></i> Send to Maintenance
+        </button>
+        <button class="add-btn" onclick="addEquipment()" style="background: linear-gradient(135deg, #22c55e, #16a34a);">
+            <i class="bi bi-plus-circle"></i> Add Equipment
+        </button>
     </div>
-    <button class="add-btn" onclick="sendToMaintenance()" style="margin-right: 4px; background: linear-gradient(135deg, #f59e0b, #d97706);">
-        <i class="bi bi-tools"></i> Send to Maintenance
-    </button>
-    <button class="add-btn" onclick="addEquipment()" style="background: linear-gradient(135deg, #22c55e, #16a34a);">
-        <i class="bi bi-plus-circle"></i> Add Equipment
-    </button>
+
+    <!-- Equipment Table Card -->
+    <div id="equipmentTableCard" class="card p-4">
+        <h4 class="table-heading mt-0">
+            <i class="bi bi-tools"></i> Equipment List
+            <span class="table-count" id="equipmentCount">
+                <?php
+                $eq_count_query = "SELECT COUNT(*) as total FROM equipment WHERE status = 'active'";
+                $eq_count_result = Database::search($eq_count_query);
+                $total_equipment = ($eq_count_result && $eq_count_result->num_rows > 0) ? $eq_count_result->fetch_assoc()['total'] : 0;
+                echo "($total_equipment)";
+                ?>
+            </span>
+        </h4>
+        <div class="table-responsive">
+            <table class="user-table">
+                <thead>
+                    <tr>
+                        <th>Image</th>
+                        <th>Equipment Code</th>
+                        <th>Name</th>
+                        <th>Location</th>
+                        <th>Active (Available/Total)</th>
+                        <th>Maintenance</th>
+                        <th>AI Usage %</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="equipmentTableBody">
+                    <!-- Data will be loaded by JavaScript from AI API -->
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 
-                <!-- Equipment Table Card -->
-                <div id="equipmentTableCard" class="card p-4"> <!-- Added ID for hiding -->
-                    <h4 class="table-heading mt-0">
-                        <i class="bi bi-tools"></i> Equipment List
-                        <span class="table-count" id="equipmentCount">(6)</span>
-                    </h4>
-                    <div class="table-responsive">
-                        <table class="user-table">
-                            <thead>
-                                <tr>
-                                    <th>Image</th>
-                                    <th>Equipment Code</th>
-                                    <th>Name</th>
-                                    <th>Active (Available/Total)</th>
-                                    <th>Maintenance Pending</th>
-                                    <th>Usage %</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="equipmentTableBody">
-                                <tr data-equipment-id="MIC-001">
-                                    <td><img src="https://cdn-icons-png.flaticon.com/512/2941/2941514.png" style="width: 50px; height: 50px; object-fit: contain;"></td>
-                                    <td>MIC-001</td>
-                                    <td>Microscope</td>
-                                    <td><span class="badge" style="background: #22c55e; color: white;">4/8</span></td>
-                                    <td><span class="badge bg-warning">2</span></td>
-                                    <td>
-                                        <div class="progress-bar" style="width: 100px; display: inline-block;">
-                                            <div class="progress-fill" style="width: 75%"></div>
-                                        </div>
-                                        75%
-                                    </td>
-                                    <td>
-                                        <div class="action-buttons">
-                                            <button class="btn-view" onclick="viewEquipment('MIC-001')" title="View Details">
-                                                <i class="bi bi-eye"></i>
-                                            </button>
-                                            <button class="btn-edit" onclick="editEquipment('MIC-001')" title="Edit">
-                                                <i class="bi bi-pencil-square"></i>
-                                            </button>
-                                            <button class="btn-remove" onclick="removeEquipment('MIC-001')" title="Remove">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr data-equipment-id="CEN-002">
-                                    <td><img src="https://cdn-icons-png.flaticon.com/512/2941/2941543.png" style="width: 50px; height: 50px; object-fit: contain;"></td>
-                                    <td>CEN-002</td>
-                                    <td>Centrifuge</td>
-                                    <td><span class="badge" style="background: #22c55e; color: white;">3/5</span></td>
-                                    <td><span class="badge bg-warning">1</span></td>
-                                    <td>
-                                        <div class="progress-bar" style="width: 100px; display: inline-block;">
-                                            <div class="progress-fill" style="width: 60%"></div>
-                                        </div>
-                                        60%
-                                    </td>
-                                    <td>
-                                        <div class="action-buttons">
-                                            <button class="btn-view" onclick="viewEquipment('CEN-002')" title="View Details">
-                                                <i class="bi bi-eye"></i>
-                                            </button>
-                                            <button class="btn-edit" onclick="editEquipment('CEN-002')" title="Edit">
-                                                <i class="bi bi-pencil-square"></i>
-                                            </button>
-                                            <button class="btn-remove" onclick="removeEquipment('CEN-002')" title="Remove">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr data-equipment-id="INC-003">
-                                    <td><img src="https://cdn-icons-png.flaticon.com/512/2941/2941538.png" style="width: 50px; height: 50px; object-fit: contain;"></td>
-                                    <td>INC-003</td>
-                                    <td>Incubator</td>
-                                    <td><span class="badge" style="background: #22c55e; color: white;">2/4</span></td>
-                                    <td><span class="badge bg-warning">3</span></td>
-                                    <td>
-                                        <div class="progress-bar" style="width: 100px; display: inline-block;">
-                                            <div class="progress-fill" style="width: 50%"></div>
-                                        </div>
-                                        50%
-                                    </td>
-                                    <td>
-                                        <div class="action-buttons">
-                                            <button class="btn-view" onclick="viewEquipment('INC-003')" title="View Details">
-                                                <i class="bi bi-eye"></i>
-                                            </button>
-                                            <button class="btn-edit" onclick="editEquipment('INC-003')" title="Edit">
-                                                <i class="bi bi-pencil-square"></i>
-                                            </button>
-                                            <button class="btn-remove" onclick="removeEquipment('INC-003')" title="Remove">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr data-equipment-id="AUT-004">
-                                    <td><img src="https://cdn-icons-png.flaticon.com/512/2941/2941521.png" style="width: 50px; height: 50px; object-fit: contain;"></td>
-                                    <td>AUT-004</td>
-                                    <td>Autoclave</td>
-                                    <td><span class="badge" style="background: #22c55e; color: white;">6/6</span></td>
-                                    <td><span class="badge bg-warning">0</span></td>
-                                    <td>
-                                        <div class="progress-bar" style="width: 100px; display: inline-block;">
-                                            <div class="progress-fill" style="width: 90%"></div>
-                                        </div>
-                                        90%
-                                    </td>
-                                    <td>
-                                        <div class="action-buttons">
-                                            <button class="btn-view" onclick="viewEquipment('AUT-004')" title="View Details">
-                                                <i class="bi bi-eye"></i>
-                                            </button>
-                                            <button class="btn-edit" onclick="editEquipment('AUT-004')" title="Edit">
-                                                <i class="bi bi-pencil-square"></i>
-                                            </button>
-                                            <button class="btn-remove" onclick="removeEquipment('AUT-004')" title="Remove">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr data-equipment-id="PHM-005">
-                                    <td><img src="https://cdn-icons-png.flaticon.com/512/2941/2941556.png" style="width: 50px; height: 50px; object-fit: contain;"></td>
-                                    <td>PHM-005</td>
-                                    <td>pH Meter</td>
-                                    <td><span class="badge" style="background: #22c55e; color: white;">3/3</span></td>
-                                    <td><span class="badge bg-warning">1</span></td>
-                                    <td>
-                                        <div class="progress-bar" style="width: 100px; display: inline-block;">
-                                            <div class="progress-fill" style="width: 35%"></div>
-                                        </div>
-                                        35%
-                                    </td>
-                                    <td>
-                                        <div class="action-buttons">
-                                            <button class="btn-view" onclick="viewEquipment('PHM-005')" title="View Details">
-                                                <i class="bi bi-eye"></i>
-                                            </button>
-                                            <button class="btn-edit" onclick="editEquipment('PHM-005')" title="Edit">
-                                                <i class="bi bi-pencil-square"></i>
-                                            </button>
-                                            <button class="btn-remove" onclick="removeEquipment('PHM-005')" title="Remove">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr data-equipment-id="WAT-006">
-                                    <td><img src="https://cdn-icons-png.flaticon.com/512/2941/2941578.png" style="width: 50px; height: 50px; object-fit: contain;"></td>
-                                    <td>WAT-006</td>
-                                    <td>Water Bath</td>
-                                    <td><span class="badge" style="background: #22c55e; color: white;">5/7</span></td>
-                                    <td><span class="badge bg-warning">2</span></td>
-                                    <td>
-                                        <div class="progress-bar" style="width: 100px; display: inline-block;">
-                                            <div class="progress-fill" style="width: 70%"></div>
-                                        </div>
-                                        70%
-                                    </td>
-                                    <td>
-                                        <div class="action-buttons">
-                                            <button class="btn-view" onclick="viewEquipment('WAT-006')" title="View Details">
-                                                <i class="bi bi-eye"></i>
-                                            </button>
-                                            <button class="btn-edit" onclick="editEquipment('WAT-006')" title="Edit">
-                                                <i class="bi bi-pencil-square"></i>
-                                            </button>
-                                            <button class="btn-remove" onclick="removeEquipment('WAT-006')" title="Remove">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+<!-- Equipment Details Modal -->
+<div class="modal fade" id="equipmentDetailsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Equipment Details & AI Analysis
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-
-            <!-- Equipment Details Modal -->
-            <div class="modal fade" id="equipmentDetailsModal" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-lg modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header bg-success text-white">
-                            <h5 class="modal-title">
-                                <i class="bi bi-info-circle me-2"></i>
-                                Equipment Details
-                            </h5>
-                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body" id="equipmentDetailsContent">
-                            <!-- Content will be populated by JavaScript -->
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        </div>
-                    </div>
-                </div>
+            <div class="modal-body" id="equipmentDetailsContent">
+                <!-- Content will be populated by JavaScript -->
             </div>
-
-
-
-
-            <!-- Reservation Details Section -->
-            <div id="historySection" style="display: none;">
-                <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Reservation Details</h3>
-
-                <!-- Search and Filter Row (Outside card) -->
-                <div class="search-add-row" style="margin-bottom: 20px;">
-                    <div class="search-container">
-                        <input type="text"
-                            id="reservationSearch"
-                            class="search-input"
-                            placeholder="Search by ID, student or lab..."
-                            oninput="searchReservations()"> <!-- Real-time search -->
-                        <button class="search-btn" onclick="searchReservations()">
-                            <i class="bi bi-search"></i> Search
-                        </button>
-                    </div>
-                    <div class="filter-section" style="margin-bottom: 0;">
-                        <select class="filter-select" id="statusFilter" onchange="searchReservations()" style="min-width: 150px;">
-                            <option value="all">All Status</option>
-                            <option value="ready">Ready</option>
-                            <option value="pending">Pending</option>
-                            <option value="rejected">Rejected</option>
-                        </select>
-                    </div>
-                    <!-- Add Button -->
-                    <button class="add-btn" onclick="addReservation()" style="background: linear-gradient(135deg, #22c55e, #16a34a);">
-                        <i class="bi bi-plus-circle"></i> Add Reservation
-                    </button>
-                </div>
-
-                <!-- Reservation Table Card -->
-                <div id="reservationTableCard" class="card p-4">
-                    <h4 class="table-heading mt-0">
-                        <i class="bi bi-calendar-check"></i> Reservations
-                        <span class="table-count" id="reservationCount">(3)</span>
-                    </h4>
-                    <div class="table-responsive">
-                        <table class="user-table">
-                            <thead>
-                                <tr>
-                                    <th>Reservation ID</th>
-                                    <th>Lab Location</th>
-                                    <th>Student ID</th>
-                                    <th>Status</th>
-                                    <th>Reservation Date</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody id="reservationTableBody">
-                                <!-- Data will be populated by JavaScript -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             </div>
+        </div>
+    </div>
+</div>
+                    <!-- Equipment Management Section -->
+                    <!-- <div id="equipmentSection" style="display: none;">
+                        <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Equipment Management</h3>
 
-            <!-- Reservation Details Modal -->
-            <div class="modal fade" id="reservationDetailsModal" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-lg modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header bg-success text-white">
-                            <h5 class="modal-title">
-                                <i class="bi bi-calendar-check me-2"></i>
-                                Reservation Details
-                            </h5>
-                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body" id="reservationDetailsContent">
-                            <!-- Content will be populated by JavaScript -->
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-
-
-            <!-- Request Section -->
-            <div id="activitySection" style="display: none;">
-                <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Requests</h3>
-
-                <div class="card p-4">
-                    <!-- Request Type Tabs with Count Badges -->
-                    <div class="request-tabs" style="margin-bottom: 20px;">
-                        <button class="request-tab active" onclick="switchRequestType('technical')">
-                            Technical Officer Requests
-                            <span class="request-count-badge" id="technicalRequestCount">3</span>
-                        </button>
-                        <button class="request-tab" onclick="switchRequestType('supervisor')">
-                            Supervisor Requests
-                            <span class="request-count-badge" id="supervisorRequestCount">2</span>
-                        </button>
-                    </div>
-
-                    <!-- Time Range Filter -->
-                    <div class="filter-section" style="margin-bottom: 20px;">
-                        <select class="filter-select" id="timeRangeFilter" onchange="filterRequestsByTime()" style="min-width: 200px;">
-                            <option value="all">All Time</option>
-                            <option value="daily">Daily</option>
-                            <option value="weekly">Weekly</option>
-                            <option value="monthly">Monthly</option>
-                        </select>
-                    </div>
-
-                    <!-- Requests Table -->
-                    <div class="table-responsive mt-3">
-                        <table class="user-table">
-                            <thead>
-                                <tr>
-                                    <th>Request ID</th>
-                                    <th>Date & Time</th>
-                                    <th>University ID</th>
-                                    <th>Name</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="requestListBody">
-                                <!-- Data will be populated by JavaScript -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Request Details Modal -->
-            <div class="modal fade" id="requestDetailsModal" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-lg modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header bg-success text-white">
-                            <h5 class="modal-title">
-                                <i class="bi bi-info-circle me-2"></i>
-                                Request Details
-                            </h5>
-                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body" id="requestDetailsContent">
-                            <!-- Content will be populated by JavaScript -->
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-
-
-
-
-            <!-- Analytics Section -->
-            <div id="analyticsSection" style="display: none;">
-                <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Analytics Dashboard</h3>
-
-                <!-- Summary Statistics Cards -->
-                <div class="analytics-grid">
-                    <!-- Students Card -->
-                    <div class="stat-card">
-                        <i class="bi bi-mortarboard-fill"></i>
-                        <h3>56</h3>
-                        <p>Students</p>
-                    </div>
-
-                    <!-- Supervisors/Lecturers Card -->
-                    <div class="stat-card">
-                        <i class="bi bi-person-badge-fill"></i>
-                        <h3>5</h3>
-                        <p>Supervisors/Lecturers</p>
-                    </div>
-
-                    <!-- Technical Officers Card -->
-                    <div class="stat-card">
-                        <i class="bi bi-person-gear"></i>
-                        <h3>3</h3>
-                        <p>Technical Officers</p>
-                    </div>
-
-                    <!-- Active Equipment Card -->
-                    <div class="stat-card">
-                        <i class="bi bi-tools"></i>
-                        <h3>85%</h3>
-                        <p>Equipment Utilization Rate</p>
-                    </div>
-
-                    <!-- Maintenance Card -->
-                    <div class="stat-card">
-                        <i class="bi bi-gear-wide-connected"></i>
-                        <h3>3</h3>
-                        <p>Maintenance</p>
-                    </div>
-                </div>
-
-                <!-- First Row: Rejected Requests Report & Equipment Usage Chart -->
-                <div class="row">
-                    <!-- Rejected Requests Report -->
-                    <div class="col-md-6 mb-4">
-                        <div class="card p-4">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h5 class="fw-bold" style="color: #166534;">
-                                    <i class="bi bi-x-circle-fill text-danger me-2"></i>
-                                    Rejected Requests (Technical Officer)
-                                </h5>
-                                <button class="btn-generate" onclick="generateReport('rejected')">
-                                    <i class="bi bi-file-earmark-pdf me-2"></i>Generate Report
-                                </button>
+                     
+                        <div class="search-add-row" style="margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
+                            <div class="search-container" style="flex: 1; max-width: 500px;">
+                                <input type="text"
+                                    id="equipmentSearch"
+                                    class="search-input"
+                                    placeholder="Search by code, name or location..."
+                                    oninput="searchEquipment()">
                             </div>
+                            <button class="add-btn" onclick="sendToMaintenance()" style="margin-right: 4px; background: linear-gradient(135deg, #f59e0b, #d97706);">
+                                <i class="bi bi-tools"></i> Send to Maintenance
+                            </button>
+                            <button class="add-btn" onclick="addEquipment()" style="background: linear-gradient(135deg, #22c55e, #16a34a);">
+                                <i class="bi bi-plus-circle"></i> Add Equipment
+                            </button>
+                        </div>
 
+                    
+                        <div id="equipmentTableCard" class="card p-4"> 
+                            <h4 class="table-heading mt-0">
+                                <i class="bi bi-tools"></i> Equipment List
+                                <span class="table-count" id="equipmentCount">(6)</span>
+                            </h4>
                             <div class="table-responsive">
-                                <table class="details-table">
+                                <table class="user-table">
                                     <thead>
                                         <tr>
-                                            <th>Request ID</th>
-                                            <th>Student ID</th>
-                                            <th>Reason</th>
-                                            <th>Date & Time</th>
+                                            <th>Image</th>
+                                            <th>Equipment Code</th>
+                                            <th>Name</th>
+                                            <th>Active (Available/Total)</th>
+                                            <th>Maintenance Pending</th>
+                                            <th>Usage %</th>
+                                            <th>Actions</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>#REQ003</td>
-                                            <td>SCI003</td>
+                                    <tbody id="equipmentTableBody">
+                                        <tr data-equipment-id="MIC-001">
+                                            <td><img src="https://cdn-icons-png.flaticon.com/512/2941/2941514.png" style="width: 50px; height: 50px; object-fit: contain;"></td>
+                                            <td>MIC-001</td>
+                                            <td>Microscope</td>
+                                            <td><span class="badge" style="background: #22c55e; color: white;">4/8</span></td>
+                                            <td><span class="badge bg-warning">2</span></td>
                                             <td>
-                                                <button class="btn-view" onclick="viewRejectionReason('REQ003')" title="View Reason">
-                                                    <i class="bi bi-eye"></i> View
-                                                </button>
+                                                <div class="progress-bar" style="width: 100px; display: inline-block;">
+                                                    <div class="progress-fill" style="width: 75%"></div>
+                                                </div>
+                                                75%
                                             </td>
-                                            <td>2026-02-19 09:15 AM</td>
+                                            <td>
+                                                <div class="action-buttons">
+                                                    <button class="btn-view" onclick="viewEquipment('MIC-001')" title="View Details">
+                                                        <i class="bi bi-eye"></i>
+                                                    </button>
+                                                    <button class="btn-edit" onclick="editEquipment('MIC-001')" title="Edit">
+                                                        <i class="bi bi-pencil-square"></i>
+                                                    </button>
+                                                    <button class="btn-remove" onclick="removeEquipment('MIC-001')" title="Remove">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
                                         </tr>
-                                        <tr>
-                                            <td>#REQ007</td>
-                                            <td>SCI007</td>
+                                        <tr data-equipment-id="CEN-002">
+                                            <td><img src="https://cdn-icons-png.flaticon.com/512/2941/2941543.png" style="width: 50px; height: 50px; object-fit: contain;"></td>
+                                            <td>CEN-002</td>
+                                            <td>Centrifuge</td>
+                                            <td><span class="badge" style="background: #22c55e; color: white;">3/5</span></td>
+                                            <td><span class="badge bg-warning">1</span></td>
                                             <td>
-                                                <button class="btn-view" onclick="viewRejectionReason('REQ007')" title="View Reason">
-                                                    <i class="bi bi-eye"></i> View
-                                                </button>
+                                                <div class="progress-bar" style="width: 100px; display: inline-block;">
+                                                    <div class="progress-fill" style="width: 60%"></div>
+                                                </div>
+                                                60%
                                             </td>
-                                            <td>2026-02-17 02:30 PM</td>
+                                            <td>
+                                                <div class="action-buttons">
+                                                    <button class="btn-view" onclick="viewEquipment('CEN-002')" title="View Details">
+                                                        <i class="bi bi-eye"></i>
+                                                    </button>
+                                                    <button class="btn-edit" onclick="editEquipment('CEN-002')" title="Edit">
+                                                        <i class="bi bi-pencil-square"></i>
+                                                    </button>
+                                                    <button class="btn-remove" onclick="removeEquipment('CEN-002')" title="Remove">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
                                         </tr>
-                                        <tr>
-                                            <td>#REQ012</td>
-                                            <td>SCI012</td>
+                                        <tr data-equipment-id="INC-003">
+                                            <td><img src="https://cdn-icons-png.flaticon.com/512/2941/2941538.png" style="width: 50px; height: 50px; object-fit: contain;"></td>
+                                            <td>INC-003</td>
+                                            <td>Incubator</td>
+                                            <td><span class="badge" style="background: #22c55e; color: white;">2/4</span></td>
+                                            <td><span class="badge bg-warning">3</span></td>
                                             <td>
-                                                <button class="btn-view" onclick="viewRejectionReason('REQ012')" title="View Reason">
-                                                    <i class="bi bi-eye"></i> View
-                                                </button>
+                                                <div class="progress-bar" style="width: 100px; display: inline-block;">
+                                                    <div class="progress-fill" style="width: 50%"></div>
+                                                </div>
+                                                50%
                                             </td>
-                                            <td>2026-02-15 11:45 AM</td>
+                                            <td>
+                                                <div class="action-buttons">
+                                                    <button class="btn-view" onclick="viewEquipment('INC-003')" title="View Details">
+                                                        <i class="bi bi-eye"></i>
+                                                    </button>
+                                                    <button class="btn-edit" onclick="editEquipment('INC-003')" title="Edit">
+                                                        <i class="bi bi-pencil-square"></i>
+                                                    </button>
+                                                    <button class="btn-remove" onclick="removeEquipment('INC-003')" title="Remove">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr data-equipment-id="AUT-004">
+                                            <td><img src="https://cdn-icons-png.flaticon.com/512/2941/2941521.png" style="width: 50px; height: 50px; object-fit: contain;"></td>
+                                            <td>AUT-004</td>
+                                            <td>Autoclave</td>
+                                            <td><span class="badge" style="background: #22c55e; color: white;">6/6</span></td>
+                                            <td><span class="badge bg-warning">0</span></td>
+                                            <td>
+                                                <div class="progress-bar" style="width: 100px; display: inline-block;">
+                                                    <div class="progress-fill" style="width: 90%"></div>
+                                                </div>
+                                                90%
+                                            </td>
+                                            <td>
+                                                <div class="action-buttons">
+                                                    <button class="btn-view" onclick="viewEquipment('AUT-004')" title="View Details">
+                                                        <i class="bi bi-eye"></i>
+                                                    </button>
+                                                    <button class="btn-edit" onclick="editEquipment('AUT-004')" title="Edit">
+                                                        <i class="bi bi-pencil-square"></i>
+                                                    </button>
+                                                    <button class="btn-remove" onclick="removeEquipment('AUT-004')" title="Remove">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr data-equipment-id="PHM-005">
+                                            <td><img src="https://cdn-icons-png.flaticon.com/512/2941/2941556.png" style="width: 50px; height: 50px; object-fit: contain;"></td>
+                                            <td>PHM-005</td>
+                                            <td>pH Meter</td>
+                                            <td><span class="badge" style="background: #22c55e; color: white;">3/3</span></td>
+                                            <td><span class="badge bg-warning">1</span></td>
+                                            <td>
+                                                <div class="progress-bar" style="width: 100px; display: inline-block;">
+                                                    <div class="progress-fill" style="width: 35%"></div>
+                                                </div>
+                                                35%
+                                            </td>
+                                            <td>
+                                                <div class="action-buttons">
+                                                    <button class="btn-view" onclick="viewEquipment('PHM-005')" title="View Details">
+                                                        <i class="bi bi-eye"></i>
+                                                    </button>
+                                                    <button class="btn-edit" onclick="editEquipment('PHM-005')" title="Edit">
+                                                        <i class="bi bi-pencil-square"></i>
+                                                    </button>
+                                                    <button class="btn-remove" onclick="removeEquipment('PHM-005')" title="Remove">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr data-equipment-id="WAT-006">
+                                            <td><img src="https://cdn-icons-png.flaticon.com/512/2941/2941578.png" style="width: 50px; height: 50px; object-fit: contain;"></td>
+                                            <td>WAT-006</td>
+                                            <td>Water Bath</td>
+                                            <td><span class="badge" style="background: #22c55e; color: white;">5/7</span></td>
+                                            <td><span class="badge bg-warning">2</span></td>
+                                            <td>
+                                                <div class="progress-bar" style="width: 100px; display: inline-block;">
+                                                    <div class="progress-fill" style="width: 70%"></div>
+                                                </div>
+                                                70%
+                                            </td>
+                                            <td>
+                                                <div class="action-buttons">
+                                                    <button class="btn-view" onclick="viewEquipment('WAT-006')" title="View Details">
+                                                        <i class="bi bi-eye"></i>
+                                                    </button>
+                                                    <button class="btn-edit" onclick="editEquipment('WAT-006')" title="Edit">
+                                                        <i class="bi bi-pencil-square"></i>
+                                                    </button>
+                                                    <button class="btn-remove" onclick="removeEquipment('WAT-006')" title="Remove">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -4038,268 +4245,791 @@ require_once 'auth_check.php';
                         </div>
                     </div>
 
-                    <!-- Equipment Usage Report with Search -->
-                    <div class="col-md-6 mb-4">
-                        <div class="card p-4">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h5 class="fw-bold" style="color: #166534;">
-                                    <i class="bi bi-bar-chart-fill text-success me-2"></i>
-                                    Equipment Usage Report
-                                </h5>
-                                <button class="btn-generate" onclick="generateReport('usage')">
-                                    <i class="bi bi-file-earmark-pdf me-2"></i>Generate Report
+                  
+                    <div class="modal fade" id="equipmentDetailsModal" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog modal-lg modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-header bg-success text-white">
+                                    <h5 class="modal-title">
+                                        <i class="bi bi-info-circle me-2"></i>
+                                        Equipment Details
+                                    </h5>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body" id="equipmentDetailsContent">
+                                 
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div> -->
+
+
+
+
+                    <!-- Reservation Details Section -->
+                    <div id="historySection" style="display: none;">
+                        <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Reservation Details</h3>
+
+                        <!-- Search and Filter Row (Outside card) -->
+                        <div class="search-add-row" style="margin-bottom: 20px;">
+                            <div class="search-container">
+                                <input type="text"
+                                    id="reservationSearch"
+                                    class="search-input"
+                                    placeholder="Search by ID, student or lab..."
+                                    oninput="searchReservations()"> <!-- Real-time search -->
+                                <button class="search-btn" onclick="searchReservations()">
+                                    <i class="bi bi-search"></i> Search
                                 </button>
                             </div>
-
-                            <!-- Search Input for Equipment Name (Real-time) -->
-                            <div class="mb-3">
-                                <input type="text"
-                                    id="equipmentUsageSearch"
-                                    class="form-control"
-                                    placeholder="Search equipment name..."
-                                    oninput="filterEquipmentUsage()">
+                            <div class="filter-section" style="margin-bottom: 0;">
+                                <select class="filter-select" id="statusFilter" onchange="searchReservations()" style="min-width: 150px;">
+                                    <option value="all">All Status</option>
+                                    <option value="ready">Ready</option>
+                                    <option value="pending">Pending</option>
+                                    <option value="rejected">Rejected</option>
+                                </select>
                             </div>
+                            <!-- Add Button -->
+                            <button class="add-btn" onclick="addReservation()" style="background: linear-gradient(135deg, #22c55e, #16a34a);">
+                                <i class="bi bi-plus-circle"></i> Add Reservation
+                            </button>
+                        </div>
 
-                            <!-- Equipment Usage Table -->
-                            <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
-                                <table class="table table-hover">
-                                    <thead class="sticky-top bg-white">
+                        <!-- Reservation Table Card -->
+                        <div id="reservationTableCard" class="card p-4">
+                            <h4 class="table-heading mt-0">
+                                <i class="bi bi-calendar-check"></i> Reservations
+                                <span class="table-count" id="reservationCount">(3)</span>
+                            </h4>
+                            <div class="table-responsive">
+                                <table class="user-table">
+                                    <thead>
                                         <tr>
-                                            <th>Equipment Name</th>
-                                            <th>Usage Percentage</th>
+                                            <th>Reservation ID</th>
+                                            <th>Lab Location</th>
+                                            <th>Student ID</th>
+                                            <th>Status</th>
+                                            <th>Reservation Date</th>
+                                            <th>Action</th>
                                         </tr>
                                     </thead>
-                                    <tbody id="equipmentUsageTableBody">
+                                    <tbody id="reservationTableBody">
                                         <!-- Data will be populated by JavaScript -->
                                     </tbody>
                                 </table>
                             </div>
-                            <!-- Add this after the equipment usage table in analytics section (around line 1890) -->
-                            <div class="row mt-4">
-                                <div class="col-12">
-                                    <div class="card p-4">
-                                        <h5 class="fw-bold mb-3" style="color: #166534;">Equipment Usage Overview</h5>
-                                        <div class="chart-container">
-                                            <canvas id="equipmentUsageChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Reservation Details Modal -->
+                    <div class="modal fade" id="reservationDetailsModal" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog modal-lg modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-header bg-success text-white">
+                                    <h5 class="modal-title">
+                                        <i class="bi bi-calendar-check me-2"></i>
+                                        Reservation Details
+                                    </h5>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body" id="reservationDetailsContent">
+                                    <!-- Content will be populated by JavaScript -->
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                    <!-- Request Section -->
+                    <div id="activitySection" style="display: none;">
+                        <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Requests</h3>
+
+                        <div class="card p-4">
+                            <!-- Request Type Tabs with Count Badges -->
+                            <div class="request-tabs" style="margin-bottom: 20px;">
+                                <button class="request-tab active" onclick="switchRequestType('technical')">
+                                    Technical Officer Requests
+                                    <span class="request-count-badge" id="technicalRequestCount">3</span>
+                                </button>
+                                <button class="request-tab" onclick="switchRequestType('supervisor')">
+                                    Supervisor Requests
+                                    <span class="request-count-badge" id="supervisorRequestCount">2</span>
+                                </button>
+                            </div>
+
+                            <!-- Time Range Filter -->
+                            <div class="filter-section" style="margin-bottom: 20px;">
+                                <select class="filter-select" id="timeRangeFilter" onchange="filterRequestsByTime()" style="min-width: 200px;">
+                                    <option value="all">All Time</option>
+                                    <option value="daily">Daily</option>
+                                    <option value="weekly">Weekly</option>
+                                    <option value="monthly">Monthly</option>
+                                </select>
+                            </div>
+
+                            <!-- Requests Table -->
+                            <div class="table-responsive mt-3">
+                                <table class="user-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Request ID</th>
+                                            <th>Date & Time</th>
+                                            <th>University ID</th>
+                                            <th>Name</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="requestListBody">
+                                        <!-- Data will be populated by JavaScript -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Request Details Modal -->
+                    <div class="modal fade" id="requestDetailsModal" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog modal-lg modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-header bg-success text-white">
+                                    <h5 class="modal-title">
+                                        <i class="bi bi-info-circle me-2"></i>
+                                        Request Details
+                                    </h5>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body" id="requestDetailsContent">
+                                    <!-- Content will be populated by JavaScript -->
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+
+
+                    <!-- Analytics Section -->
+                    <div id="analyticsSection" style="display: none;">
+                        <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Analytics Dashboard</h3>
+
+                        <!-- Summary Statistics Cards -->
+                        <div class="analytics-grid">
+                            <!-- Students Card -->
+                            <div class="stat-card">
+                                <i class="bi bi-mortarboard-fill"></i>
+                                <h3>56</h3>
+                                <p>Students</p>
+                            </div>
+
+                            <!-- Supervisors/Lecturers Card -->
+                            <div class="stat-card">
+                                <i class="bi bi-person-badge-fill"></i>
+                                <h3>5</h3>
+                                <p>Supervisors/Lecturers</p>
+                            </div>
+
+                            <!-- Technical Officers Card -->
+                            <div class="stat-card">
+                                <i class="bi bi-person-gear"></i>
+                                <h3>3</h3>
+                                <p>Technical Officers</p>
+                            </div>
+
+                            <!-- Active Equipment Card -->
+                            <div class="stat-card">
+                                <i class="bi bi-tools"></i>
+                                <h3>85%</h3>
+                                <p>Equipment Utilization Rate</p>
+                            </div>
+
+                            <!-- Maintenance Card -->
+                            <div class="stat-card">
+                                <i class="bi bi-gear-wide-connected"></i>
+                                <h3>3</h3>
+                                <p>Maintenance</p>
+                            </div>
+                        </div>
+
+                        <!-- First Row: Rejected Requests Report & Equipment Usage Chart -->
+                        <div class="row">
+                            <!-- Rejected Requests Report -->
+                            <div class="col-md-6 mb-4">
+                                <div class="card p-4">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h5 class="fw-bold" style="color: #166534;">
+                                            <i class="bi bi-x-circle-fill text-danger me-2"></i>
+                                            Rejected Requests (Technical Officer)
+                                        </h5>
+                                        <button class="btn-generate" onclick="generateReport('rejected')">
+                                            <i class="bi bi-file-earmark-pdf me-2"></i>Generate Report
+                                        </button>
+                                    </div>
+
+                                    <div class="table-responsive">
+                                        <table class="details-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>Request ID</th>
+                                                    <th>Student ID</th>
+                                                    <th>Reason</th>
+                                                    <th>Date & Time</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td>#REQ003</td>
+                                                    <td>SCI003</td>
+                                                    <td>
+                                                        <button class="btn-view" onclick="viewRejectionReason('REQ003')" title="View Reason">
+                                                            <i class="bi bi-eye"></i> View
+                                                        </button>
+                                                    </td>
+                                                    <td>2026-02-19 09:15 AM</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>#REQ007</td>
+                                                    <td>SCI007</td>
+                                                    <td>
+                                                        <button class="btn-view" onclick="viewRejectionReason('REQ007')" title="View Reason">
+                                                            <i class="bi bi-eye"></i> View
+                                                        </button>
+                                                    </td>
+                                                    <td>2026-02-17 02:30 PM</td>
+                                                </tr>
+                                                <tr>
+                                                    <td>#REQ012</td>
+                                                    <td>SCI012</td>
+                                                    <td>
+                                                        <button class="btn-view" onclick="viewRejectionReason('REQ012')" title="View Reason">
+                                                            <i class="bi bi-eye"></i> View
+                                                        </button>
+                                                    </td>
+                                                    <td>2026-02-15 11:45 AM</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Equipment Usage Report with Search -->
+                            <div class="col-md-6 mb-4">
+                                <div class="card p-4">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h5 class="fw-bold" style="color: #166534;">
+                                            <i class="bi bi-bar-chart-fill text-success me-2"></i>
+                                            Equipment Usage Report
+                                        </h5>
+                                        <button class="btn-generate" onclick="generateReport('usage')">
+                                            <i class="bi bi-file-earmark-pdf me-2"></i>Generate Report
+                                        </button>
+                                    </div>
+
+                                    <!-- Search Input for Equipment Name (Real-time) -->
+                                    <div class="mb-3">
+                                        <input type="text"
+                                            id="equipmentUsageSearch"
+                                            class="form-control"
+                                            placeholder="Search equipment name..."
+                                            oninput="filterEquipmentUsage()">
+                                    </div>
+
+                                    <!-- Equipment Usage Table -->
+                                    <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+                                        <table class="table table-hover">
+                                            <thead class="sticky-top bg-white">
+                                                <tr>
+                                                    <th>Equipment Name</th>
+                                                    <th>Usage Percentage</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="equipmentUsageTableBody">
+                                                <!-- Data will be populated by JavaScript -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <!-- Add this after the equipment usage table in analytics section (around line 1890) -->
+                                    <div class="row mt-4">
+                                        <div class="col-12">
+                                            <div class="card p-4">
+                                                <h5 class="fw-bold mb-3" style="color: #166534;">Equipment Usage Overview</h5>
+                                                <div class="chart-container">
+                                                    <canvas id="equipmentUsageChart"></canvas>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
 
-                <!-- Second Row: Download Inventory Button -->
-                <div class="row">
-                    <div class="col-12">
-                        <div class="card p-4 text-center">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <h5 class="fw-bold mb-0" style="color: #166534;">
-                                    <i class="bi bi-download me-2"></i>
-                                    Full Equipment Inventory
-                                </h5>
-                                <button class="btn-generate" onclick="downloadInventory()">
-                                    <i class="bi bi-file-earmark-spreadsheet me-2"></i>Download Full Inventory List
-                                </button>
+                        <!-- Second Row: Download Inventory Button -->
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="card p-4 text-center">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <h5 class="fw-bold mb-0" style="color: #166534;">
+                                            <i class="bi bi-download me-2"></i>
+                                            Full Equipment Inventory
+                                        </h5>
+                                        <button class="btn-generate" onclick="downloadInventory()">
+                                            <i class="bi bi-file-earmark-spreadsheet me-2"></i>Download Full Inventory List
+                                        </button>
+                                    </div>
+                                    <p class="text-muted mt-2 mb-0 small">Download complete inventory of all equipment with details</p>
+                                </div>
                             </div>
-                            <p class="text-muted mt-2 mb-0 small">Download complete inventory of all equipment with details</p>
+                        </div>
+                    </div>
+
+
+
+                    <!-- Rejection Reason Modal -->
+                    <div class="modal fade" id="rejectionReasonModal" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-header bg-danger text-white">
+                                    <h5 class="modal-title">
+                                        <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                        Rejection Reason
+                                    </h5>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                </div>
+                                <div class="modal-body" id="rejectionReasonContent">
+                                    <!-- Content will be populated by JavaScript -->
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+
+                    <!-- Add Event Modal -->
+                    <div class="add-event-wrapper" id="addEventWrapper">
+                        <div class="add-event-header">
+                            <div class="title">Equipment Request Details</div>
+                            <i class="fas fa-times close" id="closeEventBtn"></i>
+                        </div>
+                        <div class="add-event-body">
+                            <input type="text" placeholder="Equipment Request Title" id="eventName" maxlength="60">
+                            <textarea placeholder="Request Details" id="eventDetails" rows="3"></textarea>
+                            <input type="text" placeholder="Start Time (HH:MM)" id="eventTimeFrom" readonly>
+                            <input type="text" placeholder="End Time (HH:MM)" id="eventTimeTo" readonly>
+                        </div>
+                        <div class="add-event-footer">
+                            <button id="addEventSubmit">Confirm Request</button>
                         </div>
                     </div>
                 </div>
             </div>
 
+            <!-- Scripts -->
+            <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
+            <script>
+// ========== AI-POWERED EQUIPMENT FUNCTIONS ==========
+let equipmentData = [];
 
-            <!-- Rejection Reason Modal -->
-            <div class="modal fade" id="rejectionReasonModal" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header bg-danger text-white">
-                            <h5 class="modal-title">
-                                <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                                Rejection Reason
-                            </h5>
-                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body" id="rejectionReasonContent">
-                            <!-- Content will be populated by JavaScript -->
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        </div>
+function loadEquipmentFromAI() {
+    const tableBody = document.getElementById('equipmentTableBody');
+    tableBody.innerHTML = '<tr><td colspan="8" class="text-center py-4"><div class="spinner-border text-success me-2"></div>AI analyzing equipment usage...</td></tr>';
+    
+    // Call Python Flask API
+    fetch('http://127.0.0.1:5000/api/analyze-equipment')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                equipmentData = data.data;
+                displayEquipmentTable(equipmentData);
+                
+                // Log analysis info
+                console.log(`AI Analysis completed at ${data.analyzed_at}`);
+                showSuccess('AI analysis completed successfully!');
+            } else {
+                // Fallback to database data if AI fails
+                loadEquipmentFromDatabase();
+            }
+        })
+        .catch(error => {
+            console.error('AI API error:', error);
+            // Fallback to regular database query
+            loadEquipmentFromDatabase();
+        });
+}
+
+function loadEquipmentFromDatabase() {
+    // Fallback AJAX to PHP endpoint
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', '../controllers/get_equipment_list.php', true);
+    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+    
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                if (response.success) {
+                    equipmentData = response.data;
+                    displayEquipmentTable(equipmentData);
+                } else {
+                    showError('Failed to load equipment data');
+                }
+            } catch (e) {
+                console.error('Error:', e);
+            }
+        }
+    };
+    
+    xhr.send();
+}
+
+function displayEquipmentTable(equipment) {
+    const tableBody = document.getElementById('equipmentTableBody');
+    if (!tableBody) return;
+    
+    tableBody.innerHTML = '';
+    
+    equipment.forEach(item => {
+        // Calculate availability
+        const available = item.available || (item.total_qty - item.maintenance);
+        const total = item.total_qty;
+        
+        // Determine badge color
+        const ratio = available / total;
+        let badgeColor = '#22c55e'; // green
+        if (ratio < 0.3) badgeColor = '#ef4444'; // red
+        else if (ratio < 0.6) badgeColor = '#f59e0b'; // orange
+        
+        // Use AI color or calculate from usage
+        const usageColor = item.color || (item.usage_percentage >= 70 ? '#22c55e' : 
+                          (item.usage_percentage >= 40 ? '#f59e0b' : '#ef4444'));
+        
+        const row = document.createElement('tr');
+        row.setAttribute('data-equipment-id', item.equipment_code || item.code);
+        row.innerHTML = `
+            <td><img src="${item.image || 'https://cdn-icons-png.flaticon.com/512/2941/2941514.png'}" 
+                     style="width: 50px; height: 50px; object-fit: contain;"></td>
+            <td>${item.equipment_code || item.code || 'N/A'}</td>
+            <td>${item.equipment_name || item.name || 'Unknown'}</td>
+            <td>${item.location || 'N/A'}</td>
+            <td><span class="badge" style="background: ${badgeColor}; color: white;">${available}/${total}</span></td>
+            <td><span class="badge bg-warning">${item.maintenance || 0}</span></td>
+            <td>
+                <div class="d-flex align-items-center gap-2">
+                    <div class="progress-bar" style="width: 80px; height: 8px;">
+                        <div class="progress-fill" style="width: ${item.usage_percentage || 0}%; background: ${usageColor};"></div>
                     </div>
+                    <span style="color: ${usageColor}; font-weight: 600; font-size: 12px;">
+                        ${item.usage_percentage || 0}%
+                    </span>
+                    ${item.reservation_count ? 
+                      `<small class="text-muted ms-1">(${item.reservation_count} uses)</small>` : ''}
+                </div>
+            </td>
+            <td>
+                <div class="action-buttons">
+                    <button class="btn-view" onclick="viewEquipmentDetails('${item.equipment_code || item.code}')" title="View Details">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                    <button class="btn-edit" onclick="editEquipment('${item.equipment_code || item.code}')" title="Edit">
+                        <i class="bi bi-pencil-square"></i>
+                    </button>
+                    <button class="btn-remove" onclick="removeEquipment('${item.equipment_code || item.code}')" title="Remove">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            </td>
+        `;
+        tableBody.appendChild(row);
+    });
+    
+    // Update equipment count
+    document.getElementById('equipmentCount').textContent = `(${equipment.length})`;
+}
+
+function viewEquipmentDetails(code) {
+    const equipment = equipmentData.find(item => (item.equipment_code || item.code) === code);
+    if (!equipment) return;
+    
+    // Try to get detailed AI analysis
+    if (equipment.equipment_id) {
+        fetch(`http://127.0.0.1:5000/api/equipment/${equipment.equipment_id}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showEquipmentDetailsModal(equipment, data);
+                } else {
+                    showEquipmentDetailsModal(equipment);
+                }
+            })
+            .catch(() => {
+                showEquipmentDetailsModal(equipment);
+            });
+    } else {
+        showEquipmentDetailsModal(equipment);
+    }
+}
+
+function showEquipmentDetailsModal(equipment, aiData = null) {
+    const formatDate = (date) => date ? new Date(date).toLocaleDateString('en-US', {
+        year: 'numeric', month: 'long', day: 'numeric'
+    }) : 'N/A';
+    
+    const isOverdue = equipment.next_maintenance ? new Date(equipment.next_maintenance) < new Date() : false;
+    
+    // Generate AI insights
+    let aiInsights = '';
+    if (aiData && aiData.recent_usage && aiData.recent_usage.length > 0) {
+        const comments = aiData.recent_usage.map(u => u.comment || u.any_comment).filter(c => c).join(' • ');
+        aiInsights = `
+            <div class="mt-3 p-3" style="background: #f3f4f6; border-radius: 8px;">
+                <h6 class="text-success mb-2"><i class="bi bi-robot me-2"></i>AI Insights:</h6>
+                <p><strong>Recent comments:</strong> ${comments || 'No comments available'}</p>
+                <p><strong>Usage pattern:</strong> ${equipment.usage_percentage}% usage rate based on ${equipment.reservation_count || 0} reservations</p>
+            </div>
+        `;
+    }
+    
+    document.getElementById('equipmentDetailsContent').innerHTML = `
+        <div class="row">
+            <div class="col-md-4 text-center">
+                <img src="${equipment.image || 'https://cdn-icons-png.flaticon.com/512/2941/2941514.png'}" 
+                     style="width: 150px; height: 150px; object-fit: contain;" class="mb-3">
+                <h4>${equipment.equipment_name || equipment.name}</h4>
+                <p class="text-muted">${equipment.equipment_code || equipment.code}</p>
+                <div class="mt-2">
+                    <span class="badge" style="background: ${equipment.color || '#22c55e'}; font-size: 14px;">
+                        AI Usage: ${equipment.usage_percentage || 0}%
+                    </span>
                 </div>
             </div>
-
-
-
-
-            <!-- Add Event Modal -->
-            <div class="add-event-wrapper" id="addEventWrapper">
-                <div class="add-event-header">
-                    <div class="title">Equipment Request Details</div>
-                    <i class="fas fa-times close" id="closeEventBtn"></i>
-                </div>
-                <div class="add-event-body">
-                    <input type="text" placeholder="Equipment Request Title" id="eventName" maxlength="60">
-                    <textarea placeholder="Request Details" id="eventDetails" rows="3"></textarea>
-                    <input type="text" placeholder="Start Time (HH:MM)" id="eventTimeFrom" readonly>
-                    <input type="text" placeholder="End Time (HH:MM)" id="eventTimeTo" readonly>
-                </div>
-                <div class="add-event-footer">
-                    <button id="addEventSubmit">Confirm Request</button>
-                </div>
+            <div class="col-md-8">
+                <table class="table table-borderless">
+                    <tr><th>Location:</th><td>${equipment.location || 'N/A'}</td></tr>
+                    <tr><th>Manufacturer:</th><td>${equipment.manufacturer || 'N/A'}</td></tr>
+                    <tr><th>Model:</th><td>${equipment.model || 'N/A'}</td></tr>
+                    <tr><th>Purchase Date:</th><td>${formatDate(equipment.purchase_date)}</td></tr>
+                    <tr><th>Last Maintenance:</th><td>${formatDate(equipment.last_maintenance)}</td></tr>
+                    <tr><th>Next Maintenance:</th><td>${formatDate(equipment.next_maintenance)} ${isOverdue ? '<span class="badge bg-danger ms-2">⚠️ Overdue</span>' : ''}</td></tr>
+                    <tr><th>Availability:</th><td>${equipment.available || 0}/${equipment.total_qty || 0} units</td></tr>
+                    <tr><th>Maintenance:</th><td>${equipment.maintenance || 0} pending</td></tr>
+                    <tr><th>AI Analysis:</th><td>
+                        <div class="progress-bar" style="width: 100%; height: 10px;">
+                            <div class="progress-fill" style="width: ${equipment.usage_percentage || 0}%; background: ${equipment.color || '#22c55e'};"></div>
+                        </div>
+                        <small class="text-muted">${equipment.usage_percentage || 0}% usage based on reservation history and comments</small>
+                    </td></tr>
+                    <tr><th>Description:</th><td>${equipment.description || 'No description available'}</td></tr>
+                </table>
+                ${aiInsights}
             </div>
         </div>
-    </div>
+    `;
+    
+    new bootstrap.Modal(document.getElementById('equipmentDetailsModal')).show();
+}
 
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+function refreshAIAnalysis() {
+    showSuccess('AI analysis started...');
+    loadEquipmentFromAI();
+}
 
-    <script>
-        // ========== REQUEST SECTION FUNCTIONS ==========
-        let currentRequestType = 'technical';
-        let currentRequestId = null;
-
-        // Request Data with status tracking
-        const technicalRequests = [{
-                id: 'TEC-REQ-001',
-                dateTime: '2026-02-20 10:30 AM',
-                timestamp: new Date('2026-02-20T10:30:00'),
-                universityId: 'SCI001',
-                name: 'John Doe',
-                status: 'pending',
-                details: {
-                    equipment: 'Microscope (2 units)',
-                    lab: 'Lab 01',
-                    duration: '2 hours',
-                    purpose: 'Final Year Research Project'
-                }
-            },
-            {
-                id: 'TEC-REQ-002',
-                dateTime: '2026-02-20 11:00 AM',
-                timestamp: new Date('2026-02-20T11:00:00'),
-                universityId: 'SCI002',
-                name: 'Jane Smith',
-                status: 'pending',
-                details: {
-                    equipment: 'Centrifuge (1 unit)',
-                    lab: 'Research Lab',
-                    duration: '3 hours',
-                    purpose: 'DNA Extraction'
-                }
-            },
-            {
-                id: 'TEC-REQ-003',
-                dateTime: '2026-02-19 09:15 AM',
-                timestamp: new Date('2026-02-19T09:15:00'),
-                universityId: 'SCI003',
-                name: 'Mike Johnson',
-                status: 'pending',
-                details: {
-                    equipment: 'Incubator (1 unit)',
-                    lab: 'Lab 02',
-                    duration: '4 hours',
-                    purpose: 'Bacterial Culture'
-                }
-            }
-        ];
-
-        const supervisorRequests = [{
-                id: 'SUP-REQ-001',
-                dateTime: '2026-02-20 09:30 AM',
-                timestamp: new Date('2026-02-20T09:30:00'),
-                universityId: 'SCI004',
-                name: 'Sarah Wilson',
-                status: 'pending',
-                details: {
-                    equipment: 'Autoclave (1 unit)',
-                    lab: 'Lab 01',
-                    duration: '1.5 hours',
-                    purpose: 'Media Sterilization',
-                    supervisor: 'Dr. Kamal Perera'
-                }
-            },
-            {
-                id: 'SUP-REQ-002',
-                dateTime: '2026-02-19 02:00 PM',
-                timestamp: new Date('2026-02-19T14:00:00'),
-                universityId: 'SCI005',
-                name: 'Pathum Perera',
-                status: 'pending',
-                details: {
-                    equipment: 'pH Meter (1 unit)',
-                    lab: 'Research Lab',
-                    duration: '2 hours',
-                    purpose: 'Solution Preparation',
-                    supervisor: 'Prof. Malini Silva'
-                }
-            }
-        ];
-
-        // Function to update request counts
-        function updateRequestCounts() {
-            const technicalCount = technicalRequests.filter(req => req.status === 'pending').length;
-            const supervisorCount = supervisorRequests.filter(req => req.status === 'pending').length;
-
-            document.getElementById('technicalRequestCount').textContent = technicalCount;
-            document.getElementById('supervisorRequestCount').textContent = supervisorCount;
-            document.getElementById('requestBadge').textContent = technicalCount + supervisorCount;
+// Update search function to work with dynamically loaded data
+function searchEquipment() {
+    const searchTerm = document.getElementById('equipmentSearch').value.toLowerCase().trim();
+    const table = document.getElementById('equipmentTableBody');
+    if (!table) return;
+    
+    let visibleCount = 0;
+    
+    Array.from(table.getElementsByTagName('tr')).forEach(row => {
+        const text = row.textContent.toLowerCase();
+        if (searchTerm === '' || text.includes(searchTerm)) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
         }
+    });
+    
+    // Update visible count
+    const total = table.children.length;
+    document.getElementById('equipmentCount').textContent = 
+        (visibleCount > 0 || searchTerm === '') ? `(${visibleCount}/${total})` : '(0)';
+}
 
-        function switchRequestType(type) {
-            currentRequestType = type;
-            const tabs = document.querySelectorAll('.request-tab');
-            tabs.forEach(tab => tab.classList.remove('active'));
+// Initialize equipment on section show
+function showSection(section) {
+    // ... existing code ...
+    
+    if (section === 'equipment') {
+        loadEquipmentFromAI(); // Load with AI analysis
+    }
+    
+    // ... rest of your code ...
+}
 
-            if (type === 'technical') {
-                tabs[0].classList.add('active');
-            } else {
-                tabs[1].classList.add('active');
-            }
-            filterRequestsByTime();
-        }
 
-        function filterRequestsByTime() {
-            const timeRange = document.getElementById('timeRangeFilter').value;
-            const today = new Date();
-            let requests = currentRequestType === 'technical' ? technicalRequests : supervisorRequests;
-            let filtered = [];
 
-            switch (timeRange) {
-                case 'daily':
-                    filtered = requests.filter(item =>
-                        item.timestamp.toDateString() === today.toDateString()
-                    );
-                    break;
-                case 'weekly':
-                    const weekAgo = new Date();
-                    weekAgo.setDate(today.getDate() - 7);
-                    filtered = requests.filter(item => item.timestamp >= weekAgo);
-                    break;
-                case 'monthly':
-                    const monthAgo = new Date();
-                    monthAgo.setDate(today.getDate() - 30);
-                    filtered = requests.filter(item => item.timestamp >= monthAgo);
-                    break;
-                case 'all':
-                default:
-                    filtered = requests;
-                    break;
-            }
-            displayRequestTable(filtered);
-        }
 
-        function displayRequestTable(requests) {
-            const tableBody = document.getElementById('requestListBody');
-            if (!tableBody) return;
-            tableBody.innerHTML = '';
+                // ========== REQUEST SECTION FUNCTIONS ==========
+                let currentRequestType = 'technical';
+                let currentRequestId = null;
 
-            requests.sort((a, b) => b.timestamp - a.timestamp);
-            requests.forEach(item => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
+                // Request Data with status tracking
+                const technicalRequests = [{
+                        id: 'TEC-REQ-001',
+                        dateTime: '2026-02-20 10:30 AM',
+                        timestamp: new Date('2026-02-20T10:30:00'),
+                        universityId: 'SCI001',
+                        name: 'John Doe',
+                        status: 'pending',
+                        details: {
+                            equipment: 'Microscope (2 units)',
+                            lab: 'Lab 01',
+                            duration: '2 hours',
+                            purpose: 'Final Year Research Project'
+                        }
+                    },
+                    {
+                        id: 'TEC-REQ-002',
+                        dateTime: '2026-02-20 11:00 AM',
+                        timestamp: new Date('2026-02-20T11:00:00'),
+                        universityId: 'SCI002',
+                        name: 'Jane Smith',
+                        status: 'pending',
+                        details: {
+                            equipment: 'Centrifuge (1 unit)',
+                            lab: 'Research Lab',
+                            duration: '3 hours',
+                            purpose: 'DNA Extraction'
+                        }
+                    },
+                    {
+                        id: 'TEC-REQ-003',
+                        dateTime: '2026-02-19 09:15 AM',
+                        timestamp: new Date('2026-02-19T09:15:00'),
+                        universityId: 'SCI003',
+                        name: 'Mike Johnson',
+                        status: 'pending',
+                        details: {
+                            equipment: 'Incubator (1 unit)',
+                            lab: 'Lab 02',
+                            duration: '4 hours',
+                            purpose: 'Bacterial Culture'
+                        }
+                    }
+                ];
+
+                const supervisorRequests = [{
+                        id: 'SUP-REQ-001',
+                        dateTime: '2026-02-20 09:30 AM',
+                        timestamp: new Date('2026-02-20T09:30:00'),
+                        universityId: 'SCI004',
+                        name: 'Sarah Wilson',
+                        status: 'pending',
+                        details: {
+                            equipment: 'Autoclave (1 unit)',
+                            lab: 'Lab 01',
+                            duration: '1.5 hours',
+                            purpose: 'Media Sterilization',
+                            supervisor: 'Dr. Kamal Perera'
+                        }
+                    },
+                    {
+                        id: 'SUP-REQ-002',
+                        dateTime: '2026-02-19 02:00 PM',
+                        timestamp: new Date('2026-02-19T14:00:00'),
+                        universityId: 'SCI005',
+                        name: 'Pathum Perera',
+                        status: 'pending',
+                        details: {
+                            equipment: 'pH Meter (1 unit)',
+                            lab: 'Research Lab',
+                            duration: '2 hours',
+                            purpose: 'Solution Preparation',
+                            supervisor: 'Prof. Malini Silva'
+                        }
+                    }
+                ];
+
+                // Function to update request counts
+                function updateRequestCounts() {
+                    const technicalCount = technicalRequests.filter(req => req.status === 'pending').length;
+                    const supervisorCount = supervisorRequests.filter(req => req.status === 'pending').length;
+
+                    document.getElementById('technicalRequestCount').textContent = technicalCount;
+                    document.getElementById('supervisorRequestCount').textContent = supervisorCount;
+                    document.getElementById('requestBadge').textContent = technicalCount + supervisorCount;
+                }
+
+                function switchRequestType(type) {
+                    currentRequestType = type;
+                    const tabs = document.querySelectorAll('.request-tab');
+                    tabs.forEach(tab => tab.classList.remove('active'));
+
+                    if (type === 'technical') {
+                        tabs[0].classList.add('active');
+                    } else {
+                        tabs[1].classList.add('active');
+                    }
+                    filterRequestsByTime();
+                }
+
+                function filterRequestsByTime() {
+                    const timeRange = document.getElementById('timeRangeFilter').value;
+                    const today = new Date();
+                    let requests = currentRequestType === 'technical' ? technicalRequests : supervisorRequests;
+                    let filtered = [];
+
+                    switch (timeRange) {
+                        case 'daily':
+                            filtered = requests.filter(item =>
+                                item.timestamp.toDateString() === today.toDateString()
+                            );
+                            break;
+                        case 'weekly':
+                            const weekAgo = new Date();
+                            weekAgo.setDate(today.getDate() - 7);
+                            filtered = requests.filter(item => item.timestamp >= weekAgo);
+                            break;
+                        case 'monthly':
+                            const monthAgo = new Date();
+                            monthAgo.setDate(today.getDate() - 30);
+                            filtered = requests.filter(item => item.timestamp >= monthAgo);
+                            break;
+                        case 'all':
+                        default:
+                            filtered = requests;
+                            break;
+                    }
+                    displayRequestTable(filtered);
+                }
+
+                function displayRequestTable(requests) {
+                    const tableBody = document.getElementById('requestListBody');
+                    if (!tableBody) return;
+                    tableBody.innerHTML = '';
+
+                    requests.sort((a, b) => b.timestamp - a.timestamp);
+                    requests.forEach(item => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
             <td>${item.id}</td>
             <td>${item.dateTime}</td>
             <td>${item.universityId}</td>
@@ -4318,24 +5048,24 @@ require_once 'auth_check.php';
                 </div>
             </td>
         `;
-                tableBody.appendChild(row);
-            });
+                        tableBody.appendChild(row);
+                    });
 
-            if (requests.length === 0) {
-                const row = document.createElement('tr');
-                row.innerHTML = `<td colspan="5" class="text-center">No requests found for this time period</td>`;
-                tableBody.appendChild(row);
-            }
-        }
+                    if (requests.length === 0) {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `<td colspan="5" class="text-center">No requests found for this time period</td>`;
+                        tableBody.appendChild(row);
+                    }
+                }
 
-        function viewRequest(id) {
-            const requests = currentRequestType === 'technical' ? technicalRequests : supervisorRequests;
-            const request = requests.find(item => item.id === id);
-            if (!request) return;
+                function viewRequest(id) {
+                    const requests = currentRequestType === 'technical' ? technicalRequests : supervisorRequests;
+                    const request = requests.find(item => item.id === id);
+                    if (!request) return;
 
-            currentRequestId = id;
-            const detailsContent = document.getElementById('requestDetailsContent');
-            let detailsHtml = `
+                    currentRequestId = id;
+                    const detailsContent = document.getElementById('requestDetailsContent');
+                    let detailsHtml = `
         <div class="row">
             <div class="col-md-12">
                 <table class="table table-borderless">
@@ -4348,404 +5078,576 @@ require_once 'auth_check.php';
                     <tr><th>Duration:</th><td>${request.details.duration}</td></tr>
                     <tr><th>Purpose:</th><td>${request.details.purpose}</td></tr>
     `;
-            if (currentRequestType === 'supervisor' && request.details.supervisor) {
-                detailsHtml += `<tr><th>Supervisor:</th><td>${request.details.supervisor}</td></tr>`;
-            }
-            detailsHtml += `</table></div></div>`;
-            detailsContent.innerHTML = detailsHtml;
-            new bootstrap.Modal(document.getElementById('requestDetailsModal')).show();
-        }
-
-        function approveRequest(id) {
-            const requestId = id || currentRequestId;
-            if (confirm(`Are you sure you want to approve request ${requestId}?`)) {
-                const requests = currentRequestType === 'technical' ? technicalRequests : supervisorRequests;
-                const request = requests.find(r => r.id === requestId);
-                if (request) request.status = 'approved';
-
-                alert(`Request ${requestId} has been approved successfully!`);
-                const modal = bootstrap.Modal.getInstance(document.getElementById('requestDetailsModal'));
-                if (modal) modal.hide();
-
-                updateRequestCounts();
-                filterRequestsByTime();
-            }
-        }
-
-        function rejectRequest(id) {
-            const requestId = id || currentRequestId;
-            const reason = prompt(`Enter rejection reason for request ${requestId}:`);
-            if (reason) {
-                const requests = currentRequestType === 'technical' ? technicalRequests : supervisorRequests;
-                const request = requests.find(r => r.id === requestId);
-                if (request) request.status = 'rejected';
-
-                alert(`Request ${requestId} has been rejected. Reason: ${reason}`);
-                const modal = bootstrap.Modal.getInstance(document.getElementById('requestDetailsModal'));
-                if (modal) modal.hide();
-
-                updateRequestCounts();
-                filterRequestsByTime();
-            }
-        }
-
-        // ========== EQUIPMENT SEARCH FUNCTIONS ==========
-        function searchEquipment() {
-            const searchTerm = document.getElementById('equipmentSearch').value.toLowerCase().trim();
-            const equipmentVisible = filterEquipmentTable('equipmentTableBody', searchTerm);
-            toggleEquipmentVisibility('equipmentTableCard', equipmentVisible, searchTerm);
-            updateEquipmentCount(searchTerm);
-        }
-
-        function filterEquipmentTable(tableId, searchTerm) {
-            const table = document.getElementById(tableId);
-            if (!table) return 0;
-            let visibleCount = 0;
-
-            for (let row of table.getElementsByTagName('tr')) {
-                if (searchTerm === '' || row.textContent.toLowerCase().includes(searchTerm)) {
-                    row.style.display = '';
-                    visibleCount++;
-                } else {
-                    row.style.display = 'none';
+                    if (currentRequestType === 'supervisor' && request.details.supervisor) {
+                        detailsHtml += `<tr><th>Supervisor:</th><td>${request.details.supervisor}</td></tr>`;
+                    }
+                    detailsHtml += `</table></div></div>`;
+                    detailsContent.innerHTML = detailsHtml;
+                    new bootstrap.Modal(document.getElementById('requestDetailsModal')).show();
                 }
-            }
-            return visibleCount;
-        }
 
-        function toggleEquipmentVisibility(cardId, visibleCount, searchTerm) {
-            const card = document.getElementById(cardId);
-            if (!card) return;
-            card.style.display = (visibleCount === 0 && searchTerm !== '') ? 'none' : 'block';
-        }
+                function approveRequest(id) {
+                    const requestId = id || currentRequestId;
+                    if (confirm(`Are you sure you want to approve request ${requestId}?`)) {
+                        const requests = currentRequestType === 'technical' ? technicalRequests : supervisorRequests;
+                        const request = requests.find(r => r.id === requestId);
+                        if (request) request.status = 'approved';
 
-        function updateEquipmentCount(searchTerm) {
-            const equipmentTable = document.getElementById('equipmentTableBody');
-            if (!equipmentTable) return;
+                        alert(`Request ${requestId} has been approved successfully!`);
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('requestDetailsModal'));
+                        if (modal) modal.hide();
 
-            const visibleEquipment = Array.from(equipmentTable.getElementsByTagName('tr'))
-                .filter(row => row.style.display !== 'none').length;
-            const totalEquipment = equipmentTable.children.length;
-
-            document.getElementById('equipmentCount').textContent =
-                (visibleEquipment > 0 || searchTerm === '') ?
-                '(' + visibleEquipment + '/' + totalEquipment + ')' : '(0)';
-        }
-
-        // ========== USER MANAGEMENT FUNCTIONS ==========
-        function toggleUserStatus(userId) {
-            const userRow = document.querySelector(`tr[data-user-id="${userId}"]`);
-            if (!userRow) return;
-
-            const currentStatus = userRow.getAttribute('data-status');
-            const actionCell = userRow.querySelector('.action-buttons');
-            const button = actionCell.querySelector(currentStatus === 'active' ? '.btn-deactivate' : '.btn-activate');
-
-            if (currentStatus === 'active') {
-                if (confirm(`Are you sure you want to deactivate user ${userId}?`)) {
-                    userRow.setAttribute('data-status', 'inactive');
-                    button.className = 'btn-activate';
-                    button.innerHTML = '<i class="bi bi-person-check"></i> Activate';
-                    alert(`User ${userId} has been deactivated.`);
+                        updateRequestCounts();
+                        filterRequestsByTime();
+                    }
                 }
-            } else {
-                if (confirm(`Are you sure you want to activate user ${userId}?`)) {
-                    userRow.setAttribute('data-status', 'active');
-                    button.className = 'btn-deactivate';
-                    button.innerHTML = '<i class="bi bi-person-x"></i> Deactivate';
-                    alert(`User ${userId} has been activated.`);
+
+                function rejectRequest(id) {
+                    const requestId = id || currentRequestId;
+                    const reason = prompt(`Enter rejection reason for request ${requestId}:`);
+                    if (reason) {
+                        const requests = currentRequestType === 'technical' ? technicalRequests : supervisorRequests;
+                        const request = requests.find(r => r.id === requestId);
+                        if (request) request.status = 'rejected';
+
+                        alert(`Request ${requestId} has been rejected. Reason: ${reason}`);
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('requestDetailsModal'));
+                        if (modal) modal.hide();
+
+                        updateRequestCounts();
+                        filterRequestsByTime();
+                    }
                 }
-            }
-        }
 
-        function viewPendingRequests() {
-            showSection('activity');
-            document.getElementById('timeRangeFilter').value = 'all';
-            filterRequestsByTime();
-        }
-
-        function openNotificationModal() {
-            toggleNotifications();
-        }
-
-        function searchUsers() {
-            const searchTerm = document.getElementById('userSearch').value.toLowerCase().trim();
-
-            const studentVisible = filterTable('studentTableBody', searchTerm);
-            const supervisorVisible = filterTable('supervisorTableBody', searchTerm);
-            const techVisible = filterTable('techOfficerTableBody', searchTerm);
-
-            toggleTableVisibility('studentTableCard', studentVisible, searchTerm);
-            toggleTableVisibility('supervisorTableCard', supervisorVisible, searchTerm);
-            toggleTableVisibility('techOfficerTableCard', techVisible, searchTerm);
-
-            updateVisibleCounts(searchTerm);
-        }
-
-        function filterTable(tableId, searchTerm) {
-            const table = document.getElementById(tableId);
-            if (!table) return 0;
-            let visibleCount = 0;
-
-            for (let row of table.getElementsByTagName('tr')) {
-                if (searchTerm === '' || row.textContent.toLowerCase().includes(searchTerm)) {
-                    row.style.display = '';
-                    visibleCount++;
-                } else {
-                    row.style.display = 'none';
+                // ========== EQUIPMENT SEARCH FUNCTIONS ==========
+                function searchEquipment() {
+                    const searchTerm = document.getElementById('equipmentSearch').value.toLowerCase().trim();
+                    const equipmentVisible = filterEquipmentTable('equipmentTableBody', searchTerm);
+                    toggleEquipmentVisibility('equipmentTableCard', equipmentVisible, searchTerm);
+                    updateEquipmentCount(searchTerm);
                 }
-            }
-            return visibleCount;
-        }
 
-        function toggleTableVisibility(cardId, visibleCount, searchTerm) {
-            const card = document.getElementById(cardId);
-            if (!card) return;
-            card.style.display = (visibleCount === 0 && searchTerm !== '') ? 'none' : 'block';
-        }
+                function filterEquipmentTable(tableId, searchTerm) {
+                    const table = document.getElementById(tableId);
+                    if (!table) return 0;
+                    let visibleCount = 0;
 
-        function updateVisibleCounts(searchTerm) {
-            const tables = [{
-                    id: 'studentTableBody',
-                    countId: 'studentCount'
-                },
-                {
-                    id: 'supervisorTableBody',
-                    countId: 'supervisorCount'
-                },
-                {
-                    id: 'techOfficerTableBody',
-                    countId: 'techOfficerCount'
+                    for (let row of table.getElementsByTagName('tr')) {
+                        if (searchTerm === '' || row.textContent.toLowerCase().includes(searchTerm)) {
+                            row.style.display = '';
+                            visibleCount++;
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    }
+                    return visibleCount;
                 }
-            ];
 
-            tables.forEach(table => {
-                const tbody = document.getElementById(table.id);
-                if (!tbody) return;
+                function toggleEquipmentVisibility(cardId, visibleCount, searchTerm) {
+                    const card = document.getElementById(cardId);
+                    if (!card) return;
+                    card.style.display = (visibleCount === 0 && searchTerm !== '') ? 'none' : 'block';
+                }
 
-                const visible = Array.from(tbody.getElementsByTagName('tr'))
-                    .filter(row => row.style.display !== 'none').length;
-                const total = tbody.children.length;
+                function updateEquipmentCount(searchTerm) {
+                    const equipmentTable = document.getElementById('equipmentTableBody');
+                    if (!equipmentTable) return;
 
-                document.getElementById(table.countId).textContent =
-                    (visible > 0 || searchTerm === '') ? '(' + visible + '/' + total + ')' : '(0)';
-            });
-        }
+                    const visibleEquipment = Array.from(equipmentTable.getElementsByTagName('tr'))
+                        .filter(row => row.style.display !== 'none').length;
+                    const totalEquipment = equipmentTable.children.length;
 
-        function addNewUser() {
-            alert('Add User modal would open here');
-        }
+                    document.getElementById('equipmentCount').textContent =
+                        (visibleEquipment > 0 || searchTerm === '') ?
+                        '(' + visibleEquipment + '/' + totalEquipment + ')' : '(0)';
+                }
 
-        function editUser(userId) {
-            alert('Edit user: ' + userId);
-        }
+                // ========== USER MANAGEMENT FUNCTIONS ==========
+                // ========== USER ACTIVATE/DEACTIVATE FUNCTION WITH AJAX ==========
+                function toggleUserStatus(userId) {
+                    const userRow = document.querySelector(`tr[data-user-id="${userId}"]`);
+                    if (!userRow) return;
 
-        // ========== SIDEBAR & NAVIGATION ==========
-        function toggleSidebar() {
-            document.getElementById("sidebar").classList.toggle("active");
-            document.getElementById("sidebarOverlay").classList.toggle("active");
-        }
+                    const currentStatus = userRow.getAttribute('data-status');
+                    const actionCell = userRow.querySelector('.action-buttons');
+                    const button = actionCell.querySelector(currentStatus === 'active' ? '.btn-deactivate' : '.btn-activate');
 
-        function toggleNotifications() {
-            document.getElementById("notificationDropdown").classList.toggle("show");
-        }
+                    // Determine new status
+                    const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+                    const action = currentStatus === 'active' ? 'deactivate' : 'activate';
 
-        document.addEventListener('click', function(event) {
-            const bell = document.querySelector('.notification-bell:last-child');
-            const dropdown = document.getElementById('notificationDropdown');
-            if (bell && dropdown && !bell.contains(event.target) && !dropdown.contains(event.target)) {
-                dropdown.classList.remove('show');
-            }
-        });
+                    // Confirm action
+                    if (!confirm(`Are you sure you want to ${action} user ${userId}?`)) {
+                        return;
+                    }
 
-        function showSection(section) {
-            const sections = ['dashboard', 'userManagement', 'equipment', 'history', 'activity', 'analytics'];
-            sections.forEach(s => document.getElementById(s + 'Section').style.display = 'none');
+                    // Show loading state
+                    const originalButtonHtml = button.innerHTML;
+                    button.disabled = true;
+                    button.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Processing...';
 
-            const sectionElement = document.getElementById(section + 'Section');
-            if (sectionElement) sectionElement.style.display = 'block';
+                    // Create FormData
+                    const formData = new FormData();
+                    formData.append('user_id', userId);
+                    formData.append('action', action);
 
-            document.querySelectorAll('.sidebar a').forEach(link => {
-                link.classList.remove('active');
-                if (link.getAttribute('onclick')?.includes(section)) link.classList.add('active');
-            });
+                    // Send AJAX request
+                    const xhr = new XMLHttpRequest();
+                    xhr.open('POST', '../controllers/activate_process.php', true);
+                    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
 
-            if (section === 'equipment') {
-                displayEquipmentTable(equipmentDataTable);
-            }
-            if (section === 'dashboard' || section === 'analytics') {
-                setTimeout(() => {
-                    initCharts();
-                    initAnalyticsCharts();
-                    initCalendar(); // Add this line
-                    initCalendarListeners(); // Add this line
-                }, 100);
-            }
-            if (section === 'history') {
-                // Reset filters when showing section
-                document.getElementById('reservationSearch').value = '';
-                document.getElementById('statusFilter').value = 'all';
-                searchReservations();
-            }
-            if (section === 'activity') filterRequestsByTime();
-        }
+                    xhr.onload = function() {
+                        button.disabled = false;
 
-        // ========== EQUIPMENT FUNCTIONS ==========
-        const equipmentGridData = [{
-                name: 'Microscope',
-                image: 'https://cdn-icons-png.flaticon.com/512/2941/2941514.png',
-                location: 'Microbiology Lab 01',
-                status: 'available',
-                lab: 'lab1'
-            },
-            {
-                name: 'Centrifuge',
-                image: 'https://cdn-icons-png.flaticon.com/512/2941/2941543.png',
-                location: 'Research Laboratory',
-                status: 'in-use',
-                lab: 'research'
-            },
-            {
-                name: 'Incubator',
-                image: 'https://cdn-icons-png.flaticon.com/512/2941/2941538.png',
-                location: 'Microbiology Lab 02',
-                status: 'maintenance',
-                lab: 'lab2'
-            },
-            {
-                name: 'Autoclave',
-                image: 'https://cdn-icons-png.flaticon.com/512/2941/2941521.png',
-                location: 'Microbiology Lab 01',
-                status: 'available',
-                lab: 'lab1'
-            },
-            {
-                name: 'pH Meter',
-                image: 'https://cdn-icons-png.flaticon.com/512/2941/2941556.png',
-                location: 'Research Laboratory',
-                status: 'available',
-                lab: 'research'
-            },
-            {
-                name: 'Water Bath',
-                image: 'https://cdn-icons-png.flaticon.com/512/2941/2941578.png',
-                location: 'Microbiology Lab 02',
-                status: 'in-use',
-                lab: 'lab2'
-            }
-        ];
+                        if (xhr.status === 200) {
+                            try {
+                                const response = JSON.parse(xhr.responseText);
 
-        const equipmentDataTable = [{
-                code: 'MIC-001',
-                name: 'Microscope',
-                image: 'https://cdn-icons-png.flaticon.com/512/2941/2941514.png',
-                available: 4,
-                total: 8,
-                maintenance: 2,
-                usage: 75,
-                location: 'Microbiology Lab 01',
-                manufacturer: 'Olympus',
-                model: 'CX23',
-                purchaseDate: '2024-01-15',
-                lastMaintenance: '2026-02-01',
-                nextMaintenance: '2026-05-01',
-                description: 'Binocular microscope with LED illumination, 4 objective lenses (4x, 10x, 40x, 100x)'
-            },
-            {
-                code: 'CEN-002',
-                name: 'Centrifuge',
-                image: 'https://cdn-icons-png.flaticon.com/512/2941/2941543.png',
-                available: 3,
-                total: 5,
-                maintenance: 1,
-                usage: 60,
-                location: 'Research Laboratory',
-                manufacturer: 'Eppendorf',
-                model: '5424R',
-                purchaseDate: '2023-11-20',
-                lastMaintenance: '2026-01-15',
-                nextMaintenance: '2026-04-15',
-                description: 'Refrigerated microcentrifuge, max speed 15,000 rpm'
-            },
-            {
-                code: 'INC-003',
-                name: 'Incubator',
-                image: 'https://cdn-icons-png.flaticon.com/512/2941/2941538.png',
-                available: 2,
-                total: 4,
-                maintenance: 3,
-                usage: 50,
-                location: 'Microbiology Lab 02',
-                manufacturer: 'Thermo Scientific',
-                model: 'Heratherm',
-                purchaseDate: '2023-09-10',
-                lastMaintenance: '2026-02-10',
-                nextMaintenance: '2026-03-10',
-                description: 'Microbiological incubator, 100L capacity'
-            },
-            {
-                code: 'AUT-004',
-                name: 'Autoclave',
-                image: 'https://cdn-icons-png.flaticon.com/512/2941/2941521.png',
-                available: 6,
-                total: 6,
-                maintenance: 0,
-                usage: 90,
-                location: 'Microbiology Lab 01',
-                manufacturer: 'Hirayama',
-                model: 'HVE-50',
-                purchaseDate: '2024-02-01',
-                lastMaintenance: '2026-01-20',
-                nextMaintenance: '2026-04-20',
-                description: 'Vertical sterilization autoclave, 50L capacity'
-            },
-            {
-                code: 'PHM-005',
-                name: 'pH Meter',
-                image: 'https://cdn-icons-png.flaticon.com/512/2941/2941556.png',
-                available: 3,
-                total: 3,
-                maintenance: 1,
-                usage: 35,
-                location: 'Research Laboratory',
-                manufacturer: 'Mettler Toledo',
-                model: 'FiveEasy',
-                purchaseDate: '2024-03-05',
-                lastMaintenance: '2026-02-05',
-                nextMaintenance: '2026-05-05',
-                description: 'Digital pH meter with automatic temperature compensation'
-            },
-            {
-                code: 'WAT-006',
-                name: 'Water Bath',
-                image: 'https://cdn-icons-png.flaticon.com/512/2941/2941578.png',
-                available: 5,
-                total: 7,
-                maintenance: 2,
-                usage: 70,
-                location: 'Microbiology Lab 02',
-                manufacturer: 'Memmert',
-                model: 'WNB 14',
-                purchaseDate: '2023-10-12',
-                lastMaintenance: '2026-01-25',
-                nextMaintenance: '2026-02-25',
-                description: 'Digital water bath, 20L capacity'
-            }
-        ];
+                                if (response.success) {
+                                    // Update UI on success
+                                    userRow.setAttribute('data-status', newStatus);
 
-        function displayEquipmentTable(equipment) {
-            const tableBody = document.getElementById('equipmentTableBody');
-            if (!tableBody) return;
-            tableBody.innerHTML = '';
+                                    if (newStatus === 'active') {
+                                        button.className = 'btn-deactivate';
+                                        button.innerHTML = '<i class="bi bi-person-x"></i> Deactivate';
+                                        showSuccess(`User ${userId} has been activated successfully!`);
+                                        loadUserCounts();
+                                    } else {
+                                        button.className = 'btn-activate';
+                                        button.innerHTML = '<i class="bi bi-person-check"></i> Activate';
+                                        showSuccess(`User ${userId} has been deactivated successfully!`);
+                                        loadUserCounts();
+                                    }
 
-            equipment.forEach(item => {
-                const ratio = item.available / item.total;
-                let badgeColor = '#22c55e';
-                if (ratio < 0.3) badgeColor = '#ef4444';
-                else if (ratio < 0.6) badgeColor = '#f59e0b';
+                                    // Update counts if function exists
+                                    if (typeof updateUserCounts === 'function') {
+                                        updateUserCounts();
+                                    }
 
-                const row = document.createElement('tr');
-                row.innerHTML = `
+                                } else {
+                                    button.innerHTML = originalButtonHtml;
+                                    showError(response.message || `Failed to ${action} user.`);
+                                }
+                            } catch (e) {
+                                console.error('Parse error:', e);
+                                button.innerHTML = originalButtonHtml;
+                                showError('Server error occurred.');
+                            }
+                        } else {
+                            button.innerHTML = originalButtonHtml;
+                            showError('Connection error. Please try again.');
+                        }
+                    };
+
+                    xhr.onerror = function() {
+                        button.disabled = false;
+                        button.innerHTML = originalButtonHtml;
+                        showError('Network error. Please check your connection.');
+                    };
+
+                    xhr.ontimeout = function() {
+                        button.disabled = false;
+                        button.innerHTML = originalButtonHtml;
+                        showError('Request timed out. Please try again.');
+                    };
+
+                    xhr.timeout = 30000;
+                    xhr.send(formData);
+                }
+
+                // Helper function to show success messages
+                function showSuccess(message) {
+                    // Check if message div exists
+                    let msgDiv = document.getElementById('messageDiv');
+
+                    if (!msgDiv) {
+                        // Create message div if it doesn't exist
+                        msgDiv = document.createElement('div');
+                        msgDiv.id = 'messageDiv';
+                        msgDiv.className = 'position-fixed top-0 end-0 m-3 p-3 rounded shadow';
+                        msgDiv.style.zIndex = '9999';
+                        document.body.appendChild(msgDiv);
+                    }
+
+                    msgDiv.className = 'position-fixed top-0 end-0 m-3 p-3 rounded shadow bg-success text-white';
+                    msgDiv.innerHTML = `<i class="bi bi-check-circle-fill me-2"></i>${message}`;
+
+                    setTimeout(() => {
+                        msgDiv.style.display = 'none';
+                    }, 3000);
+                }
+
+                // Helper function to show error messages
+                function showError(message) {
+                    // Check if message div exists
+                    let msgDiv = document.getElementById('messageDiv');
+
+                    if (!msgDiv) {
+                        // Create message div if it doesn't exist
+                        msgDiv = document.createElement('div');
+                        msgDiv.id = 'messageDiv';
+                        msgDiv.className = 'position-fixed top-0 end-0 m-3 p-3 rounded shadow';
+                        msgDiv.style.zIndex = '9999';
+                        document.body.appendChild(msgDiv);
+                    }
+
+                    msgDiv.className = 'position-fixed top-0 end-0 m-3 p-3 rounded shadow bg-danger text-white';
+                    msgDiv.innerHTML = `<i class="bi bi-exclamation-triangle-fill me-2"></i>${message}`;
+                    msgDiv.style.display = 'block';
+                }
+
+                // Optional: Function to update user counts
+                function updateUserCounts() {
+                    // You can implement this to refresh counts
+                    // For example, reload the student count
+                    console.log('User counts updated');
+                }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+                function viewPendingRequests() {
+                    showSection('activity');
+                    document.getElementById('timeRangeFilter').value = 'all';
+                    filterRequestsByTime();
+                }
+
+                function openNotificationModal() {
+                    toggleNotifications();
+                }
+
+                function searchUsers() {
+                    const searchTerm = document.getElementById('userSearch').value.toLowerCase().trim();
+
+                    const studentVisible = filterTable('studentTableBody', searchTerm);
+                    const supervisorVisible = filterTable('supervisorTableBody', searchTerm);
+                    const techVisible = filterTable('techOfficerTableBody', searchTerm);
+
+                    toggleTableVisibility('studentTableCard', studentVisible, searchTerm);
+                    toggleTableVisibility('supervisorTableCard', supervisorVisible, searchTerm);
+                    toggleTableVisibility('techOfficerTableCard', techVisible, searchTerm);
+
+                    updateVisibleCounts(searchTerm);
+                }
+
+                function filterTable(tableId, searchTerm) {
+                    const table = document.getElementById(tableId);
+                    if (!table) return 0;
+                    let visibleCount = 0;
+
+                    for (let row of table.getElementsByTagName('tr')) {
+                        if (searchTerm === '' || row.textContent.toLowerCase().includes(searchTerm)) {
+                            row.style.display = '';
+                            visibleCount++;
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    }
+                    return visibleCount;
+                }
+
+                function toggleTableVisibility(cardId, visibleCount, searchTerm) {
+                    const card = document.getElementById(cardId);
+                    if (!card) return;
+                    card.style.display = (visibleCount === 0 && searchTerm !== '') ? 'none' : 'block';
+                }
+
+                function updateVisibleCounts(searchTerm) {
+                    const tables = [{
+                            id: 'studentTableBody',
+                            countId: 'studentCount'
+                        },
+                        {
+                            id: 'supervisorTableBody',
+                            countId: 'supervisorCount'
+                        },
+                        {
+                            id: 'techOfficerTableBody',
+                            countId: 'techOfficerCount'
+                        }
+                    ];
+
+                    tables.forEach(table => {
+                        const tbody = document.getElementById(table.id);
+                        if (!tbody) return;
+
+                        const visible = Array.from(tbody.getElementsByTagName('tr'))
+                            .filter(row => row.style.display !== 'none').length;
+                        const total = tbody.children.length;
+
+                        document.getElementById(table.countId).textContent =
+                            (visible > 0 || searchTerm === '') ? '(' + visible + '/' + total + ')' : '(0)';
+                    });
+                }
+
+                function loadUserCounts() {
+                    const xhr = new XMLHttpRequest();
+                    xhr.open('GET', '../controllers/get_user_counts.php', true);
+                    xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+
+                    xhr.onload = function() {
+                        if (xhr.status === 200) {
+                            try {
+                                const response = JSON.parse(xhr.responseText);
+                                if (response.success) {
+                                    // Update student counts
+                                    document.getElementById('studentCount').innerHTML =
+                                        `(${response.students.active}/${response.students.total})`;
+
+                                    // Update supervisor counts
+                                    document.getElementById('supervisorCount').innerHTML =
+                                        `(${response.supervisors.active}/${response.supervisors.total})`;
+
+                                    // Update technical officer counts
+                                    document.getElementById('techOfficerCount').innerHTML =
+                                        `(${response.technical.active}/${response.technical.total})`;
+                                }
+                            } catch (e) {
+                                console.error('Error loading user counts:', e);
+                            }
+                        }
+                    };
+
+                    xhr.send();
+                }
+
+                function addNewUser() {
+                    alert('Add User modal would open here');
+                }
+
+                function editUser(userId) {
+                    alert('Edit user: ' + userId);
+                }
+
+                // ========== SIDEBAR & NAVIGATION ==========
+                function toggleSidebar() {
+                    document.getElementById("sidebar").classList.toggle("active");
+                    document.getElementById("sidebarOverlay").classList.toggle("active");
+                }
+
+                function toggleNotifications() {
+                    document.getElementById("notificationDropdown").classList.toggle("show");
+                }
+
+                document.addEventListener('click', function(event) {
+                    const bell = document.querySelector('.notification-bell:last-child');
+                    const dropdown = document.getElementById('notificationDropdown');
+                    if (bell && dropdown && !bell.contains(event.target) && !dropdown.contains(event.target)) {
+                        dropdown.classList.remove('show');
+                    }
+                });
+
+                function showSection(section) {
+                    const sections = ['dashboard', 'userManagement', 'equipment', 'history', 'activity', 'analytics'];
+                    sections.forEach(s => document.getElementById(s + 'Section').style.display = 'none');
+
+                    const sectionElement = document.getElementById(section + 'Section');
+                    if (sectionElement) sectionElement.style.display = 'block';
+
+                    document.querySelectorAll('.sidebar a').forEach(link => {
+                        link.classList.remove('active');
+                        if (link.getAttribute('onclick')?.includes(section)) link.classList.add('active');
+                    });
+
+                    if (section === 'equipment') {
+                        displayEquipmentTable(equipmentDataTable);
+                    }
+                    if (section === 'dashboard' || section === 'analytics') {
+                        setTimeout(() => {
+                            initCharts();
+                            initAnalyticsCharts();
+                            initCalendar(); // Add this line
+                            initCalendarListeners(); // Add this line
+                        }, 100);
+                    }
+                    if (section === 'history') {
+                        // Reset filters when showing section
+                        document.getElementById('reservationSearch').value = '';
+                        document.getElementById('statusFilter').value = 'all';
+                        searchReservations();
+                    }
+                    if (section === 'activity') filterRequestsByTime();
+                }
+
+                // ========== EQUIPMENT FUNCTIONS ==========
+                const equipmentGridData = [{
+                        name: 'Microscope',
+                        image: 'https://cdn-icons-png.flaticon.com/512/2941/2941514.png',
+                        location: 'Microbiology Lab 01',
+                        status: 'available',
+                        lab: 'lab1'
+                    },
+                    {
+                        name: 'Centrifuge',
+                        image: 'https://cdn-icons-png.flaticon.com/512/2941/2941543.png',
+                        location: 'Research Laboratory',
+                        status: 'in-use',
+                        lab: 'research'
+                    },
+                    {
+                        name: 'Incubator',
+                        image: 'https://cdn-icons-png.flaticon.com/512/2941/2941538.png',
+                        location: 'Microbiology Lab 02',
+                        status: 'maintenance',
+                        lab: 'lab2'
+                    },
+                    {
+                        name: 'Autoclave',
+                        image: 'https://cdn-icons-png.flaticon.com/512/2941/2941521.png',
+                        location: 'Microbiology Lab 01',
+                        status: 'available',
+                        lab: 'lab1'
+                    },
+                    {
+                        name: 'pH Meter',
+                        image: 'https://cdn-icons-png.flaticon.com/512/2941/2941556.png',
+                        location: 'Research Laboratory',
+                        status: 'available',
+                        lab: 'research'
+                    },
+                    {
+                        name: 'Water Bath',
+                        image: 'https://cdn-icons-png.flaticon.com/512/2941/2941578.png',
+                        location: 'Microbiology Lab 02',
+                        status: 'in-use',
+                        lab: 'lab2'
+                    }
+                ];
+
+                const equipmentDataTable = [{
+                        code: 'MIC-001',
+                        name: 'Microscope',
+                        image: 'https://cdn-icons-png.flaticon.com/512/2941/2941514.png',
+                        available: 4,
+                        total: 8,
+                        maintenance: 2,
+                        usage: 75,
+                        location: 'Microbiology Lab 01',
+                        manufacturer: 'Olympus',
+                        model: 'CX23',
+                        purchaseDate: '2024-01-15',
+                        lastMaintenance: '2026-02-01',
+                        nextMaintenance: '2026-05-01',
+                        description: 'Binocular microscope with LED illumination, 4 objective lenses (4x, 10x, 40x, 100x)'
+                    },
+                    {
+                        code: 'CEN-002',
+                        name: 'Centrifuge',
+                        image: 'https://cdn-icons-png.flaticon.com/512/2941/2941543.png',
+                        available: 3,
+                        total: 5,
+                        maintenance: 1,
+                        usage: 60,
+                        location: 'Research Laboratory',
+                        manufacturer: 'Eppendorf',
+                        model: '5424R',
+                        purchaseDate: '2023-11-20',
+                        lastMaintenance: '2026-01-15',
+                        nextMaintenance: '2026-04-15',
+                        description: 'Refrigerated microcentrifuge, max speed 15,000 rpm'
+                    },
+                    {
+                        code: 'INC-003',
+                        name: 'Incubator',
+                        image: 'https://cdn-icons-png.flaticon.com/512/2941/2941538.png',
+                        available: 2,
+                        total: 4,
+                        maintenance: 3,
+                        usage: 50,
+                        location: 'Microbiology Lab 02',
+                        manufacturer: 'Thermo Scientific',
+                        model: 'Heratherm',
+                        purchaseDate: '2023-09-10',
+                        lastMaintenance: '2026-02-10',
+                        nextMaintenance: '2026-03-10',
+                        description: 'Microbiological incubator, 100L capacity'
+                    },
+                    {
+                        code: 'AUT-004',
+                        name: 'Autoclave',
+                        image: 'https://cdn-icons-png.flaticon.com/512/2941/2941521.png',
+                        available: 6,
+                        total: 6,
+                        maintenance: 0,
+                        usage: 90,
+                        location: 'Microbiology Lab 01',
+                        manufacturer: 'Hirayama',
+                        model: 'HVE-50',
+                        purchaseDate: '2024-02-01',
+                        lastMaintenance: '2026-01-20',
+                        nextMaintenance: '2026-04-20',
+                        description: 'Vertical sterilization autoclave, 50L capacity'
+                    },
+                    {
+                        code: 'PHM-005',
+                        name: 'pH Meter',
+                        image: 'https://cdn-icons-png.flaticon.com/512/2941/2941556.png',
+                        available: 3,
+                        total: 3,
+                        maintenance: 1,
+                        usage: 35,
+                        location: 'Research Laboratory',
+                        manufacturer: 'Mettler Toledo',
+                        model: 'FiveEasy',
+                        purchaseDate: '2024-03-05',
+                        lastMaintenance: '2026-02-05',
+                        nextMaintenance: '2026-05-05',
+                        description: 'Digital pH meter with automatic temperature compensation'
+                    },
+                    {
+                        code: 'WAT-006',
+                        name: 'Water Bath',
+                        image: 'https://cdn-icons-png.flaticon.com/512/2941/2941578.png',
+                        available: 5,
+                        total: 7,
+                        maintenance: 2,
+                        usage: 70,
+                        location: 'Microbiology Lab 02',
+                        manufacturer: 'Memmert',
+                        model: 'WNB 14',
+                        purchaseDate: '2023-10-12',
+                        lastMaintenance: '2026-01-25',
+                        nextMaintenance: '2026-02-25',
+                        description: 'Digital water bath, 20L capacity'
+                    }
+                ];
+
+                function displayEquipmentTable(equipment) {
+                    const tableBody = document.getElementById('equipmentTableBody');
+                    if (!tableBody) return;
+                    tableBody.innerHTML = '';
+
+                    equipment.forEach(item => {
+                        const ratio = item.available / item.total;
+                        let badgeColor = '#22c55e';
+                        if (ratio < 0.3) badgeColor = '#ef4444';
+                        else if (ratio < 0.6) badgeColor = '#f59e0b';
+
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
             <td><img src="${item.image}" style="width: 50px; height: 50px; object-fit: contain;"></td>
             <td>${item.code}</td>
             <td>${item.name}</td>
@@ -4764,22 +5666,22 @@ require_once 'auth_check.php';
                 </div>
             </td>
         `;
-                tableBody.appendChild(row);
-            });
-        }
+                        tableBody.appendChild(row);
+                    });
+                }
 
-        function viewEquipment(code) {
-            const equipment = equipmentDataTable.find(item => item.code === code);
-            if (!equipment) return;
+                function viewEquipment(code) {
+                    const equipment = equipmentDataTable.find(item => item.code === code);
+                    if (!equipment) return;
 
-            const formatDate = (date) => new Date(date).toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-            });
-            const isOverdue = new Date(equipment.nextMaintenance) < new Date();
+                    const formatDate = (date) => new Date(date).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    });
+                    const isOverdue = new Date(equipment.nextMaintenance) < new Date();
 
-            document.getElementById('equipmentDetailsContent').innerHTML = `
+                    document.getElementById('equipmentDetailsContent').innerHTML = `
         <div class="row">
             <div class="col-md-4 text-center">
                 <img src="${equipment.image}" style="width: 150px; height: 150px; object-fit: contain;" class="mb-3">
@@ -4802,93 +5704,93 @@ require_once 'auth_check.php';
             </div>
         </div>
     `;
-            new bootstrap.Modal(document.getElementById('equipmentDetailsModal')).show();
-        }
+                    new bootstrap.Modal(document.getElementById('equipmentDetailsModal')).show();
+                }
 
-        function addEquipment() {
-            alert('Add Equipment modal would open here');
-        }
+                function addEquipment() {
+                    alert('Add Equipment modal would open here');
+                }
 
-        function editEquipment(code) {
-            alert('Edit equipment: ' + code);
-        }
+                function editEquipment(code) {
+                    alert('Edit equipment: ' + code);
+                }
 
-        function removeEquipment(code) {
-            if (confirm(`Remove equipment ${code}?`)) {
-                const index = equipmentDataTable.findIndex(item => item.code === code);
-                if (index !== -1) equipmentDataTable.splice(index, 1);
-                displayEquipmentTable(equipmentDataTable);
-                alert('Equipment removed!');
-            }
-        }
-
-
-
-        // Add this function to show events for selected date
-        function showEventsForDate(date) {
-            const eventsList = document.getElementById('eventsList');
-            const dateStr = date.toISOString().split('T')[0]; // Format: YYYY-MM-DD
-
-            // Sample events data - in real app, this would come from database
-            const events = {
-                '2026-02-15': [{
-                        title: 'Microscope Reservation - Lab 01',
-                        time: '10:00 AM - 12:00 PM',
-                        type: 'reservation'
-                    },
-                    {
-                        title: 'Centrifuge Maintenance',
-                        time: '02:00 PM - 03:00 PM',
-                        type: 'maintenance'
+                function removeEquipment(code) {
+                    if (confirm(`Remove equipment ${code}?`)) {
+                        const index = equipmentDataTable.findIndex(item => item.code === code);
+                        if (index !== -1) equipmentDataTable.splice(index, 1);
+                        displayEquipmentTable(equipmentDataTable);
+                        alert('Equipment removed!');
                     }
-                ],
-                '2026-02-16': [{
-                        title: 'Incubator Calibration',
-                        time: '09:00 AM - 10:30 AM',
-                        type: 'maintenance'
-                    },
-                    {
-                        title: 'Student Practical - Lab 02',
-                        time: '11:00 AM - 01:00 PM',
-                        type: 'practical'
-                    },
-                    {
-                        title: 'Autoclave Sterilization',
-                        time: '02:00 PM - 04:00 PM',
-                        type: 'maintenance'
-                    }
-                ],
-                '2026-02-17': [{
-                        title: 'Research Project - DNA Extraction',
-                        time: '09:30 AM - 12:30 PM',
-                        type: 'research'
-                    },
-                    {
-                        title: 'pH Meter Calibration',
-                        time: '01:30 PM - 02:30 PM',
-                        type: 'maintenance'
-                    }
-                ]
-            };
+                }
 
-            // Get events for selected date or show default message
-            const dayEvents = events[dateStr] || [];
 
-            if (dayEvents.length === 0) {
-                eventsList.innerHTML = '<div class="no-event">No events scheduled for this date</div>';
-            } else {
-                eventsList.innerHTML = '';
-                dayEvents.forEach(event => {
-                    const eventItem = document.createElement('div');
-                    eventItem.className = 'event-item';
 
-                    // Determine icon color based on event type
-                    let iconColor = '#ffd700'; // default gold
-                    if (event.type === 'maintenance') iconColor = '#ef4444'; // red
-                    if (event.type === 'practical') iconColor = '#22c55e'; // green
-                    if (event.type === 'research') iconColor = '#3b82f6'; // blue
+                // Add this function to show events for selected date
+                function showEventsForDate(date) {
+                    const eventsList = document.getElementById('eventsList');
+                    const dateStr = date.toISOString().split('T')[0]; // Format: YYYY-MM-DD
 
-                    eventItem.innerHTML = `
+                    // Sample events data - in real app, this would come from database
+                    const events = {
+                        '2026-02-15': [{
+                                title: 'Microscope Reservation - Lab 01',
+                                time: '10:00 AM - 12:00 PM',
+                                type: 'reservation'
+                            },
+                            {
+                                title: 'Centrifuge Maintenance',
+                                time: '02:00 PM - 03:00 PM',
+                                type: 'maintenance'
+                            }
+                        ],
+                        '2026-02-16': [{
+                                title: 'Incubator Calibration',
+                                time: '09:00 AM - 10:30 AM',
+                                type: 'maintenance'
+                            },
+                            {
+                                title: 'Student Practical - Lab 02',
+                                time: '11:00 AM - 01:00 PM',
+                                type: 'practical'
+                            },
+                            {
+                                title: 'Autoclave Sterilization',
+                                time: '02:00 PM - 04:00 PM',
+                                type: 'maintenance'
+                            }
+                        ],
+                        '2026-02-17': [{
+                                title: 'Research Project - DNA Extraction',
+                                time: '09:30 AM - 12:30 PM',
+                                type: 'research'
+                            },
+                            {
+                                title: 'pH Meter Calibration',
+                                time: '01:30 PM - 02:30 PM',
+                                type: 'maintenance'
+                            }
+                        ]
+                    };
+
+                    // Get events for selected date or show default message
+                    const dayEvents = events[dateStr] || [];
+
+                    if (dayEvents.length === 0) {
+                        eventsList.innerHTML = '<div class="no-event">No events scheduled for this date</div>';
+                    } else {
+                        eventsList.innerHTML = '';
+                        dayEvents.forEach(event => {
+                            const eventItem = document.createElement('div');
+                            eventItem.className = 'event-item';
+
+                            // Determine icon color based on event type
+                            let iconColor = '#ffd700'; // default gold
+                            if (event.type === 'maintenance') iconColor = '#ef4444'; // red
+                            if (event.type === 'practical') iconColor = '#22c55e'; // green
+                            if (event.type === 'research') iconColor = '#3b82f6'; // blue
+
+                            eventItem.innerHTML = `
                 <div class="title">
                     <i class="fas fa-circle" style="color: ${iconColor};"></i>
                     <div class="event-title">${event.title}</div>
@@ -4896,159 +5798,159 @@ require_once 'auth_check.php';
                 <div class="event-time">${event.time}</div>
             `;
 
-                    eventsList.appendChild(eventItem);
-                });
-            }
-        }
+                            eventsList.appendChild(eventItem);
+                        });
+                    }
+                }
 
 
 
 
-        // Add this function after showEventsForDate (around line 2220)
-        function addDayCellClickHandlers() {
-            const dayCells = document.querySelectorAll('.day-cell:not(.prev-date):not(.next-date)');
+                // Add this function after showEventsForDate (around line 2220)
+                function addDayCellClickHandlers() {
+                    const dayCells = document.querySelectorAll('.day-cell:not(.prev-date):not(.next-date)');
 
-            dayCells.forEach(cell => {
-                cell.addEventListener('click', function() {
-                    // Remove active class from all cells
-                    dayCells.forEach(c => c.classList.remove('active'));
+                    dayCells.forEach(cell => {
+                        cell.addEventListener('click', function() {
+                            // Remove active class from all cells
+                            dayCells.forEach(c => c.classList.remove('active'));
 
-                    // Add active class to clicked cell
-                    this.classList.add('active');
+                            // Add active class to clicked cell
+                            this.classList.add('active');
 
-                    // Get the selected date
-                    const selectedDay = this.textContent;
-                    const selectedDate = new Date(year, month, parseInt(selectedDay));
+                            // Get the selected date
+                            const selectedDay = this.textContent;
+                            const selectedDate = new Date(year, month, parseInt(selectedDay));
 
-                    // Update right panel with selected date
-                    const options = {
-                        weekday: 'long'
-                    };
-                    document.getElementById('eventDay').innerHTML = selectedDate.toLocaleDateString('en-US', options);
-                    document.getElementById('eventDate').innerHTML = selectedDate.toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
+                            // Update right panel with selected date
+                            const options = {
+                                weekday: 'long'
+                            };
+                            document.getElementById('eventDay').innerHTML = selectedDate.toLocaleDateString('en-US', options);
+                            document.getElementById('eventDate').innerHTML = selectedDate.toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric'
+                            });
+
+                            // Show events for this date
+                            showEventsForDate(selectedDate);
+                        });
+                    });
+                }
+                // ========== RESERVATION DATA ==========
+                const reservationData = [{
+                        id: 'RES-001',
+                        lab: 'Microbiology Lab 01',
+                        studentId: 'SCI001',
+                        studentName: 'John Doe',
+                        status: 'ready',
+                        date: '2026-02-25',
+                        time: '10:00 - 12:00',
+                        equipment: 'Microscope (2), Slides (10)',
+                        purpose: 'Final Year Research Project',
+                        technicalOfficer: 'Mr. Sunil Rathnayake',
+                        notes: 'All equipment verified and ready'
+                    },
+                    {
+                        id: 'RES-002',
+                        lab: 'Research Laboratory',
+                        studentId: 'SCI002',
+                        studentName: 'Jane Smith',
+                        status: 'pending',
+                        date: '2026-02-26',
+                        time: '14:00 - 16:00',
+                        equipment: 'Centrifuge (1), Test Tubes (5)',
+                        purpose: 'DNA Extraction Practical',
+                        technicalOfficer: 'Mrs. Chamari Weerasinghe',
+                        notes: 'Waiting for equipment availability'
+                    },
+                    {
+                        id: 'RES-003',
+                        lab: 'Microbiology Lab 02',
+                        studentId: 'SCI003',
+                        studentName: 'Mike Johnson',
+                        status: 'rejected',
+                        date: '2026-02-24',
+                        time: '09:00 - 11:00',
+                        equipment: 'Incubator (1), Culture Media (2)',
+                        purpose: 'Bacterial Culture Experiment',
+                        technicalOfficer: 'Mr. Prasanna Kumara',
+                        notes: 'Equipment under maintenance'
+                    }
+                ];
+
+                // ========== RESERVATION FUNCTIONS ==========
+                function searchReservations() {
+                    const searchTerm = document.getElementById('reservationSearch').value.toLowerCase().trim();
+                    const statusFilter = document.getElementById('statusFilter').value;
+
+                    console.log('Searching reservations:', {
+                        searchTerm,
+                        statusFilter
                     });
 
-                    // Show events for this date
-                    showEventsForDate(selectedDate);
-                });
-            });
-        }
-        // ========== RESERVATION DATA ==========
-        const reservationData = [{
-                id: 'RES-001',
-                lab: 'Microbiology Lab 01',
-                studentId: 'SCI001',
-                studentName: 'John Doe',
-                status: 'ready',
-                date: '2026-02-25',
-                time: '10:00 - 12:00',
-                equipment: 'Microscope (2), Slides (10)',
-                purpose: 'Final Year Research Project',
-                technicalOfficer: 'Mr. Sunil Rathnayake',
-                notes: 'All equipment verified and ready'
-            },
-            {
-                id: 'RES-002',
-                lab: 'Research Laboratory',
-                studentId: 'SCI002',
-                studentName: 'Jane Smith',
-                status: 'pending',
-                date: '2026-02-26',
-                time: '14:00 - 16:00',
-                equipment: 'Centrifuge (1), Test Tubes (5)',
-                purpose: 'DNA Extraction Practical',
-                technicalOfficer: 'Mrs. Chamari Weerasinghe',
-                notes: 'Waiting for equipment availability'
-            },
-            {
-                id: 'RES-003',
-                lab: 'Microbiology Lab 02',
-                studentId: 'SCI003',
-                studentName: 'Mike Johnson',
-                status: 'rejected',
-                date: '2026-02-24',
-                time: '09:00 - 11:00',
-                equipment: 'Incubator (1), Culture Media (2)',
-                purpose: 'Bacterial Culture Experiment',
-                technicalOfficer: 'Mr. Prasanna Kumara',
-                notes: 'Equipment under maintenance'
-            }
-        ];
+                    // Filter reservations based on search term and status
+                    const filtered = reservationData.filter(item => {
+                        // Check status filter
+                        if (statusFilter !== 'all' && item.status !== statusFilter) {
+                            return false;
+                        }
 
-        // ========== RESERVATION FUNCTIONS ==========
-        function searchReservations() {
-            const searchTerm = document.getElementById('reservationSearch').value.toLowerCase().trim();
-            const statusFilter = document.getElementById('statusFilter').value;
+                        // Check search term (if not empty)
+                        if (searchTerm !== '') {
+                            return (
+                                item.id.toLowerCase().includes(searchTerm) ||
+                                item.studentId.toLowerCase().includes(searchTerm) ||
+                                item.studentName.toLowerCase().includes(searchTerm) ||
+                                item.lab.toLowerCase().includes(searchTerm)
+                            );
+                        }
 
-            console.log('Searching reservations:', {
-                searchTerm,
-                statusFilter
-            });
+                        return true; // Passes all filters
+                    });
 
-            // Filter reservations based on search term and status
-            const filtered = reservationData.filter(item => {
-                // Check status filter
-                if (statusFilter !== 'all' && item.status !== statusFilter) {
-                    return false;
+                    // Display filtered results
+                    displayReservationTable(filtered);
+
+                    // Update visibility and count
+                    updateReservationVisibility(filtered.length, searchTerm, statusFilter);
                 }
 
-                // Check search term (if not empty)
-                if (searchTerm !== '') {
-                    return (
-                        item.id.toLowerCase().includes(searchTerm) ||
-                        item.studentId.toLowerCase().includes(searchTerm) ||
-                        item.studentName.toLowerCase().includes(searchTerm) ||
-                        item.lab.toLowerCase().includes(searchTerm)
-                    );
+                // This function is called by the select onchange
+                function filterReservations() {
+                    searchReservations();
                 }
 
-                return true; // Passes all filters
-            });
+                function displayReservationTable(reservations) {
+                    const tableBody = document.getElementById('reservationTableBody');
+                    if (!tableBody) return;
 
-            // Display filtered results
-            displayReservationTable(filtered);
+                    tableBody.innerHTML = '';
 
-            // Update visibility and count
-            updateReservationVisibility(filtered.length, searchTerm, statusFilter);
-        }
+                    if (reservations.length === 0) {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `<td colspan="6" class="text-center py-4">No reservations found</td>`;
+                        tableBody.appendChild(row);
+                        return;
+                    }
 
-        // This function is called by the select onchange
-        function filterReservations() {
-            searchReservations();
-        }
+                    reservations.forEach(item => {
+                        let statusClass = '';
+                        switch (item.status) {
+                            case 'ready':
+                                statusClass = 'bg-success';
+                                break;
+                            case 'pending':
+                                statusClass = 'bg-warning';
+                                break;
+                            case 'rejected':
+                                statusClass = 'bg-danger';
+                                break;
+                        }
 
-        function displayReservationTable(reservations) {
-            const tableBody = document.getElementById('reservationTableBody');
-            if (!tableBody) return;
-
-            tableBody.innerHTML = '';
-
-            if (reservations.length === 0) {
-                const row = document.createElement('tr');
-                row.innerHTML = `<td colspan="6" class="text-center py-4">No reservations found</td>`;
-                tableBody.appendChild(row);
-                return;
-            }
-
-            reservations.forEach(item => {
-                let statusClass = '';
-                switch (item.status) {
-                    case 'ready':
-                        statusClass = 'bg-success';
-                        break;
-                    case 'pending':
-                        statusClass = 'bg-warning';
-                        break;
-                    case 'rejected':
-                        statusClass = 'bg-danger';
-                        break;
-                }
-
-                const row = document.createElement('tr');
-                row.innerHTML = `
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
             <td>${item.id}</td>
             <td>${item.lab}</td>
             <td>${item.studentId}</td>
@@ -5060,53 +5962,53 @@ require_once 'auth_check.php';
                 </button>
             </td>
         `;
-                tableBody.appendChild(row);
-            });
-        }
+                        tableBody.appendChild(row);
+                    });
+                }
 
-        function updateReservationVisibility(visibleCount, searchTerm, statusFilter) {
-            const card = document.getElementById('reservationTableCard');
-            const countElement = document.getElementById('reservationCount');
+                function updateReservationVisibility(visibleCount, searchTerm, statusFilter) {
+                    const card = document.getElementById('reservationTableCard');
+                    const countElement = document.getElementById('reservationCount');
 
-            if (!card || !countElement) return;
+                    if (!card || !countElement) return;
 
-            const totalReservations = reservationData.length;
+                    const totalReservations = reservationData.length;
 
-            // Update count display
-            if (visibleCount > 0 || (searchTerm === '' && statusFilter === 'all')) {
-                countElement.textContent = '(' + visibleCount + '/' + totalReservations + ')';
-            } else {
-                countElement.textContent = '(0)';
-            }
+                    // Update count display
+                    if (visibleCount > 0 || (searchTerm === '' && statusFilter === 'all')) {
+                        countElement.textContent = '(' + visibleCount + '/' + totalReservations + ')';
+                    } else {
+                        countElement.textContent = '(0)';
+                    }
 
-            // Hide card if no results AND (search is active OR filter is active)
-            if (visibleCount === 0 && (searchTerm !== '' || statusFilter !== 'all')) {
-                card.style.display = 'none';
-            } else {
-                card.style.display = 'block';
-            }
-        }
+                    // Hide card if no results AND (search is active OR filter is active)
+                    if (visibleCount === 0 && (searchTerm !== '' || statusFilter !== 'all')) {
+                        card.style.display = 'none';
+                    } else {
+                        card.style.display = 'block';
+                    }
+                }
 
-        function viewReservation(id) {
-            const reservation = reservationData.find(item => item.id === id);
-            if (!reservation) return;
+                function viewReservation(id) {
+                    const reservation = reservationData.find(item => item.id === id);
+                    if (!reservation) return;
 
-            const detailsContent = document.getElementById('reservationDetailsContent');
+                    const detailsContent = document.getElementById('reservationDetailsContent');
 
-            let statusBadge = '';
-            switch (reservation.status) {
-                case 'ready':
-                    statusBadge = '<span class="badge bg-success">Ready</span>';
-                    break;
-                case 'pending':
-                    statusBadge = '<span class="badge bg-warning">Pending</span>';
-                    break;
-                case 'rejected':
-                    statusBadge = '<span class="badge bg-danger">Rejected</span>';
-                    break;
-            }
+                    let statusBadge = '';
+                    switch (reservation.status) {
+                        case 'ready':
+                            statusBadge = '<span class="badge bg-success">Ready</span>';
+                            break;
+                        case 'pending':
+                            statusBadge = '<span class="badge bg-warning">Pending</span>';
+                            break;
+                        case 'rejected':
+                            statusBadge = '<span class="badge bg-danger">Rejected</span>';
+                            break;
+                    }
 
-            detailsContent.innerHTML = `
+                    detailsContent.innerHTML = `
         <div class="row">
             <div class="col-md-12">
                 <div class="d-flex justify-content-between align-items-center mb-3">
@@ -5128,175 +6030,175 @@ require_once 'auth_check.php';
         </div>
     `;
 
-            new bootstrap.Modal(document.getElementById('reservationDetailsModal')).show();
-        }
-
-        function addReservation() {
-            alert('Add Reservation modal would open here');
-        }
-
-        // ========== ANALYTICS FUNCTIONS ==========
-        let usageChart, monthlyChart, equipmentUsageChart;
-        let equipmentUsageData = [{
-                name: 'Microscope',
-                usage: 80
-            },
-            {
-                name: 'Centrifuge',
-                usage: 65
-            },
-            {
-                name: 'Incubator',
-                usage: 45
-            },
-            {
-                name: 'Autoclave',
-                usage: 70
-            },
-            {
-                name: 'pH Meter',
-                usage: 35
-            },
-            {
-                name: 'Water Bath',
-                usage: 20
-            },
-            {
-                name: 'Shaker',
-                usage: 55
-            },
-            {
-                name: 'Hot Plate',
-                usage: 30
-            },
-            {
-                name: 'Balance',
-                usage: 25
-            }
-        ];
-
-        function initCharts() {
-            const usageCtx = document.getElementById('usageChart')?.getContext('2d');
-            if (usageCtx) {
-                if (usageChart) usageChart.destroy();
-                usageChart = new Chart(usageCtx, {
-                    type: 'bar',
-                    data: {
-                        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-                        datasets: [{
-                            label: 'Completed Practicals',
-                            data: [45, 32, 28, 20, 15, 10, 5],
-                            backgroundColor: '#22c55e',
-                            borderRadius: 8
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: {
-                                display: false
-                            }
-                        }
-                    }
-                });
-            }
-
-            const monthlyCtx = document.getElementById('monthlyChart')?.getContext('2d');
-            if (monthlyCtx) {
-                if (monthlyChart) monthlyChart.destroy();
-                monthlyChart = new Chart(monthlyCtx, {
-                    type: 'line',
-                    data: {
-                        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-                        datasets: [{
-                            label: 'System Usage',
-                            data: [12, 19, 15, 25, 22, 30],
-                            borderColor: '#22c55e',
-                            backgroundColor: 'rgba(34, 197, 94, 0.1)',
-                            tension: 0.4,
-                            fill: true
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false
-                    }
-                });
-            }
-
-            // Initialize equipment usage table
-            displayEquipmentUsageTable(equipmentUsageData);
-        }
-
-        function initAnalyticsCharts() {
-            const ctx = document.getElementById('equipmentUsageChart')?.getContext('2d');
-            if (!ctx) return;
-            if (equipmentUsageChart) equipmentUsageChart.destroy();
-            equipmentUsageChart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: ['Microscope', 'Centrifuge', 'Incubator', 'Autoclave', 'pH Meter', 'Water Bath'],
-                    datasets: [{
-                        label: 'Usage Percentage',
-                        data: [80, 65, 45, 70, 35, 20],
-                        backgroundColor: ['#22c55e', '#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899', '#ef4444'],
-                        borderRadius: 8
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            max: 100,
-                            title: {
-                                display: true,
-                                text: 'Usage %'
-                            }
-                        }
-                    }
+                    new bootstrap.Modal(document.getElementById('reservationDetailsModal')).show();
                 }
-            });
-        }
 
-        // Filter equipment usage table (real-time search)
-        function filterEquipmentUsage() {
-            const searchTerm = document.getElementById('equipmentUsageSearch').value.toLowerCase().trim();
+                function addReservation() {
+                    alert('Add Reservation modal would open here');
+                }
 
-            const filtered = equipmentUsageData.filter(item =>
-                item.name.toLowerCase().includes(searchTerm)
-            );
+                // ========== ANALYTICS FUNCTIONS ==========
+                let usageChart, monthlyChart, equipmentUsageChart;
+                let equipmentUsageData = [{
+                        name: 'Microscope',
+                        usage: 80
+                    },
+                    {
+                        name: 'Centrifuge',
+                        usage: 65
+                    },
+                    {
+                        name: 'Incubator',
+                        usage: 45
+                    },
+                    {
+                        name: 'Autoclave',
+                        usage: 70
+                    },
+                    {
+                        name: 'pH Meter',
+                        usage: 35
+                    },
+                    {
+                        name: 'Water Bath',
+                        usage: 20
+                    },
+                    {
+                        name: 'Shaker',
+                        usage: 55
+                    },
+                    {
+                        name: 'Hot Plate',
+                        usage: 30
+                    },
+                    {
+                        name: 'Balance',
+                        usage: 25
+                    }
+                ];
 
-            displayEquipmentUsageTable(filtered);
-        }
+                function initCharts() {
+                    const usageCtx = document.getElementById('usageChart')?.getContext('2d');
+                    if (usageCtx) {
+                        if (usageChart) usageChart.destroy();
+                        usageChart = new Chart(usageCtx, {
+                            type: 'bar',
+                            data: {
+                                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                                datasets: [{
+                                    label: 'Completed Practicals',
+                                    data: [45, 32, 28, 20, 15, 10, 5],
+                                    backgroundColor: '#22c55e',
+                                    borderRadius: 8
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: {
+                                        display: false
+                                    }
+                                }
+                            }
+                        });
+                    }
 
-        // Display equipment usage table
-        function displayEquipmentUsageTable(data) {
-            const tableBody = document.getElementById('equipmentUsageTableBody');
-            if (!tableBody) return;
+                    const monthlyCtx = document.getElementById('monthlyChart')?.getContext('2d');
+                    if (monthlyCtx) {
+                        if (monthlyChart) monthlyChart.destroy();
+                        monthlyChart = new Chart(monthlyCtx, {
+                            type: 'line',
+                            data: {
+                                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                                datasets: [{
+                                    label: 'System Usage',
+                                    data: [12, 19, 15, 25, 22, 30],
+                                    borderColor: '#22c55e',
+                                    backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                                    tension: 0.4,
+                                    fill: true
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false
+                            }
+                        });
+                    }
 
-            tableBody.innerHTML = '';
+                    // Initialize equipment usage table
+                    displayEquipmentUsageTable(equipmentUsageData);
+                }
 
-            if (data.length === 0) {
-                tableBody.innerHTML = '<tr><td colspan="2" class="text-center py-4">No equipment found</td></tr>';
-                return;
-            }
+                function initAnalyticsCharts() {
+                    const ctx = document.getElementById('equipmentUsageChart')?.getContext('2d');
+                    if (!ctx) return;
+                    if (equipmentUsageChart) equipmentUsageChart.destroy();
+                    equipmentUsageChart = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: ['Microscope', 'Centrifuge', 'Incubator', 'Autoclave', 'pH Meter', 'Water Bath'],
+                            datasets: [{
+                                label: 'Usage Percentage',
+                                data: [80, 65, 45, 70, 35, 20],
+                                backgroundColor: ['#22c55e', '#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899', '#ef4444'],
+                                borderRadius: 8
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    display: false
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    max: 100,
+                                    title: {
+                                        display: true,
+                                        text: 'Usage %'
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
 
-            data.forEach(item => {
-                // Determine color based on usage percentage
-                let color = '#22c55e'; // green
-                if (item.usage < 30) color = '#ef4444'; // red
-                else if (item.usage < 60) color = '#f59e0b'; // orange
+                // Filter equipment usage table (real-time search)
+                function filterEquipmentUsage() {
+                    const searchTerm = document.getElementById('equipmentUsageSearch').value.toLowerCase().trim();
 
-                const row = document.createElement('tr');
-                row.innerHTML = `
+                    const filtered = equipmentUsageData.filter(item =>
+                        item.name.toLowerCase().includes(searchTerm)
+                    );
+
+                    displayEquipmentUsageTable(filtered);
+                }
+
+                // Display equipment usage table
+                function displayEquipmentUsageTable(data) {
+                    const tableBody = document.getElementById('equipmentUsageTableBody');
+                    if (!tableBody) return;
+
+                    tableBody.innerHTML = '';
+
+                    if (data.length === 0) {
+                        tableBody.innerHTML = '<tr><td colspan="2" class="text-center py-4">No equipment found</td></tr>';
+                        return;
+                    }
+
+                    data.forEach(item => {
+                        // Determine color based on usage percentage
+                        let color = '#22c55e'; // green
+                        if (item.usage < 30) color = '#ef4444'; // red
+                        else if (item.usage < 60) color = '#f59e0b'; // orange
+
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
             <td>${item.name}</td>
             <td>
                 <div class="d-flex align-items-center gap-2">
@@ -5307,63 +6209,63 @@ require_once 'auth_check.php';
                 </div>
             </td>
         `;
-                tableBody.appendChild(row);
-            });
-        }
+                        tableBody.appendChild(row);
+                    });
+                }
 
-        // Download full inventory
-        function downloadInventory() {
-            // Create CSV content
-            let csv = "Equipment Code,Equipment Name,Available/Total,Maintenance Pending,Usage %,Location,Manufacturer,Model\n";
+                // Download full inventory
+                function downloadInventory() {
+                    // Create CSV content
+                    let csv = "Equipment Code,Equipment Name,Available/Total,Maintenance Pending,Usage %,Location,Manufacturer,Model\n";
 
-            equipmentDataTable.forEach(item => {
-                csv += `${item.code},${item.name},${item.available}/${item.total},${item.maintenance},${item.usage}%,${item.location},${item.manufacturer},${item.model}\n`;
-            });
+                    equipmentDataTable.forEach(item => {
+                        csv += `${item.code},${item.name},${item.available}/${item.total},${item.maintenance},${item.usage}%,${item.location},${item.manufacturer},${item.model}\n`;
+                    });
 
-            // Create download link
-            const blob = new Blob([csv], {
-                type: 'text/csv'
-            });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'equipment_inventory.csv';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(url);
+                    // Create download link
+                    const blob = new Blob([csv], {
+                        type: 'text/csv'
+                    });
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'equipment_inventory.csv';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
 
-            alert('Inventory list downloaded successfully!');
-        }
+                    alert('Inventory list downloaded successfully!');
+                }
 
-        const rejectionReasons = {
-            'REQ003': {
-                studentName: 'Mike Johnson',
-                studentId: 'SCI003',
-                reason: 'Equipment under maintenance - Scheduled for repair on 2026-02-25',
-                rejectedBy: 'Mr. Prasanna Kumara',
-                dateTime: '2026-02-19 09:15 AM'
-            },
-            'REQ007': {
-                studentName: 'Alice Brown',
-                studentId: 'SCI007',
-                reason: 'Technical issue reported - Motor malfunction, awaiting spare parts',
-                rejectedBy: 'Mrs. Chamari Weerasinghe',
-                dateTime: '2026-02-17 02:30 PM'
-            },
-            'REQ012': {
-                studentName: 'Tharindu Silva',
-                studentId: 'SCI012',
-                reason: 'Calibration required - Device giving inaccurate readings',
-                rejectedBy: 'Mr. Sunil Rathnayake',
-                dateTime: '2026-02-15 11:45 AM'
-            }
-        };
+                const rejectionReasons = {
+                    'REQ003': {
+                        studentName: 'Mike Johnson',
+                        studentId: 'SCI003',
+                        reason: 'Equipment under maintenance - Scheduled for repair on 2026-02-25',
+                        rejectedBy: 'Mr. Prasanna Kumara',
+                        dateTime: '2026-02-19 09:15 AM'
+                    },
+                    'REQ007': {
+                        studentName: 'Alice Brown',
+                        studentId: 'SCI007',
+                        reason: 'Technical issue reported - Motor malfunction, awaiting spare parts',
+                        rejectedBy: 'Mrs. Chamari Weerasinghe',
+                        dateTime: '2026-02-17 02:30 PM'
+                    },
+                    'REQ012': {
+                        studentName: 'Tharindu Silva',
+                        studentId: 'SCI012',
+                        reason: 'Calibration required - Device giving inaccurate readings',
+                        rejectedBy: 'Mr. Sunil Rathnayake',
+                        dateTime: '2026-02-15 11:45 AM'
+                    }
+                };
 
-        function viewRejectionReason(requestId) {
-            const r = rejectionReasons[requestId];
-            if (!r) return;
-            document.getElementById('rejectionReasonContent').innerHTML = `
+                function viewRejectionReason(requestId) {
+                    const r = rejectionReasons[requestId];
+                    if (!r) return;
+                    document.getElementById('rejectionReasonContent').innerHTML = `
         <p><strong>Request ID:</strong> ${requestId}</p>
         <p><strong>Student:</strong> ${r.studentName} (${r.studentId})</p>
         <p><strong>Rejected By:</strong> ${r.rejectedBy}</p>
@@ -5372,154 +6274,154 @@ require_once 'auth_check.php';
             <i class="bi bi-info-circle-fill me-2"></i> ${r.reason}
         </div>
     `;
-            new bootstrap.Modal(document.getElementById('rejectionReasonModal')).show();
-        }
+                    new bootstrap.Modal(document.getElementById('rejectionReasonModal')).show();
+                }
 
-        function generateReport(type) {
-            if (type === 'rejected') {
-                // Generate rejected requests report
-                let report = "REJECTED REQUESTS REPORT\n";
-                report += "=======================\n\n";
-                report += "Request ID | Student ID | Reason | Date & Time\n";
-                report += "----------------------------------------\n";
+                function generateReport(type) {
+                    if (type === 'rejected') {
+                        // Generate rejected requests report
+                        let report = "REJECTED REQUESTS REPORT\n";
+                        report += "=======================\n\n";
+                        report += "Request ID | Student ID | Reason | Date & Time\n";
+                        report += "----------------------------------------\n";
 
-                Object.keys(rejectionReasons).forEach(reqId => {
-                    const r = rejectionReasons[reqId];
-                    report += `${reqId} | ${r.studentId} | ${r.reason} | ${r.dateTime}\n`;
-                });
+                        Object.keys(rejectionReasons).forEach(reqId => {
+                            const r = rejectionReasons[reqId];
+                            report += `${reqId} | ${r.studentId} | ${r.reason} | ${r.dateTime}\n`;
+                        });
 
-                console.log(report);
-                alert('Rejected requests report generated! Check console for preview.');
+                        console.log(report);
+                        alert('Rejected requests report generated! Check console for preview.');
 
-            } else if (type === 'usage') {
-                // Generate equipment usage report
-                let report = "EQUIPMENT USAGE REPORT\n";
-                report += "======================\n\n";
-                report += "Equipment Name | Usage Percentage\n";
-                report += "--------------------------------\n";
+                    } else if (type === 'usage') {
+                        // Generate equipment usage report
+                        let report = "EQUIPMENT USAGE REPORT\n";
+                        report += "======================\n\n";
+                        report += "Equipment Name | Usage Percentage\n";
+                        report += "--------------------------------\n";
 
-                equipmentUsageData.forEach(item => {
-                    report += `${item.name} | ${item.usage}%\n`;
-                });
+                        equipmentUsageData.forEach(item => {
+                            report += `${item.name} | ${item.usage}%\n`;
+                        });
 
-                console.log(report);
-                alert('Equipment usage report generated! Check console for preview.');
-            }
+                        console.log(report);
+                        alert('Equipment usage report generated! Check console for preview.');
+                    }
 
-            // Show success message
-            const msg = document.createElement('div');
-            msg.className = 'alert alert-success position-fixed top-0 end-0 m-3';
-            msg.style.zIndex = '9999';
-            msg.innerHTML = `${type.charAt(0).toUpperCase() + type.slice(1)} report generated!`;
-            document.body.appendChild(msg);
-            setTimeout(() => msg.remove(), 3000);
-        }
+                    // Show success message
+                    const msg = document.createElement('div');
+                    msg.className = 'alert alert-success position-fixed top-0 end-0 m-3';
+                    msg.style.zIndex = '9999';
+                    msg.innerHTML = `${type.charAt(0).toUpperCase() + type.slice(1)} report generated!`;
+                    document.body.appendChild(msg);
+                    setTimeout(() => msg.remove(), 3000);
+                }
 
-        // ========== CALENDAR FUNCTIONS ==========
-        // ========== CALENDAR FUNCTIONS ==========
-        let month = new Date().getMonth();
-        let year = new Date().getFullYear();
-        const months = ["January", "February", "March", "April", "May", "June",
-            "July", "August", "September", "October", "November", "December"
-        ];
+                // ========== CALENDAR FUNCTIONS ==========
+                // ========== CALENDAR FUNCTIONS ==========
+                let month = new Date().getMonth();
+                let year = new Date().getFullYear();
+                const months = ["January", "February", "March", "April", "May", "June",
+                    "July", "August", "September", "October", "November", "December"
+                ];
 
-        function initCalendar() {
-            // Check if calendar elements exist
-            const daysGrid = document.getElementById('daysGrid');
-            const displayMonth = document.getElementById('displayMonth');
-            const eventDay = document.getElementById('eventDay');
-            const eventDate = document.getElementById('eventDate');
-            const eventsList = document.getElementById('eventsList');
+                function initCalendar() {
+                    // Check if calendar elements exist
+                    const daysGrid = document.getElementById('daysGrid');
+                    const displayMonth = document.getElementById('displayMonth');
+                    const eventDay = document.getElementById('eventDay');
+                    const eventDate = document.getElementById('eventDate');
+                    const eventsList = document.getElementById('eventsList');
 
-            // If elements don't exist, exit silently
-            if (!daysGrid || !displayMonth || !eventDay || !eventDate || !eventsList) {
-                return;
-            }
+                    // If elements don't exist, exit silently
+                    if (!daysGrid || !displayMonth || !eventDay || !eventDate || !eventsList) {
+                        return;
+                    }
 
-            const firstDay = new Date(year, month, 1);
-            const lastDay = new Date(year, month + 1, 0);
-            const lastDate = lastDay.getDate();
-            const day = firstDay.getDay();
+                    const firstDay = new Date(year, month, 1);
+                    const lastDay = new Date(year, month + 1, 0);
+                    const lastDate = lastDay.getDate();
+                    const day = firstDay.getDay();
 
-            displayMonth.innerHTML = months[month] + " " + year;
-            let days = "";
-            for (let i = 0; i < day; i++) days += `<div class="day-cell prev-date"></div>`;
-            for (let i = 1; i <= lastDate; i++) {
-                let classes = "day-cell";
-                if (i === new Date().getDate() && year === new Date().getFullYear() && month === new Date().getMonth()) classes += " today";
-                days += `<div class="${classes}">${i}</div>`;
-            }
-            daysGrid.innerHTML = days;
+                    displayMonth.innerHTML = months[month] + " " + year;
+                    let days = "";
+                    for (let i = 0; i < day; i++) days += `<div class="day-cell prev-date"></div>`;
+                    for (let i = 1; i <= lastDate; i++) {
+                        let classes = "day-cell";
+                        if (i === new Date().getDate() && year === new Date().getFullYear() && month === new Date().getMonth()) classes += " today";
+                        days += `<div class="${classes}">${i}</div>`;
+                    }
+                    daysGrid.innerHTML = days;
 
-            // Set today's date in the right panel
-            const today = new Date();
-            const options = {
-                weekday: 'long'
-            };
-            eventDay.innerHTML = today.toLocaleDateString('en-US', options);
-            eventDate.innerHTML = today.toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-            });
+                    // Set today's date in the right panel
+                    const today = new Date();
+                    const options = {
+                        weekday: 'long'
+                    };
+                    eventDay.innerHTML = today.toLocaleDateString('en-US', options);
+                    eventDate.innerHTML = today.toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                    });
 
-            // Show events for today
-            showEventsForDate(today);
+                    // Show events for today
+                    showEventsForDate(today);
 
-            // Add click handlers to day cells
-            addDayCellClickHandlers();
-        }
+                    // Add click handlers to day cells
+                    addDayCellClickHandlers();
+                }
 
 
                 // ========== MAINTENANCE MODAL FUNCTIONS ==========
-        let selectedEquipment = [];
-        let companies = ['TechFix Solutions', 'LabCare Services', 'MedEquip Maintenance'];
+                let selectedEquipment = [];
+                let companies = ['TechFix Solutions', 'LabCare Services', 'MedEquip Maintenance'];
 
-        function sendToMaintenance() {
-            openMaintenanceModal();
-        }
+                function sendToMaintenance() {
+                    openMaintenanceModal();
+                }
 
-        function openMaintenanceModal() {
-            document.getElementById('maintenanceModal').classList.add('active');
-            loadCompanies();
-            updateSelectedEquipmentList();
-        }
+                function openMaintenanceModal() {
+                    document.getElementById('maintenanceModal').classList.add('active');
+                    loadCompanies();
+                    updateSelectedEquipmentList();
+                }
 
-        function closeMaintenanceModal() {
-            document.getElementById('maintenanceModal').classList.remove('active');
-            document.getElementById('emailFormatEdit').classList.remove('active');
-        }
+                function closeMaintenanceModal() {
+                    document.getElementById('maintenanceModal').classList.remove('active');
+                    document.getElementById('emailFormatEdit').classList.remove('active');
+                }
 
-        function toggleEmailFormatEdit() {
-            const editSection = document.getElementById('emailFormatEdit');
-            const previewSection = document.getElementById('emailFormatPreview');
-            editSection.classList.toggle('active');
-            if (editSection.classList.contains('active')) {
-                previewSection.style.display = 'none';
-            } else {
-                previewSection.style.display = 'block';
-            }
-        }
+                function toggleEmailFormatEdit() {
+                    const editSection = document.getElementById('emailFormatEdit');
+                    const previewSection = document.getElementById('emailFormatPreview');
+                    editSection.classList.toggle('active');
+                    if (editSection.classList.contains('active')) {
+                        previewSection.style.display = 'none';
+                    } else {
+                        previewSection.style.display = 'block';
+                    }
+                }
 
-        function openEquipmentSelectModal() {
-            const modal = document.getElementById('equipmentSelectModal');
-            const list = document.getElementById('equipmentSelectList');
-            
-            // Populate equipment list from your equipment data
-            list.innerHTML = '';
-            equipmentDataTable.forEach(item => {
-                if (item.maintenance > 0) { // Only show equipment with maintenance pending
-                    const div = document.createElement('div');
-                    div.className = 'equipment-select-item';
-                    div.onclick = () => toggleEquipmentSelection(item.code);
-                    
-                    // Create company dropdown
-                    let companyOptions = '<option value="">Select Company</option>';
-                    companies.forEach(c => {
-                        companyOptions += `<option value="${c}">${c}</option>`;
-                    });
-                    
-                    div.innerHTML = `
+                function openEquipmentSelectModal() {
+                    const modal = document.getElementById('equipmentSelectModal');
+                    const list = document.getElementById('equipmentSelectList');
+
+                    // Populate equipment list from your equipment data
+                    list.innerHTML = '';
+                    equipmentDataTable.forEach(item => {
+                        if (item.maintenance > 0) { // Only show equipment with maintenance pending
+                            const div = document.createElement('div');
+                            div.className = 'equipment-select-item';
+                            div.onclick = () => toggleEquipmentSelection(item.code);
+
+                            // Create company dropdown
+                            let companyOptions = '<option value="">Select Company</option>';
+                            companies.forEach(c => {
+                                companyOptions += `<option value="${c}">${c}</option>`;
+                            });
+
+                            div.innerHTML = `
                         <div class="equipment-select-info">
                             <h6>${item.name} (${item.code})</h6>
                             <p>Maintenance Pending: ${item.maintenance} units</p>
@@ -5529,75 +6431,75 @@ require_once 'auth_check.php';
                         </div>
                         <input type="number" class="equipment-select-qty" value="1" min="1" max="${item.maintenance}" onclick="event.stopPropagation()" onchange="updateEquipmentQty('${item.code}', this.value)">
                     `;
-                    list.appendChild(div);
+                            list.appendChild(div);
+                        }
+                    });
+
+                    modal.classList.add('active');
                 }
-            });
-            
-            modal.classList.add('active');
-        }
 
-        function closeEquipmentSelectModal() {
-            document.getElementById('equipmentSelectModal').classList.remove('active');
-        }
+                function closeEquipmentSelectModal() {
+                    document.getElementById('equipmentSelectModal').classList.remove('active');
+                }
 
-        function toggleEquipmentSelection(code) {
-            const item = equipmentDataTable.find(e => e.code === code);
-            if (!item) return;
-            
-            const existing = selectedEquipment.find(e => e.code === code);
-            if (existing) {
-                selectedEquipment = selectedEquipment.filter(e => e.code !== code);
-            } else {
-                selectedEquipment.push({
-                    code: item.code,
-                    name: item.name,
-                    qty: 1,
-                    maxQty: item.maintenance,
-                    company: ''
-                });
-            }
-            updateSelectedEquipmentList();
-        }
+                function toggleEquipmentSelection(code) {
+                    const item = equipmentDataTable.find(e => e.code === code);
+                    if (!item) return;
 
-        function updateEquipmentQty(code, qty) {
-            const item = selectedEquipment.find(e => e.code === code);
-            if (item) {
-                item.qty = parseInt(qty) || 1;
-            }
-            updateSelectedEquipmentList();
-        }
+                    const existing = selectedEquipment.find(e => e.code === code);
+                    if (existing) {
+                        selectedEquipment = selectedEquipment.filter(e => e.code !== code);
+                    } else {
+                        selectedEquipment.push({
+                            code: item.code,
+                            name: item.name,
+                            qty: 1,
+                            maxQty: item.maintenance,
+                            company: ''
+                        });
+                    }
+                    updateSelectedEquipmentList();
+                }
 
-        function updateEquipmentCompany(code, company) {
-            const item = selectedEquipment.find(e => e.code === code);
-            if (item) {
-                item.company = company;
-            }
-            updateSelectedEquipmentList();
-        }
+                function updateEquipmentQty(code, qty) {
+                    const item = selectedEquipment.find(e => e.code === code);
+                    if (item) {
+                        item.qty = parseInt(qty) || 1;
+                    }
+                    updateSelectedEquipmentList();
+                }
 
-        function addSelectedEquipment() {
-            closeEquipmentSelectModal();
-            updateSelectedEquipmentList();
-        }
+                function updateEquipmentCompany(code, company) {
+                    const item = selectedEquipment.find(e => e.code === code);
+                    if (item) {
+                        item.company = company;
+                    }
+                    updateSelectedEquipmentList();
+                }
 
-        function removeSelectedEquipment(code) {
-            selectedEquipment = selectedEquipment.filter(e => e.code !== code);
-            updateSelectedEquipmentList();
-        }
+                function addSelectedEquipment() {
+                    closeEquipmentSelectModal();
+                    updateSelectedEquipmentList();
+                }
 
-        function updateSelectedEquipmentList() {
-            const list = document.getElementById('selectedEquipmentList');
-            
-            if (selectedEquipment.length === 0) {
-                list.innerHTML = '<p class="text-muted text-center py-3">No equipment selected</p>';
-                return;
-            }
-            
-            list.innerHTML = '';
-            selectedEquipment.forEach(item => {
-                const div = document.createElement('div');
-                div.className = 'equipment-item';
-                div.innerHTML = `
+                function removeSelectedEquipment(code) {
+                    selectedEquipment = selectedEquipment.filter(e => e.code !== code);
+                    updateSelectedEquipmentList();
+                }
+
+                function updateSelectedEquipmentList() {
+                    const list = document.getElementById('selectedEquipmentList');
+
+                    if (selectedEquipment.length === 0) {
+                        list.innerHTML = '<p class="text-muted text-center py-3">No equipment selected</p>';
+                        return;
+                    }
+
+                    list.innerHTML = '';
+                    selectedEquipment.forEach(item => {
+                        const div = document.createElement('div');
+                        div.className = 'equipment-item';
+                        div.innerHTML = `
                     <div class="equipment-item-info">
                         <span class="equipment-item-name">${item.name} (${item.code})</span>
                         <div class="equipment-item-details">
@@ -5612,261 +6514,262 @@ require_once 'auth_check.php';
                         </button>
                     </div>
                 `;
-                list.appendChild(div);
-            });
-        }
+                        list.appendChild(div);
+                    });
+                }
 
-        function loadCompanies() {
-            const list = document.getElementById('companyList');
-            list.innerHTML = '';
-            companies.forEach(company => {
-                const tag = document.createElement('span');
-                tag.className = 'company-tag';
-                tag.innerHTML = `
+                function loadCompanies() {
+                    const list = document.getElementById('companyList');
+                    list.innerHTML = '';
+                    companies.forEach(company => {
+                        const tag = document.createElement('span');
+                        tag.className = 'company-tag';
+                        tag.innerHTML = `
                     ${company}
                     <i class="bi bi-x" onclick="removeCompany('${company}')"></i>
                 `;
-                list.appendChild(tag);
-            });
-        }
-
-        function addCompany() {
-            const input = document.getElementById('newCompany');
-            const company = input.value.trim();
-            if (company && !companies.includes(company)) {
-                companies.push(company);
-                loadCompanies();
-                input.value = '';
-            }
-        }
-
-        function removeCompany(company) {
-            companies = companies.filter(c => c !== company);
-            loadCompanies();
-        }
-
-        function sendMaintenanceRequest() {
-            const fromEmail = document.getElementById('fromEmail').value;
-            const toEmail = document.getElementById('toEmail').value;
-            const ccEmail = document.getElementById('ccEmail').value;
-            
-            if (!toEmail) {
-                alert('Please enter recipient email address');
-                return;
-            }
-            
-            if (selectedEquipment.length === 0) {
-                alert('Please select at least one equipment for maintenance');
-                return;
-            }
-            
-            // Generate equipment list text with company information
-            let equipmentList = '';
-            selectedEquipment.forEach(item => {
-                equipmentList += `- ${item.name} (${item.code}): ${item.qty} unit(s)`;
-                if (item.company) {
-                    equipmentList += ` [Company: ${item.company}]`;
+                        list.appendChild(tag);
+                    });
                 }
-                equipmentList += '\n';
-            });
-            
-            // Get email format
-            let emailContent;
-            if (document.getElementById('emailFormatEdit').classList.contains('active')) {
-                emailContent = document.getElementById('emailFormatTextarea').value;
-            } else {
-                emailContent = document.getElementById('emailFormatPreview').innerText;
-            }
-            
-            // Replace placeholders
-            emailContent = emailContent
-                .replace('{{equipment_list}}', equipmentList)
-                .replace('{{from_email}}', fromEmail);
-            
-            // Here you would send the email via AJAX
-            console.log('Sending email to:', toEmail);
-            console.log('CC:', ccEmail);
-            console.log('Email content:', emailContent);
-            
-            // Show success message with email details
-            alert(`Maintenance request sent successfully!\n\nTo: ${toEmail}\nCC: ${ccEmail}\n\nEquipment:\n${equipmentList}`);
-            
-            closeMaintenanceModal();
-            
-            // Reset form
-            selectedEquipment = [];
-            updateSelectedEquipmentList();
-        }
 
-        // Initialize calendar when dashboard is shown
-        function initCalendarListeners() {
-            const prevBtn = document.querySelector('.prev');
-            const nextBtn = document.querySelector('.next');
-            const todayBtn = document.getElementById('todayBtn');
-            const gotoBtn = document.getElementById('gotoBtn');
-
-            if (prevBtn) {
-                prevBtn.addEventListener('click', () => {
-                    month--;
-                    if (month < 0) {
-                        month = 11;
-                        year--;
+                function addCompany() {
+                    const input = document.getElementById('newCompany');
+                    const company = input.value.trim();
+                    if (company && !companies.includes(company)) {
+                        companies.push(company);
+                        loadCompanies();
+                        input.value = '';
                     }
-                    initCalendar();
-                    addDayCellClickHandlers(); // Re-add handlers after rendering
-                });
-            }
+                }
 
-            if (nextBtn) {
-                nextBtn.addEventListener('click', () => {
-                    month++;
-                    if (month > 11) {
-                        month = 0;
-                        year++;
+                function removeCompany(company) {
+                    companies = companies.filter(c => c !== company);
+                    loadCompanies();
+                }
+
+                function sendMaintenanceRequest() {
+                    const fromEmail = document.getElementById('fromEmail').value;
+                    const toEmail = document.getElementById('toEmail').value;
+                    const ccEmail = document.getElementById('ccEmail').value;
+
+                    if (!toEmail) {
+                        alert('Please enter recipient email address');
+                        return;
                     }
-                    initCalendar();
-                    addDayCellClickHandlers(); // Re-add handlers after rendering
-                });
-            }
 
-            if (todayBtn) {
-                todayBtn.addEventListener('click', () => {
-                    const d = new Date();
-                    month = d.getMonth();
-                    year = d.getFullYear();
-                    initCalendar();
-                    addDayCellClickHandlers(); // Re-add handlers after rendering
+                    if (selectedEquipment.length === 0) {
+                        alert('Please select at least one equipment for maintenance');
+                        return;
+                    }
 
-                    // Highlight today's date
-                    setTimeout(() => {
-                        const todayCells = document.querySelectorAll('.day-cell.today');
-                        todayCells.forEach(cell => cell.classList.add('active'));
-                    }, 50);
-                });
-            }
+                    // Generate equipment list text with company information
+                    let equipmentList = '';
+                    selectedEquipment.forEach(item => {
+                        equipmentList += `- ${item.name} (${item.code}): ${item.qty} unit(s)`;
+                        if (item.company) {
+                            equipmentList += ` [Company: ${item.company}]`;
+                        }
+                        equipmentList += '\n';
+                    });
 
-            if (gotoBtn) {
-                gotoBtn.addEventListener('click', () => {
-                    const gotoInput = document.getElementById('gotoInput');
-                    if (!gotoInput) return;
+                    // Get email format
+                    let emailContent;
+                    if (document.getElementById('emailFormatEdit').classList.contains('active')) {
+                        emailContent = document.getElementById('emailFormatTextarea').value;
+                    } else {
+                        emailContent = document.getElementById('emailFormatPreview').innerText;
+                    }
 
-                    const parts = gotoInput.value.split('/');
-                    if (parts.length === 2) {
-                        const m = parseInt(parts[0]) - 1,
-                            y = parseInt(parts[1]);
-                        if (m >= 0 && m < 12 && y > 0) {
-                            month = m;
-                            year = y;
+                    // Replace placeholders
+                    emailContent = emailContent
+                        .replace('{{equipment_list}}', equipmentList)
+                        .replace('{{from_email}}', fromEmail);
+
+                    // Here you would send the email via AJAX
+                    console.log('Sending email to:', toEmail);
+                    console.log('CC:', ccEmail);
+                    console.log('Email content:', emailContent);
+
+                    // Show success message with email details
+                    alert(`Maintenance request sent successfully!\n\nTo: ${toEmail}\nCC: ${ccEmail}\n\nEquipment:\n${equipmentList}`);
+
+                    closeMaintenanceModal();
+
+                    // Reset form
+                    selectedEquipment = [];
+                    updateSelectedEquipmentList();
+                }
+
+                // Initialize calendar when dashboard is shown
+                function initCalendarListeners() {
+                    const prevBtn = document.querySelector('.prev');
+                    const nextBtn = document.querySelector('.next');
+                    const todayBtn = document.getElementById('todayBtn');
+                    const gotoBtn = document.getElementById('gotoBtn');
+
+                    if (prevBtn) {
+                        prevBtn.addEventListener('click', () => {
+                            month--;
+                            if (month < 0) {
+                                month = 11;
+                                year--;
+                            }
                             initCalendar();
                             addDayCellClickHandlers(); // Re-add handlers after rendering
-                        } else alert('Invalid date. Use MM/YYYY');
-                    } else alert('Invalid format. Use MM/YYYY');
+                        });
+                    }
+
+                    if (nextBtn) {
+                        nextBtn.addEventListener('click', () => {
+                            month++;
+                            if (month > 11) {
+                                month = 0;
+                                year++;
+                            }
+                            initCalendar();
+                            addDayCellClickHandlers(); // Re-add handlers after rendering
+                        });
+                    }
+
+                    if (todayBtn) {
+                        todayBtn.addEventListener('click', () => {
+                            const d = new Date();
+                            month = d.getMonth();
+                            year = d.getFullYear();
+                            initCalendar();
+                            addDayCellClickHandlers(); // Re-add handlers after rendering
+
+                            // Highlight today's date
+                            setTimeout(() => {
+                                const todayCells = document.querySelectorAll('.day-cell.today');
+                                todayCells.forEach(cell => cell.classList.add('active'));
+                            }, 50);
+                        });
+                    }
+
+                    if (gotoBtn) {
+                        gotoBtn.addEventListener('click', () => {
+                            const gotoInput = document.getElementById('gotoInput');
+                            if (!gotoInput) return;
+
+                            const parts = gotoInput.value.split('/');
+                            if (parts.length === 2) {
+                                const m = parseInt(parts[0]) - 1,
+                                    y = parseInt(parts[1]);
+                                if (m >= 0 && m < 12 && y > 0) {
+                                    month = m;
+                                    year = y;
+                                    initCalendar();
+                                    addDayCellClickHandlers(); // Re-add handlers after rendering
+                                } else alert('Invalid date. Use MM/YYYY');
+                            } else alert('Invalid format. Use MM/YYYY');
+                        });
+                    }
+                }
+
+                // ========== INITIALIZATION ==========
+                document.addEventListener('DOMContentLoaded', function() {
+                    loadCompanies();
+                    updateRequestCounts();
+                    updateVisibleCounts('');
+                    initCharts();
+                    showSection('dashboard');
+                    initCalendar();
+                    initCalendarListeners(); // Add this line
+                    loadUserCounts();
+                    setTimeout(() => addDayCellClickHandlers(), 100);
+
+                    // Initialize reservation display
+                    displayReservationTable(reservationData);
+                    document.getElementById('reservationCount').textContent = '(' + reservationData.length + ')';
+
+                    if (document.getElementById('equipmentSection')) displayEquipmentTable(equipmentDataTable);
+                    if (document.getElementById('analyticsSection')) setTimeout(initAnalyticsCharts, 500);
                 });
-            }
-        }
+            </script>
 
-        // ========== INITIALIZATION ==========
-        document.addEventListener('DOMContentLoaded', function() {
-             loadCompanies();
-            updateRequestCounts();
-            updateVisibleCounts('');
-            initCharts();
-            showSection('dashboard');
-            initCalendar();
-            initCalendarListeners(); // Add this line
-            setTimeout(() => addDayCellClickHandlers(), 100);
-
-            // Initialize reservation display
-            displayReservationTable(reservationData);
-            document.getElementById('reservationCount').textContent = '(' + reservationData.length + ')';
-
-            if (document.getElementById('equipmentSection')) displayEquipmentTable(equipmentDataTable);
-            if (document.getElementById('analyticsSection')) setTimeout(initAnalyticsCharts, 500);
-        });
-    </script>
-
-    <!-- Add this before the closing </body> tag -->
-    <!-- Notification Dropdown -->
-    <div class="notification-dropdown" id="notificationDropdown">
-        <div class="notification-header">
-            <h6>Notifications</h6>
-            <span>3 new</span>
-        </div>
-        <div class="notification-list">
-            <div class="notification-item unread">
-                <div class="fw-bold">New Equipment Request</div>
-                <div>John Doe requested Microscope</div>
-                <div class="time">5 minutes ago</div>
-            </div>
-            <div class="notification-item unread">
-                <div class="fw-bold">Maintenance Alert</div>
-                <div>Centrifuge maintenance due</div>
-                <div class="time">1 hour ago</div>
-            </div>
-            <div class="notification-item">
-                <div class="fw-bold">Reservation Approved</div>
-                <div>Lab 01 reservation confirmed</div>
-                <div class="time">2 hours ago</div>
-            </div>
-        </div>
-    </div>
-
-
-
-
-        <!-- Maintenance Request Modal -->
-    <div class="maintenance-modal" id="maintenanceModal">
-        <div class="maintenance-modal-content">
-            <div class="maintenance-modal-header">
-                <h3><i class="bi bi-tools"></i> Send to Maintenance</h3>
-                <button class="close-btn" onclick="closeMaintenanceModal()"><i class="bi bi-x-lg"></i></button>
-            </div>
-            <div class="maintenance-modal-body">
-                <!-- Email Section -->
-                <div class="email-section">
-                    <div class="email-field">
-                        <label><i class="bi bi-envelope-fill me-2"></i>From Email</label>
-                        <input type="email" id="fromEmail" placeholder="your.email@lab.com" value="admin@microbiolab.lk">
+            <!-- Add this before the closing </body> tag -->
+            <!-- Notification Dropdown -->
+            <div class="notification-dropdown" id="notificationDropdown">
+                <div class="notification-header">
+                    <h6>Notifications</h6>
+                    <span>3 new</span>
+                </div>
+                <div class="notification-list">
+                    <div class="notification-item unread">
+                        <div class="fw-bold">New Equipment Request</div>
+                        <div>John Doe requested Microscope</div>
+                        <div class="time">5 minutes ago</div>
                     </div>
-                    <div class="email-field">
-                        <label><i class="bi bi-envelope-fill me-2"></i>To Email (Dean's Office)</label>
-                        <input type="email" id="toEmail" placeholder="dean@science.faculty.lk" value="dean@science.faculty.lk">
+                    <div class="notification-item unread">
+                        <div class="fw-bold">Maintenance Alert</div>
+                        <div>Centrifuge maintenance due</div>
+                        <div class="time">1 hour ago</div>
                     </div>
-                    <div class="email-field">
-                        <label><i class="bi bi-envelope-fill me-2"></i>CC (HOD Email)</label>
-                        <input type="email" id="ccEmail" placeholder="hod.microbiology@lab.lk" value="hod.microbiology@lab.lk">
+                    <div class="notification-item">
+                        <div class="fw-bold">Reservation Approved</div>
+                        <div>Lab 01 reservation confirmed</div>
+                        <div class="time">2 hours ago</div>
                     </div>
                 </div>
+            </div>
 
-                <!-- Email Format Section -->
-                <div class="email-format-section">
-                    <div class="email-format-header">
-                        <h6><i class="bi bi-envelope-paper-fill me-2"></i>Email Format</h6>
-                        <button class="edit-format-btn" onclick="toggleEmailFormatEdit()">
-                            <i class="bi bi-pencil-square"></i> Edit Format
-                        </button>
+
+
+
+            <!-- Maintenance Request Modal -->
+            <div class="maintenance-modal" id="maintenanceModal">
+                <div class="maintenance-modal-content">
+                    <div class="maintenance-modal-header">
+                        <h3><i class="bi bi-tools"></i> Send to Maintenance</h3>
+                        <button class="close-btn" onclick="closeMaintenanceModal()"><i class="bi bi-x-lg"></i></button>
                     </div>
-                    <div class="email-format-preview" id="emailFormatPreview">
-Dear Dean, Faculty of Science,
+                    <div class="maintenance-modal-body">
+                        <!-- Email Section -->
+                        <div class="email-section">
+                            <div class="email-field">
+                                <label><i class="bi bi-envelope-fill me-2"></i>From Email</label>
+                                <input type="email" id="fromEmail" placeholder="your.email@lab.com" value="admin@microbiolab.lk">
+                            </div>
+                            <div class="email-field">
+                                <label><i class="bi bi-envelope-fill me-2"></i>To Email (Dean's Office)</label>
+                                <input type="email" id="toEmail" placeholder="dean@science.faculty.lk" value="dean@science.faculty.lk">
+                            </div>
+                            <div class="email-field">
+                                <label><i class="bi bi-envelope-fill me-2"></i>CC (HOD Email)</label>
+                                <input type="email" id="ccEmail" placeholder="hod.microbiology@lab.lk" value="hod.microbiology@lab.lk">
+                            </div>
+                        </div>
 
-I would like to kindly request the Dean of the Faculty of Science to arrange maintenance services for the following laboratory equipment used in the Microbiology Laboratory.
+                        <!-- Email Format Section -->
+                        <div class="email-format-section">
+                            <div class="email-format-header">
+                                <h6><i class="bi bi-envelope-paper-fill me-2"></i>Email Format</h6>
+                                <button class="edit-format-btn" onclick="toggleEmailFormatEdit()">
+                                    <i class="bi bi-pencil-square"></i> Edit Format
+                                </button>
+                            </div>
+                            <div class="email-format-preview" id="emailFormatPreview">
+                                Dear Dean, Faculty of Science,
 
-The equipment requires servicing by the respective authorized companies to ensure proper functioning. The details of the equipment and their respective companies are listed below:
+                                I would like to kindly request the Dean of the Faculty of Science to arrange maintenance services for the following laboratory equipment used in the Microbiology Laboratory.
 
-{{equipment_list}}
+                                The equipment requires servicing by the respective authorized companies to ensure proper functioning. The details of the equipment and their respective companies are listed below:
 
-I would greatly appreciate it if the Dean's Office could contact the relevant companies and arrange the necessary maintenance at your earliest convenience.
+                                {{equipment_list}}
 
-Equipment Location: Microbiology Laboratory
-Requested By: Lab Administrator
+                                I would greatly appreciate it if the Dean's Office could contact the relevant companies and arrange the necessary maintenance at your earliest convenience.
 
-Thank you for your support and assistance.
+                                Equipment Location: Microbiology Laboratory
+                                Requested By: Lab Administrator
 
-Yours sincerely,
-Head of Department, Microbiology Department
-                    </div>
-                    <div class="email-format-edit" id="emailFormatEdit">
-                        <textarea id="emailFormatTextarea">Dear Dean, Faculty of Science,
+                                Thank you for your support and assistance.
+
+                                Yours sincerely,
+                                Head of Department, Microbiology Department
+                            </div>
+                            <div class="email-format-edit" id="emailFormatEdit">
+                                <textarea id="emailFormatTextarea">Dear Dean, Faculty of Science,
 
 I would like to kindly request the Dean of the Faculty of Science to arrange maintenance services for the following laboratory equipment used in the Microbiology Laboratory.
 
@@ -5883,60 +6786,69 @@ Thank you for your support and assistance.
 
 Yours sincerely,
 Head of Department, Microbiology Department</textarea>
-                    </div>
-                </div>
+                            </div>
+                        </div>
 
-                <!-- Equipment Selection Section -->
-                <div class="equipment-selection-section">
-                    <div class="section-header">
-                        <h6><i class="bi bi-gear-fill me-2"></i>Equipment for Maintenance</h6>
-                        <button class="add-equipment-btn" onclick="openEquipmentSelectModal()">
-                            <i class="bi bi-plus-circle"></i> Add Equipment
+                        <!-- Equipment Selection Section -->
+                        <div class="equipment-selection-section">
+                            <div class="section-header">
+                                <h6><i class="bi bi-gear-fill me-2"></i>Equipment for Maintenance</h6>
+                                <button class="add-equipment-btn" onclick="openEquipmentSelectModal()">
+                                    <i class="bi bi-plus-circle"></i> Add Equipment
+                                </button>
+                            </div>
+                            <div class="selected-equipment-list" id="selectedEquipmentList">
+                                <p class="text-muted text-center py-3">No equipment selected</p>
+                            </div>
+                        </div>
+
+                        <!-- Company Section -->
+                        <div class="company-section">
+                            <h6><i class="bi bi-building me-2"></i>Maintenance Companies</h6>
+                            <div class="company-list" id="companyList">
+                                <!-- Company tags will appear here -->
+                            </div>
+                            <div class="add-company-input">
+                                <input type="text" id="newCompany" placeholder="Enter maintenance company name">
+                                <button class="add-company-btn" onclick="addCompany()">Add</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="maintenance-modal-footer">
+                        <button class="btn-cancel" onclick="closeMaintenanceModal()">Cancel</button>
+                        <button class="btn-send" onclick="sendMaintenanceRequest()">
+                            <i class="bi bi-send-fill"></i> Send Request
                         </button>
                     </div>
-                    <div class="selected-equipment-list" id="selectedEquipmentList">
-                        <p class="text-muted text-center py-3">No equipment selected</p>
-                    </div>
-                </div>
-
-                <!-- Company Section -->
-                <div class="company-section">
-                    <h6><i class="bi bi-building me-2"></i>Maintenance Companies</h6>
-                    <div class="company-list" id="companyList">
-                        <!-- Company tags will appear here -->
-                    </div>
-                    <div class="add-company-input">
-                        <input type="text" id="newCompany" placeholder="Enter maintenance company name">
-                        <button class="add-company-btn" onclick="addCompany()">Add</button>
-                    </div>
                 </div>
             </div>
-            <div class="maintenance-modal-footer">
-                <button class="btn-cancel" onclick="closeMaintenanceModal()">Cancel</button>
-                <button class="btn-send" onclick="sendMaintenanceRequest()">
-                    <i class="bi bi-send-fill"></i> Send Request
-                </button>
-            </div>
-        </div>
-    </div>
 
-    <!-- Equipment Selection Modal -->
-    <div class="equipment-select-modal" id="equipmentSelectModal">
-        <div class="equipment-select-content">
-            <div class="equipment-select-header">
-                <h5><i class="bi bi-gear-fill me-2"></i>Select Equipment</h5>
-                <button class="close-btn" onclick="closeEquipmentSelectModal()"><i class="bi bi-x-lg"></i></button>
+            <!-- Equipment Selection Modal -->
+            <div class="equipment-select-modal" id="equipmentSelectModal">
+                <div class="equipment-select-content">
+                    <div class="equipment-select-header">
+                        <h5><i class="bi bi-gear-fill me-2"></i>Select Equipment</h5>
+                        <button class="close-btn" onclick="closeEquipmentSelectModal()"><i class="bi bi-x-lg"></i></button>
+                    </div>
+                    <div class="equipment-list" id="equipmentSelectList">
+                        <!-- Equipment list will be populated here -->
+                    </div>
+                    <div class="equipment-select-footer">
+                        <button class="btn-cancel" onclick="closeEquipmentSelectModal()">Cancel</button>
+                        <button class="btn-send" onclick="addSelectedEquipment()">Add Selected</button>
+                    </div>
+                </div>
             </div>
-            <div class="equipment-list" id="equipmentSelectList">
-                <!-- Equipment list will be populated here -->
-            </div>
-            <div class="equipment-select-footer">
-                <button class="btn-cancel" onclick="closeEquipmentSelectModal()">Cancel</button>
-                <button class="btn-send" onclick="addSelectedEquipment()">Add Selected</button>
-            </div>
-        </div>
-    </div>
-    
-</body>
 
-</html>
+    </body>
+
+    </html>
+
+
+<?php
+} else {
+    // If not HOD, redirect to login
+    header("Location: ../index.php");
+    exit();
+}
+?>

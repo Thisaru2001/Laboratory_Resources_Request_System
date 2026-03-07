@@ -82,10 +82,10 @@ try {
     // Validate University ID
     if (empty($university_id)) {
         $response['fields'][] = ['name' => 'university_id', 'message' => 'University ID is required'];
-    } elseif (strlen($university_id) > 20) {
-        $response['fields'][] = ['name' => 'university_id', 'message' => 'University ID must be less than 20 characters'];
-    } elseif (strlen($university_id) < 5) {
-        $response['fields'][] = ['name' => 'university_id', 'message' => 'University ID must be at least 5 characters'];
+    } elseif (strlen($university_id) > 15) {
+        $response['fields'][] = ['name' => 'university_id', 'message' => 'University ID must be less than 15 characters'];
+    } elseif (strlen($university_id) < 3) {
+        $response['fields'][] = ['name' => 'university_id', 'message' => 'University ID must be at least 3 characters'];
     }
 
     // Validate Mobile
