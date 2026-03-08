@@ -3085,7 +3085,7 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                             ?>
 
                             <div class="card p-3 text-center">
-                                <h6 class="text-muted">Technical officer Pending
+                                <h6 class="text-muted">TO Pending
                                     <button class="btn btn-sm btn-outline-primary p-1" onclick="viewPendingRequests()" style="line-height: 1;">
                                         <i class="bi bi-eye"></i>
                                     </button>
@@ -4001,7 +4001,7 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                                         <th>Image</th>
                                         <th>Equipment Code</th>
                                         <th>Name</th>
-                                      
+
                                         <th>Maintenance Pending</th>
                                         <th>Usage %</th>
                                         <th>Actions</th>
@@ -4010,330 +4010,312 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                                 <tbody id="equipmentTableBody">
                                     <!-- Data will be populated by JavaScript -->
                                 </tbody>
-                             
-                                       
+
+
                             </table>
                         </div>
                     </div>
                 </div>
+            
+
+           
 
 
-                <div class="modal fade" id="equipmentDetailsModal" tabindex="-1" aria-hidden="true">
-                    <div class="modal-dialog modal-lg modal-dialog-centered">
-                        <div class="modal-content">
-                            <div class="modal-header bg-success text-white">
-                                <h5 class="modal-title">
-                                    <i class="bi bi-info-circle me-2"></i>
-                                    Equipment Details
-                                </h5>
-                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                            </div>
-                            <div class="modal-body" id="equipmentDetailsContent">
 
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            </div>
+
+            <!-- Reservation Details Section -->
+            <div id="historySection" style="display: none;">
+                <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Reservation Details</h3>
+
+                <!-- Search and Filter Row (Outside card) -->
+                <div class="search-add-row" style="margin-bottom: 20px;">
+                    <div class="search-container">
+                        <input type="text"
+                            id="reservationSearch"
+                            class="search-input"
+                            placeholder="Search by ID, student or lab..."
+                            oninput="searchReservations()"> <!-- Real-time search -->
+                        <button class="search-btn" onclick="searchReservations()">
+                            <i class="bi bi-search"></i> Search
+                        </button>
+                    </div>
+                    <div class="filter-section" style="margin-bottom: 0;">
+                        <select class="filter-select" id="statusFilter" onchange="searchReservations()" style="min-width: 150px;">
+                            <option value="all">All Status</option>
+                            <option value="ready">Ready</option>
+                            <option value="pending">Pending</option>
+                            <option value="rejected">Rejected</option>
+                        </select>
+                    </div>
+                    <!-- Add Button -->
+                    <button class="add-btn" onclick="addReservation()" style="background: linear-gradient(135deg, #22c55e, #16a34a);">
+                        <i class="bi bi-plus-circle"></i> Add Reservation
+                    </button>
+                </div>
+
+                <!-- Reservation Table Card -->
+                <div id="reservationTableCard" class="card p-4">
+                    <h4 class="table-heading mt-0">
+                        <i class="bi bi-calendar-check"></i> Reservations
+                        <span class="table-count" id="reservationCount">(3)</span>
+                    </h4>
+                    <div class="table-responsive">
+                        <table class="user-table">
+                            <thead>
+                                <tr>
+                                    <th>Reservation ID</th>
+                                    <th>Lab Location</th>
+                                    <th>Student ID</th>
+                                    <th>Status</th>
+                                    <th>Reservation Date</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reservationTableBody">
+                                <!-- Data will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reservation Details Modal -->
+            <div class="modal fade" id="reservationDetailsModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header bg-success text-white">
+                            <h5 class="modal-title">
+                                <i class="bi bi-calendar-check me-2"></i>
+                                Reservation Details
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body" id="reservationDetailsContent">
+                            <!-- Content will be populated by JavaScript -->
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                         </div>
                     </div>
                 </div>
+            </div>
 
 
 
+            <!-- Request Section -->
+            <div id="activitySection" style="display: none;">
+                <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Requests</h3>
 
-                <!-- Reservation Details Section -->
-                <div id="historySection" style="display: none;">
-                    <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Reservation Details</h3>
-
-                    <!-- Search and Filter Row (Outside card) -->
-                    <div class="search-add-row" style="margin-bottom: 20px;">
-                        <div class="search-container">
-                            <input type="text"
-                                id="reservationSearch"
-                                class="search-input"
-                                placeholder="Search by ID, student or lab..."
-                                oninput="searchReservations()"> <!-- Real-time search -->
-                            <button class="search-btn" onclick="searchReservations()">
-                                <i class="bi bi-search"></i> Search
-                            </button>
-                        </div>
-                        <div class="filter-section" style="margin-bottom: 0;">
-                            <select class="filter-select" id="statusFilter" onchange="searchReservations()" style="min-width: 150px;">
-                                <option value="all">All Status</option>
-                                <option value="ready">Ready</option>
-                                <option value="pending">Pending</option>
-                                <option value="rejected">Rejected</option>
-                            </select>
-                        </div>
-                        <!-- Add Button -->
-                        <button class="add-btn" onclick="addReservation()" style="background: linear-gradient(135deg, #22c55e, #16a34a);">
-                            <i class="bi bi-plus-circle"></i> Add Reservation
+                <div class="card p-4">
+                    <!-- Request Type Tabs with Count Badges -->
+                    <div class="request-tabs" style="margin-bottom: 20px;">
+                        <button class="request-tab active" onclick="switchRequestType('technical')">
+                            Technical Officer Requests
+                            <span class="request-count-badge" id="technicalRequestCount">3</span>
+                        </button>
+                        <button class="request-tab" onclick="switchRequestType('supervisor')">
+                            Supervisor Requests
+                            <span class="request-count-badge" id="supervisorRequestCount">2</span>
                         </button>
                     </div>
 
-                    <!-- Reservation Table Card -->
-                    <div id="reservationTableCard" class="card p-4">
-                        <h4 class="table-heading mt-0">
-                            <i class="bi bi-calendar-check"></i> Reservations
-                            <span class="table-count" id="reservationCount">(3)</span>
-                        </h4>
-                        <div class="table-responsive">
-                            <table class="user-table">
-                                <thead>
-                                    <tr>
-                                        <th>Reservation ID</th>
-                                        <th>Lab Location</th>
-                                        <th>Student ID</th>
-                                        <th>Status</th>
-                                        <th>Reservation Date</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="reservationTableBody">
-                                    <!-- Data will be populated by JavaScript -->
-                                </tbody>
-                            </table>
+                    <!-- Time Range Filter -->
+                    <div class="filter-section" style="margin-bottom: 20px;">
+                        <select class="filter-select" id="timeRangeFilter" onchange="filterRequestsByTime()" style="min-width: 200px;">
+                            <option value="all">All Time</option>
+                            <option value="daily">Daily</option>
+                            <option value="weekly">Weekly</option>
+                            <option value="monthly">Monthly</option>
+                        </select>
+                    </div>
+
+                    <!-- Requests Table -->
+                    <div class="table-responsive mt-3">
+                        <table class="user-table">
+                            <thead>
+                                <tr>
+                                    <th>Request ID</th>
+                                    <th>Date & Time</th>
+                                    <th>University ID</th>
+                                    <th>Name</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="requestListBody">
+                                <!-- Data will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Request Details Modal -->
+            <div class="modal fade" id="requestDetailsModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header bg-success text-white">
+                            <h5 class="modal-title">
+                                <i class="bi bi-info-circle me-2"></i>
+                                Request Details
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body" id="requestDetailsContent">
+                            <!-- Content will be populated by JavaScript -->
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- Reservation Details Modal -->
-                <div class="modal fade" id="reservationDetailsModal" tabindex="-1" aria-hidden="true">
-                    <div class="modal-dialog modal-lg modal-dialog-centered">
-                        <div class="modal-content">
-                            <div class="modal-header bg-success text-white">
-                                <h5 class="modal-title">
-                                    <i class="bi bi-calendar-check me-2"></i>
-                                    Reservation Details
+
+
+
+
+            <!-- Analytics Section -->
+            <div id="analyticsSection" style="display: none;">
+                <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Analytics Dashboard</h3>
+
+                <!-- Summary Statistics Cards -->
+                <div class="analytics-grid">
+                    <!-- Students Card -->
+                    <div class="stat-card">
+                        <i class="bi bi-mortarboard-fill"></i>
+                        <h3>56</h3>
+                        <p>Students</p>
+                    </div>
+
+                    <!-- Supervisors/Lecturers Card -->
+                    <div class="stat-card">
+                        <i class="bi bi-person-badge-fill"></i>
+                        <h3>5</h3>
+                        <p>Supervisors/Lecturers</p>
+                    </div>
+
+                    <!-- Technical Officers Card -->
+                    <div class="stat-card">
+                        <i class="bi bi-person-gear"></i>
+                        <h3>3</h3>
+                        <p>Technical Officers</p>
+                    </div>
+
+                    <!-- Active Equipment Card -->
+                    <div class="stat-card">
+                        <i class="bi bi-tools"></i>
+                        <h3>85%</h3>
+                        <p>Equipment Utilization Rate</p>
+                    </div>
+
+                    <!-- Maintenance Card -->
+                    <div class="stat-card">
+                        <i class="bi bi-gear-wide-connected"></i>
+                        <h3>3</h3>
+                        <p>Maintenance</p>
+                    </div>
+                </div>
+
+                <!-- First Row: Rejected Requests Report & Equipment Usage Chart -->
+                <div class="row">
+                    <!-- Rejected Requests Report -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card p-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="fw-bold" style="color: #166534;">
+                                    <i class="bi bi-x-circle-fill text-danger me-2"></i>
+                                    Rejected Requests (Technical Officer)
                                 </h5>
-                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                <button class="btn-generate" onclick="generateReport('rejected')">
+                                    <i class="bi bi-file-earmark-pdf me-2"></i>Generate Report
+                                </button>
                             </div>
-                            <div class="modal-body" id="reservationDetailsContent">
-                                <!-- Content will be populated by JavaScript -->
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+
+                            <div class="table-responsive">
+                                <table class="details-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Request ID</th>
+                                            <th>Student ID</th>
+                                            <th>Reason</th>
+                                            <th>Date & Time</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>#REQ003</td>
+                                            <td>SCI003</td>
+                                            <td>
+                                                <button class="btn-view" onclick="viewRejectionReason('REQ003')" title="View Reason">
+                                                    <i class="bi bi-eye"></i> View
+                                                </button>
+                                            </td>
+                                            <td>2026-02-19 09:15 AM</td>
+                                        </tr>
+                                        <tr>
+                                            <td>#REQ007</td>
+                                            <td>SCI007</td>
+                                            <td>
+                                                <button class="btn-view" onclick="viewRejectionReason('REQ007')" title="View Reason">
+                                                    <i class="bi bi-eye"></i> View
+                                                </button>
+                                            </td>
+                                            <td>2026-02-17 02:30 PM</td>
+                                        </tr>
+                                        <tr>
+                                            <td>#REQ012</td>
+                                            <td>SCI012</td>
+                                            <td>
+                                                <button class="btn-view" onclick="viewRejectionReason('REQ012')" title="View Reason">
+                                                    <i class="bi bi-eye"></i> View
+                                                </button>
+                                            </td>
+                                            <td>2026-02-15 11:45 AM</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
-                </div>
 
-
-
-                <!-- Request Section -->
-                <div id="activitySection" style="display: none;">
-                    <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Requests</h3>
-
-                    <div class="card p-4">
-                        <!-- Request Type Tabs with Count Badges -->
-                        <div class="request-tabs" style="margin-bottom: 20px;">
-                            <button class="request-tab active" onclick="switchRequestType('technical')">
-                                Technical Officer Requests
-                                <span class="request-count-badge" id="technicalRequestCount">3</span>
-                            </button>
-                            <button class="request-tab" onclick="switchRequestType('supervisor')">
-                                Supervisor Requests
-                                <span class="request-count-badge" id="supervisorRequestCount">2</span>
-                            </button>
-                        </div>
-
-                        <!-- Time Range Filter -->
-                        <div class="filter-section" style="margin-bottom: 20px;">
-                            <select class="filter-select" id="timeRangeFilter" onchange="filterRequestsByTime()" style="min-width: 200px;">
-                                <option value="all">All Time</option>
-                                <option value="daily">Daily</option>
-                                <option value="weekly">Weekly</option>
-                                <option value="monthly">Monthly</option>
-                            </select>
-                        </div>
-
-                        <!-- Requests Table -->
-                        <div class="table-responsive mt-3">
-                            <table class="user-table">
-                                <thead>
-                                    <tr>
-                                        <th>Request ID</th>
-                                        <th>Date & Time</th>
-                                        <th>University ID</th>
-                                        <th>Name</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="requestListBody">
-                                    <!-- Data will be populated by JavaScript -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Request Details Modal -->
-                <div class="modal fade" id="requestDetailsModal" tabindex="-1" aria-hidden="true">
-                    <div class="modal-dialog modal-lg modal-dialog-centered">
-                        <div class="modal-content">
-                            <div class="modal-header bg-success text-white">
-                                <h5 class="modal-title">
-                                    <i class="bi bi-info-circle me-2"></i>
-                                    Request Details
+                    <!-- Equipment Usage Report with Search -->
+                    <div class="col-md-6 mb-4">
+                        <div class="card p-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="fw-bold" style="color: #166534;">
+                                    <i class="bi bi-bar-chart-fill text-success me-2"></i>
+                                    Equipment Usage Report
                                 </h5>
-                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                <button class="btn-generate" onclick="generateReport('usage')">
+                                    <i class="bi bi-file-earmark-pdf me-2"></i>Generate Report
+                                </button>
                             </div>
-                            <div class="modal-body" id="requestDetailsContent">
-                                <!-- Content will be populated by JavaScript -->
+
+                            <!-- Search Input for Equipment Name (Real-time) -->
+                            <div class="mb-3">
+                                <input type="text"
+                                    id="equipmentUsageSearch"
+                                    class="form-control"
+                                    placeholder="Search equipment name..."
+                                    oninput="filterEquipmentUsage()">
                             </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+
+                            <!-- Equipment Usage Table -->
+                            <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+                                <table class="table table-hover">
+                                    <thead class="sticky-top bg-white">
+                                        <tr>
+                                            <th>Equipment Name</th>
+                                            <th>Usage Percentage</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="equipmentUsageTableBody">
+                                        <!-- Data will be populated by JavaScript -->
+                                    </tbody>
+                                </table>
                             </div>
-                        </div>
-                    </div>
-                </div>
-
-
-
-
-
-                <!-- Analytics Section -->
-                <div id="analyticsSection" style="display: none;">
-                    <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Analytics Dashboard</h3>
-
-                    <!-- Summary Statistics Cards -->
-                    <div class="analytics-grid">
-                        <!-- Students Card -->
-                        <div class="stat-card">
-                            <i class="bi bi-mortarboard-fill"></i>
-                            <h3>56</h3>
-                            <p>Students</p>
-                        </div>
-
-                        <!-- Supervisors/Lecturers Card -->
-                        <div class="stat-card">
-                            <i class="bi bi-person-badge-fill"></i>
-                            <h3>5</h3>
-                            <p>Supervisors/Lecturers</p>
-                        </div>
-
-                        <!-- Technical Officers Card -->
-                        <div class="stat-card">
-                            <i class="bi bi-person-gear"></i>
-                            <h3>3</h3>
-                            <p>Technical Officers</p>
-                        </div>
-
-                        <!-- Active Equipment Card -->
-                        <div class="stat-card">
-                            <i class="bi bi-tools"></i>
-                            <h3>85%</h3>
-                            <p>Equipment Utilization Rate</p>
-                        </div>
-
-                        <!-- Maintenance Card -->
-                        <div class="stat-card">
-                            <i class="bi bi-gear-wide-connected"></i>
-                            <h3>3</h3>
-                            <p>Maintenance</p>
-                        </div>
-                    </div>
-
-                    <!-- First Row: Rejected Requests Report & Equipment Usage Chart -->
-                    <div class="row">
-                        <!-- Rejected Requests Report -->
-                        <div class="col-md-6 mb-4">
-                            <div class="card p-4">
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <h5 class="fw-bold" style="color: #166534;">
-                                        <i class="bi bi-x-circle-fill text-danger me-2"></i>
-                                        Rejected Requests (Technical Officer)
-                                    </h5>
-                                    <button class="btn-generate" onclick="generateReport('rejected')">
-                                        <i class="bi bi-file-earmark-pdf me-2"></i>Generate Report
-                                    </button>
-                                </div>
-
-                                <div class="table-responsive">
-                                    <table class="details-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Request ID</th>
-                                                <th>Student ID</th>
-                                                <th>Reason</th>
-                                                <th>Date & Time</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr>
-                                                <td>#REQ003</td>
-                                                <td>SCI003</td>
-                                                <td>
-                                                    <button class="btn-view" onclick="viewRejectionReason('REQ003')" title="View Reason">
-                                                        <i class="bi bi-eye"></i> View
-                                                    </button>
-                                                </td>
-                                                <td>2026-02-19 09:15 AM</td>
-                                            </tr>
-                                            <tr>
-                                                <td>#REQ007</td>
-                                                <td>SCI007</td>
-                                                <td>
-                                                    <button class="btn-view" onclick="viewRejectionReason('REQ007')" title="View Reason">
-                                                        <i class="bi bi-eye"></i> View
-                                                    </button>
-                                                </td>
-                                                <td>2026-02-17 02:30 PM</td>
-                                            </tr>
-                                            <tr>
-                                                <td>#REQ012</td>
-                                                <td>SCI012</td>
-                                                <td>
-                                                    <button class="btn-view" onclick="viewRejectionReason('REQ012')" title="View Reason">
-                                                        <i class="bi bi-eye"></i> View
-                                                    </button>
-                                                </td>
-                                                <td>2026-02-15 11:45 AM</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Equipment Usage Report with Search -->
-                        <div class="col-md-6 mb-4">
-                            <div class="card p-4">
-                                <div class="d-flex justify-content-between align-items-center mb-3">
-                                    <h5 class="fw-bold" style="color: #166534;">
-                                        <i class="bi bi-bar-chart-fill text-success me-2"></i>
-                                        Equipment Usage Report
-                                    </h5>
-                                    <button class="btn-generate" onclick="generateReport('usage')">
-                                        <i class="bi bi-file-earmark-pdf me-2"></i>Generate Report
-                                    </button>
-                                </div>
-
-                                <!-- Search Input for Equipment Name (Real-time) -->
-                                <div class="mb-3">
-                                    <input type="text"
-                                        id="equipmentUsageSearch"
-                                        class="form-control"
-                                        placeholder="Search equipment name..."
-                                        oninput="filterEquipmentUsage()">
-                                </div>
-
-                                <!-- Equipment Usage Table -->
-                                <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
-                                    <table class="table table-hover">
-                                        <thead class="sticky-top bg-white">
-                                            <tr>
-                                                <th>Equipment Name</th>
-                                                <th>Usage Percentage</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="equipmentUsageTableBody">
-                                            <!-- Data will be populated by JavaScript -->
-                                        </tbody>
-                                    </table>
-                                </div>
-                                <!-- Add this after the equipment usage table in analytics section (around line 1890) -->
-                                <!-- <div class="row mt-4">
+                            <!-- Add this after the equipment usage table in analytics section (around line 1890) -->
+                            <!-- <div class="row mt-4">
                                     <div class="col-12">
                                         <div class="card p-4">
                                             <h5 class="fw-bold mb-3" style="color: #166534;">Equipment Usage Overview</h5>
@@ -4343,88 +4325,106 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                                         </div>
                                     </div>
                                 </div> -->
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Second Row: Download Inventory Button -->
-                    <div class="row">
-                        <div class="col-12">
-                            <div class="card p-4 text-center">
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <h5 class="fw-bold mb-0" style="color: #166534;">
-                                        <i class="bi bi-download me-2"></i>
-                                        Full Equipment Inventory
-                                    </h5>
-                                    <button class="btn-generate" onclick="downloadInventory()">
-                                        <i class="bi bi-file-earmark-spreadsheet me-2"></i>Download Full Inventory List
-                                    </button>
-                                </div>
-                                <p class="text-muted mt-2 mb-0 small">Download complete inventory of all equipment with details</p>
-                            </div>
                         </div>
                     </div>
                 </div>
 
-
-
-                <!-- Rejection Reason Modal -->
-                <div class="modal fade" id="rejectionReasonModal" tabindex="-1" aria-hidden="true">
-                    <div class="modal-dialog modal-dialog-centered">
-                        <div class="modal-content">
-                            <div class="modal-header bg-danger text-white">
-                                <h5 class="modal-title">
-                                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                                    Rejection Reason
+                <!-- Second Row: Download Inventory Button -->
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card p-4 text-center">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="fw-bold mb-0" style="color: #166534;">
+                                    <i class="bi bi-download me-2"></i>
+                                    Full Equipment Inventory
                                 </h5>
-                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                <button class="btn-generate" onclick="downloadInventory()">
+                                    <i class="bi bi-file-earmark-spreadsheet me-2"></i>Download Full Inventory List
+                                </button>
                             </div>
-                            <div class="modal-body" id="rejectionReasonContent">
-                                <!-- Content will be populated by JavaScript -->
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            </div>
+                            <p class="text-muted mt-2 mb-0 small">Download complete inventory of all equipment with details</p>
                         </div>
-                    </div>
-                </div>
-
-
-
-
-                <!-- Add Event Modal -->
-                <div class="add-event-wrapper" id="addEventWrapper">
-                    <div class="add-event-header">
-                        <div class="title">Equipment Request Details</div>
-                        <i class="fas fa-times close" id="closeEventBtn"></i>
-                    </div>
-                    <div class="add-event-body">
-                        <input type="text" placeholder="Equipment Request Title" id="eventName" maxlength="60">
-                        <textarea placeholder="Request Details" id="eventDetails" rows="3"></textarea>
-                        <input type="text" placeholder="Start Time (HH:MM)" id="eventTimeFrom" readonly>
-                        <input type="text" placeholder="End Time (HH:MM)" id="eventTimeTo" readonly>
-                    </div>
-                    <div class="add-event-footer">
-                        <button id="addEventSubmit">Confirm Request</button>
                     </div>
                 </div>
             </div>
+
+
+
+            <!-- Rejection Reason Modal -->
+            <div class="modal fade" id="rejectionReasonModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header bg-danger text-white">
+                            <h5 class="modal-title">
+                                <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                Rejection Reason
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body" id="rejectionReasonContent">
+                            <!-- Content will be populated by JavaScript -->
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+
+
+            <!-- Add Event Modal -->
+            <div class="add-event-wrapper" id="addEventWrapper">
+                <div class="add-event-header">
+                    <div class="title">Equipment Request Details</div>
+                    <i class="fas fa-times close" id="closeEventBtn"></i>
+                </div>
+                <div class="add-event-body">
+                    <input type="text" placeholder="Equipment Request Title" id="eventName" maxlength="60">
+                    <textarea placeholder="Request Details" id="eventDetails" rows="3"></textarea>
+                    <input type="text" placeholder="Start Time (HH:MM)" id="eventTimeFrom" readonly>
+                    <input type="text" placeholder="End Time (HH:MM)" id="eventTimeTo" readonly>
+                </div>
+                <div class="add-event-footer">
+                    <button id="addEventSubmit">Confirm Request</button>
+                </div>
+            </div>
         </div>
+        </div>
+
+         <div class="modal fade" id="equipmentDetailsModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-lg modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header bg-success text-white">
+                            <h5 class="modal-title">
+                                <i class="bi bi-info-circle me-2"></i>
+                                Equipment Details
+                            </h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body" id="equipmentDetailsContent">
+
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
         <!-- Scripts -->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
         <script>
+            // ── 1. ADD this new function ─────────────────────────────────
+            // Fetches equipment + AI usage % from PHP controller
+            function loadEquipmentWithUsage() {
+                const tableBody = document.getElementById('equipmentTableBody');
+                if (!tableBody) return;
 
-
-// ── 1. ADD this new function ─────────────────────────────────
-// Fetches equipment + AI usage % from PHP controller
-function loadEquipmentWithUsage() {
-    const tableBody = document.getElementById('equipmentTableBody');
-    if (!tableBody) return;
-
-    // Show loading spinner while Python runs
-    tableBody.innerHTML = `
+                // Show loading spinner while Python runs
+                tableBody.innerHTML = `
         <tr>
             <td colspan="6" class="text-center py-4">
                 <div class="spinner-border text-success me-2" role="status"
@@ -4435,39 +4435,39 @@ function loadEquipmentWithUsage() {
             </td>
         </tr>`;
 
-    // hod.php is in LRRS/views/
-    // controller is in LRRS/controllers/
-    fetch('../controllers/get_equipment_usage.php')
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                displayEquipmentTable(data.equipment);
+                // hod.php is in LRRS/views/
+                // controller is in LRRS/controllers/
+                fetch('../controllers/get_equipment_usage.php')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            displayEquipmentTable(data.equipment);
 
-                // Update count + show last analyzed time as tooltip
-                const countEl = document.getElementById('equipmentCount');
-                if (countEl) {
-                    countEl.textContent = `(${data.count})`;
-                    countEl.title       = `AI analyzed at: ${data.analyzed_at}`;
-                }
-            } else {
-                tableBody.innerHTML = `
+                            // Update count + show last analyzed time as tooltip
+                            const countEl = document.getElementById('equipmentCount');
+                            if (countEl) {
+                                countEl.textContent = `(${data.count})`;
+                                countEl.title = `AI analyzed at: ${data.analyzed_at}`;
+                            }
+                        } else {
+                            tableBody.innerHTML = `
                     <tr>
                         <td colspan="6" class="text-center py-4 text-danger">
                             ❌ ${data.message || 'Failed to load equipment data'}
                         </td>
                     </tr>`;
-            }
-        })
-        .catch(error => {
-            console.error('Equipment load error:', error);
-            tableBody.innerHTML = `
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Equipment load error:', error);
+                        tableBody.innerHTML = `
                 <tr>
                     <td colspan="6" class="text-center py-4 text-danger">
                         ❌ Connection error — check PHP server is running.
                     </td>
                 </tr>`;
-        });
-}
+                    });
+            }
 
 
 
@@ -5098,9 +5098,9 @@ function loadEquipmentWithUsage() {
                     if (link.getAttribute('onclick')?.includes(section)) link.classList.add('active');
                 });
 
-               if (section === 'equipment') {
-      loadEquipmentWithUsage();        // ← REPLACE old line
-  }
+                if (section === 'equipment') {
+                    loadEquipmentWithUsage(); // ← REPLACE old line
+                }
                 if (section === 'dashboard' || section === 'analytics') {
                     setTimeout(() => {
                         initCharts();
@@ -5261,32 +5261,32 @@ function loadEquipmentWithUsage() {
                 }
             ];
 
-           // ── 2. REPLACE your existing displayEquipmentTable() ─────────
-function displayEquipmentTable(equipment) {
-    const tableBody = document.getElementById('equipmentTableBody');
-    if (!tableBody) return;
+            // ── 2. REPLACE your existing displayEquipmentTable() ─────────
+            function displayEquipmentTable(equipment) {
+                const tableBody = document.getElementById('equipmentTableBody');
+                if (!tableBody) return;
 
-    tableBody.innerHTML = '';
+                tableBody.innerHTML = '';
 
-    if (!equipment || equipment.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="6" class="text-center py-4">No equipment found</td></tr>';
-        return;
-    }
-equipment.sort((a, b) => b.usage - a.usage);
-    equipment.forEach(item => {
-        const code        = item.code        || 'N/A';
-        const name        = item.name        || 'Unknown';
-        const image       = item.image       || 'https://cdn-icons-png.flaticon.com/512/2941/2941514.png';
-        const maintenance = item.maintenance || 0;
-       const usage = Math.round(parseFloat(item.usage) || 0);  // ← from Python AI
+                if (!equipment || equipment.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="6" class="text-center py-4">No equipment found</td></tr>';
+                    return;
+                }
+                equipment.sort((a, b) => b.usage - a.usage);
+                equipment.forEach(item => {
+                    const code = item.code || 'N/A';
+                    const name = item.name || 'Unknown';
+                    const image = item.image || 'https://cdn-icons-png.flaticon.com/512/2941/2941514.png';
+                    const maintenance = item.maintenance || 0;
+                    const usage = Math.round(parseFloat(item.usage) || 0); // ← from Python AI
 
-        // Bar colour based on usage level
-     const barColor = '#22c55e';  // always green
+                    // Bar colour based on usage level
+                    const barColor = '#22c55e'; // always green
 
-        const row = document.createElement('tr');
-        row.setAttribute('data-equipment-id', code);
+                    const row = document.createElement('tr');
+                    row.setAttribute('data-equipment-id', code);
 
-        row.innerHTML = `
+                    row.innerHTML = `
             <td>
                 <img src="${image}"
                      style="width:50px;height:50px;object-fit:contain;"
@@ -5327,49 +5327,236 @@ equipment.sort((a, b) => b.usage - a.usage);
                 </div>
             </td>
         `;
-        tableBody.appendChild(row);
-    });
+                    tableBody.appendChild(row);
+                });
 
-    document.getElementById('equipmentCount').textContent = `(${equipment.length})`;
+                document.getElementById('equipmentCount').textContent = `(${equipment.length})`;
+            }
+
+
+   // ── PASTE THIS ENTIRE FUNCTION into hod.php, replacing the old viewEquipment() ──
+
+function viewEquipment(code) {
+
+    // Show modal immediately with spinner
+    document.getElementById('equipmentDetailsContent').innerHTML = `
+        <div class="text-center py-5">
+            <div class="spinner-border text-success" role="status"
+                 style="width:2rem;height:2rem;"></div>
+            <p class="mt-3 text-muted small fw-semibold">
+                🤖 AI is analysing usage data...
+            </p>
+        </div>
+    `;
+    new bootstrap.Modal(document.getElementById('equipmentDetailsModal')).show();
+
+    fetch(`get_equipment_details.php?code=${encodeURIComponent(code)}`)
+        .then(res => res.json())
+        .then(eq => {
+
+            // ── DEBUG mode (when $DEBUG=true in PHP) ─────────────────────────
+            if (eq.debug) {
+                document.getElementById('equipmentDetailsContent').innerHTML = `
+                    <div class="p-3">
+                        <div class="alert alert-warning">
+                            <strong>🔧 DEBUG MODE ON</strong> — set <code>$DEBUG = false</code> for production.
+                        </div>
+                        <p><strong>shell_exec:</strong> ${eq.shell_exec_enabled}</p>
+                        <p><strong>python.exe exists:</strong> ${eq.python_exe_exists}</p>
+                        <p><strong>script exists:</strong> ${eq.script_exists}</p>
+                        <p><strong>Python raw output:</strong></p>
+                        <pre class="bg-light p-3 rounded" style="font-size:12px;max-height:200px;overflow-y:auto;">${eq.raw_output || '(empty)'}</pre>
+                        <p><strong>JSON valid:</strong> ${eq.json_decode_result ? '✅ Yes' : '❌ No — Python output is not valid JSON'}</p>
+                        <p><strong>JSON error:</strong> ${eq.json_last_error}</p>
+                        <hr>
+                        <p><strong>Equipment DB row:</strong></p>
+                        <pre class="bg-light p-3 rounded" style="font-size:12px;">${JSON.stringify(eq.equipment_db_row, null, 2)}</pre>
+                    </div>
+                `;
+                return;
+            }
+
+            // ── PHP-level error ───────────────────────────────────────────────
+            if (eq.error) {
+                document.getElementById('equipmentDetailsContent').innerHTML = `
+                    <div class="alert alert-danger m-3">
+                        <i class="bi bi-exclamation-circle me-2"></i>${eq.error}
+                    </div>`;
+                return;
+            }
+
+            // ── Safe AI defaults ──────────────────────────────────────────────
+            const ai = eq.ai || {
+                student_id: null, university_id: null, full_name: null,
+                reservation_id: null, confidence: 0, sentiment: "Unknown",
+                keywords: [], analysis: "AI analysis unavailable.",
+                raw_comment: "", mention_found: false
+            };
+
+            // ── Grant section (only shown if grant_name exists) ───────────────
+            const grantHTML = eq.grant_name ? `
+                <tr>
+                    <td colspan="2">
+                        <div class="mt-2 mb-1">
+                            <span class="fw-semibold small text-uppercase" style="color:#d97706;">
+                                <i class="bi bi-award-fill me-1"></i>Grant Information
+                            </span>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <th class="text-muted fw-normal" style="width:150px">Grant Name</th>
+                    <td><span class="badge bg-warning text-dark">${eq.grant_name}</span></td>
+                </tr>
+                ${eq.grant_project ? `
+                <tr>
+                    <th class="text-muted fw-normal">Project</th>
+                    <td>${eq.grant_project}</td>
+                </tr>` : ''}
+                ${(eq.grant_start || eq.grant_end) ? `
+                <tr>
+                    <th class="text-muted fw-normal">Period</th>
+                    <td>${eq.grant_start || '?'} — ${eq.grant_end || '?'}</td>
+                </tr>` : ''}
+            ` : '';
+
+            // ── AI section ────────────────────────────────────────────────────
+            const confPct   = Math.round((ai.confidence || 0) * 100);
+            const confColor = confPct >= 70 ? 'success' : confPct >= 40 ? 'warning' : 'danger';
+
+            const aiHTML = ai.student_id ? `
+                <tr>
+                    <td colspan="2">
+                        <div class="mt-2 mb-1">
+                            <span class="fw-semibold small text-uppercase text-primary">
+                                <i class="bi bi-cpu-fill me-1"></i>AI Analysis — Last Usage
+                            </span>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <th class="text-muted fw-normal" style="width:150px">Last Used By</th>
+                    <td>
+                        <span class="badge bg-primary fs-6">
+                            <i class="bi bi-person-fill me-1"></i>${ai.university_id || ai.student_id}
+                        </span>
+                        ${ai.full_name
+                            ? `<span class="ms-2 fw-semibold text-dark">${ai.full_name}</span>`
+                            : ''}
+                        <br>
+                        <small class="text-muted">Reservation #${ai.reservation_id}</small>
+                        ${ai.mention_found === false
+                            ? `<br><small class="text-warning">
+                                   <i class="bi bi-exclamation-triangle me-1"></i>
+                                   Equipment not explicitly mentioned in comments
+                               </small>`
+                            : ''}
+                    </td>
+                </tr>
+                <tr>
+                    <th class="text-muted fw-normal">AI Summary</th>
+                    <td><small class="text-muted">${ai.analysis}</small></td>
+                </tr>
+                ${ai.raw_comment ? `
+                <tr>
+                    <th class="text-muted fw-normal">Comment</th>
+                    <td><small class="fst-italic text-muted">"${ai.raw_comment}"</small></td>
+                </tr>` : ''}
+            ` : `
+                <tr>
+                    <td colspan="2">
+                        <div class="mt-2 mb-1">
+                            <span class="fw-semibold small text-uppercase text-primary">
+                                <i class="bi bi-cpu-fill me-1"></i>AI Analysis — Last Usage
+                            </span>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <span class="text-muted fst-italic small">
+                            <i class="bi bi-info-circle me-1"></i>
+                            No completed usage records found for this equipment.
+                        </span>
+                    </td>
+                </tr>
+            `;
+
+            // ── Build full modal ──────────────────────────────────────────────
+            document.getElementById('equipmentDetailsContent').innerHTML = `
+                <div class="row g-0">
+                    <!-- Left: image + name + code -->
+                    <div class="col-md-4 text-center border-end p-4">
+                        <img src="${eq.image_path ? '../' + eq.image_path
+                                                   : 'https://cdn-icons-png.flaticon.com/512/2941/2941514.png'}"
+                             style="width:140px;height:140px;object-fit:contain;"
+                             class="rounded border p-2 bg-light mb-3"
+                             onerror="this.src='https://cdn-icons-png.flaticon.com/512/2941/2941514.png'">
+                        <h5 class="fw-bold mb-1" style="color:#166534;">${eq.name}</h5>
+                        <span class="badge bg-secondary">
+                            <i class="bi bi-upc-scan me-1"></i>${eq.equipment_code}
+                        </span>
+                    </div>
+
+                    <!-- Right: details table -->
+                    <div class="col-md-8 p-3">
+                        <table class="table table-borderless table-sm mb-0">
+                            <tbody>
+
+                                <!-- Basic info header -->
+                                <tr>
+                                    <td colspan="2" class="pb-1">
+                                        <span class="fw-semibold small text-uppercase text-secondary">
+                                            <i class="bi bi-info-circle me-1"></i>Basic Information
+                                        </span>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <th class="text-muted fw-normal" style="width:150px">Quantity</th>
+                                    <td>${eq.qty ?? '—'}</td>
+                                </tr>
+
+                                ${eq.lab_location ? `
+                                <tr>
+                                    <th class="text-muted fw-normal">Location</th>
+                                    <td>
+                                        <i class="bi bi-geo-alt-fill text-danger me-1"></i>
+                                        ${eq.lab_location}
+                                    </td>
+                                </tr>` : ''}
+
+                                <tr>
+                                    <th class="text-muted fw-normal">Date Added</th>
+                                    <td>${eq.added_datetime || '—'}</td>
+                                </tr>
+
+                                ${eq.description ? `
+                                <tr>
+                                    <th class="text-muted fw-normal">Description</th>
+                                    <td><small>${eq.description}</small></td>
+                                </tr>` : ''}
+
+                                ${grantHTML}
+                                ${aiHTML}
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        })
+        .catch(err => {
+            document.getElementById('equipmentDetailsContent').innerHTML = `
+                <div class="alert alert-danger m-3">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    Fetch error: ${err.message}
+                </div>`;
+        });
 }
 
 
-            function viewEquipment(code) {
-                const equipment = equipmentDataTable.find(item => item.code === code);
-                if (!equipment) return;
 
-                const formatDate = (date) => new Date(date).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                });
-                const isOverdue = new Date(equipment.nextMaintenance) < new Date();
-
-                document.getElementById('equipmentDetailsContent').innerHTML = `
-        <div class="row">
-            <div class="col-md-4 text-center">
-                <img src="${equipment.image}" style="width: 150px; height: 150px; object-fit: contain;" class="mb-3">
-                <h4>${equipment.name}</h4>
-                <p class="text-muted">${equipment.code}</p>
-            </div>
-            <div class="col-md-8">
-                <table class="table table-borderless">
-                    <tr><th>Location:</th><td>${equipment.location}</td></tr>
-                    <tr><th>Manufacturer:</th><td>${equipment.manufacturer}</td></tr>
-                    <tr><th>Model:</th><td>${equipment.model}</td></tr>
-                    <tr><th>Purchase Date:</th><td>${formatDate(equipment.purchaseDate)}</td></tr>
-                    <tr><th>Last Maintenance:</th><td>${formatDate(equipment.lastMaintenance)}</td></tr>
-                    <tr><th>Next Maintenance:</th><td>${formatDate(equipment.nextMaintenance)} ${isOverdue ? '<span class="badge bg-danger ms-2">⚠️ Overdue</span>' : ''}</td></tr>
-                    <tr><th>Availability:</th><td>${equipment.available}/${equipment.total} units</td></tr>
-                    <tr><th>Maintenance:</th><td>${equipment.maintenance} pending</td></tr>
-                    <tr><th>Usage Rate:</th><td>${equipment.usage}%</td></tr>
-                    <tr><th>Description:</th><td>${equipment.description}</td></tr>
-                </table>
-            </div>
-        </div>
-    `;
-                new bootstrap.Modal(document.getElementById('equipmentDetailsModal')).show();
-            }
 
             function addEquipment() {
                 alert('Add Equipment modal would open here');
@@ -6347,7 +6534,7 @@ equipment.sort((a, b) => b.usage - a.usage);
                 displayReservationTable(reservationData);
                 document.getElementById('reservationCount').textContent = '(' + reservationData.length + ')';
 
-               loadEquipmentWithUsage();
+                loadEquipmentWithUsage();
                 if (document.getElementById('analyticsSection')) setTimeout(initAnalyticsCharts, 500);
             });
         </script>
