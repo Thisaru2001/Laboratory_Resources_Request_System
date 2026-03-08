@@ -1737,6 +1737,7 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                 overflow: hidden;
             }
 
+
             .table thead th {
                 background: linear-gradient(135deg, #22c55e, #16a34a);
                 color: white;
@@ -2899,6 +2900,41 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
     </head>
 
     <body>
+
+
+
+      <!-- Reservation Details Modal -->
+        <!-- Reservation Details Modal - Fixed Version -->
+        <div id="resModal"
+            style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+            background:rgba(0,0,0,0.6); z-index:999999;
+            justify-content:center; align-items:center; overflow-y:auto;">
+            <div style="background:white; border-radius:16px; width:90%; max-width:580px;
+                margin:30px auto; box-shadow:0 25px 60px rgba(0,0,0,0.4);
+                position:relative;">
+                <div style="background:linear-gradient(135deg,#22c55e,#16a34a);
+                    padding:18px 24px; border-radius:16px 16px 0 0;
+                    display:flex; justify-content:space-between; align-items:center;">
+                    <h5 style="margin:0; color:white; font-weight:600;">
+                        <i class="bi bi-calendar-check"></i>&nbsp;Reservation Details
+                    </h5>
+                    <button onclick="closeResModal()"
+                        style="background:rgba(255,255,255,0.25); border:none; color:white;
+                           width:34px; height:34px; border-radius:50%; cursor:pointer;
+                           font-size:1.1rem; line-height:1; display:flex; 
+                           align-items:center; justify-content:center;">✕</button>
+                </div>
+                <div id="resModalContent" style="padding:24px; max-height:60vh; overflow-y:auto;"></div>
+                <div style="padding:16px 24px; border-top:1px solid #eee; text-align:right;">
+                    <button onclick="closeResModal()"
+                        style="background:#6c757d; color:white; border:none;
+                           padding:10px 28px; border-radius:10px;
+                           font-weight:600; cursor:pointer; font-size:0.95rem;">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
         <!-- Sidebar Overlay -->
         <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
@@ -3170,9 +3206,9 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                                     <small id="usageChartUpdated" class="text-muted" style="font-size:0.75rem;"></small>
                                 </div>
                                 <small class="text-muted mb-2 d-block" style="font-size:0.8rem;">
-                                    
+
                                     Monthly completed reservations &nbsp; <span style="color:#3b82f6;font-size:0.75rem;">- -</span>Average · scroll →
-                                     
+
                                 </small>
                                 <div class="chart-container" id="usageChartScroll"
                                     style="overflow-x:auto; overflow-y:hidden; padding-bottom:4px;">
@@ -4056,6 +4092,38 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
                 <!-- Reservation Details Section -->
                 <div id="historySection" style="display: none;">
                     <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Reservation Details</h3>
@@ -4068,9 +4136,9 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                                 class="search-input"
                                 placeholder="Search by ID, student or lab..."
                                 oninput="searchReservations()"> <!-- Real-time search -->
-                            <button class="search-btn" onclick="searchReservations()">
+                            <!-- <button class="search-btn" onclick="searchReservations()">
                                 <i class="bi bi-search"></i> Search
-                            </button>
+                            </button> -->
                         </div>
                         <div class="filter-section" style="margin-bottom: 0;">
                             <select class="filter-select" id="statusFilter" onchange="searchReservations()" style="min-width: 150px;">
@@ -4112,26 +4180,39 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                     </div>
                 </div>
 
-                <!-- Reservation Details Modal -->
-                <div class="modal fade" id="reservationDetailsModal" tabindex="-1" aria-hidden="true">
-                    <div class="modal-dialog modal-lg modal-dialog-centered">
-                        <div class="modal-content">
-                            <div class="modal-header bg-success text-white">
-                                <h5 class="modal-title">
-                                    <i class="bi bi-calendar-check me-2"></i>
-                                    Reservation Details
-                                </h5>
-                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                            </div>
-                            <div class="modal-body" id="reservationDetailsContent">
-                                <!-- Content will be populated by JavaScript -->
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -4446,9 +4527,12 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
             </div>
         </div>
 
-        <!-- Scripts -->
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
+
+
+        <!-- Scripts -->
+        <!-- Bootstrap JS -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
         <script>
             // ── 1. ADD this new function ─────────────────────────────────
             // Fetches equipment + AI usage % from PHP controller
@@ -5143,10 +5227,9 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                     }, 100);
                 }
                 if (section === 'history') {
-                    // Reset filters when showing section
                     document.getElementById('reservationSearch').value = '';
                     document.getElementById('statusFilter').value = 'all';
-                    searchReservations();
+                    loadReservations();
                 }
                 if (section === 'activity') filterRequestsByTime();
             }
@@ -5696,205 +5779,235 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
 
 
 
-           
-            // ========== RESERVATION DATA ==========
-            const reservationData = [{
-                    id: 'RES-001',
-                    lab: 'Microbiology Lab 01',
-                    studentId: 'SCI001',
-                    studentName: 'John Doe',
-                    status: 'ready',
-                    date: '2026-02-25',
-                    time: '10:00 - 12:00',
-                    equipment: 'Microscope (2), Slides (10)',
-                    purpose: 'Final Year Research Project',
-                    technicalOfficer: 'Mr. Sunil Rathnayake',
-                    notes: 'All equipment verified and ready'
-                },
-                {
-                    id: 'RES-002',
-                    lab: 'Research Laboratory',
-                    studentId: 'SCI002',
-                    studentName: 'Jane Smith',
-                    status: 'pending',
-                    date: '2026-02-26',
-                    time: '14:00 - 16:00',
-                    equipment: 'Centrifuge (1), Test Tubes (5)',
-                    purpose: 'DNA Extraction Practical',
-                    technicalOfficer: 'Mrs. Chamari Weerasinghe',
-                    notes: 'Waiting for equipment availability'
-                },
-                {
-                    id: 'RES-003',
-                    lab: 'Microbiology Lab 02',
-                    studentId: 'SCI003',
-                    studentName: 'Mike Johnson',
-                    status: 'rejected',
-                    date: '2026-02-24',
-                    time: '09:00 - 11:00',
-                    equipment: 'Incubator (1), Culture Media (2)',
-                    purpose: 'Bacterial Culture Experiment',
-                    technicalOfficer: 'Mr. Prasanna Kumara',
-                    notes: 'Equipment under maintenance'
-                }
-            ];
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
             // ========== RESERVATION FUNCTIONS ==========
+            // ========== RESERVATION FUNCTIONS ==========
+
             function searchReservations() {
                 const searchTerm = document.getElementById('reservationSearch').value.toLowerCase().trim();
                 const statusFilter = document.getElementById('statusFilter').value;
 
-                console.log('Searching reservations:', {
-                    searchTerm,
-                    statusFilter
+                const rows = document.querySelectorAll('#reservationTableBody tr[data-id]');
+                let visible = 0;
+
+                rows.forEach(row => {
+                    const text = row.textContent.toLowerCase();
+                    const rowStatus = row.getAttribute('data-status');
+
+                    const matchSearch = searchTerm === '' || text.includes(searchTerm);
+                    const matchStatus = statusFilter === 'all' || rowStatus === statusFilter.toLowerCase();
+
+                    if (matchSearch && matchStatus) {
+                        row.style.display = '';
+                        visible++;
+                    } else {
+                        row.style.display = 'none';
+                    }
                 });
 
-                // Filter reservations based on search term and status
-                const filtered = reservationData.filter(item => {
-                    // Check status filter
-                    if (statusFilter !== 'all' && item.status !== statusFilter) {
-                        return false;
-                    }
-
-                    // Check search term (if not empty)
-                    if (searchTerm !== '') {
-                        return (
-                            item.id.toLowerCase().includes(searchTerm) ||
-                            item.studentId.toLowerCase().includes(searchTerm) ||
-                            item.studentName.toLowerCase().includes(searchTerm) ||
-                            item.lab.toLowerCase().includes(searchTerm)
-                        );
-                    }
-
-                    return true; // Passes all filters
-                });
-
-                // Display filtered results
-                displayReservationTable(filtered);
-
-                // Update visibility and count
-                updateReservationVisibility(filtered.length, searchTerm, statusFilter);
+                document.getElementById('reservationCount').textContent = '(' + visible + '/' + rows.length + ')';
             }
 
-            // This function is called by the select onchange
-            function filterReservations() {
-                searchReservations();
-            }
-
-            function displayReservationTable(reservations) {
+            function loadReservations() {
                 const tableBody = document.getElementById('reservationTableBody');
-                if (!tableBody) return;
-
-                tableBody.innerHTML = '';
-
-                if (reservations.length === 0) {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `<td colspan="6" class="text-center py-4">No reservations found</td>`;
-                    tableBody.appendChild(row);
-                    return;
-                }
-
-                reservations.forEach(item => {
-                    let statusClass = '';
-                    switch (item.status) {
-                        case 'ready':
-                            statusClass = 'bg-success';
-                            break;
-                        case 'pending':
-                            statusClass = 'bg-warning';
-                            break;
-                        case 'rejected':
-                            statusClass = 'bg-danger';
-                            break;
-                    }
-
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-            <td>${item.id}</td>
-            <td>${item.lab}</td>
-            <td>${item.studentId}</td>
-            <td><span class="badge ${statusClass}">${item.status}</span></td>
-            <td>${item.date}</td>
-            <td>
-                <button class="btn-view" onclick="viewReservation('${item.id}')" title="View Details">
-                    <i class="bi bi-eye"></i> View
-                </button>
+                tableBody.innerHTML = `
+        <tr>
+            <td colspan="6" class="text-center py-4">
+                <div class="spinner-border spinner-border-sm text-success me-2"></div>
+                Loading reservations...
             </td>
-        `;
-                    tableBody.appendChild(row);
-                });
-            }
+        </tr>`;
 
-            function updateReservationVisibility(visibleCount, searchTerm, statusFilter) {
-                const card = document.getElementById('reservationTableCard');
-                const countElement = document.getElementById('reservationCount');
+                fetch('../controllers/get_reservations.php')
+                    .then(r => r.json())
+                    .then(res => {
+                        tableBody.innerHTML = '';
 
-                if (!card || !countElement) return;
+                        if (!res.success || res.data.length === 0) {
+                            tableBody.innerHTML = '<tr><td colspan="6" class="text-center py-4">No reservations found</td></tr>';
+                            document.getElementById('reservationCount').textContent = '(0)';
+                            return;
+                        }
 
-                const totalReservations = reservationData.length;
+                        res.data.forEach(item => {
+                            let badgeClass, statusLower;
+                            if (item.status === 'Ready') {
+                                badgeClass = 'bg-success';
+                                statusLower = 'ready';
+                            } else if (item.status === 'Rejected') {
+                                badgeClass = 'bg-danger';
+                                statusLower = 'rejected';
+                            } else {
+                                badgeClass = 'bg-warning';
+                                statusLower = 'pending';
+                            }
 
-                // Update count display
-                if (visibleCount > 0 || (searchTerm === '' && statusFilter === 'all')) {
-                    countElement.textContent = '(' + visibleCount + '/' + totalReservations + ')';
-                } else {
-                    countElement.textContent = '(0)';
-                }
+                            const row = document.createElement('tr');
+                            row.setAttribute('data-id', item.id);
+                            row.setAttribute('data-status', statusLower);
+                            row.innerHTML = `
+                  <td>${item.display_id}</td>
+                    <td>${item.lab_location}</td>
+                    <td>${item.student_id}</td>
+                    <td><span class="badge ${badgeClass}">${item.status}</span></td>
+                    <td>${item.date}</td>
+                    <td>
+                       <button class="btn-view" onclick="viewReservation(${item.id})">
+                            <i class="bi bi-eye"></i> View
+                        </button>
+                    </td>
+                `;
+                            tableBody.appendChild(row);
+                        });
 
-                // Hide card if no results AND (search is active OR filter is active)
-                if (visibleCount === 0 && (searchTerm !== '' || statusFilter !== 'all')) {
-                    card.style.display = 'none';
-                } else {
-                    card.style.display = 'block';
-                }
+                        document.getElementById('reservationCount').textContent = '(' + res.data.length + ')';
+                    })
+                    .catch(err => {
+                        tableBody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-danger">Error loading data</td></tr>`;
+                        console.error(err);
+                    });
             }
 
             function viewReservation(id) {
-                const reservation = reservationData.find(item => item.id === id);
-                if (!reservation) return;
+                // Show loading state
+                document.getElementById('resModalContent').innerHTML = `
+        <div class="text-center py-4">
+            <div class="spinner-border text-success me-2" role="status"></div>
+            Loading reservation details...
+        </div>`;
 
-                const detailsContent = document.getElementById('reservationDetailsContent');
+                // Show modal
+                document.getElementById('resModal').style.display = 'flex';
+                document.body.style.overflow = 'hidden'; // Prevent background scrolling
 
-                let statusBadge = '';
-                switch (reservation.status) {
-                    case 'ready':
-                        statusBadge = '<span class="badge bg-success">Ready</span>';
-                        break;
-                    case 'pending':
-                        statusBadge = '<span class="badge bg-warning">Pending</span>';
-                        break;
-                    case 'rejected':
-                        statusBadge = '<span class="badge bg-danger">Rejected</span>';
-                        break;
-                }
+                console.log('Fetching reservation ID:', id);
 
-                detailsContent.innerHTML = `
-        <div class="row">
-            <div class="col-md-12">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h4>Reservation: ${reservation.id}</h4>
-                    ${statusBadge}
-                </div>
-                
-                <table class="table table-borderless">
-                    <tr><th style="width: 200px;">Lab Location:</th><td>${reservation.lab}</td></tr>
-                    <tr><th>Student ID:</th><td>${reservation.studentId} (${reservation.studentName})</td></tr>
-                    <tr><th>Technical Officer:</th><td>${reservation.technicalOfficer}</td></tr>
-                    <tr><th>Reservation Date:</th><td>${reservation.date}</td></tr>
-                    <tr><th>Time Slot:</th><td>${reservation.time}</td></tr>
-                    <tr><th>Purpose:</th><td>${reservation.purpose}</td></tr>
-                    <tr><th>Requested Equipment:</th><td>${reservation.equipment}</td></tr>
-                    <tr><th>Notes:</th><td>${reservation.notes}</td></tr>
+                fetch(`../controllers/get_reservation_details.php?id=${encodeURIComponent(id)}`)
+                    .then(r => r.json())
+                    .then(res => {
+                        if (!res.success) {
+                            document.getElementById('resModalContent').innerHTML =
+                                `<div class="alert alert-danger m-3">Error: ${res.message}</div>`;
+                            return;
+                        }
+
+                        // Create status badge
+                        let statusBadge = '';
+                        if (res.status === 'Ready') {
+                            statusBadge = '<span style="background:#22c55e;color:white;padding:4px 12px;border-radius:20px;font-weight:600;font-size:0.85rem;">Ready</span>';
+                        } else if (res.status === 'Rejected') {
+                            statusBadge = '<span style="background:#ef4444;color:white;padding:4px 12px;border-radius:20px;font-weight:600;font-size:0.85rem;">Rejected</span>';
+                        } else {
+                            statusBadge = '<span style="background:#f59e0b;color:white;padding:4px 12px;border-radius:20px;font-weight:600;font-size:0.85rem;">Pending</span>';
+                        }
+
+                        // Build rejection reason if exists
+                        let rejectionHtml = '';
+                        if (res.is_rejected && res.rejected_reason) {
+                            rejectionHtml = `
+                    <tr>
+                        <td style="padding:10px 0;color:#166534;font-weight:600;width:170px;border-top:1px solid #f5f5f5;">Rejection Reason:</td>
+                        <td style="padding:10px 0;border-top:1px solid #f5f5f5;">
+                            <div style="background:#fff0f0;color:#dc2626;padding:10px;border-radius:8px;border-left:3px solid #ef4444;">
+                                ${res.rejected_reason}
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                        }
+
+                        // Build comment sections if they exist
+                        let commentHtml = res.comment ?
+                            `<tr><td style="padding:10px 0;color:#166534;font-weight:600;border-top:1px solid #f5f5f5;">Student Comment:</td>
+                 <td style="padding:10px 0;border-top:1px solid #f5f5f5;"><em>"${res.comment}"</em></td></tr>` : '';
+
+                        let anyCommentHtml = res.any_comment ?
+                            `<tr><td style="padding:10px 0;color:#166534;font-weight:600;border-top:1px solid #f5f5f5;">Additional Notes:</td>
+                 <td style="padding:10px 0;border-top:1px solid #f5f5f5;">${res.any_comment}</td></tr>` : '';
+
+                        // Build the complete modal content
+                        document.getElementById('resModalContent').innerHTML = `
+                <table style="width:100%; border-collapse:collapse;">
+                    <tr><td style="padding:10px 0;color:#166534;font-weight:600;width:170px;">Reservation ID:</td>
+                        <td style="padding:10px 0;"><strong>${res.id}</strong></td></tr>
+                    <tr><td style="padding:10px 0;color:#166534;font-weight:600;border-top:1px solid #f5f5f5;">Lab Location:</td>
+                        <td style="padding:10px 0;border-top:1px solid #f5f5f5;">${res.lab_location}</td></tr>
+                    <tr><td style="padding:10px 0;color:#166534;font-weight:600;border-top:1px solid #f5f5f5;">Student ID:</td>
+                        <td style="padding:10px 0;border-top:1px solid #f5f5f5;">${res.student_id}</td></tr>
+                    <tr><td style="padding:10px 0;color:#166534;font-weight:600;border-top:1px solid #f5f5f5;">Supervisor ID:</td>
+                        <td style="padding:10px 0;border-top:1px solid #f5f5f5;">${res.supervisor_id}</td></tr>
+                    <tr><td style="padding:10px 0;color:#166534;font-weight:600;border-top:1px solid #f5f5f5;">Status:</td>
+                        <td style="padding:10px 0;border-top:1px solid #f5f5f5;">${statusBadge}</td></tr>
+                    <tr><td style="padding:10px 0;color:#166534;font-weight:600;border-top:1px solid #f5f5f5;">Date:</td>
+                        <td style="padding:10px 0;border-top:1px solid #f5f5f5;">${res.date}</td></tr>
+                    ${commentHtml}
+                    ${anyCommentHtml}
+                    ${rejectionHtml}
                 </table>
-            </div>
-        </div>
-    `;
-
-                new bootstrap.Modal(document.getElementById('reservationDetailsModal')).show();
+            `;
+                    })
+                    .catch(err => {
+                        console.error('Fetch error:', err);
+                        document.getElementById('resModalContent').innerHTML =
+                            `<div class="alert alert-danger m-3">Error loading reservation details</div>`;
+                    });
             }
+
+            function closeResModal() {
+                document.getElementById('resModal').style.display = 'none';
+                document.body.style.overflow = ''; // Restore scrolling
+            }
+            document.getElementById('resModal').addEventListener('click', function(e) {
+                if (e.target === this) closeResModal();
+            });
 
             function addReservation() {
                 alert('Add Reservation modal would open here');
             }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
             // ========== ANALYTICS FUNCTIONS ==========
             let usageChart, monthlyChart, equipmentUsageChart;
@@ -5942,15 +6055,14 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
             ];
 
             function initCharts() {
-             const usageCtx = document.getElementById('usageChart')?.getContext('2d');
+                const usageCtx = document.getElementById('usageChart')?.getContext('2d');
                 if (usageCtx) {
                     if (usageChart) usageChart.destroy();
                     usageChart = new Chart(usageCtx, {
                         type: 'bar',
                         data: {
                             labels: [],
-                            datasets: [
-                                {
+                            datasets: [{
                                     // Bars — green
                                     label: 'Completed',
                                     data: [],
@@ -5998,13 +6110,23 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                             },
                             scales: {
                                 x: {
-                                    ticks: { maxRotation: 45, minRotation: 0 },
-                                    grid:  { display: false }
+                                    ticks: {
+                                        maxRotation: 45,
+                                        minRotation: 0
+                                    },
+                                    grid: {
+                                        display: false
+                                    }
                                 },
                                 y: {
                                     beginAtZero: true,
-                                    ticks: { precision: 0 },
-                                    title: { display: true, text: 'Reservations' }
+                                    ticks: {
+                                        precision: 0
+                                    },
+                                    title: {
+                                        display: true,
+                                        text: 'Reservations'
+                                    }
                                 }
                             }
                         }
@@ -6016,46 +6138,46 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                 }
 
 
-// ── 2. ADD this as a standalone function (outside initCharts) ─────────────────
+                // ── 2. ADD this as a standalone function (outside initCharts) ─────────────────
 
-            function loadUsageChartData() {
-                fetch('../controllers/get_completed_reservations.php')
-                    .then(r => r.json())
-                    .then(res => {
-                        if (!res.success || !usageChart) return;
+                function loadUsageChartData() {
+                    fetch('../controllers/get_completed_reservations.php')
+                        .then(r => r.json())
+                        .then(res => {
+                            if (!res.success || !usageChart) return;
 
-                        const labels  = res.labels;
-                        const data    = res.data;
-                        const avg     = res.average;
-                        const avgLine = labels.map(() => avg);
+                            const labels = res.labels;
+                            const data = res.data;
+                            const avg = res.average;
+                            const avgLine = labels.map(() => avg);
 
-                        usageChart.data.labels           = labels;
-                        usageChart.data.datasets[0].data = data;
-                        usageChart.data.datasets[1].data = avgLine;
-                        usageChart.update('active');
+                            usageChart.data.labels = labels;
+                            usageChart.data.datasets[0].data = data;
+                            usageChart.data.datasets[1].data = avgLine;
+                            usageChart.update('active');
 
-                        // Expand wrapper width for horizontal scroll
-                        const wrapper = document.getElementById('usageChartWrapper');
-                        if (wrapper) {
-                            const minWidth = Math.max(
-                                labels.length * 80,
-                                wrapper.parentElement.offsetWidth || 400
-                            );
-                            wrapper.style.width = minWidth + 'px';
-                        }
+                            // Expand wrapper width for horizontal scroll
+                            const wrapper = document.getElementById('usageChartWrapper');
+                            if (wrapper) {
+                                const minWidth = Math.max(
+                                    labels.length * 80,
+                                    wrapper.parentElement.offsetWidth || 400
+                                );
+                                wrapper.style.width = minWidth + 'px';
+                            }
 
-                        // Scroll to current month (latest = rightmost)
-                        const scrollEl = document.getElementById('usageChartScroll');
-                        if (scrollEl) {
-                            scrollEl.scrollLeft = scrollEl.scrollWidth;
-                        }
+                            // Scroll to current month (latest = rightmost)
+                            const scrollEl = document.getElementById('usageChartScroll');
+                            if (scrollEl) {
+                                scrollEl.scrollLeft = scrollEl.scrollWidth;
+                            }
 
-                        // Update timestamp
-                        const ts = document.getElementById('usageChartUpdated');
-                        if (ts) ts.textContent = 'Updated: ' + res.updated;
-                    })
-                    .catch(err => console.warn('Usage chart error:', err));
-            }
+                            // Update timestamp
+                            const ts = document.getElementById('usageChartUpdated');
+                            if (ts) ts.textContent = 'Updated: ' + res.updated;
+                        })
+                        .catch(err => console.warn('Usage chart error:', err));
+                }
 
 
 
@@ -6275,7 +6397,7 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
 
                     const row = document.createElement('tr');
                     row.innerHTML = `
-            <td>${item.name}</td>
+    <td>${item.display_id}</td>
             <td>
                 <div class="d-flex align-items-center gap-2">
                     <div class="progress-bar" style="width: 150px;">
@@ -6402,23 +6524,23 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
 
 
 
-        // ═══════════════════════════════════════════════════════════════════
-// INSTRUCTIONS:
-// 1. Find this comment in hod.php:   // ========== CALENDAR FUNCTIONS ==========
-// 2. Delete EVERYTHING from that comment all the way down to
-//    the closing } of the SECOND initCalendarListeners() function
-//    (the one that says "Initialize calendar when dashboard is shown")
-// 3. Paste this entire block in its place
-// ═══════════════════════════════════════════════════════════════════
+            // ═══════════════════════════════════════════════════════════════════
+            // INSTRUCTIONS:
+            // 1. Find this comment in hod.php:   // ========== CALENDAR FUNCTIONS ==========
+            // 2. Delete EVERYTHING from that comment all the way down to
+            //    the closing } of the SECOND initCalendarListeners() function
+            //    (the one that says "Initialize calendar when dashboard is shown")
+            // 3. Paste this entire block in its place
+            // ═══════════════════════════════════════════════════════════════════
 
             // ========== CALENDAR FUNCTIONS ==========
             let calMonth = new Date().getMonth();
-            let calYear  = new Date().getFullYear();
+            let calYear = new Date().getFullYear();
             let calEvents = {};
 
             const calMonthNames = [
-                "January","February","March","April","May","June",
-                "July","August","September","October","November","December"
+                "January", "February", "March", "April", "May", "June",
+                "July", "August", "September", "October", "November", "December"
             ];
 
             function loadCalendarEvents(m, y, callback) {
@@ -6428,15 +6550,18 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                         calEvents = res.success ? res.events : {};
                         if (callback) callback();
                     })
-                    .catch(() => { calEvents = {}; if (callback) callback(); });
+                    .catch(() => {
+                        calEvents = {};
+                        if (callback) callback();
+                    });
             }
 
             function initCalendar() {
-                const daysGrid     = document.getElementById('daysGrid');
+                const daysGrid = document.getElementById('daysGrid');
                 const displayMonth = document.getElementById('displayMonth');
-                const eventDay     = document.getElementById('eventDay');
-                const eventDate    = document.getElementById('eventDate');
-                const eventsList   = document.getElementById('eventsList');
+                const eventDay = document.getElementById('eventDay');
+                const eventDate = document.getElementById('eventDate');
+                const eventsList = document.getElementById('eventsList');
                 if (!daysGrid || !displayMonth) return;
 
                 displayMonth.innerHTML = calMonthNames[calMonth] + ' ' + calYear;
@@ -6457,11 +6582,15 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                     const displayDate = isCurrentMonth ? today : new Date(calYear, calMonth, 1);
 
                     if (eventDay) {
-                        eventDay.innerHTML = displayDate.toLocaleDateString('en-US', { weekday: 'long' });
+                        eventDay.innerHTML = displayDate.toLocaleDateString('en-US', {
+                            weekday: 'long'
+                        });
                     }
                     if (eventDate) {
                         eventDate.innerHTML = displayDate.toLocaleDateString('en-US', {
-                            year: 'numeric', month: 'long', day: 'numeric'
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
                         });
                     }
 
@@ -6473,7 +6602,7 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
             function renderCalendarGrid(daysGrid) {
                 const firstDay = new Date(calYear, calMonth, 1).getDay();
                 const lastDate = new Date(calYear, calMonth + 1, 0).getDate();
-                const todayD   = new Date();
+                const todayD = new Date();
 
                 let html = '';
                 for (let i = 0; i < firstDay; i++) {
@@ -6481,29 +6610,29 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                 }
 
                 for (let d = 1; d <= lastDate; d++) {
-                    const mm      = String(calMonth + 1).padStart(2, '0');
-                    const dd      = String(d).padStart(2, '0');
+                    const mm = String(calMonth + 1).padStart(2, '0');
+                    const dd = String(d).padStart(2, '0');
                     const dateKey = `${calYear}-${mm}-${dd}`;
                     const hasEvent = !!calEvents[dateKey];
 
                     let classes = 'day-cell';
                     if (d === todayD.getDate() &&
-                        calYear  === todayD.getFullYear() &&
+                        calYear === todayD.getFullYear() &&
                         calMonth === todayD.getMonth()) {
                         classes += ' today';
                     }
 
-                    const dot = hasEvent
-                        ? `<span style="position:absolute;bottom:3px;left:50%;
+                    const dot = hasEvent ?
+                        `<span style="position:absolute;bottom:3px;left:50%;
                                 transform:translateX(-50%);width:6px;height:6px;
-                                border-radius:50%;background:#ffd700;display:block;"></span>`
-                        : '';
+                                border-radius:50%;background:#ffd700;display:block;"></span>` :
+                        '';
 
-                    const bookedStyle = hasEvent
-                        ? `style="background:rgba(255,215,0,0.18);
+                    const bookedStyle = hasEvent ?
+                        `style="background:rgba(255,215,0,0.18);
                                   border:1px solid rgba(255,215,0,0.5);
-                                  font-weight:600;"`
-                        : '';
+                                  font-weight:600;"` :
+                        '';
 
                     html += `<div class="${classes}" data-date="${dateKey}" ${bookedStyle}>${d}${dot}</div>`;
                 }
@@ -6515,8 +6644,8 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                 const eventsList = document.getElementById('eventsList');
                 if (!eventsList) return;
 
-                const mm      = String(date.getMonth() + 1).padStart(2, '0');
-                const dd      = String(date.getDate()).padStart(2, '0');
+                const mm = String(date.getMonth() + 1).padStart(2, '0');
+                const dd = String(date.getDate()).padStart(2, '0');
                 const dateKey = `${date.getFullYear()}-${mm}-${dd}`;
                 const dayEvents = calEvents[dateKey] || [];
 
@@ -6532,7 +6661,7 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                 eventsList.innerHTML = '';
                 dayEvents.forEach(ev => {
                     let badgeColor = '#22c55e';
-                    if (ev.status === 'Pending')  badgeColor = '#f59e0b';
+                    if (ev.status === 'Pending') badgeColor = '#f59e0b';
                     if (ev.status === 'Rejected') badgeColor = '#ef4444';
 
                     const item = document.createElement('div');
@@ -6569,7 +6698,7 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
             function addDayCellClickHandlers() {
                 const cells = document.querySelectorAll('.day-cell:not(.prev-date):not(.next-date)');
                 cells.forEach(cell => {
-                    cell.addEventListener('click', function () {
+                    cell.addEventListener('click', function() {
                         cells.forEach(c => c.classList.remove('active'));
                         this.classList.add('active');
 
@@ -6580,10 +6709,14 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                         const selectedDate = new Date(+parts[0], +parts[1] - 1, +parts[2]);
 
                         document.getElementById('eventDay').innerHTML =
-                            selectedDate.toLocaleDateString('en-US', { weekday: 'long' });
+                            selectedDate.toLocaleDateString('en-US', {
+                                weekday: 'long'
+                            });
                         document.getElementById('eventDate').innerHTML =
                             selectedDate.toLocaleDateString('en-US', {
-                                year: 'numeric', month: 'long', day: 'numeric'
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric'
                             });
 
                         showEventsForDate(selectedDate);
@@ -6592,22 +6725,28 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
             }
 
             function initCalendarListeners() {
-                const prevBtn  = document.querySelector('.prev');
-                const nextBtn  = document.querySelector('.next');
+                const prevBtn = document.querySelector('.prev');
+                const nextBtn = document.querySelector('.next');
                 const todayBtn = document.getElementById('todayBtn');
-                const gotoBtn  = document.getElementById('gotoBtn');
+                const gotoBtn = document.getElementById('gotoBtn');
 
                 if (prevBtn) {
                     prevBtn.addEventListener('click', () => {
                         calMonth--;
-                        if (calMonth < 0) { calMonth = 11; calYear--; }
+                        if (calMonth < 0) {
+                            calMonth = 11;
+                            calYear--;
+                        }
                         initCalendar();
                     });
                 }
                 if (nextBtn) {
                     nextBtn.addEventListener('click', () => {
                         calMonth++;
-                        if (calMonth > 11) { calMonth = 0; calYear++; }
+                        if (calMonth > 11) {
+                            calMonth = 0;
+                            calYear++;
+                        }
                         initCalendar();
                     });
                 }
@@ -6615,19 +6754,20 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                     todayBtn.addEventListener('click', () => {
                         const d = new Date();
                         calMonth = d.getMonth();
-                        calYear  = d.getFullYear();
+                        calYear = d.getFullYear();
                         initCalendar();
                     });
                 }
                 if (gotoBtn) {
                     gotoBtn.addEventListener('click', () => {
-                        const val   = document.getElementById('gotoInput')?.value;
+                        const val = document.getElementById('gotoInput')?.value;
                         const parts = (val || '').split('/');
                         if (parts.length === 2) {
                             const m = parseInt(parts[0]) - 1;
                             const y = parseInt(parts[1]);
                             if (m >= 0 && m < 12 && y > 0) {
-                                calMonth = m; calYear = y;
+                                calMonth = m;
+                                calYear = y;
                                 initCalendar();
                             } else alert('Invalid date. Use MM/YYYY');
                         } else alert('Invalid format. Use MM/YYYY');
@@ -6914,7 +7054,7 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
             //             initCalendar();
             //             addDayCellClickHandlers(); /
 
-                     
+
             //             setTimeout(() => {
             //                 const todayCells = document.querySelectorAll('.day-cell.today');
             //                 todayCells.forEach(cell => cell.classList.add('active'));
@@ -6954,9 +7094,7 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                 loadUserCounts();
                 setTimeout(() => addDayCellClickHandlers(), 100);
 
-                // Initialize reservation display
-                displayReservationTable(reservationData);
-                document.getElementById('reservationCount').textContent = '(' + reservationData.length + ')';
+
 
                 loadEquipmentWithUsage();
                 if (document.getElementById('analyticsSection')) setTimeout(initAnalyticsCharts, 500);

@@ -1,239 +1,239 @@
 {
-  "generated_at": "2026-03-08 12:29:11",
+  "generated_at": "2026-03-08 16:55:00",
   "database": "lab_db",
   "table_scanned": "reservation",
   "columns_scanned": [
     "comment",
     "any_comment"
   ],
-  "total_rows": 15,
+  "total_rows": 14,
   "formula": "usage_percent = mention_count / total_rows * 100",
   "equipment_usage": [
     {
       "rank": 1,
       "equipment_name": "Centrifuge",
       "mention_count": 7,
-      "usage_percent": 46.67
+      "usage_percent": 50.0
     },
     {
       "rank": 2,
       "equipment_name": "Microcentrifuge",
       "mention_count": 5,
-      "usage_percent": 33.33
+      "usage_percent": 35.71
     },
     {
       "rank": 3,
       "equipment_name": "Microcentrifuge Tubes",
       "mention_count": 5,
-      "usage_percent": 33.33
+      "usage_percent": 35.71
     },
     {
       "rank": 4,
-      "equipment_name": "pH Meter",
-      "mention_count": 3,
-      "usage_percent": 20.0
+      "equipment_name": "Incubator",
+      "mention_count": 2,
+      "usage_percent": 14.29
     },
     {
       "rank": 5,
-      "equipment_name": "Incubator",
+      "equipment_name": "pH Meter",
       "mention_count": 2,
-      "usage_percent": 13.33
+      "usage_percent": 14.29
     },
     {
       "rank": 6,
       "equipment_name": "Cryovials",
       "mention_count": 2,
-      "usage_percent": 13.33
+      "usage_percent": 14.29
     },
     {
       "rank": 7,
       "equipment_name": "Autoclave",
       "mention_count": 1,
-      "usage_percent": 6.67
+      "usage_percent": 7.14
     },
     {
       "rank": 8,
       "equipment_name": "Biosafety Cabinet",
       "mention_count": 1,
-      "usage_percent": 6.67
+      "usage_percent": 7.14
     },
     {
       "rank": 9,
       "equipment_name": "Spectrophotometer",
       "mention_count": 1,
-      "usage_percent": 6.67
+      "usage_percent": 7.14
     },
     {
       "rank": 10,
       "equipment_name": "Water Bath",
       "mention_count": 1,
-      "usage_percent": 6.67
+      "usage_percent": 7.14
     },
     {
       "rank": 11,
       "equipment_name": "Electrophoresis Apparatus",
       "mention_count": 1,
-      "usage_percent": 6.67
+      "usage_percent": 7.14
     },
     {
       "rank": 12,
       "equipment_name": "Gel Documentation System",
       "mention_count": 1,
-      "usage_percent": 6.67
+      "usage_percent": 7.14
     },
     {
       "rank": 13,
       "equipment_name": "Anaerobic Jar",
       "mention_count": 1,
-      "usage_percent": 6.67
+      "usage_percent": 7.14
     },
     {
       "rank": 14,
       "equipment_name": "Flow Cytometer",
       "mention_count": 1,
-      "usage_percent": 6.67
+      "usage_percent": 7.14
     },
     {
       "rank": 15,
       "equipment_name": "ELISA Reader",
       "mention_count": 1,
-      "usage_percent": 6.67
+      "usage_percent": 7.14
     },
     {
       "rank": 16,
       "equipment_name": "Homogenizer",
       "mention_count": 1,
-      "usage_percent": 6.67
+      "usage_percent": 7.14
     },
     {
       "rank": 17,
       "equipment_name": "Lyophilizer",
       "mention_count": 1,
-      "usage_percent": 6.67
+      "usage_percent": 7.14
     },
     {
       "rank": 18,
       "equipment_name": "Thermal Cycler",
       "mention_count": 1,
-      "usage_percent": 6.67
+      "usage_percent": 7.14
     },
     {
       "rank": 19,
       "equipment_name": "Water Purification System",
       "mention_count": 1,
-      "usage_percent": 6.67
+      "usage_percent": 7.14
     },
     {
       "rank": 20,
       "equipment_name": "Glassware Washer",
       "mention_count": 1,
-      "usage_percent": 6.67
+      "usage_percent": 7.14
     },
     {
       "rank": 21,
-      "equipment_name": "Analytical Balance",
+      "equipment_name": "Media Preparation Bottles",
       "mention_count": 1,
-      "usage_percent": 6.67
+      "usage_percent": 7.14
     },
     {
       "rank": 22,
-      "equipment_name": "Media Preparation Bottles",
-      "mention_count": 1,
-      "usage_percent": 6.67
-    },
-    {
-      "rank": 23,
       "equipment_name": "Microscope (Compound)",
       "mention_count": 0,
       "usage_percent": 0.0
     },
     {
-      "rank": 24,
+      "rank": 23,
       "equipment_name": "Laminar Air Flow",
       "mention_count": 0,
       "usage_percent": 0.0
     },
     {
-      "rank": 25,
+      "rank": 24,
       "equipment_name": "Shaker/Orbital Shaker",
       "mention_count": 0,
       "usage_percent": 0.0
     },
     {
-      "rank": 26,
+      "rank": 25,
       "equipment_name": "Vortex Mixer",
       "mention_count": 0,
       "usage_percent": 0.0
     },
     {
-      "rank": 27,
+      "rank": 26,
       "equipment_name": "Refrigerator (4°C)",
       "mention_count": 0,
       "usage_percent": 0.0
     },
     {
-      "rank": 28,
+      "rank": 27,
       "equipment_name": "Freezer (-20°C)",
       "mention_count": 0,
       "usage_percent": 0.0
     },
     {
-      "rank": 29,
+      "rank": 28,
       "equipment_name": "Freezer (-80°C)",
       "mention_count": 0,
       "usage_percent": 0.0
     },
     {
-      "rank": 30,
+      "rank": 29,
       "equipment_name": "Colony Counter",
       "mention_count": 0,
       "usage_percent": 0.0
     },
     {
-      "rank": 31,
+      "rank": 30,
       "equipment_name": "Hot Plate/Stirrer",
       "mention_count": 0,
       "usage_percent": 0.0
     },
     {
-      "rank": 32,
+      "rank": 31,
       "equipment_name": "Micropipettes (Set)",
       "mention_count": 0,
       "usage_percent": 0.0
     },
     {
-      "rank": 33,
+      "rank": 32,
       "equipment_name": "PCR Machine (Thermocycler)",
       "mention_count": 0,
       "usage_percent": 0.0
     },
     {
-      "rank": 34,
+      "rank": 33,
       "equipment_name": "CO₂ Incubator",
       "mention_count": 0,
       "usage_percent": 0.0
     },
     {
-      "rank": 35,
+      "rank": 34,
       "equipment_name": "Automatic Cell Counter",
       "mention_count": 0,
       "usage_percent": 0.0
     },
     {
-      "rank": 36,
+      "rank": 35,
       "equipment_name": "Magnetic Stirrer",
       "mention_count": 0,
       "usage_percent": 0.0
     },
     {
-      "rank": 37,
+      "rank": 36,
       "equipment_name": "Transilluminator",
       "mention_count": 0,
       "usage_percent": 0.0
     },
     {
-      "rank": 38,
+      "rank": 37,
       "equipment_name": "Ultrasonic Cleaner",
+      "mention_count": 0,
+      "usage_percent": 0.0
+    },
+    {
+      "rank": 38,
+      "equipment_name": "Analytical Balance",
       "mention_count": 0,
       "usage_percent": 0.0
     },
