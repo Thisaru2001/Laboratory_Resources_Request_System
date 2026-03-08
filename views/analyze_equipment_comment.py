@@ -179,14 +179,14 @@ def main():
         if found:
             scored.append((score, row, combined))
 
-    # Step 4: Pick best match (highest confidence score, most recent first)
+   
     if scored:
         scored.sort(key=lambda x: x[0], reverse=True)
         _, best_row, best_comment = scored[0]
         confidence    = round(min(0.5 + scored[0][0] * 0.2, 1.0), 2)
         mention_found = True
     else:
-        # Fallback: most recent finished session
+        
         best_row     = all_rows[0]
         best_comment = " | ".join(filter(None, [
             best_row["booking_comment"] or "",

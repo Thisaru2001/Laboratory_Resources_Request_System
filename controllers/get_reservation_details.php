@@ -21,13 +21,16 @@ $query = "
         r.comment,
         r.any_comment,
         r.rejected_reason,
-        ll.location      AS lab_location,
-        lu.university_id AS student_university_id
+        ll.location                  AS lab_location,
+        student.university_id         AS student_university_id,
+        supervisor.university_id      AS supervisor_university_id
     FROM reservation r
     LEFT JOIN lab_location ll ON r.lab_location_id = ll.lab_location_id
-    LEFT JOIN lab_user lu     ON r.student_id      = lu.user_id
+    LEFT JOIN lab_user student ON r.student_id = student.user_id
+    LEFT JOIN supervisor_assigned sa ON sa.student_id = r.student_id
+    LEFT JOIN lab_user supervisor ON sa.supervisor_id = supervisor.user_id
     WHERE r.reservation_id = ?
-    LIMIT 1
+    LIMIT 1;
 ";
 
 $result = Database::search($query, 'i', [$id]);
@@ -51,7 +54,7 @@ echo json_encode([
     'id'              => $row['reservation_id_generate'],
     'lab_location'    => $row['lab_location']          ?? '—',
     'student_id'      => $row['student_university_id'] ?? '—',
-    'supervisor_id'   => '—',
+    'supervisor_id'   => $row['supervisor_university_id'] ?? '—',
     'status'          => $status,
     'date'            => $row['request_date']          ?? '—',
     'comment'         => $row['comment']               ?? '',

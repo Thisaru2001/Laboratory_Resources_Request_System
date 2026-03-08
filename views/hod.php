@@ -4149,9 +4149,12 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                             </select>
                         </div>
                         <!-- Add Button -->
-                        <button class="add-btn" onclick="addReservation()" style="background: linear-gradient(135deg, #22c55e, #16a34a);">
+                           <button class="add-btn" style="background: linear-gradient(135deg, #f87171, #ef4444);">
+    <i class="bi bi-plus-circle"></i> Block Reservation
+</button>
+                        <!-- <button class="add-btn" onclick="addReservation()" style="background: linear-gradient(135deg, #22c55e, #16a34a);">
                             <i class="bi bi-plus-circle"></i> Add Reservation
-                        </button>
+                        </button> -->
                     </div>
 
                     <!-- Reservation Table Card -->
@@ -4216,73 +4219,289 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
                 <!-- Request Section -->
-                <div id="activitySection" style="display: none;">
-                    <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Requests</h3>
+                <!-- Request Section -->
+<div id="activitySection" style="display: none;">
+    <h3 class="mb-4" style="color:white; text-shadow:2px 2px 4px rgba(0,0,0,0.2);">Requests</h3>
 
-                    <div class="card p-4">
-                        <!-- Request Type Tabs with Count Badges -->
-                        <div class="request-tabs" style="margin-bottom: 20px;">
-                            <button class="request-tab active" onclick="switchRequestType('technical')">
-                                Technical Officer Requests
-                                <span class="request-count-badge" id="technicalRequestCount">3</span>
-                            </button>
-                            <button class="request-tab" onclick="switchRequestType('supervisor')">
-                                Supervisor Requests
-                                <span class="request-count-badge" id="supervisorRequestCount">2</span>
-                            </button>
-                        </div>
+    <div class="card p-4">
 
-                        <!-- Time Range Filter -->
-                        <div class="filter-section" style="margin-bottom: 20px;">
-                            <select class="filter-select" id="timeRangeFilter" onchange="filterRequestsByTime()" style="min-width: 200px;">
-                                <option value="all">All Time</option>
-                                <option value="daily">Daily</option>
-                                <option value="weekly">Weekly</option>
-                                <option value="monthly">Monthly</option>
-                            </select>
-                        </div>
+        <!-- Tabs -->
+        <div class="request-tabs" style="margin-bottom:20px;">
+            <button class="request-tab active" onclick="switchRequestType('technical')">
+                Technical Officer Requests
+                <span class="request-count-badge" id="technicalRequestCount">0</span>
+            </button>
+            <button class="request-tab" onclick="switchRequestType('supervisor')">
+                Supervisor Requests
+                <span class="request-count-badge" id="supervisorRequestCount">0</span>
+            </button>
+        </div>
 
-                        <!-- Requests Table -->
-                        <div class="table-responsive mt-3">
-                            <table class="user-table">
-                                <thead>
-                                    <tr>
-                                        <th>Request ID</th>
-                                        <th>Date & Time</th>
-                                        <th>University ID</th>
-                                        <th>Name</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="requestListBody">
-                                    <!-- Data will be populated by JavaScript -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
+        <!-- Time filter -->
+        <div class="filter-section" style="margin-bottom:20px;">
+            <select class="filter-select" id="timeRangeFilter"
+                    onchange="filterRequestsByTime()" style="min-width:200px;">
+                <option value="all">All Time</option>
+                <option value="daily">Daily</option>
+                <option value="weekly">Weekly</option>
+                <option value="monthly">Monthly</option>
+            </select>
+        </div>
 
-                <!-- Request Details Modal -->
-                <div class="modal fade" id="requestDetailsModal" tabindex="-1" aria-hidden="true">
-                    <div class="modal-dialog modal-lg modal-dialog-centered">
-                        <div class="modal-content">
-                            <div class="modal-header bg-success text-white">
-                                <h5 class="modal-title">
-                                    <i class="bi bi-info-circle me-2"></i>
-                                    Request Details
-                                </h5>
-                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                            </div>
-                            <div class="modal-body" id="requestDetailsContent">
-                                <!-- Content will be populated by JavaScript -->
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+        <!-- Table -->
+        <div class="table-responsive mt-3">
+            <table class="user-table">
+                <thead>
+                    <tr id="reqTableHead">
+                        <!-- injected by JS -->
+                    </tr>
+                </thead>
+                <tbody id="requestListBody">
+                    <!-- injected by JS -->
+                </tbody>
+            </table>
+        </div>
+
+    </div>
+</div><!-- end activitySection -->
+
+
+<!-- ── Request Detail Modal (replaces old requestDetailsModal) ── -->
+<div id="reqDetailModal"
+     style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+            background:rgba(0,0,0,0.6); z-index:999998;
+            justify-content:center; align-items:center; overflow-y:auto;">
+    <div style="background:white; border-radius:16px; width:90%; max-width:560px;
+                margin:30px auto; box-shadow:0 25px 60px rgba(0,0,0,0.4); position:relative;">
+
+        <!-- Header -->
+        <div style="background:linear-gradient(135deg,#22c55e,#16a34a);
+                    padding:18px 24px; border-radius:16px 16px 0 0;
+                    display:flex; justify-content:space-between; align-items:center;">
+            <h5 style="margin:0; color:white; font-weight:600;">
+                <i class="bi bi-journal-check"></i>&nbsp;Request Details
+            </h5>
+            <button onclick="closeReqModal()"
+                style="background:rgba(255,255,255,0.25); border:none; color:white;
+                       width:34px; height:34px; border-radius:50%; cursor:pointer;
+                       font-size:1.1rem; display:flex; align-items:center; justify-content:center;">✕</button>
+        </div>
+
+        <!-- Body -->
+        <div id="reqModalContent"
+             style="padding:24px; max-height:55vh; overflow-y:auto;"></div>
+
+        <!-- Footer -->
+        <div style="padding:16px 24px; border-top:1px solid #eee;
+                    display:flex; justify-content:flex-end; gap:10px; flex-wrap:wrap;">
+            <button id="reqApproveBtn" onclick="submitReqAction('approve')"
+                style="background:linear-gradient(135deg,#22c55e,#16a34a);
+                       color:white; border:none; padding:10px 22px;
+                       border-radius:10px; font-weight:600; cursor:pointer;">
+                <i class="bi bi-check-circle me-1"></i>Approve
+            </button>
+            <button id="reqRejectBtn" onclick="openRejectBox()"
+                style="background:linear-gradient(135deg,#ef4444,#dc2626);
+                       color:white; border:none; padding:10px 22px;
+                       border-radius:10px; font-weight:600; cursor:pointer;">
+                <i class="bi bi-x-circle me-1"></i>Reject
+            </button>
+            <button onclick="closeReqModal()"
+                style="background:#6c757d; color:white; border:none;
+                       padding:10px 22px; border-radius:10px; font-weight:600; cursor:pointer;">
+                Close
+            </button>
+        </div>
+
+    </div>
+</div>
+
+
+<!-- ── Reject-reason sub-modal ──────────────────────────────────── -->
+<div id="reqRejectModal"
+     style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+            background:rgba(0,0,0,0.72); z-index:999999;
+            justify-content:center; align-items:center;">
+    <div style="background:white; border-radius:16px; width:90%; max-width:420px;
+                padding:28px; box-shadow:0 20px 50px rgba(0,0,0,0.4);">
+        <h5 style="color:#dc2626; margin-bottom:16px;">
+            <i class="bi bi-exclamation-triangle me-2"></i>Rejection Reason
+        </h5>
+        <textarea id="reqRejectText" rows="4"
+            placeholder="Enter reason for rejection..."
+            style="width:100%; padding:12px; border:2px solid #e0e0e0;
+                   border-radius:10px; font-size:0.95rem; resize:vertical;
+                   font-family:inherit; box-sizing:border-box;"></textarea>
+        <div style="margin-top:16px; display:flex; justify-content:flex-end; gap:10px;">
+            <button onclick="closeRejectBox()"
+                style="background:#6c757d; color:white; border:none;
+                       padding:10px 20px; border-radius:10px; font-weight:600; cursor:pointer;">
+                Cancel
+            </button>
+            <button onclick="submitReqAction('reject')"
+                style="background:linear-gradient(135deg,#ef4444,#dc2626);
+                       color:white; border:none; padding:10px 22px;
+                       border-radius:10px; font-weight:600; cursor:pointer;">
+                Confirm Reject
+            </button>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -4630,237 +4849,452 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
             // ========== REQUEST SECTION FUNCTIONS ==========
-            let currentRequestType = 'technical';
-            let currentRequestId = null;
+          // ========== REQUEST SECTION FUNCTIONS (DB-connected) ==========
 
-            // Request Data with status tracking
-            const technicalRequests = [{
-                    id: 'TEC-REQ-001',
-                    dateTime: '2026-02-20 10:30 AM',
-                    timestamp: new Date('2026-02-20T10:30:00'),
-                    universityId: 'SCI001',
-                    name: 'John Doe',
-                    status: 'pending',
-                    details: {
-                        equipment: 'Microscope (2 units)',
-                        lab: 'Lab 01',
-                        duration: '2 hours',
-                        purpose: 'Final Year Research Project'
-                    }
-                },
-                {
-                    id: 'TEC-REQ-002',
-                    dateTime: '2026-02-20 11:00 AM',
-                    timestamp: new Date('2026-02-20T11:00:00'),
-                    universityId: 'SCI002',
-                    name: 'Jane Smith',
-                    status: 'pending',
-                    details: {
-                        equipment: 'Centrifuge (1 unit)',
-                        lab: 'Research Lab',
-                        duration: '3 hours',
-                        purpose: 'DNA Extraction'
-                    }
-                },
-                {
-                    id: 'TEC-REQ-003',
-                    dateTime: '2026-02-19 09:15 AM',
-                    timestamp: new Date('2026-02-19T09:15:00'),
-                    universityId: 'SCI003',
-                    name: 'Mike Johnson',
-                    status: 'pending',
-                    details: {
-                        equipment: 'Incubator (1 unit)',
-                        lab: 'Lab 02',
-                        duration: '4 hours',
-                        purpose: 'Bacterial Culture'
-                    }
-                }
-            ];
+let currentRequestType = 'technical';
+let currentRequestId   = null;   // integer PK of selected reservation
+let allRequests        = [];     // raw data from server
 
-            const supervisorRequests = [{
-                    id: 'SUP-REQ-001',
-                    dateTime: '2026-02-20 09:30 AM',
-                    timestamp: new Date('2026-02-20T09:30:00'),
-                    universityId: 'SCI004',
-                    name: 'Sarah Wilson',
-                    status: 'pending',
-                    details: {
-                        equipment: 'Autoclave (1 unit)',
-                        lab: 'Lab 01',
-                        duration: '1.5 hours',
-                        purpose: 'Media Sterilization',
-                        supervisor: 'Dr. Kamal Perera'
-                    }
-                },
-                {
-                    id: 'SUP-REQ-002',
-                    dateTime: '2026-02-19 02:00 PM',
-                    timestamp: new Date('2026-02-19T14:00:00'),
-                    universityId: 'SCI005',
-                    name: 'Pathum Perera',
-                    status: 'pending',
-                    details: {
-                        equipment: 'pH Meter (1 unit)',
-                        lab: 'Research Lab',
-                        duration: '2 hours',
-                        purpose: 'Solution Preparation',
-                        supervisor: 'Prof. Malini Silva'
-                    }
-                }
-            ];
+// ── Called from showSection('activity') ─────────────────────────
+function initRequestSection() {
+    currentRequestType = 'technical';
+    // Ensure correct tab is highlighted
+    const tabs = document.querySelectorAll('.request-tab');
+    tabs.forEach(t => t.classList.remove('active'));
+    if (tabs[0]) tabs[0].classList.add('active');
+    // Reset filter
+    const filter = document.getElementById('timeRangeFilter');
+    if (filter) filter.value = 'all';
+    // Load badges for both tabs immediately
+    fetchBothBadgeCounts();
+    // Load table
+    loadRequests('technical');
+}
 
-            // Function to update request counts
-            function updateRequestCounts() {
-                const technicalCount = technicalRequests.filter(req => req.status === 'pending').length;
-                const supervisorCount = supervisorRequests.filter(req => req.status === 'pending').length;
+// ── Fetch data from PHP ──────────────────────────────────────────
+function loadRequests(type) {
+    const tableBody = document.getElementById('requestListBody');
+    if (!tableBody) return;
 
-                document.getElementById('technicalRequestCount').textContent = technicalCount;
-                document.getElementById('supervisorRequestCount').textContent = supervisorCount;
-                document.getElementById('requestBadge').textContent = technicalCount + supervisorCount;
-            }
+    // Set column headers
+    const head = document.getElementById('reqTableHead');
+    if (head) {
+        const idLabel = (type === 'technical') ? 'Technical Officer ID' : 'Supervisor ID';
+        head.innerHTML = `
+            <th>Reservation ID</th>
+            <th>${idLabel}</th>
+            <th>Date &amp; Time</th>
+            <th>Status</th>
+            <th>Action</th>`;
+    }
 
-            function switchRequestType(type) {
-                currentRequestType = type;
-                const tabs = document.querySelectorAll('.request-tab');
-                tabs.forEach(tab => tab.classList.remove('active'));
-
-                if (type === 'technical') {
-                    tabs[0].classList.add('active');
-                } else {
-                    tabs[1].classList.add('active');
-                }
-                filterRequestsByTime();
-            }
-
-            function filterRequestsByTime() {
-                const timeRange = document.getElementById('timeRangeFilter').value;
-                const today = new Date();
-                let requests = currentRequestType === 'technical' ? technicalRequests : supervisorRequests;
-                let filtered = [];
-
-                switch (timeRange) {
-                    case 'daily':
-                        filtered = requests.filter(item =>
-                            item.timestamp.toDateString() === today.toDateString()
-                        );
-                        break;
-                    case 'weekly':
-                        const weekAgo = new Date();
-                        weekAgo.setDate(today.getDate() - 7);
-                        filtered = requests.filter(item => item.timestamp >= weekAgo);
-                        break;
-                    case 'monthly':
-                        const monthAgo = new Date();
-                        monthAgo.setDate(today.getDate() - 30);
-                        filtered = requests.filter(item => item.timestamp >= monthAgo);
-                        break;
-                    case 'all':
-                    default:
-                        filtered = requests;
-                        break;
-                }
-                displayRequestTable(filtered);
-            }
-
-            function displayRequestTable(requests) {
-                const tableBody = document.getElementById('requestListBody');
-                if (!tableBody) return;
-                tableBody.innerHTML = '';
-
-                requests.sort((a, b) => b.timestamp - a.timestamp);
-                requests.forEach(item => {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-            <td>${item.id}</td>
-            <td>${item.dateTime}</td>
-            <td>${item.universityId}</td>
-            <td>${item.name}</td>
-            <td>
-                <div class="action-buttons">
-                    <button class="btn-view" onclick="viewRequest('${item.id}')" title="View Details">
-                        <i class="bi bi-eye"></i>
-                    </button>
-                    <button class="btn-approve" onclick="approveRequest('${item.id}')" title="Approve">
-                        <i class="bi bi-check-circle"></i>
-                    </button>
-                    <button class="btn-reject" onclick="rejectRequest('${item.id}')" title="Reject">
-                        <i class="bi bi-x-circle"></i>
-                    </button>
-                </div>
+    tableBody.innerHTML = `
+        <tr>
+            <td colspan="5" class="text-center py-4">
+                <div class="spinner-border spinner-border-sm text-success me-2"></div>
+                Loading...
             </td>
-        `;
-                    tableBody.appendChild(row);
-                });
+        </tr>`;
 
-                if (requests.length === 0) {
-                    const row = document.createElement('tr');
-                    row.innerHTML = `<td colspan="5" class="text-center">No requests found for this time period</td>`;
-                    tableBody.appendChild(row);
-                }
+    fetch(`../controllers/get_requests.php?type=${type}`)
+        .then(r => r.json())
+        .then(res => {
+            allRequests = res.success ? res.data : [];
+            // Update THIS tab's badge
+            const badgeId = (type === 'technical') ? 'technicalRequestCount' : 'supervisorRequestCount';
+            const badgeEl = document.getElementById(badgeId);
+            if (badgeEl) badgeEl.textContent = allRequests.length;
+            filterRequestsByTime();
+        })
+        .catch(() => {
+            tableBody.innerHTML =
+                `<tr><td colspan="5" class="text-center py-4 text-danger">
+                    ❌ Failed to load requests. Check server connection.
+                 </td></tr>`;
+        });
+}
+
+// ── Tab switch ───────────────────────────────────────────────────
+function switchRequestType(type) {
+    currentRequestType = type;
+    const tabs = document.querySelectorAll('.request-tab');
+    tabs.forEach(t => t.classList.remove('active'));
+    tabs[type === 'technical' ? 0 : 1].classList.add('active');
+    document.getElementById('timeRangeFilter').value = 'all';
+    loadRequests(type);
+}
+
+// ── Time filter ──────────────────────────────────────────────────
+function filterRequestsByTime() {
+    const range = document.getElementById('timeRangeFilter')?.value || 'all';
+    const now   = new Date();
+
+    const filtered = allRequests.filter(item => {
+        const d = new Date(item.date);
+        if (range === 'daily')   return d.toDateString() === now.toDateString();
+        if (range === 'weekly')  { const c = new Date(); c.setDate(now.getDate()-7);  return d >= c; }
+        if (range === 'monthly') { const c = new Date(); c.setDate(now.getDate()-30); return d >= c; }
+        return true;
+    });
+
+    renderRequestTable(filtered);
+}
+
+// ── Build table rows ─────────────────────────────────────────────
+function renderRequestTable(rows) {
+    const tbody = document.getElementById('requestListBody');
+    if (!tbody) return;
+    tbody.innerHTML = '';
+
+    if (rows.length === 0) {
+        tbody.innerHTML =
+            `<tr><td colspan="5" class="text-center py-4 text-muted">
+                No pending requests found
+             </td></tr>`;
+        return;
+    }
+
+    rows.forEach(item => {
+        // Green check-mark status pill
+        const statusPill = `
+            <span style="display:inline-flex; align-items:center; gap:5px;
+                         background:#dcfce7; color:#166534; padding:4px 12px;
+                         border-radius:20px; font-size:0.82rem; font-weight:600;">
+                <i class="bi bi-check-circle-fill" style="color:#22c55e;"></i>
+                Pending
+            </span>`;
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${item.display_id}</td>
+            <td><strong style="color:#166534;">${item.officer_id}</strong></td>
+            <td>${item.date}</td>
+            <td>${statusPill}</td>
+            <td>
+                <button class="btn-view" onclick="openReqDetail(${item.id})">
+                    <i class="bi bi-eye"></i> View
+                </button>
+            </td>`;
+        tbody.appendChild(tr);
+    });
+}
+
+// ── Open detail modal ────────────────────────────────────────────
+function openReqDetail(id) {
+    const item = allRequests.find(r => r.id === id);
+    if (!item) return;
+    currentRequestId = id;
+
+    const roleLabel = (currentRequestType === 'technical') ? 'Technical Officer ID' : 'Supervisor ID';
+
+    // Notification banner (comment fields)
+    let notifHtml = '';
+    if (item.comment || item.any_comment) {
+        const msg = item.comment || item.any_comment;
+        notifHtml = `
+            <div style="background:#fffbeb; border-left:4px solid #f59e0b;
+                        padding:12px 16px; border-radius:8px; margin-bottom:16px;
+                        display:flex; align-items:flex-start; gap:10px;">
+                <i class="bi bi-bell-fill" style="color:#f59e0b; font-size:1.1rem; margin-top:2px;"></i>
+                <div>
+                    <div style="font-weight:600; color:#92400e; font-size:0.85rem; margin-bottom:2px;">
+                        Notification / Comment
+                    </div>
+                    <div style="color:#78350f; font-size:0.9rem;">${msg}</div>
+                </div>
+            </div>`;
+    }
+
+    document.getElementById('reqModalContent').innerHTML = `
+        ${notifHtml}
+        <table style="width:100%; border-collapse:collapse;">
+            <tr>
+                <td style="color:#166534; font-weight:600; padding:9px 0; width:170px;">
+                    Reservation ID:
+                </td>
+                <td style="padding:9px 0;">
+                    <strong>${item.display_id}</strong>
+                </td>
+            </tr>
+            <tr>
+                <td style="color:#166534; font-weight:600; padding:9px 0;
+                            border-top:1px solid #f0f0f0;">
+                    ${roleLabel}:
+                </td>
+                <td style="padding:9px 0; border-top:1px solid #f0f0f0;">
+                    <span style="background:#e8f5e9; color:#166534; padding:3px 12px;
+                                 border-radius:12px; font-weight:700;">
+                        ${item.officer_id}
+                    </span>
+                    <span style="margin-left:8px; color:#555; font-size:0.9rem;">
+                        ${item.officer_name}
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td style="color:#166534; font-weight:600; padding:9px 0;
+                            border-top:1px solid #f0f0f0;">Student ID:</td>
+                <td style="padding:9px 0; border-top:1px solid #f0f0f0;">
+                    ${item.student_id}
+                </td>
+            </tr>
+            <tr>
+                <td style="color:#166534; font-weight:600; padding:9px 0;
+                            border-top:1px solid #f0f0f0;">Lab Location:</td>
+                <td style="padding:9px 0; border-top:1px solid #f0f0f0;">
+                    <i class="bi bi-geo-alt-fill text-danger me-1"></i>${item.lab}
+                </td>
+            </tr>
+            <tr>
+                <td style="color:#166534; font-weight:600; padding:9px 0;
+                            border-top:1px solid #f0f0f0;">Date &amp; Time:</td>
+                <td style="padding:9px 0; border-top:1px solid #f0f0f0;">
+                    ${item.date}
+                </td>
+            </tr>
+            <tr>
+                <td style="color:#166534; font-weight:600; padding:9px 0;
+                            border-top:1px solid #f0f0f0;">Status:</td>
+                <td style="padding:9px 0; border-top:1px solid #f0f0f0;">
+                    <span style="background:#dcfce7; color:#166534; padding:4px 14px;
+                                 border-radius:20px; font-weight:600; font-size:0.85rem;">
+                        <i class="bi bi-check-circle-fill me-1"></i>Pending Review
+                    </span>
+                </td>
+            </tr>
+        </table>`;
+
+    document.getElementById('reqDetailModal').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+function closeReqModal() {
+    document.getElementById('reqDetailModal').style.display = 'none';
+    document.body.style.overflow = '';
+}
+
+// Close on backdrop click
+document.getElementById('reqDetailModal').addEventListener('click', function(e) {
+    if (e.target === this) closeReqModal();
+});
+
+// ── Reject sub-modal ─────────────────────────────────────────────
+function openRejectBox() {
+    document.getElementById('reqRejectText').value = '';
+    document.getElementById('reqRejectModal').style.display = 'flex';
+}
+
+function closeRejectBox() {
+    document.getElementById('reqRejectModal').style.display = 'none';
+}
+
+// ── Submit approve / reject ──────────────────────────────────────
+function submitReqAction(action) {
+    if (!currentRequestId) return;
+
+    const reason = action === 'reject'
+                   ? (document.getElementById('reqRejectText')?.value.trim() || '')
+                   : '';
+
+    if (action === 'reject' && !reason) {
+        alert('Please enter a rejection reason.');
+        return;
+    }
+
+    // Disable buttons
+    ['reqApproveBtn','reqRejectBtn'].forEach(id => {
+        const btn = document.getElementById(id);
+        if (btn) btn.disabled = true;
+    });
+
+    const fd = new FormData();
+    fd.append('reservation_id', currentRequestId);
+    fd.append('action', action);
+    if (reason) fd.append('reason', reason);
+
+    fetch('../controllers/process_request_action.php', { method: 'POST', body: fd })
+        .then(r => r.json())
+        .then(res => {
+            if (res.success) {
+                closeRejectBox();
+                closeReqModal();
+                showSuccess(`Request ${action === 'approve' ? 'approved ✓' : 'rejected'} successfully!`);
+                // Refresh table + both badges
+                loadRequests(currentRequestType);
+                fetchBothBadgeCounts();
+            } else {
+                showError(res.message || 'Action failed.');
             }
+        })
+        .catch(() => showError('Network error. Please try again.'))
+        .finally(() => {
+            ['reqApproveBtn','reqRejectBtn'].forEach(id => {
+                const btn = document.getElementById(id);
+                if (btn) btn.disabled = false;
+            });
+        });
+}
 
-            function viewRequest(id) {
-                const requests = currentRequestType === 'technical' ? technicalRequests : supervisorRequests;
-                const request = requests.find(item => item.id === id);
-                if (!request) return;
+// ── Refresh both tab badge counts ───────────────────────────────
+function fetchBothBadgeCounts() {
+    Promise.all([
+        fetch('../controllers/get_requests.php?type=technical').then(r => r.json()),
+        fetch('../controllers/get_requests.php?type=supervisor').then(r => r.json())
+    ]).then(([tech, sup]) => {
+        const tCount = tech.success ? tech.count : 0;
+        const sCount = sup.success  ? sup.count  : 0;
+        document.getElementById('technicalRequestCount').textContent = tCount;
+        document.getElementById('supervisorRequestCount').textContent = sCount;
+        const badge = document.getElementById('requestBadge');
+        if (badge) badge.textContent = tCount + sCount;
+    }).catch(() => {});
+}
 
-                currentRequestId = id;
-                const detailsContent = document.getElementById('requestDetailsContent');
-                let detailsHtml = `
-        <div class="row">
-            <div class="col-md-12">
-                <table class="table table-borderless">
-                    <tr><th style="width: 150px;">Request ID:</th><td><strong>${request.id}</strong></td></tr>
-                    <tr><th>Date & Time:</th><td>${request.dateTime}</td></tr>
-                    <tr><th>University ID:</th><td>${request.universityId}</td></tr>
-                    <tr><th>Name:</th><td>${request.name}</td></tr>
-                    <tr><th>Equipment:</th><td>${request.details.equipment}</td></tr>
-                    <tr><th>Lab:</th><td>${request.details.lab}</td></tr>
-                    <tr><th>Duration:</th><td>${request.details.duration}</td></tr>
-                    <tr><th>Purpose:</th><td>${request.details.purpose}</td></tr>
-    `;
-                if (currentRequestType === 'supervisor' && request.details.supervisor) {
-                    detailsHtml += `<tr><th>Supervisor:</th><td>${request.details.supervisor}</td></tr>`;
-                }
-                detailsHtml += `</table></div></div>`;
-                detailsContent.innerHTML = detailsHtml;
-                new bootstrap.Modal(document.getElementById('requestDetailsModal')).show();
-            }
+// Keep old name working (called from DOMContentLoaded)
+function updateRequestCounts() { fetchBothBadgeCounts(); }
 
-            function approveRequest(id) {
-                const requestId = id || currentRequestId;
-                if (confirm(`Are you sure you want to approve request ${requestId}?`)) {
-                    const requests = currentRequestType === 'technical' ? technicalRequests : supervisorRequests;
-                    const request = requests.find(r => r.id === requestId);
-                    if (request) request.status = 'approved';
 
-                    alert(`Request ${requestId} has been approved successfully!`);
-                    const modal = bootstrap.Modal.getInstance(document.getElementById('requestDetailsModal'));
-                    if (modal) modal.hide();
 
-                    updateRequestCounts();
-                    filterRequestsByTime();
-                }
-            }
 
-            function rejectRequest(id) {
-                const requestId = id || currentRequestId;
-                const reason = prompt(`Enter rejection reason for request ${requestId}:`);
-                if (reason) {
-                    const requests = currentRequestType === 'technical' ? technicalRequests : supervisorRequests;
-                    const request = requests.find(r => r.id === requestId);
-                    if (request) request.status = 'rejected';
 
-                    alert(`Request ${requestId} has been rejected. Reason: ${reason}`);
-                    const modal = bootstrap.Modal.getInstance(document.getElementById('requestDetailsModal'));
-                    if (modal) modal.hide();
 
-                    updateRequestCounts();
-                    filterRequestsByTime();
-                }
-            }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
             // ========== EQUIPMENT SEARCH FUNCTIONS ==========
             function searchEquipment() {

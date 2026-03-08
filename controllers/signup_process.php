@@ -211,9 +211,9 @@ try {
     }
 
     // TEMPORARY DEBUG - Add this
-    error_log("User Type: " . $user_type);
-    error_log("Role Email: " . $role_email);
-    error_log("Validation Fields: " . print_r($response['fields'], true));
+    // error_log("User Type: " . $user_type);
+    // error_log("Role Email: " . $role_email);
+    // error_log("Validation Fields: " . print_r($response['fields'], true));
 
     if (!empty($response['fields'])) {
         $response['message'] = 'Please correct the errors';
