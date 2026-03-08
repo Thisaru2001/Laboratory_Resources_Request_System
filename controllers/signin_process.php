@@ -2,7 +2,7 @@
 session_start();
 include "../config/database.php";
 
-  
+
 $university_id = $_POST["university_id"] ?? '';
 $password = $_POST["password"] ?? '';
 $remember_me = $_POST["remember_me"] ?? '';
@@ -71,7 +71,7 @@ if ($count == 1) {
         exit;
     }
 
- 
+
     if (password_verify($password, $user['password_user'])) {
 
         if (password_verify($token, $user['remember_token'])) {
@@ -138,9 +138,25 @@ if ($count == 1) {
                 setcookie("token_hash", "", time() - 3600, "/", "", true, true);
             }
 
-            // Return success with redirect path
-            echo "success|$redirect";
-       
+
+
+            try {
+
+                $insert_sql_user_sessions = "INSERT INTO user_sessions (
+        created_at, user_id
+    ) VALUES (NOW(), ?)";
+
+                $insert_sessions = Database::iud($insert_sql_user_sessions, "i", [
+                    $user['user_id']
+                ]);
+
+                // Return success with redirect path
+                echo "success|$redirect";
+            } catch (Exception $e) {
+
+                $response['message'] = $e->getMessage();
+                error_log("Signup Error: " . $e->getMessage());
+            }
         } else {
 
             $attempts++;
@@ -197,4 +213,3 @@ foreach (glob($temp_dir . '/login_attempts_*') as $file) {
         unlink($file);
     }
 }
-?>

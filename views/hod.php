@@ -3161,24 +3161,53 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
 
                     <!-- Most Used Equipment -->
                     <div class="row">
+
+
                         <div class="col-md-6 mb-4">
                             <div class="card p-4">
-                                <h5 class="fw-bold mb-3" style="color: #166534;">Completed Practicals/Research</h5>
-                                <div class="chart-container">
-                                    <canvas id="usageChart"></canvas>
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <h5 class="fw-bold mb-0" style="color: #166534;">Completed</h5>
+                                    <small id="usageChartUpdated" class="text-muted" style="font-size:0.75rem;"></small>
+                                </div>
+                                <small class="text-muted mb-2 d-block" style="font-size:0.8rem;">
+                                    
+                                    Monthly completed reservations &nbsp; <span style="color:#3b82f6;font-size:0.75rem;">- -</span>Average · scroll →
+                                     
+                                </small>
+                                <div class="chart-container" id="usageChartScroll"
+                                    style="overflow-x:auto; overflow-y:hidden; padding-bottom:4px;">
+                                    <div id="usageChartWrapper" style="height:100%; min-width:100%;">
+                                        <canvas id="usageChart" style="height:100% !important;"></canvas>
+                                    </div>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Monthly Activity Chart -->
+
                         <div class="col-md-6 mb-4">
                             <div class="card p-4">
-                                <h5 class="fw-bold mb-3" style="color: #166534;">System Progress</h5>
-                                <div class="chart-container">
-                                    <canvas id="monthlyChart"></canvas>
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <h5 class="fw-bold mb-0" style="color: #166534;">System Progress</h5>
+                                    <small id="monthlyChartUpdated" class="text-muted" style="font-size:0.75rem;"></small>
+                                </div>
+                                <small class="text-muted mb-2 d-block" style="font-size:0.8rem;">
+                                    Monthly sessions &nbsp;
+                                    <span style="color:#22c55e;">●</span> Sessions &nbsp;
+                                    <span style="color:#3b82f6;font-size:0.75rem;">- -</span> Average
+                                    &nbsp;· scroll →
+                                </small>
+
+                                <!-- chart-container uses your existing CSS (height:300px, position:relative) -->
+                                <div class="chart-container" id="monthlyChartScroll"
+                                    style="overflow-x:auto; overflow-y:hidden; padding-bottom:4px;">
+                                    <div id="monthlyChartWrapper" style="height:100%; min-width:100%;">
+                                        <canvas id="monthlyChart" style="height:100% !important;"></canvas>
+                                    </div>
                                 </div>
                             </div>
                         </div>
+
                     </div>
 
                     <!-- Calendar Section -->
@@ -3216,6 +3245,10 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                             </div>
                         </div>
                     </div>
+
+
+
+
                 </div>
 
                 <!-- User Management Section -->
@@ -4016,306 +4049,306 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                         </div>
                     </div>
                 </div>
-            
-
-           
 
 
 
 
-            <!-- Reservation Details Section -->
-            <div id="historySection" style="display: none;">
-                <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Reservation Details</h3>
 
-                <!-- Search and Filter Row (Outside card) -->
-                <div class="search-add-row" style="margin-bottom: 20px;">
-                    <div class="search-container">
-                        <input type="text"
-                            id="reservationSearch"
-                            class="search-input"
-                            placeholder="Search by ID, student or lab..."
-                            oninput="searchReservations()"> <!-- Real-time search -->
-                        <button class="search-btn" onclick="searchReservations()">
-                            <i class="bi bi-search"></i> Search
-                        </button>
-                    </div>
-                    <div class="filter-section" style="margin-bottom: 0;">
-                        <select class="filter-select" id="statusFilter" onchange="searchReservations()" style="min-width: 150px;">
-                            <option value="all">All Status</option>
-                            <option value="ready">Ready</option>
-                            <option value="pending">Pending</option>
-                            <option value="rejected">Rejected</option>
-                        </select>
-                    </div>
-                    <!-- Add Button -->
-                    <button class="add-btn" onclick="addReservation()" style="background: linear-gradient(135deg, #22c55e, #16a34a);">
-                        <i class="bi bi-plus-circle"></i> Add Reservation
-                    </button>
-                </div>
 
-                <!-- Reservation Table Card -->
-                <div id="reservationTableCard" class="card p-4">
-                    <h4 class="table-heading mt-0">
-                        <i class="bi bi-calendar-check"></i> Reservations
-                        <span class="table-count" id="reservationCount">(3)</span>
-                    </h4>
-                    <div class="table-responsive">
-                        <table class="user-table">
-                            <thead>
-                                <tr>
-                                    <th>Reservation ID</th>
-                                    <th>Lab Location</th>
-                                    <th>Student ID</th>
-                                    <th>Status</th>
-                                    <th>Reservation Date</th>
-                                    <th>Action</th>
-                                </tr>
-                            </thead>
-                            <tbody id="reservationTableBody">
-                                <!-- Data will be populated by JavaScript -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
 
-            <!-- Reservation Details Modal -->
-            <div class="modal fade" id="reservationDetailsModal" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-lg modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header bg-success text-white">
-                            <h5 class="modal-title">
-                                <i class="bi bi-calendar-check me-2"></i>
-                                Reservation Details
-                            </h5>
-                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                <!-- Reservation Details Section -->
+                <div id="historySection" style="display: none;">
+                    <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Reservation Details</h3>
+
+                    <!-- Search and Filter Row (Outside card) -->
+                    <div class="search-add-row" style="margin-bottom: 20px;">
+                        <div class="search-container">
+                            <input type="text"
+                                id="reservationSearch"
+                                class="search-input"
+                                placeholder="Search by ID, student or lab..."
+                                oninput="searchReservations()"> <!-- Real-time search -->
+                            <button class="search-btn" onclick="searchReservations()">
+                                <i class="bi bi-search"></i> Search
+                            </button>
                         </div>
-                        <div class="modal-body" id="reservationDetailsContent">
-                            <!-- Content will be populated by JavaScript -->
+                        <div class="filter-section" style="margin-bottom: 0;">
+                            <select class="filter-select" id="statusFilter" onchange="searchReservations()" style="min-width: 150px;">
+                                <option value="all">All Status</option>
+                                <option value="ready">Ready</option>
+                                <option value="pending">Pending</option>
+                                <option value="rejected">Rejected</option>
+                            </select>
                         </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-
-
-            <!-- Request Section -->
-            <div id="activitySection" style="display: none;">
-                <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Requests</h3>
-
-                <div class="card p-4">
-                    <!-- Request Type Tabs with Count Badges -->
-                    <div class="request-tabs" style="margin-bottom: 20px;">
-                        <button class="request-tab active" onclick="switchRequestType('technical')">
-                            Technical Officer Requests
-                            <span class="request-count-badge" id="technicalRequestCount">3</span>
-                        </button>
-                        <button class="request-tab" onclick="switchRequestType('supervisor')">
-                            Supervisor Requests
-                            <span class="request-count-badge" id="supervisorRequestCount">2</span>
+                        <!-- Add Button -->
+                        <button class="add-btn" onclick="addReservation()" style="background: linear-gradient(135deg, #22c55e, #16a34a);">
+                            <i class="bi bi-plus-circle"></i> Add Reservation
                         </button>
                     </div>
 
-                    <!-- Time Range Filter -->
-                    <div class="filter-section" style="margin-bottom: 20px;">
-                        <select class="filter-select" id="timeRangeFilter" onchange="filterRequestsByTime()" style="min-width: 200px;">
-                            <option value="all">All Time</option>
-                            <option value="daily">Daily</option>
-                            <option value="weekly">Weekly</option>
-                            <option value="monthly">Monthly</option>
-                        </select>
-                    </div>
-
-                    <!-- Requests Table -->
-                    <div class="table-responsive mt-3">
-                        <table class="user-table">
-                            <thead>
-                                <tr>
-                                    <th>Request ID</th>
-                                    <th>Date & Time</th>
-                                    <th>University ID</th>
-                                    <th>Name</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="requestListBody">
-                                <!-- Data will be populated by JavaScript -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Request Details Modal -->
-            <div class="modal fade" id="requestDetailsModal" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-lg modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header bg-success text-white">
-                            <h5 class="modal-title">
-                                <i class="bi bi-info-circle me-2"></i>
-                                Request Details
-                            </h5>
-                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body" id="requestDetailsContent">
-                            <!-- Content will be populated by JavaScript -->
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <!-- Reservation Table Card -->
+                    <div id="reservationTableCard" class="card p-4">
+                        <h4 class="table-heading mt-0">
+                            <i class="bi bi-calendar-check"></i> Reservations
+                            <span class="table-count" id="reservationCount">(3)</span>
+                        </h4>
+                        <div class="table-responsive">
+                            <table class="user-table">
+                                <thead>
+                                    <tr>
+                                        <th>Reservation ID</th>
+                                        <th>Lab Location</th>
+                                        <th>Student ID</th>
+                                        <th>Status</th>
+                                        <th>Reservation Date</th>
+                                        <th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="reservationTableBody">
+                                    <!-- Data will be populated by JavaScript -->
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
-            </div>
 
-
-
-
-
-            <!-- Analytics Section -->
-            <div id="analyticsSection" style="display: none;">
-                <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Analytics Dashboard</h3>
-
-                <!-- Summary Statistics Cards -->
-                <div class="analytics-grid">
-                    <!-- Students Card -->
-                    <div class="stat-card">
-                        <i class="bi bi-mortarboard-fill"></i>
-                        <h3>56</h3>
-                        <p>Students</p>
-                    </div>
-
-                    <!-- Supervisors/Lecturers Card -->
-                    <div class="stat-card">
-                        <i class="bi bi-person-badge-fill"></i>
-                        <h3>5</h3>
-                        <p>Supervisors/Lecturers</p>
-                    </div>
-
-                    <!-- Technical Officers Card -->
-                    <div class="stat-card">
-                        <i class="bi bi-person-gear"></i>
-                        <h3>3</h3>
-                        <p>Technical Officers</p>
-                    </div>
-
-                    <!-- Active Equipment Card -->
-                    <div class="stat-card">
-                        <i class="bi bi-tools"></i>
-                        <h3>85%</h3>
-                        <p>Equipment Utilization Rate</p>
-                    </div>
-
-                    <!-- Maintenance Card -->
-                    <div class="stat-card">
-                        <i class="bi bi-gear-wide-connected"></i>
-                        <h3>3</h3>
-                        <p>Maintenance</p>
-                    </div>
-                </div>
-
-                <!-- First Row: Rejected Requests Report & Equipment Usage Chart -->
-                <div class="row">
-                    <!-- Rejected Requests Report -->
-                    <div class="col-md-6 mb-4">
-                        <div class="card p-4">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h5 class="fw-bold" style="color: #166534;">
-                                    <i class="bi bi-x-circle-fill text-danger me-2"></i>
-                                    Rejected Requests (Technical Officer)
+                <!-- Reservation Details Modal -->
+                <div class="modal fade" id="reservationDetailsModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-lg modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header bg-success text-white">
+                                <h5 class="modal-title">
+                                    <i class="bi bi-calendar-check me-2"></i>
+                                    Reservation Details
                                 </h5>
-                                <button class="btn-generate" onclick="generateReport('rejected')">
-                                    <i class="bi bi-file-earmark-pdf me-2"></i>Generate Report
-                                </button>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                             </div>
-
-                            <div class="table-responsive">
-                                <table class="details-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Request ID</th>
-                                            <th>Student ID</th>
-                                            <th>Reason</th>
-                                            <th>Date & Time</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>#REQ003</td>
-                                            <td>SCI003</td>
-                                            <td>
-                                                <button class="btn-view" onclick="viewRejectionReason('REQ003')" title="View Reason">
-                                                    <i class="bi bi-eye"></i> View
-                                                </button>
-                                            </td>
-                                            <td>2026-02-19 09:15 AM</td>
-                                        </tr>
-                                        <tr>
-                                            <td>#REQ007</td>
-                                            <td>SCI007</td>
-                                            <td>
-                                                <button class="btn-view" onclick="viewRejectionReason('REQ007')" title="View Reason">
-                                                    <i class="bi bi-eye"></i> View
-                                                </button>
-                                            </td>
-                                            <td>2026-02-17 02:30 PM</td>
-                                        </tr>
-                                        <tr>
-                                            <td>#REQ012</td>
-                                            <td>SCI012</td>
-                                            <td>
-                                                <button class="btn-view" onclick="viewRejectionReason('REQ012')" title="View Reason">
-                                                    <i class="bi bi-eye"></i> View
-                                                </button>
-                                            </td>
-                                            <td>2026-02-15 11:45 AM</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                            <div class="modal-body" id="reservationDetailsContent">
+                                <!-- Content will be populated by JavaScript -->
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                             </div>
                         </div>
                     </div>
+                </div>
 
-                    <!-- Equipment Usage Report with Search -->
-                    <div class="col-md-6 mb-4">
-                        <div class="card p-4">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h5 class="fw-bold" style="color: #166534;">
-                                    <i class="bi bi-bar-chart-fill text-success me-2"></i>
-                                    Equipment Usage Report
+
+
+                <!-- Request Section -->
+                <div id="activitySection" style="display: none;">
+                    <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Requests</h3>
+
+                    <div class="card p-4">
+                        <!-- Request Type Tabs with Count Badges -->
+                        <div class="request-tabs" style="margin-bottom: 20px;">
+                            <button class="request-tab active" onclick="switchRequestType('technical')">
+                                Technical Officer Requests
+                                <span class="request-count-badge" id="technicalRequestCount">3</span>
+                            </button>
+                            <button class="request-tab" onclick="switchRequestType('supervisor')">
+                                Supervisor Requests
+                                <span class="request-count-badge" id="supervisorRequestCount">2</span>
+                            </button>
+                        </div>
+
+                        <!-- Time Range Filter -->
+                        <div class="filter-section" style="margin-bottom: 20px;">
+                            <select class="filter-select" id="timeRangeFilter" onchange="filterRequestsByTime()" style="min-width: 200px;">
+                                <option value="all">All Time</option>
+                                <option value="daily">Daily</option>
+                                <option value="weekly">Weekly</option>
+                                <option value="monthly">Monthly</option>
+                            </select>
+                        </div>
+
+                        <!-- Requests Table -->
+                        <div class="table-responsive mt-3">
+                            <table class="user-table">
+                                <thead>
+                                    <tr>
+                                        <th>Request ID</th>
+                                        <th>Date & Time</th>
+                                        <th>University ID</th>
+                                        <th>Name</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="requestListBody">
+                                    <!-- Data will be populated by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Request Details Modal -->
+                <div class="modal fade" id="requestDetailsModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-lg modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header bg-success text-white">
+                                <h5 class="modal-title">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    Request Details
                                 </h5>
-                                <button class="btn-generate" onclick="generateReport('usage')">
-                                    <i class="bi bi-file-earmark-pdf me-2"></i>Generate Report
-                                </button>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                             </div>
+                            <div class="modal-body" id="requestDetailsContent">
+                                <!-- Content will be populated by JavaScript -->
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-                            <!-- Search Input for Equipment Name (Real-time) -->
-                            <div class="mb-3">
-                                <input type="text"
-                                    id="equipmentUsageSearch"
-                                    class="form-control"
-                                    placeholder="Search equipment name..."
-                                    oninput="filterEquipmentUsage()">
-                            </div>
 
-                            <!-- Equipment Usage Table -->
-                            <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
-                                <table class="table table-hover">
-                                    <thead class="sticky-top bg-white">
-                                        <tr>
-                                            <th>Equipment Name</th>
-                                            <th>Usage Percentage</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="equipmentUsageTableBody">
-                                        <!-- Data will be populated by JavaScript -->
-                                    </tbody>
-                                </table>
+
+
+
+                <!-- Analytics Section -->
+                <div id="analyticsSection" style="display: none;">
+                    <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Analytics Dashboard</h3>
+
+                    <!-- Summary Statistics Cards -->
+                    <div class="analytics-grid">
+                        <!-- Students Card -->
+                        <div class="stat-card">
+                            <i class="bi bi-mortarboard-fill"></i>
+                            <h3>56</h3>
+                            <p>Students</p>
+                        </div>
+
+                        <!-- Supervisors/Lecturers Card -->
+                        <div class="stat-card">
+                            <i class="bi bi-person-badge-fill"></i>
+                            <h3>5</h3>
+                            <p>Supervisors/Lecturers</p>
+                        </div>
+
+                        <!-- Technical Officers Card -->
+                        <div class="stat-card">
+                            <i class="bi bi-person-gear"></i>
+                            <h3>3</h3>
+                            <p>Technical Officers</p>
+                        </div>
+
+                        <!-- Active Equipment Card -->
+                        <div class="stat-card">
+                            <i class="bi bi-tools"></i>
+                            <h3>85%</h3>
+                            <p>Equipment Utilization Rate</p>
+                        </div>
+
+                        <!-- Maintenance Card -->
+                        <div class="stat-card">
+                            <i class="bi bi-gear-wide-connected"></i>
+                            <h3>3</h3>
+                            <p>Maintenance</p>
+                        </div>
+                    </div>
+
+                    <!-- First Row: Rejected Requests Report & Equipment Usage Chart -->
+                    <div class="row">
+                        <!-- Rejected Requests Report -->
+                        <div class="col-md-6 mb-4">
+                            <div class="card p-4">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h5 class="fw-bold" style="color: #166534;">
+                                        <i class="bi bi-x-circle-fill text-danger me-2"></i>
+                                        Rejected Requests (Technical Officer)
+                                    </h5>
+                                    <button class="btn-generate" onclick="generateReport('rejected')">
+                                        <i class="bi bi-file-earmark-pdf me-2"></i>Generate Report
+                                    </button>
+                                </div>
+
+                                <div class="table-responsive">
+                                    <table class="details-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Request ID</th>
+                                                <th>Student ID</th>
+                                                <th>Reason</th>
+                                                <th>Date & Time</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td>#REQ003</td>
+                                                <td>SCI003</td>
+                                                <td>
+                                                    <button class="btn-view" onclick="viewRejectionReason('REQ003')" title="View Reason">
+                                                        <i class="bi bi-eye"></i> View
+                                                    </button>
+                                                </td>
+                                                <td>2026-02-19 09:15 AM</td>
+                                            </tr>
+                                            <tr>
+                                                <td>#REQ007</td>
+                                                <td>SCI007</td>
+                                                <td>
+                                                    <button class="btn-view" onclick="viewRejectionReason('REQ007')" title="View Reason">
+                                                        <i class="bi bi-eye"></i> View
+                                                    </button>
+                                                </td>
+                                                <td>2026-02-17 02:30 PM</td>
+                                            </tr>
+                                            <tr>
+                                                <td>#REQ012</td>
+                                                <td>SCI012</td>
+                                                <td>
+                                                    <button class="btn-view" onclick="viewRejectionReason('REQ012')" title="View Reason">
+                                                        <i class="bi bi-eye"></i> View
+                                                    </button>
+                                                </td>
+                                                <td>2026-02-15 11:45 AM</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
-                            <!-- Add this after the equipment usage table in analytics section (around line 1890) -->
-                            <!-- <div class="row mt-4">
+                        </div>
+
+                        <!-- Equipment Usage Report with Search -->
+                        <div class="col-md-6 mb-4">
+                            <div class="card p-4">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h5 class="fw-bold" style="color: #166534;">
+                                        <i class="bi bi-bar-chart-fill text-success me-2"></i>
+                                        Equipment Usage Report
+                                    </h5>
+                                    <button class="btn-generate" onclick="generateReport('usage')">
+                                        <i class="bi bi-file-earmark-pdf me-2"></i>Generate Report
+                                    </button>
+                                </div>
+
+                                <!-- Search Input for Equipment Name (Real-time) -->
+                                <div class="mb-3">
+                                    <input type="text"
+                                        id="equipmentUsageSearch"
+                                        class="form-control"
+                                        placeholder="Search equipment name..."
+                                        oninput="filterEquipmentUsage()">
+                                </div>
+
+                                <!-- Equipment Usage Table -->
+                                <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+                                    <table class="table table-hover">
+                                        <thead class="sticky-top bg-white">
+                                            <tr>
+                                                <th>Equipment Name</th>
+                                                <th>Usage Percentage</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="equipmentUsageTableBody">
+                                            <!-- Data will be populated by JavaScript -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <!-- Add this after the equipment usage table in analytics section (around line 1890) -->
+                                <!-- <div class="row mt-4">
                                     <div class="col-12">
                                         <div class="card p-4">
                                             <h5 class="fw-bold mb-3" style="color: #166534;">Equipment Usage Overview</h5>
@@ -4325,93 +4358,93 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                                         </div>
                                     </div>
                                 </div> -->
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Second Row: Download Inventory Button -->
-                <div class="row">
-                    <div class="col-12">
-                        <div class="card p-4 text-center">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <h5 class="fw-bold mb-0" style="color: #166534;">
-                                    <i class="bi bi-download me-2"></i>
-                                    Full Equipment Inventory
-                                </h5>
-                                <button class="btn-generate" onclick="downloadInventory()">
-                                    <i class="bi bi-file-earmark-spreadsheet me-2"></i>Download Full Inventory List
-                                </button>
                             </div>
-                            <p class="text-muted mt-2 mb-0 small">Download complete inventory of all equipment with details</p>
+                        </div>
+                    </div>
+
+                    <!-- Second Row: Download Inventory Button -->
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card p-4 text-center">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h5 class="fw-bold mb-0" style="color: #166534;">
+                                        <i class="bi bi-download me-2"></i>
+                                        Full Equipment Inventory
+                                    </h5>
+                                    <button class="btn-generate" onclick="downloadInventory()">
+                                        <i class="bi bi-file-earmark-spreadsheet me-2"></i>Download Full Inventory List
+                                    </button>
+                                </div>
+                                <p class="text-muted mt-2 mb-0 small">Download complete inventory of all equipment with details</p>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
 
 
-            <!-- Rejection Reason Modal -->
-            <div class="modal fade" id="rejectionReasonModal" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header bg-danger text-white">
-                            <h5 class="modal-title">
-                                <i class="bi bi-exclamation-triangle-fill me-2"></i>
-                                Rejection Reason
-                            </h5>
-                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body" id="rejectionReasonContent">
-                            <!-- Content will be populated by JavaScript -->
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <!-- Rejection Reason Modal -->
+                <div class="modal fade" id="rejectionReasonModal" tabindex="-1" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header bg-danger text-white">
+                                <h5 class="modal-title">
+                                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                                    Rejection Reason
+                                </h5>
+                                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body" id="rejectionReasonContent">
+                                <!-- Content will be populated by JavaScript -->
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
 
 
 
-            <!-- Add Event Modal -->
-            <div class="add-event-wrapper" id="addEventWrapper">
-                <div class="add-event-header">
-                    <div class="title">Equipment Request Details</div>
-                    <i class="fas fa-times close" id="closeEventBtn"></i>
-                </div>
-                <div class="add-event-body">
-                    <input type="text" placeholder="Equipment Request Title" id="eventName" maxlength="60">
-                    <textarea placeholder="Request Details" id="eventDetails" rows="3"></textarea>
-                    <input type="text" placeholder="Start Time (HH:MM)" id="eventTimeFrom" readonly>
-                    <input type="text" placeholder="End Time (HH:MM)" id="eventTimeTo" readonly>
-                </div>
-                <div class="add-event-footer">
-                    <button id="addEventSubmit">Confirm Request</button>
+                <!-- Add Event Modal -->
+                <div class="add-event-wrapper" id="addEventWrapper">
+                    <div class="add-event-header">
+                        <div class="title">Equipment Request Details</div>
+                        <i class="fas fa-times close" id="closeEventBtn"></i>
+                    </div>
+                    <div class="add-event-body">
+                        <input type="text" placeholder="Equipment Request Title" id="eventName" maxlength="60">
+                        <textarea placeholder="Request Details" id="eventDetails" rows="3"></textarea>
+                        <input type="text" placeholder="Start Time (HH:MM)" id="eventTimeFrom" readonly>
+                        <input type="text" placeholder="End Time (HH:MM)" id="eventTimeTo" readonly>
+                    </div>
+                    <div class="add-event-footer">
+                        <button id="addEventSubmit">Confirm Request</button>
+                    </div>
                 </div>
             </div>
         </div>
-        </div>
 
-         <div class="modal fade" id="equipmentDetailsModal" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-lg modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header bg-success text-white">
-                            <h5 class="modal-title">
-                                <i class="bi bi-info-circle me-2"></i>
-                                Equipment Details
-                            </h5>
-                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body" id="equipmentDetailsContent">
+        <div class="modal fade" id="equipmentDetailsModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-success text-white">
+                        <h5 class="modal-title">
+                            <i class="bi bi-info-circle me-2"></i>
+                            Equipment Details
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body" id="equipmentDetailsContent">
 
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                     </div>
                 </div>
             </div>
+        </div>
 
         <!-- Scripts -->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
@@ -5334,12 +5367,12 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
             }
 
 
-   // ── PASTE THIS ENTIRE FUNCTION into hod.php, replacing the old viewEquipment() ──
+            // ── PASTE THIS ENTIRE FUNCTION into hod.php, replacing the old viewEquipment() ──
 
-function viewEquipment(code) {
+            function viewEquipment(code) {
 
-    // Show modal immediately with spinner
-    document.getElementById('equipmentDetailsContent').innerHTML = `
+                // Show modal immediately with spinner
+                document.getElementById('equipmentDetailsContent').innerHTML = `
         <div class="text-center py-5">
             <div class="spinner-border text-success" role="status"
                  style="width:2rem;height:2rem;"></div>
@@ -5348,15 +5381,15 @@ function viewEquipment(code) {
             </p>
         </div>
     `;
-    new bootstrap.Modal(document.getElementById('equipmentDetailsModal')).show();
+                new bootstrap.Modal(document.getElementById('equipmentDetailsModal')).show();
 
-    fetch(`get_equipment_details.php?code=${encodeURIComponent(code)}`)
-        .then(res => res.json())
-        .then(eq => {
+                fetch(`get_equipment_details.php?code=${encodeURIComponent(code)}`)
+                    .then(res => res.json())
+                    .then(eq => {
 
-            // ── DEBUG mode (when $DEBUG=true in PHP) ─────────────────────────
-            if (eq.debug) {
-                document.getElementById('equipmentDetailsContent').innerHTML = `
+                        // ── DEBUG mode (when $DEBUG=true in PHP) ─────────────────────────
+                        if (eq.debug) {
+                            document.getElementById('equipmentDetailsContent').innerHTML = `
                     <div class="p-3">
                         <div class="alert alert-warning">
                             <strong>🔧 DEBUG MODE ON</strong> — set <code>$DEBUG = false</code> for production.
@@ -5373,28 +5406,34 @@ function viewEquipment(code) {
                         <pre class="bg-light p-3 rounded" style="font-size:12px;">${JSON.stringify(eq.equipment_db_row, null, 2)}</pre>
                     </div>
                 `;
-                return;
-            }
+                            return;
+                        }
 
-            // ── PHP-level error ───────────────────────────────────────────────
-            if (eq.error) {
-                document.getElementById('equipmentDetailsContent').innerHTML = `
+                        // ── PHP-level error ───────────────────────────────────────────────
+                        if (eq.error) {
+                            document.getElementById('equipmentDetailsContent').innerHTML = `
                     <div class="alert alert-danger m-3">
                         <i class="bi bi-exclamation-circle me-2"></i>${eq.error}
                     </div>`;
-                return;
-            }
+                            return;
+                        }
 
-            // ── Safe AI defaults ──────────────────────────────────────────────
-            const ai = eq.ai || {
-                student_id: null, university_id: null, full_name: null,
-                reservation_id: null, confidence: 0, sentiment: "Unknown",
-                keywords: [], analysis: "AI analysis unavailable.",
-                raw_comment: "", mention_found: false
-            };
+                        // ── Safe AI defaults ──────────────────────────────────────────────
+                        const ai = eq.ai || {
+                            student_id: null,
+                            university_id: null,
+                            full_name: null,
+                            reservation_id: null,
+                            confidence: 0,
+                            sentiment: "Unknown",
+                            keywords: [],
+                            analysis: "AI analysis unavailable.",
+                            raw_comment: "",
+                            mention_found: false
+                        };
 
-            // ── Grant section (only shown if grant_name exists) ───────────────
-            const grantHTML = eq.grant_name ? `
+                        // ── Grant section (only shown if grant_name exists) ───────────────
+                        const grantHTML = eq.grant_name ? `
                 <tr>
                     <td colspan="2">
                         <div class="mt-2 mb-1">
@@ -5420,11 +5459,11 @@ function viewEquipment(code) {
                 </tr>` : ''}
             ` : '';
 
-            // ── AI section ────────────────────────────────────────────────────
-            const confPct   = Math.round((ai.confidence || 0) * 100);
-            const confColor = confPct >= 70 ? 'success' : confPct >= 40 ? 'warning' : 'danger';
+                        // ── AI section ────────────────────────────────────────────────────
+                        const confPct = Math.round((ai.confidence || 0) * 100);
+                        const confColor = confPct >= 70 ? 'success' : confPct >= 40 ? 'warning' : 'danger';
 
-            const aiHTML = ai.student_id ? `
+                        const aiHTML = ai.student_id ? `
                 <tr>
                     <td colspan="2">
                         <div class="mt-2 mb-1">
@@ -5482,8 +5521,8 @@ function viewEquipment(code) {
                 </tr>
             `;
 
-            // ── Build full modal ──────────────────────────────────────────────
-            document.getElementById('equipmentDetailsContent').innerHTML = `
+                        // ── Build full modal ──────────────────────────────────────────────
+                        document.getElementById('equipmentDetailsContent').innerHTML = `
                 <div class="row g-0">
                     <!-- Left: image + name + code -->
                     <div class="col-md-4 text-center border-end p-4">
@@ -5545,15 +5584,15 @@ function viewEquipment(code) {
                     </div>
                 </div>
             `;
-        })
-        .catch(err => {
-            document.getElementById('equipmentDetailsContent').innerHTML = `
+                    })
+                    .catch(err => {
+                        document.getElementById('equipmentDetailsContent').innerHTML = `
                 <div class="alert alert-danger m-3">
                     <i class="bi bi-exclamation-triangle me-2"></i>
                     Fetch error: ${err.message}
                 </div>`;
-        });
-}
+                    });
+            }
 
 
 
@@ -5657,38 +5696,7 @@ function viewEquipment(code) {
 
 
 
-            // Add this function after showEventsForDate (around line 2220)
-            function addDayCellClickHandlers() {
-                const dayCells = document.querySelectorAll('.day-cell:not(.prev-date):not(.next-date)');
-
-                dayCells.forEach(cell => {
-                    cell.addEventListener('click', function() {
-                        // Remove active class from all cells
-                        dayCells.forEach(c => c.classList.remove('active'));
-
-                        // Add active class to clicked cell
-                        this.classList.add('active');
-
-                        // Get the selected date
-                        const selectedDay = this.textContent;
-                        const selectedDate = new Date(year, month, parseInt(selectedDay));
-
-                        // Update right panel with selected date
-                        const options = {
-                            weekday: 'long'
-                        };
-                        document.getElementById('eventDay').innerHTML = selectedDate.toLocaleDateString('en-US', options);
-                        document.getElementById('eventDate').innerHTML = selectedDate.toLocaleDateString('en-US', {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric'
-                        });
-
-                        // Show events for this date
-                        showEventsForDate(selectedDate);
-                    });
-                });
-            }
+           
             // ========== RESERVATION DATA ==========
             const reservationData = [{
                     id: 'RES-001',
@@ -5890,6 +5898,11 @@ function viewEquipment(code) {
 
             // ========== ANALYTICS FUNCTIONS ==========
             let usageChart, monthlyChart, equipmentUsageChart;
+
+
+
+
+
             let equipmentUsageData = [{
                     name: 'Microscope',
                     usage: 80
@@ -5929,54 +5942,266 @@ function viewEquipment(code) {
             ];
 
             function initCharts() {
-                const usageCtx = document.getElementById('usageChart')?.getContext('2d');
+             const usageCtx = document.getElementById('usageChart')?.getContext('2d');
                 if (usageCtx) {
                     if (usageChart) usageChart.destroy();
                     usageChart = new Chart(usageCtx, {
                         type: 'bar',
                         data: {
-                            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-                            datasets: [{
-                                label: 'Completed Practicals',
-                                data: [45, 32, 28, 20, 15, 10, 5],
-                                backgroundColor: '#22c55e',
-                                borderRadius: 8
-                            }]
+                            labels: [],
+                            datasets: [
+                                {
+                                    // Bars — green
+                                    label: 'Completed',
+                                    data: [],
+                                    backgroundColor: 'rgba(34, 197, 94, 0.85)',
+                                    borderRadius: 8,
+                                    yAxisID: 'y'
+                                },
+                                {
+                                    // Average line — blue dashed
+                                    label: 'Average',
+                                    data: [],
+                                    type: 'line',
+                                    borderColor: '#3b82f6',
+                                    backgroundColor: 'transparent',
+                                    borderDash: [6, 4],
+                                    tension: 0,
+                                    fill: false,
+                                    pointRadius: 0,
+                                    pointHoverRadius: 0,
+                                    yAxisID: 'y'
+                                }
+                            ]
                         },
                         options: {
                             responsive: true,
                             maintainAspectRatio: false,
                             plugins: {
                                 legend: {
-                                    display: false
+                                    display: true,
+                                    labels: {
+                                        usePointStyle: true,
+                                        boxWidth: 10,
+                                        color: '#555'
+                                    }
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: (item) => {
+                                            if (item.dataset.label === 'Average')
+                                                return ` Avg: ${item.raw}`;
+                                            return ` ${item.raw} completed`;
+                                        }
+                                    }
+                                }
+                            },
+                            scales: {
+                                x: {
+                                    ticks: { maxRotation: 45, minRotation: 0 },
+                                    grid:  { display: false }
+                                },
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: { precision: 0 },
+                                    title: { display: true, text: 'Reservations' }
                                 }
                             }
                         }
                     });
+
+                    // Load real data immediately + refresh every hour
+                    loadUsageChartData();
+                    setInterval(loadUsageChartData, 60 * 60 * 1000);
                 }
+
+
+// ── 2. ADD this as a standalone function (outside initCharts) ─────────────────
+
+            function loadUsageChartData() {
+                fetch('../controllers/get_completed_reservations.php')
+                    .then(r => r.json())
+                    .then(res => {
+                        if (!res.success || !usageChart) return;
+
+                        const labels  = res.labels;
+                        const data    = res.data;
+                        const avg     = res.average;
+                        const avgLine = labels.map(() => avg);
+
+                        usageChart.data.labels           = labels;
+                        usageChart.data.datasets[0].data = data;
+                        usageChart.data.datasets[1].data = avgLine;
+                        usageChart.update('active');
+
+                        // Expand wrapper width for horizontal scroll
+                        const wrapper = document.getElementById('usageChartWrapper');
+                        if (wrapper) {
+                            const minWidth = Math.max(
+                                labels.length * 80,
+                                wrapper.parentElement.offsetWidth || 400
+                            );
+                            wrapper.style.width = minWidth + 'px';
+                        }
+
+                        // Scroll to current month (latest = rightmost)
+                        const scrollEl = document.getElementById('usageChartScroll');
+                        if (scrollEl) {
+                            scrollEl.scrollLeft = scrollEl.scrollWidth;
+                        }
+
+                        // Update timestamp
+                        const ts = document.getElementById('usageChartUpdated');
+                        if (ts) ts.textContent = 'Updated: ' + res.updated;
+                    })
+                    .catch(err => console.warn('Usage chart error:', err));
+            }
+
+
+
+
 
                 const monthlyCtx = document.getElementById('monthlyChart')?.getContext('2d');
                 if (monthlyCtx) {
                     if (monthlyChart) monthlyChart.destroy();
+
                     monthlyChart = new Chart(monthlyCtx, {
                         type: 'line',
                         data: {
-                            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                            labels: [],
                             datasets: [{
-                                label: 'System Usage',
-                                data: [12, 19, 15, 25, 22, 30],
-                                borderColor: '#22c55e',
-                                backgroundColor: 'rgba(34, 197, 94, 0.1)',
-                                tension: 0.4,
-                                fill: true
-                            }]
+                                    // Sessions line — green
+                                    label: 'Sessions',
+                                    data: [],
+                                    borderColor: '#22c55e',
+                                    backgroundColor: 'rgba(34, 197, 94, 0.08)',
+                                    tension: 0.4,
+                                    fill: true,
+                                    pointBackgroundColor: '#22c55e',
+                                    pointRadius: 5,
+                                    pointHoverRadius: 7,
+                                    yAxisID: 'y'
+                                },
+                                {
+                                    // Average line — blue, dashed
+                                    label: 'Average',
+                                    data: [],
+                                    borderColor: '#3b82f6',
+                                    backgroundColor: 'transparent',
+                                    borderDash: [6, 4],
+                                    tension: 0,
+                                    fill: false,
+                                    pointRadius: 0,
+                                    pointHoverRadius: 0,
+                                    yAxisID: 'y'
+                                }
+                            ]
                         },
                         options: {
                             responsive: true,
-                            maintainAspectRatio: false
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    display: true,
+                                    labels: {
+                                        usePointStyle: true,
+                                        boxWidth: 10,
+                                        color: '#555'
+                                    }
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: (item) => {
+                                            if (item.dataset.label === 'Average')
+                                                return ` Avg: ${item.raw} sessions`;
+                                            return ` ${item.raw} sessions`;
+                                        }
+                                    }
+                                }
+                            },
+                            scales: {
+                                x: {
+                                    ticks: {
+                                        maxRotation: 45,
+                                        minRotation: 0
+                                    },
+                                    grid: {
+                                        display: false
+                                    }
+                                },
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        precision: 0
+                                    },
+                                    title: {
+                                        display: true,
+                                        text: 'Sessions'
+                                    }
+                                }
+                            }
                         }
                     });
+
+                    // Load real data immediately + auto-refresh every hour
+                    loadMonthlyChartData();
+                    setInterval(loadMonthlyChartData, 60 * 60 * 1000);
                 }
+
+
+                // ── 2. ADD this as a standalone function (outside initCharts) ─────────────────
+
+                function loadMonthlyChartData() {
+                    fetch('../controllers/get_session_stats.php')
+                        .then(r => r.json())
+                        .then(res => {
+                            if (!res.success || !monthlyChart) return;
+
+                            const labels = res.labels;
+                            const data = res.data;
+                            const avg = res.average;
+
+                            // Build flat average line across all months
+                            const avgLine = labels.map(() => avg);
+
+                            // Update chart datasets
+                            monthlyChart.data.labels = labels;
+                            monthlyChart.data.datasets[0].data = data;
+                            monthlyChart.data.datasets[1].data = avgLine;
+                            monthlyChart.update('active');
+
+                            // Scroll wrapper width — 80px per month, min fills container
+                            const wrapper = document.getElementById('monthlyChartWrapper');
+                            if (wrapper) {
+                                const minWidth = Math.max(
+                                    labels.length * 80,
+                                    wrapper.parentElement.offsetWidth || 400
+                                );
+                                wrapper.style.width = minWidth + 'px';
+                            }
+
+                            // Scroll to current month (far right)
+                            const scrollEl = document.getElementById('monthlyChartScroll');
+                            if (scrollEl) {
+                                scrollEl.scrollLeft = scrollEl.scrollWidth;
+                            }
+
+                            // Update timestamp
+                            const ts = document.getElementById('monthlyChartUpdated');
+                            if (ts) ts.textContent = 'Updated: ' + res.updated;
+                        })
+                        .catch(err => console.warn('Session chart error:', err));
+
+                }
+
+
+
+
+
+
+
+
+
 
                 // Initialize equipment usage table
                 displayEquipmentUsageTable(equipmentUsageData);
@@ -6168,60 +6393,259 @@ function viewEquipment(code) {
                 setTimeout(() => msg.remove(), 3000);
             }
 
+
+
+
+
+
+
+
+
+
+        // ═══════════════════════════════════════════════════════════════════
+// INSTRUCTIONS:
+// 1. Find this comment in hod.php:   // ========== CALENDAR FUNCTIONS ==========
+// 2. Delete EVERYTHING from that comment all the way down to
+//    the closing } of the SECOND initCalendarListeners() function
+//    (the one that says "Initialize calendar when dashboard is shown")
+// 3. Paste this entire block in its place
+// ═══════════════════════════════════════════════════════════════════
+
             // ========== CALENDAR FUNCTIONS ==========
-            // ========== CALENDAR FUNCTIONS ==========
-            let month = new Date().getMonth();
-            let year = new Date().getFullYear();
-            const months = ["January", "February", "March", "April", "May", "June",
-                "July", "August", "September", "October", "November", "December"
+            let calMonth = new Date().getMonth();
+            let calYear  = new Date().getFullYear();
+            let calEvents = {};
+
+            const calMonthNames = [
+                "January","February","March","April","May","June",
+                "July","August","September","October","November","December"
             ];
 
-            function initCalendar() {
-                // Check if calendar elements exist
-                const daysGrid = document.getElementById('daysGrid');
-                const displayMonth = document.getElementById('displayMonth');
-                const eventDay = document.getElementById('eventDay');
-                const eventDate = document.getElementById('eventDate');
-                const eventsList = document.getElementById('eventsList');
+            function loadCalendarEvents(m, y, callback) {
+                fetch(`../controllers/get_calendar_events.php?month=${m + 1}&year=${y}`)
+                    .then(r => r.json())
+                    .then(res => {
+                        calEvents = res.success ? res.events : {};
+                        if (callback) callback();
+                    })
+                    .catch(() => { calEvents = {}; if (callback) callback(); });
+            }
 
-                // If elements don't exist, exit silently
-                if (!daysGrid || !displayMonth || !eventDay || !eventDate || !eventsList) {
+            function initCalendar() {
+                const daysGrid     = document.getElementById('daysGrid');
+                const displayMonth = document.getElementById('displayMonth');
+                const eventDay     = document.getElementById('eventDay');
+                const eventDate    = document.getElementById('eventDate');
+                const eventsList   = document.getElementById('eventsList');
+                if (!daysGrid || !displayMonth) return;
+
+                displayMonth.innerHTML = calMonthNames[calMonth] + ' ' + calYear;
+
+                if (eventsList) {
+                    eventsList.innerHTML = `
+                        <div class="text-center py-4" style="color:rgba(255,255,255,0.5);">
+                            <div class="spinner-border spinner-border-sm me-2"></div>
+                            Loading...
+                        </div>`;
+                }
+
+                loadCalendarEvents(calMonth, calYear, () => {
+                    renderCalendarGrid(daysGrid);
+
+                    const today = new Date();
+                    const isCurrentMonth = (today.getMonth() === calMonth && today.getFullYear() === calYear);
+                    const displayDate = isCurrentMonth ? today : new Date(calYear, calMonth, 1);
+
+                    if (eventDay) {
+                        eventDay.innerHTML = displayDate.toLocaleDateString('en-US', { weekday: 'long' });
+                    }
+                    if (eventDate) {
+                        eventDate.innerHTML = displayDate.toLocaleDateString('en-US', {
+                            year: 'numeric', month: 'long', day: 'numeric'
+                        });
+                    }
+
+                    showEventsForDate(displayDate);
+                    addDayCellClickHandlers();
+                });
+            }
+
+            function renderCalendarGrid(daysGrid) {
+                const firstDay = new Date(calYear, calMonth, 1).getDay();
+                const lastDate = new Date(calYear, calMonth + 1, 0).getDate();
+                const todayD   = new Date();
+
+                let html = '';
+                for (let i = 0; i < firstDay; i++) {
+                    html += `<div class="day-cell prev-date"></div>`;
+                }
+
+                for (let d = 1; d <= lastDate; d++) {
+                    const mm      = String(calMonth + 1).padStart(2, '0');
+                    const dd      = String(d).padStart(2, '0');
+                    const dateKey = `${calYear}-${mm}-${dd}`;
+                    const hasEvent = !!calEvents[dateKey];
+
+                    let classes = 'day-cell';
+                    if (d === todayD.getDate() &&
+                        calYear  === todayD.getFullYear() &&
+                        calMonth === todayD.getMonth()) {
+                        classes += ' today';
+                    }
+
+                    const dot = hasEvent
+                        ? `<span style="position:absolute;bottom:3px;left:50%;
+                                transform:translateX(-50%);width:6px;height:6px;
+                                border-radius:50%;background:#ffd700;display:block;"></span>`
+                        : '';
+
+                    const bookedStyle = hasEvent
+                        ? `style="background:rgba(255,215,0,0.18);
+                                  border:1px solid rgba(255,215,0,0.5);
+                                  font-weight:600;"`
+                        : '';
+
+                    html += `<div class="${classes}" data-date="${dateKey}" ${bookedStyle}>${d}${dot}</div>`;
+                }
+
+                daysGrid.innerHTML = html;
+            }
+
+            function showEventsForDate(date) {
+                const eventsList = document.getElementById('eventsList');
+                if (!eventsList) return;
+
+                const mm      = String(date.getMonth() + 1).padStart(2, '0');
+                const dd      = String(date.getDate()).padStart(2, '0');
+                const dateKey = `${date.getFullYear()}-${mm}-${dd}`;
+                const dayEvents = calEvents[dateKey] || [];
+
+                if (dayEvents.length === 0) {
+                    eventsList.innerHTML = `
+                        <div class="no-event">
+                            <i class="bi bi-calendar-x" style="font-size:2rem;opacity:0.4;"></i>
+                            <p class="mt-2 mb-0" style="font-size:0.9rem;">No reservations on this date</p>
+                        </div>`;
                     return;
                 }
 
-                const firstDay = new Date(year, month, 1);
-                const lastDay = new Date(year, month + 1, 0);
-                const lastDate = lastDay.getDate();
-                const day = firstDay.getDay();
+                eventsList.innerHTML = '';
+                dayEvents.forEach(ev => {
+                    let badgeColor = '#22c55e';
+                    if (ev.status === 'Pending')  badgeColor = '#f59e0b';
+                    if (ev.status === 'Rejected') badgeColor = '#ef4444';
 
-                displayMonth.innerHTML = months[month] + " " + year;
-                let days = "";
-                for (let i = 0; i < day; i++) days += `<div class="day-cell prev-date"></div>`;
-                for (let i = 1; i <= lastDate; i++) {
-                    let classes = "day-cell";
-                    if (i === new Date().getDate() && year === new Date().getFullYear() && month === new Date().getMonth()) classes += " today";
-                    days += `<div class="${classes}">${i}</div>`;
-                }
-                daysGrid.innerHTML = days;
-
-                // Set today's date in the right panel
-                const today = new Date();
-                const options = {
-                    weekday: 'long'
-                };
-                eventDay.innerHTML = today.toLocaleDateString('en-US', options);
-                eventDate.innerHTML = today.toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
+                    const item = document.createElement('div');
+                    item.className = 'event-item';
+                    item.innerHTML = `
+                        <div class="title">
+                            <i class="fas fa-circle" style="color:#ffd700;font-size:0.6rem;"></i>
+                            <div class="event-title">
+                                <span class="badge"
+                                      style="background:rgba(255,255,255,0.2);font-size:0.8rem;
+                                             margin-bottom:4px;display:inline-block;">
+                                    ${ev.university_id}
+                                </span>
+                                &nbsp;${ev.student_name}
+                            </div>
+                        </div>
+                        <div class="event-time" style="margin-left:28px;">
+                            <i class="bi bi-geo-alt-fill me-1" style="color:#ffd700;"></i>
+                            ${ev.lab_location}
+                        </div>
+                        <div style="margin-left:28px;margin-top:4px;">
+                            <span style="background:${badgeColor};color:white;padding:2px 8px;
+                                         border-radius:12px;font-size:0.75rem;font-weight:600;">
+                                ${ev.status}
+                            </span>
+                            <small style="color:rgba(255,255,255,0.6);margin-left:6px;">#${ev.id}</small>
+                        </div>
+                      
+                    `;
+                    eventsList.appendChild(item);
                 });
-
-                // Show events for today
-                showEventsForDate(today);
-
-                // Add click handlers to day cells
-                addDayCellClickHandlers();
             }
+
+            function addDayCellClickHandlers() {
+                const cells = document.querySelectorAll('.day-cell:not(.prev-date):not(.next-date)');
+                cells.forEach(cell => {
+                    cell.addEventListener('click', function () {
+                        cells.forEach(c => c.classList.remove('active'));
+                        this.classList.add('active');
+
+                        const dateKey = this.getAttribute('data-date');
+                        if (!dateKey) return;
+
+                        const parts = dateKey.split('-');
+                        const selectedDate = new Date(+parts[0], +parts[1] - 1, +parts[2]);
+
+                        document.getElementById('eventDay').innerHTML =
+                            selectedDate.toLocaleDateString('en-US', { weekday: 'long' });
+                        document.getElementById('eventDate').innerHTML =
+                            selectedDate.toLocaleDateString('en-US', {
+                                year: 'numeric', month: 'long', day: 'numeric'
+                            });
+
+                        showEventsForDate(selectedDate);
+                    });
+                });
+            }
+
+            function initCalendarListeners() {
+                const prevBtn  = document.querySelector('.prev');
+                const nextBtn  = document.querySelector('.next');
+                const todayBtn = document.getElementById('todayBtn');
+                const gotoBtn  = document.getElementById('gotoBtn');
+
+                if (prevBtn) {
+                    prevBtn.addEventListener('click', () => {
+                        calMonth--;
+                        if (calMonth < 0) { calMonth = 11; calYear--; }
+                        initCalendar();
+                    });
+                }
+                if (nextBtn) {
+                    nextBtn.addEventListener('click', () => {
+                        calMonth++;
+                        if (calMonth > 11) { calMonth = 0; calYear++; }
+                        initCalendar();
+                    });
+                }
+                if (todayBtn) {
+                    todayBtn.addEventListener('click', () => {
+                        const d = new Date();
+                        calMonth = d.getMonth();
+                        calYear  = d.getFullYear();
+                        initCalendar();
+                    });
+                }
+                if (gotoBtn) {
+                    gotoBtn.addEventListener('click', () => {
+                        const val   = document.getElementById('gotoInput')?.value;
+                        const parts = (val || '').split('/');
+                        if (parts.length === 2) {
+                            const m = parseInt(parts[0]) - 1;
+                            const y = parseInt(parts[1]);
+                            if (m >= 0 && m < 12 && y > 0) {
+                                calMonth = m; calYear = y;
+                                initCalendar();
+                            } else alert('Invalid date. Use MM/YYYY');
+                        } else alert('Invalid format. Use MM/YYYY');
+                    });
+                }
+            }
+            // ========== END CALENDAR FUNCTIONS ==========
+
+
+
+
+
+
+
+
+
+
+
 
 
             // ========== MAINTENANCE MODAL FUNCTIONS ==========
@@ -6452,71 +6876,71 @@ function viewEquipment(code) {
             }
 
             // Initialize calendar when dashboard is shown
-            function initCalendarListeners() {
-                const prevBtn = document.querySelector('.prev');
-                const nextBtn = document.querySelector('.next');
-                const todayBtn = document.getElementById('todayBtn');
-                const gotoBtn = document.getElementById('gotoBtn');
+            // function initCalendarListeners() {
+            //     const prevBtn = document.querySelector('.prev');
+            //     const nextBtn = document.querySelector('.next');
+            //     const todayBtn = document.getElementById('todayBtn');
+            //     const gotoBtn = document.getElementById('gotoBtn');
 
-                if (prevBtn) {
-                    prevBtn.addEventListener('click', () => {
-                        month--;
-                        if (month < 0) {
-                            month = 11;
-                            year--;
-                        }
-                        initCalendar();
-                        addDayCellClickHandlers(); // Re-add handlers after rendering
-                    });
-                }
+            //     if (prevBtn) {
+            //         prevBtn.addEventListener('click', () => {
+            //             month--;
+            //             if (month < 0) {
+            //                 month = 11;
+            //                 year--;
+            //             }
+            //             initCalendar();
+            //             addDayCellClickHandlers();
+            //         });
+            //     }
 
-                if (nextBtn) {
-                    nextBtn.addEventListener('click', () => {
-                        month++;
-                        if (month > 11) {
-                            month = 0;
-                            year++;
-                        }
-                        initCalendar();
-                        addDayCellClickHandlers(); // Re-add handlers after rendering
-                    });
-                }
+            //     if (nextBtn) {
+            //         nextBtn.addEventListener('click', () => {
+            //             month++;
+            //             if (month > 11) {
+            //                 month = 0;
+            //                 year++;
+            //             }
+            //             initCalendar();
+            //             addDayCellClickHandlers(); 
+            //         });
+            //     }
 
-                if (todayBtn) {
-                    todayBtn.addEventListener('click', () => {
-                        const d = new Date();
-                        month = d.getMonth();
-                        year = d.getFullYear();
-                        initCalendar();
-                        addDayCellClickHandlers(); // Re-add handlers after rendering
+            //     if (todayBtn) {
+            //         todayBtn.addEventListener('click', () => {
+            //             const d = new Date();
+            //             month = d.getMonth();
+            //             year = d.getFullYear();
+            //             initCalendar();
+            //             addDayCellClickHandlers(); /
 
-                        // Highlight today's date
-                        setTimeout(() => {
-                            const todayCells = document.querySelectorAll('.day-cell.today');
-                            todayCells.forEach(cell => cell.classList.add('active'));
-                        }, 50);
-                    });
-                }
+                     
+            //             setTimeout(() => {
+            //                 const todayCells = document.querySelectorAll('.day-cell.today');
+            //                 todayCells.forEach(cell => cell.classList.add('active'));
+            //             }, 50);
+            //         });
+            //     }
 
-                if (gotoBtn) {
-                    gotoBtn.addEventListener('click', () => {
-                        const gotoInput = document.getElementById('gotoInput');
-                        if (!gotoInput) return;
+            //     if (gotoBtn) {
+            //         gotoBtn.addEventListener('click', () => {
+            //             const gotoInput = document.getElementById('gotoInput');
+            //             if (!gotoInput) return;
 
-                        const parts = gotoInput.value.split('/');
-                        if (parts.length === 2) {
-                            const m = parseInt(parts[0]) - 1,
-                                y = parseInt(parts[1]);
-                            if (m >= 0 && m < 12 && y > 0) {
-                                month = m;
-                                year = y;
-                                initCalendar();
-                                addDayCellClickHandlers(); // Re-add handlers after rendering
-                            } else alert('Invalid date. Use MM/YYYY');
-                        } else alert('Invalid format. Use MM/YYYY');
-                    });
-                }
-            }
+            //             const parts = gotoInput.value.split('/');
+            //             if (parts.length === 2) {
+            //                 const m = parseInt(parts[0]) - 1,
+            //                     y = parseInt(parts[1]);
+            //                 if (m >= 0 && m < 12 && y > 0) {
+            //                     month = m;
+            //                     year = y;
+            //                     initCalendar();
+            //                     addDayCellClickHandlers(); 
+            //                 } else alert('Invalid date. Use MM/YYYY');
+            //             } else alert('Invalid format. Use MM/YYYY');
+            //         });
+            //     }
+            // }
 
             // ========== INITIALIZATION ==========
             document.addEventListener('DOMContentLoaded', function() {
