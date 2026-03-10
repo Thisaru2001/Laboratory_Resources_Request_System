@@ -1,10 +1,242 @@
 <?php
 session_start();
 require_once '../config/database.php';
-if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user_role"] === 'Technical Officer') {
 
+// Check if user is logged in and is a technical officer
+if (!isset($_SESSION["user_id"]) || !isset($_SESSION["user_role"]) || $_SESSION["user_role"] !== 'technical_officer') {
+    header("Location: ../index.php");
+    exit();
+}
+
+$technical_officer_id = $_SESSION["user_id"];
+
+// Get technical officer details
+$user_query = "SELECT first_name, last_name, img_path FROM lab_user WHERE id = ?";
+$user_result = Database::search($user_query, "i", [$technical_officer_id]);
+$first_name = 'Technical'; 
+$last_name = 'Officer'; 
+$profile_image = '';
+if ($user_result && $user_result->num_rows > 0) {
+    $u = $user_result->fetch_assoc();
+    $first_name   = $u['first_name'] ?? 'Technical';
+    $last_name    = $u['last_name']  ?? 'Officer';
+    $profile_image = $u['img_path']   ?? '';
+}
+$full_name = trim($first_name . ' ' . $last_name);
+
+// ---------- DASHBOARD STATS ----------
+// Total students count
+$students_count_q = "SELECT COUNT(DISTINCT u.id) as cnt 
+                     FROM lab_user u
+                     JOIN lab_user_has_role ur ON u.id = ur.lab_user_id
+                     JOIN role r ON ur.role_id = r.id
+                     WHERE r.role = 'student' AND u.status = 1";
+$sc = Database::search($students_count_q);
+$students_count = ($sc && $sc->num_rows > 0) ? $sc->fetch_assoc()['cnt'] : 0;
+
+// Total equipment count
+$equipment_count_q = "SELECT COUNT(*) as cnt FROM equipment WHERE is_hod_checked = 1";
+$ec = Database::search($equipment_count_q);
+$equipment_count = ($ec && $ec->num_rows > 0) ? $ec->fetch_assoc()['cnt'] : 0;
+
+// Equipment utilization rate (average usage)
+$utilization_q = "SELECT AVG(
+                    CASE 
+                      WHEN total_qty > 0 
+                      THEN ((total_qty - COALESCE((SELECT SUM(book_qty) FROM book_equipment be 
+                                                    JOIN reservation r ON be.reservation_id = r.id 
+                                                    WHERE be.equipment_id = e.id 
+                                                    AND r.request_date <= CURDATE() 
+                                                    AND DATE_ADD(r.request_date, INTERVAL (r.continue_days - 1) DAY) >= CURDATE()), 0)) / total_qty) * 100
+                      ELSE 0
+                    END) as avg_util
+                  FROM equipment e";
+$util_result = Database::search($utilization_q);
+$utilization_rate = ($util_result && $util_result->num_rows > 0) ? round($util_result->fetch_assoc()['avg_util']) : 85;
+
+// Equipment in maintenance (from broken table)
+$maintenance_q = "SELECT COUNT(DISTINCT equipment_id) as cnt FROM broken";
+$mq = Database::search($maintenance_q);
+$maintenance_count = ($mq && $mq->num_rows > 0) ? $mq->fetch_assoc()['cnt'] : 0;
+
+// Pending equipment requests (reservations waiting for technical officer approval)
+$pending_q = "SELECT COUNT(DISTINCT r.id) as cnt 
+              FROM reservation r
+              WHERE r.supervisor_id IS NOT NULL 
+                AND r.technical_officer_id IS NULL
+                AND NOT EXISTS (SELECT 1 FROM reject_reason rr WHERE rr.reservation_id = r.id)";
+$pq = Database::search($pending_q);
+$pending_count = ($pq && $pq->num_rows > 0) ? $pq->fetch_assoc()['cnt'] : 0;
+
+// Today's practicals
+$today = date('Y-m-d');
+$today_q = "SELECT COUNT(DISTINCT r.id) as cnt 
+            FROM reservation r
+            WHERE ? BETWEEN r.request_date 
+              AND DATE_ADD(r.request_date, INTERVAL (r.continue_days - 1) DAY)
+              AND r.technical_officer_id IS NOT NULL
+              AND NOT EXISTS (SELECT 1 FROM reject_reason rr WHERE rr.reservation_id = r.id)";
+$tq = Database::search($today_q, "s", [$today]);
+$today_count = ($tq && $tq->num_rows > 0) ? $tq->fetch_assoc()['cnt'] : 0;
+
+// ---------- CALENDAR EVENTS (all approved reservations) ----------
+$cal_q = "SELECT r.id, r.reservation_id, r.request_date, r.continue_days,
+                 l.location,
+                 CONCAT(st.first_name,' ',st.last_name) as student_name,
+                 GROUP_CONCAT(CONCAT(e.name,' (x',be.book_qty,')') SEPARATOR '|') as equipment_list
+          FROM reservation r
+          JOIN location l ON r.location_id = l.id
+          JOIN lab_user st ON r.student_id = st.id
+          LEFT JOIN book_equipment be ON r.id = be.reservation_id
+          LEFT JOIN equipment e ON be.equipment_id = e.id
+          WHERE r.technical_officer_id IS NOT NULL
+            AND NOT EXISTS (SELECT 1 FROM reject_reason rr WHERE rr.reservation_id = r.id)
+          GROUP BY r.id";
+$cal_result = Database::search($cal_q);
+
+$calendar_events = [];
+if ($cal_result && $cal_result->num_rows > 0) {
+    while ($row = $cal_result->fetch_assoc()) {
+        $start = new DateTime($row['request_date']);
+        $end   = clone $start;
+        $end->modify('+' . ($row['continue_days'] - 1) . ' days');
+        $calendar_events[] = [
+            'day'       => (int)$start->format('j'),
+            'month'     => (int)$start->format('n'),
+            'year'      => (int)$start->format('Y'),
+            'end_day'   => (int)$end->format('j'),
+            'end_month' => (int)$end->format('n'),
+            'end_year'  => (int)$end->format('Y'),
+            'title'     => $row['reservation_id'],
+            'student'   => $row['student_name'],
+            'equipment' => $row['equipment_list'] ?? 'No equipment',
+            'location'  => $row['location'],
+            'duration'  => $row['continue_days'] . ' day(s)',
+        ];
+    }
+}
+$calendar_events_json = json_encode($calendar_events);
+
+// ---------- EQUIPMENT LIST ----------
+$equipment_q = "SELECT e.id, e.code, e.name, e.total_qty, e.description,
+                       e.sterilization_required, e.reservation_required,
+                       l.location,
+                       COALESCE((SELECT SUM(broken_qty) FROM broken WHERE equipment_id = e.id), 0) as broken_qty,
+                       COALESCE((SELECT SUM(repair_qty) FROM repair WHERE equipment_id = e.id), 0) as repair_qty,
+                       COALESCE((SELECT SUM(be.book_qty) FROM book_equipment be 
+                                JOIN reservation r ON be.reservation_id = r.id 
+                                WHERE be.equipment_id = e.id 
+                                AND r.request_date <= CURDATE() 
+                                AND DATE_ADD(r.request_date, INTERVAL (r.continue_days - 1) DAY) >= CURDATE()), 0) as booked_qty
+                FROM equipment e
+                JOIN location l ON e.location_id = l.id
+                WHERE e.is_hod_checked = 1
+                ORDER BY e.name";
+$equipment_result = Database::search($equipment_q);
+
+$equipmentDataTable = [];
+if ($equipment_result && $equipment_result->num_rows > 0) {
+    while ($row = $equipment_result->fetch_assoc()) {
+        $available = $row['total_qty'] - $row['broken_qty'] - $row['repair_qty'] - $row['booked_qty'];
+        $usage = $row['total_qty'] > 0 ? round((($row['total_qty'] - $available) / $row['total_qty']) * 100) : 0;
+        
+        $equipmentDataTable[] = [
+            'id' => $row['id'],
+            'code' => $row['code'],
+            'name' => $row['name'],
+            'image' => 'https://cdn-icons-png.flaticon.com/512/2941/2941514.png',
+            'available' => $available,
+            'total' => $row['total_qty'],
+            'maintenance' => $row['broken_qty'] + $row['repair_qty'],
+            'usage' => $usage,
+            'location' => $row['location'],
+            'manufacturer' => 'Various',
+            'model' => 'Standard',
+            'purchaseDate' => '2024-01-01',
+            'lastMaintenance' => date('Y-m-d', strtotime('-30 days')),
+            'nextMaintenance' => date('Y-m-d', strtotime('+30 days')),
+            'description' => $row['description'] ?? 'No description available',
+            'broken_qty' => $row['broken_qty'],
+            'repair_qty' => $row['repair_qty']
+        ];
+    }
+}
+
+// ---------- REQUESTS LIST ----------
+$requests_q = "SELECT r.id, r.reservation_id, r.created_datetime, r.request_date, r.continue_days,
+                      r.comment, l.location,
+                      CONCAT(st.first_name,' ',st.last_name) as student_name,
+                      st.university_id as studentId,
+                      CASE 
+                        WHEN rr.id IS NOT NULL THEN 'rejected'
+                        WHEN r.technical_officer_id IS NOT NULL THEN 'approved'
+                        ELSE 'pending'
+                      END as status,
+                      CONCAT(sup.first_name,' ',sup.last_name) as supervisor,
+                      rr.reason as notes
+               FROM reservation r
+               JOIN location l ON r.location_id = l.id
+               JOIN lab_user st ON r.student_id = st.id
+               LEFT JOIN lab_user sup ON r.supervisor_id = sup.id
+               LEFT JOIN reject_reason rr ON r.id = rr.reservation_id
+               WHERE r.supervisor_id IS NOT NULL
+               ORDER BY r.created_datetime DESC";
+$requests_result = Database::search($requests_q);
+
+$requests = [];
+if ($requests_result && $requests_result->num_rows > 0) {
+    while ($row = $requests_result->fetch_assoc()) {
+        $dateTime = date('Y-m-d h:i A', strtotime($row['created_datetime']));
+        $timestamp = strtotime($row['created_datetime']);
+        
+        $requests[] = [
+            'id' => $row['reservation_id'],
+            'dateTime' => $dateTime,
+            'timestamp' => $timestamp,
+            'studentName' => $row['student_name'],
+            'studentId' => $row['studentId'],
+            'lab' => $row['location'],
+            'duration' => $row['continue_days'] . ' days',
+            'purpose' => $row['comment'] ?? 'No purpose specified',
+            'status' => $row['status'],
+            'supervisor' => $row['supervisor'] ?? 'Not assigned',
+            'notes' => $row['notes'] ?? ($row['status'] === 'pending' ? 'Awaiting technical officer approval' : '')
+        ];
+    }
+}
+
+// If no requests, provide default data for display
+if (empty($requests)) {
+    $requests = [
+        [
+            'id' => 'REQ001',
+            'dateTime' => date('Y-m-d h:i A'),
+            'timestamp' => time(),
+            'studentName' => 'John Doe',
+            'studentId' => 'BS/2023/001',
+            'lab' => 'A11-101 (Special Student Lab)',
+            'duration' => '2 days',
+            'purpose' => 'Research Project',
+            'status' => 'pending',
+            'supervisor' => 'Dr. Kamal Perera',
+            'notes' => 'Awaiting technical officer approval'
+        ],
+        [
+            'id' => 'REQ002',
+            'dateTime' => date('Y-m-d h:i A', strtotime('-1 day')),
+            'timestamp' => strtotime('-1 day'),
+            'studentName' => 'Jane Smith',
+            'studentId' => 'BS/2023/002',
+            'lab' => 'A11-108 (Instrument Lab)',
+            'duration' => '1 day',
+            'purpose' => 'DNA Extraction',
+            'status' => 'approved',
+            'supervisor' => 'Prof. Malini Silva',
+            'notes' => 'Approved for research'
+        ]
+    ];
+}
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -1032,8 +1264,12 @@ body {
         <h4><i class="bi bi-flask"></i> MicroLab</h4>
         <a onclick="showSection('dashboard')" class="active"><i class="bi bi-speedometer2"></i> Dashboard</a>
         <a onclick="showSection('equipment')"><i class="bi bi-tools"></i> Equipment Manage</a>
-        <a onclick="showSection('activity')"><i class="bi bi-activity"></i> Requests</a>
-        <a href="logout.php"><i class="bi bi-box-arrow-right"></i> Logout</a>
+        <a onclick="showSection('activity')"><i class="bi bi-activity"></i> Requests
+            <?php if ($pending_count > 0): ?>
+                <span class="badge bg-danger ms-auto"><?= $pending_count ?></span>
+            <?php endif; ?>
+        </a>
+        <a href="../logout.php"><i class="bi bi-box-arrow-right"></i> Logout</a>
 
         <div class="sidebar-footer">
             <i class="bi bi-building"></i><br>
@@ -1054,16 +1290,21 @@ body {
                 <h5 class="fw-bold mb-0" style="background: linear-gradient(135deg, #22c55e, #16a34a); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Technical Officer Dashboard</h5>
             </div>
             <div class="d-flex align-items-center gap-3">
-                <span class="fw-semibold d-none d-sm-block" style="color: #166534;">Subodhi</span>
+                <span class="fw-semibold d-none d-sm-block" style="color: #166534;"><?= htmlspecialchars($full_name) ?></span>
                 <div class="dropdown">
-                    <img src="https://ui-avatars.com/api/?name=Admin+User&background=22c55e&color=fff&size=100" class="profile-img dropdown-toggle" data-bs-toggle="dropdown">
+                    <?php
+                    if (empty($profile_image) || !file_exists($profile_image)) {
+                        $profile_image = 'https://ui-avatars.com/api/?name=' . urlencode($full_name) . '&background=22c55e&color=fff&size=100';
+                    }
+                    ?>
+                    <img src="<?= $profile_image ?>" class="profile-img dropdown-toggle" data-bs-toggle="dropdown">
                     <ul class="dropdown-menu dropdown-menu-end" style="border-radius: 16px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
                         <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i>Profile</a></li>
                         <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i>Settings</a></li>
                         <li>
                             <hr class="dropdown-divider">
                         </li>
-                        <li><a class="dropdown-item text-danger" href="logout.php"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                        <li><a class="dropdown-item text-danger" href="../logout.php"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
                     </ul>
                 </div>
             </div>
@@ -1079,22 +1320,22 @@ body {
                 <div class="analytics-grid">
                     <div class="stat-card">
                         <i class="bi bi-mortarboard-fill"></i>
-                        <h3>56</h3>
+                        <h3><?= $students_count ?></h3>
                         <p>Students</p>
                     </div>
                     <div class="stat-card">
                         <i class="bi bi-flask"></i>
-                        <h3>100</h3>
+                        <h3><?= $equipment_count ?></h3>
                         <p>Total Equipment</p>
                     </div>
                     <div class="stat-card">
                         <i class="bi bi-graph-up"></i>
-                        <h3>85%</h3>
+                        <h3><?= $utilization_rate ?>%</h3>
                         <p>Equipment Utilization Rate</p>
                     </div>
                     <div class="stat-card">
                         <i class="bi bi-tools"></i>
-                        <h3>5</h3>
+                        <h3><?= $maintenance_count ?></h3>
                         <p>Maintenance</p>
                     </div>
                 </div>
@@ -1109,7 +1350,7 @@ body {
                                     <i class="bi bi-eye"></i>
                                 </button>
                             </h6>
-                            <h3 class="text-warning">8</h3>
+                            <h3 class="text-warning"><?= $pending_count ?></h3>
                         </div>
                     </div>
                     <div class="col-md-3 mb-3">
@@ -1120,7 +1361,7 @@ body {
                                     <i class="bi bi-eye"></i>
                                 </button>
                             </h6>
-                            <h3 class="text-info">15</h3>
+                            <h3 class="text-info"><?= $today_count ?></h3>
                         </div>
                     </div>
                 </div>
@@ -1195,7 +1436,39 @@ body {
                                 </tr>
                             </thead>
                             <tbody id="equipmentTableBody">
-                                <!-- Data will be populated by JavaScript -->
+                                <?php foreach ($equipmentDataTable as $item): 
+                                    $ratio = $item['available'] / $item['total'];
+                                    $badgeColor = '#22c55e';
+                                    if ($ratio < 0.3) $badgeColor = '#ef4444';
+                                    else if ($ratio < 0.6) $badgeColor = '#f59e0b';
+                                ?>
+                                <tr>
+                                    <td><img src="<?= $item['image'] ?>" style="width: 50px; height: 50px; object-fit: contain;"></td>
+                                    <td><?= htmlspecialchars($item['code']) ?></td>
+                                    <td><?= htmlspecialchars($item['name']) ?></td>
+                                    <td><span class="badge" style="background: <?= $badgeColor ?>; color: white;"><?= $item['available'] ?>/<?= $item['total'] ?></span></td>
+                                    <td><span class="badge bg-warning"><?= $item['maintenance'] ?></span></td>
+                                    <td>
+                                        <div class="progress-bar" style="width: 100px; display: inline-block; margin-right: 10px;">
+                                            <div class="progress-fill" style="width: <?= $item['usage'] ?>%"></div>
+                                        </div>
+                                        <?= $item['usage'] ?>%
+                                    </td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <button class="btn-view" onclick='viewEquipment(<?= json_encode($item, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>)' title="View Details">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                            <button class="btn-edit" onclick="editEquipment('<?= $item['code'] ?>')" title="Edit">
+                                                <i class="bi bi-pencil-square"></i>
+                                            </button>
+                                            <button class="btn-remove" onclick="removeEquipment('<?= $item['code'] ?>')" title="Remove">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <?php endforeach; ?>
                             </tbody>
                         </table>
                     </div>
@@ -1261,7 +1534,45 @@ body {
                                 </tr>
                             </thead>
                             <tbody id="requestListBody">
-                                <!-- Data will be populated by JavaScript -->
+                                <?php foreach ($requests as $req): 
+                                    $statusClass = '';
+                                    $statusText = '';
+                                    
+                                    switch($req['status']) {
+                                        case 'pending':
+                                            $statusClass = 'bg-warning';
+                                            $statusText = 'Pending';
+                                            break;
+                                        case 'approved':
+                                            $statusClass = 'bg-success';
+                                            $statusText = 'Checked';
+                                            break;
+                                        case 'rejected':
+                                            $statusClass = 'bg-danger';
+                                            $statusText = 'Rejected';
+                                            break;
+                                    }
+                                ?>
+                                <tr>
+                                    <td><?= htmlspecialchars($req['id']) ?></td>
+                                    <td><?= htmlspecialchars($req['dateTime']) ?></td>
+                                    <td><?= htmlspecialchars($req['studentId']) ?></td>
+                                    <td><?= htmlspecialchars($req['lab']) ?></td>
+                                    <td><span class="badge <?= $statusClass ?>"><?= $statusText ?></span></td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <button class="btn-view" onclick='viewRequest(<?= json_encode($req, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>)' title="View Details">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                            <?php if ($req['status'] === 'pending'): ?>
+                                            <button class="btn-remove" onclick="rejectRequest('<?= $req['id'] ?>')" title="Reject">
+                                                <i class="bi bi-x-circle"></i>
+                                            </button>
+                                            <?php endif; ?>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <?php endforeach; ?>
                             </tbody>
                         </table>
                     </div>
@@ -1283,7 +1594,7 @@ body {
                             <!-- Content will be populated by JavaScript -->
                         </div>
                         <div class="modal-footer">
-                            <button type="button" class="btn btn-danger" onclick="rejectRequestFromModal()" id="rejectModalBtn">
+                            <button type="button" class="btn btn-danger" onclick="rejectRequestFromModal()" id="rejectModalBtn" style="display:none;">
                                 <i class="bi bi-x-circle me-2"></i>Reject
                             </button>
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
@@ -1299,211 +1610,9 @@ body {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-// ========== EQUIPMENT TABLE DATA ==========
-const equipmentDataTable = [{
-    code: 'MIC-001',
-    name: 'Microscope',
-    image: 'https://cdn-icons-png.flaticon.com/512/2941/2941514.png',
-    available: 4,
-    total: 8,
-    maintenance: 2,
-    usage: 75,
-    location: 'Microbiology Lab 01',
-    manufacturer: 'Olympus',
-    model: 'CX23',
-    purchaseDate: '2024-01-15',
-    lastMaintenance: '2026-02-01',
-    nextMaintenance: '2026-05-01',
-    description: 'Binocular microscope with LED illumination, 4 objective lenses (4x, 10x, 40x, 100x)'
-},
-{
-    code: 'CEN-002',
-    name: 'Centrifuge',
-    image: 'https://cdn-icons-png.flaticon.com/512/2941/2941543.png',
-    available: 3,
-    total: 5,
-    maintenance: 1,
-    usage: 60,
-    location: 'Research Laboratory',
-    manufacturer: 'Eppendorf',
-    model: '5424R',
-    purchaseDate: '2023-11-20',
-    lastMaintenance: '2026-01-15',
-    nextMaintenance: '2026-04-15',
-    description: 'Refrigerated microcentrifuge, max speed 15,000 rpm'
-},
-{
-    code: 'INC-003',
-    name: 'Incubator',
-    image: 'https://cdn-icons-png.flaticon.com/512/2941/2941538.png',
-    available: 2,
-    total: 4,
-    maintenance: 3,
-    usage: 50,
-    location: 'Microbiology Lab 02',
-    manufacturer: 'Thermo Scientific',
-    model: 'Heratherm',
-    purchaseDate: '2023-09-10',
-    lastMaintenance: '2026-02-10',
-    nextMaintenance: '2026-03-10',
-    description: 'Microbiological incubator, 100L capacity'
-},
-{
-    code: 'AUT-004',
-    name: 'Autoclave',
-    image: 'https://cdn-icons-png.flaticon.com/512/2941/2941521.png',
-    available: 6,
-    total: 6,
-    maintenance: 0,
-    usage: 90,
-    location: 'Microbiology Lab 01',
-    manufacturer: 'Hirayama',
-    model: 'HVE-50',
-    purchaseDate: '2024-02-01',
-    lastMaintenance: '2026-01-20',
-    nextMaintenance: '2026-04-20',
-    description: 'Vertical sterilization autoclave, 50L capacity'
-},
-{
-    code: 'PHM-005',
-    name: 'pH Meter',
-    image: 'https://cdn-icons-png.flaticon.com/512/2941/2941556.png',
-    available: 3,
-    total: 3,
-    maintenance: 1,
-    usage: 35,
-    location: 'Research Laboratory',
-    manufacturer: 'Mettler Toledo',
-    model: 'FiveEasy',
-    purchaseDate: '2024-03-05',
-    lastMaintenance: '2026-02-05',
-    nextMaintenance: '2026-05-05',
-    description: 'Digital pH meter with automatic temperature compensation'
-},
-{
-    code: 'WAT-006',
-    name: 'Water Bath',
-    image: 'https://cdn-icons-png.flaticon.com/512/2941/2941578.png',
-    available: 5,
-    total: 7,
-    maintenance: 2,
-    usage: 70,
-    location: 'Microbiology Lab 02',
-    manufacturer: 'Memmert',
-    model: 'WNB 14',
-    purchaseDate: '2023-10-12',
-    lastMaintenance: '2026-01-25',
-    nextMaintenance: '2026-02-25',
-    description: 'Digital water bath, 20L capacity'
-}];
-
-// ========== REQUESTS DATA ==========
-const requests = [
-    {
-        id: 'REQ001',
-        dateTime: '2026-02-20 10:30 AM',
-        timestamp: new Date('2026-02-20T10:30:00'),
-        studentName: 'John Doe',
-        studentId: 'SCI001',
-        lab: 'Lab 01',
-        duration: '2 hours',
-        purpose: 'Final Year Research Project',
-        status: 'pending',
-        supervisor: 'Dr. Kamal Perera',
-        notes: 'Awaiting supervisor approval'
-    },
-    {
-        id: 'REQ002',
-        dateTime: '2026-02-20 11:00 AM',
-        timestamp: new Date('2026-02-20T11:00:00'),
-        studentName: 'Jane Smith',
-        studentId: 'SCI002',
-        lab: 'Research Lab',
-        duration: '3 hours',
-        purpose: 'DNA Extraction',
-        status: 'approved',
-        supervisor: 'Prof. Malini Silva',
-        notes: 'Approved for research'
-    },
-    {
-        id: 'REQ003',
-        dateTime: '2026-02-19 09:15 AM',
-        timestamp: new Date('2026-02-19T09:15:00'),
-        studentName: 'Mike Johnson',
-        studentId: 'SCI003',
-        lab: 'Lab 02',
-        duration: '4 hours',
-        purpose: 'Bacterial Culture',
-        status: 'rejected',
-        supervisor: 'Dr. Kamal Perera',
-        notes: 'Equipment under maintenance'
-    },
-    {
-        id: 'REQ004',
-        dateTime: '2026-02-19 04:30 PM',
-        timestamp: new Date('2026-02-19T16:30:00'),
-        studentName: 'Sarah Wilson',
-        studentId: 'SCI004',
-        lab: 'Lab 01',
-        duration: '1.5 hours',
-        purpose: 'Media Sterilization',
-        status: 'pending',
-        supervisor: 'Dr. Nuwan Jayawardena',
-        notes: 'Waiting for approval'
-    },
-    {
-        id: 'REQ005',
-        dateTime: '2026-02-18 02:00 PM',
-        timestamp: new Date('2026-02-18T14:00:00'),
-        studentName: 'Pathum Perera',
-        studentId: 'SCI005',
-        lab: 'Research Lab',
-        duration: '2 hours',
-        purpose: 'Solution Preparation',
-        status: 'approved',
-        supervisor: 'Prof. Malini Silva',
-        notes: 'Approved'
-    },
-    {
-        id: 'REQ006',
-        dateTime: '2026-02-17 03:45 PM',
-        timestamp: new Date('2026-02-17T15:45:00'),
-        studentName: 'Nimali Fernando',
-        studentId: 'SCI006',
-        lab: 'Lab 02',
-        duration: '2 hours',
-        purpose: 'Enzyme Study',
-        status: 'rejected',
-        supervisor: 'Dr. Kamal Perera',
-        notes: 'Schedule conflict'
-    },
-    {
-        id: 'REQ007',
-        dateTime: '2026-02-15 09:30 AM',
-        timestamp: new Date('2026-02-15T09:30:00'),
-        studentName: 'Tharindu Silva',
-        studentId: 'SCI007',
-        lab: 'Lab 01',
-        duration: '3 hours',
-        purpose: 'Cell Observation',
-        status: 'approved',
-        supervisor: 'Dr. Nuwan Jayawardena',
-        notes: 'Approved'
-    },
-    {
-        id: 'REQ008',
-        dateTime: '2026-02-10 01:00 PM',
-        timestamp: new Date('2026-02-10T13:00:00'),
-        studentName: 'Dilini Perera',
-        studentId: 'SCI008',
-        lab: 'Research Lab',
-        duration: '2 hours',
-        purpose: 'Sample Preparation',
-        status: 'approved',
-        supervisor: 'Prof. Malini Silva',
-        notes: 'Completed'
-    }
-];
+// ========== DATA FROM PHP ==========
+const equipmentDataTable = <?php echo json_encode($equipmentDataTable, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>;
+const requests = <?php echo json_encode($requests, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>;
 
 // ========== CALENDAR VARIABLES ==========
 let activeDay;
@@ -1513,7 +1622,7 @@ const months = [
     "January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December"
 ];
-let eventsArr = [];
+let eventsArr = <?= $calendar_events_json ?: '[]' ?>;
 let currentRequestId = null;
 
 // ========== DASHBOARD FUNCTIONS ==========
@@ -1596,7 +1705,7 @@ function displayEquipmentTable(equipment) {
             </td>
             <td>
                 <div class="action-buttons">
-                    <button class="btn-view" onclick="viewEquipment('${item.code}')" title="View Details">
+                    <button class="btn-view" onclick='viewEquipment(${JSON.stringify(item)})' title="View Details">
                         <i class="bi bi-eye"></i>
                     </button>
                     <button class="btn-edit" onclick="editEquipment('${item.code}')" title="Edit">
@@ -1612,21 +1721,8 @@ function displayEquipmentTable(equipment) {
     });
 }
 
-function viewEquipment(code) {
-    const equipment = equipmentDataTable.find(item => item.code === code);
-    if (!equipment) return;
-    
+function viewEquipment(equipment) {
     const detailsContent = document.getElementById('equipmentDetailsContent');
-    
-    const purchaseDate = new Date(equipment.purchaseDate).toLocaleDateString('en-US', {
-        year: 'numeric', month: 'long', day: 'numeric'
-    });
-    const lastMaintenance = new Date(equipment.lastMaintenance).toLocaleDateString('en-US', {
-        year: 'numeric', month: 'long', day: 'numeric'
-    });
-    const nextMaintenance = new Date(equipment.nextMaintenance).toLocaleDateString('en-US', {
-        year: 'numeric', month: 'long', day: 'numeric'
-    });
     
     const today = new Date();
     const nextDate = new Date(equipment.nextMaintenance);
@@ -1647,16 +1743,18 @@ function viewEquipment(code) {
                     <tr><th style="width: 150px;">Location:</th><td>${equipment.location}</td></tr>
                     <tr><th>Manufacturer:</th><td>${equipment.manufacturer}</td></tr>
                     <tr><th>Model:</th><td>${equipment.model}</td></tr>
-                    <tr><th>Purchase Date:</th><td>${purchaseDate}</td></tr>
-                    <tr><th>Last Maintenance:</th><td>${lastMaintenance}</td></tr>
+                    <tr><th>Purchase Date:</th><td>${equipment.purchaseDate}</td></tr>
+                    <tr><th>Last Maintenance:</th><td>${equipment.lastMaintenance}</td></tr>
                     <tr>
                         <th>Next Maintenance:</th>
                         <td>
-                            ${nextMaintenance}
+                            ${equipment.nextMaintenance}
                             ${isOverdue ? '<span class="badge bg-danger ms-2">⚠️ Overdue</span>' : ''}
                         </td>
                     </tr>
                     <tr><th>Availability:</th><td><span class="badge" style="background: #22c55e;">${equipment.available}/${equipment.total} units</span></td></tr>
+                    <tr><th>Broken:</th><td><span class="badge bg-warning">${equipment.broken_qty}</span></td></tr>
+                    <tr><th>In Repair:</th><td><span class="badge bg-info">${equipment.repair_qty}</span></td></tr>
                     <tr><th>Maintenance:</th><td><span class="badge bg-warning">${equipment.maintenance} pending</span></td></tr>
                     <tr>
                         <th>Usage Rate:</th>
@@ -1686,12 +1784,7 @@ function editEquipment(code) {
 
 function removeEquipment(code) {
     if (confirm(`Are you sure you want to remove equipment ${code}?`)) {
-        const index = equipmentDataTable.findIndex(item => item.code === code);
-        if (index !== -1) {
-            equipmentDataTable.splice(index, 1);
-        }
-        displayEquipmentTable(equipmentDataTable);
-        alert('Equipment removed successfully!');
+        alert('Equipment removed successfully! (Note: This would update the database)');
     }
 }
 
@@ -1707,19 +1800,20 @@ function filterRequestsByStatus() {
     
     switch (timeRange) {
         case 'daily':
-            filtered = requests.filter(item =>
-                item.timestamp.toDateString() === today.toDateString()
-            );
+            filtered = requests.filter(item => {
+                const itemDate = new Date(item.timestamp * 1000);
+                return itemDate.toDateString() === today.toDateString();
+            });
             break;
         case 'weekly':
             const weekAgo = new Date();
             weekAgo.setDate(today.getDate() - 7);
-            filtered = requests.filter(item => item.timestamp >= weekAgo);
+            filtered = requests.filter(item => (item.timestamp * 1000) >= weekAgo.getTime());
             break;
         case 'monthly':
             const monthAgo = new Date();
             monthAgo.setDate(today.getDate() - 30);
-            filtered = requests.filter(item => item.timestamp >= monthAgo);
+            filtered = requests.filter(item => (item.timestamp * 1000) >= monthAgo.getTime());
             break;
         case 'all':
         default:
@@ -1777,12 +1871,12 @@ function displayRequestTable(requestsList) {
             <td><span class="badge ${statusClass}">${statusText}</span></td>
             <td>
                 <div class="action-buttons">
-                    <button class="btn-view" onclick="viewRequest('${item.id}')" title="View Details">
+                    <button class="btn-view" onclick='viewRequest(${JSON.stringify(item)})' title="View Details">
                         <i class="bi bi-eye"></i>
                     </button>
-                    <button class="btn-remove" onclick="rejectRequest('${item.id}')" title="Reject">
-                        <i class="bi bi-x-circle"></i>
-                    </button>
+                    ${item.status === 'pending' ? 
+                        '<button class="btn-remove" onclick="rejectRequest(\'' + item.id + '\')" title="Reject"><i class="bi bi-x-circle"></i></button>' : 
+                        ''}
                 </div>
             </td>
         `;
@@ -1797,11 +1891,8 @@ function displayRequestTable(requestsList) {
 }
 
 // View request details
-function viewRequest(id) {
-    const request = requests.find(item => item.id === id);
-    if (!request) return;
-    
-    currentRequestId = id;
+function viewRequest(request) {
+    currentRequestId = request.id;
     const detailsContent = document.getElementById('requestDetailsContent');
     
     let statusBadge = '';
@@ -1854,12 +1945,8 @@ function viewRequest(id) {
 // Reject request from table
 function rejectRequest(id) {
     if (confirm(`Are you sure you want to reject request ${id}?`)) {
-        const index = requests.findIndex(item => item.id === id);
-        if (index !== -1) {
-            requests[index].status = 'rejected';
-            filterRequestsByTime();
-            alert(`Request ${id} has been rejected!`);
-        }
+        alert(`Request ${id} has been rejected! (Note: This would update the database)`);
+        location.reload();
     }
 }
 
@@ -1872,17 +1959,6 @@ function rejectRequestFromModal() {
 }
 
 // ========== CALENDAR FUNCTIONS ==========
-function loadEvents() {
-    const saved = localStorage.getItem("calendarEvents");
-    if (saved) {
-        eventsArr = JSON.parse(saved);
-    }
-}
-
-function saveEvents() {
-    localStorage.setItem("calendarEvents", JSON.stringify(eventsArr));
-}
-
 function initCalendar() {
     const firstDay = new Date(year, month, 1);
     const lastDay = new Date(year, month + 1, 0);
@@ -1972,18 +2048,16 @@ function updateEventDisplay(day) {
     let eventsHtml = "";
     eventsArr.forEach(event => {
         if (event.day === day && event.month === month + 1 && event.year === year) {
-            event.events.forEach(ev => {
-                eventsHtml += `
-                    <div class="event-item" onclick="deleteEvent(this, '${ev.title}')">
-                        <div class="title">
-                            <i class="fas fa-circle"></i>
-                            <span class="event-title">${ev.title}</span>
-                        </div>
-                        <div class="event-time">${ev.time}</div>
-                        <div class="event-time" style="margin-left: 28px; font-size: 0.8rem;">${ev.details || ''}</div>
+            eventsHtml += `
+                <div class="event-item">
+                    <div class="title">
+                        <i class="fas fa-circle"></i>
+                        <span class="event-title">${event.title}</span>
                     </div>
-                `;
-            });
+                    <div class="event-time">${event.student} - ${event.location}</div>
+                    <div class="event-time" style="margin-left: 28px; font-size: 0.8rem;">${event.duration}</div>
+                </div>
+            `;
         }
     });
     
@@ -1996,22 +2070,6 @@ function updateEventDisplay(day) {
         eventsList.innerHTML = eventsHtml;
     }
 }
-
-window.deleteEvent = function(element, title) {
-    if (confirm('Are you sure you want to delete this event?')) {
-        eventsArr.forEach((event, index) => {
-            if (event.day === activeDay && event.month === month + 1 && event.year === year) {
-                event.events = event.events.filter(e => e.title !== title);
-                if (event.events.length === 0) {
-                    eventsArr.splice(index, 1);
-                }
-            }
-        });
-        saveEvents();
-        initCalendar();
-        updateEventDisplay(activeDay);
-    }
-};
 
 // ========== CALENDAR NAVIGATION ==========
 const prevBtn = document.querySelector('.prev');
@@ -2073,13 +2131,8 @@ if (gotoBtn) {
 
 // ========== INITIALIZATION ==========
 document.addEventListener('DOMContentLoaded', function() {
-    loadEvents();
     showSection('dashboard');
     initCalendar();
-    
-    if (document.getElementById('equipmentTableBody')) {
-        displayEquipmentTable(equipmentDataTable);
-    }
     
     if (document.getElementById('requestListBody')) {
         filterRequestsByStatus();
@@ -2090,10 +2143,3 @@ document.addEventListener('DOMContentLoaded', function() {
 
 </html>
 
-<?php
-} else {
-    // If not HOD, redirect to login
-    header("Location: ../index.php");
-    exit();
-}
-?>

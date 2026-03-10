@@ -2,9 +2,9 @@
 session_start();
 include "./config/database.php";
 
-// Get cookies if they exist
+// Get cookies if they exist - FIXED: removed password cookie (not used in your system)
 $university_id = $_COOKIE["university_id"] ?? '';
-$password = $_COOKIE["password"] ?? '';
+// $password = $_COOKIE["password"] ?? ''; // REMOVED - this cookie doesn't exist in your system
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -1005,7 +1005,6 @@ $password = $_COOKIE["password"] ?? '';
                             <span class="input-group-text"><i class="bi bi-lock"></i></span>
                             <input type="password"
                                 id="password"
-                                value="<?= htmlspecialchars($password) ?>"
                                 class="form-control"
                                 placeholder="Enter your password"
                                 required>
@@ -1048,137 +1047,125 @@ $password = $_COOKIE["password"] ?? '';
         </div>
     </div>
 
-
-
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
-
     <script>
-        function signin() {
-            // Get form elements
-            var university_id = document.getElementById("university_id");
-            var password = document.getElementById("password");
-            var remember_me = document.getElementById("remember_me");
-            var signinBtn = document.getElementById("signinBtn");
-            var loginText = document.getElementById("loginText");
-            var msgDiv = document.getElementById("msgdiv1");
-            var msgElement = document.getElementById("msg1");
+      function signin() {
+    // Get form elements
+    var university_id = document.getElementById("university_id");
+    var password = document.getElementById("password");
+    var remember_me = document.getElementById("remember_me");
+    var signinBtn = document.getElementById("signinBtn");
+    var loginText = document.getElementById("loginText");
+    var msgDiv = document.getElementById("msgdiv1");
+    var msgElement = document.getElementById("msg1");
 
-            // Clear previous messages
-            if (msgElement) msgElement.innerHTML = "";
-            if (msgDiv) msgDiv.className = "d-none";
+    // Clear previous messages
+    if (msgElement) msgElement.innerHTML = "";
+    if (msgDiv) msgDiv.className = "d-none";
 
-            // Client-side validation
-            if (!university_id.value.trim()) {
-                showMessage("Please enter your University ID", "error");
-                university_id.focus();
-                return;
-            }
+    // Client-side validation
+    if (!university_id.value.trim()) {
+        showMessage("Please enter your University ID", "error");
+        university_id.focus();
+        return;
+    }
 
-            if (!password.value) {
-                showMessage("Please enter your Password", "error");
-                password.focus();
-                return;
-            }
+    if (!password.value) {
+        showMessage("Please enter your Password", "error");
+        password.focus();
+        return;
+    }
 
-            // Optional: Basic password length check
-            if (password.value.length < 6) {
-                showMessage("Password must be at least 6 characters", "error");
-                return;
-            }
+    // Optional: Basic password length check
+    if (password.value.length < 6) {
+        showMessage("Password must be at least 6 characters", "error");
+        return;
+    }
 
-            // Disable button to prevent double submission
-            if (signinBtn) {
-                signinBtn.disabled = true;
-                if (loginText) {
-                    loginText.innerHTML = 'Signing in...';
-                }
-                signinBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Signing in...';
-            }
-
-            // Prepare form data
-            var form = new FormData();
-            form.append("university_id", university_id.value.trim().toUpperCase());
-            form.append("password", password.value);
-            form.append("remember_me", remember_me.checked ? "true" : "false");
-
-            var request = new XMLHttpRequest();
-
-            // Set timeout (10 seconds)
-            request.timeout = 10000;
-
-            request.onreadystatechange = function() {
-                if (request.readyState == 4) {
-
-                    if (signinBtn) {
-                        signinBtn.disabled = false;
-                        if (loginText) {
-                            loginText.innerHTML = 'Sign In';
-                        }
-                        signinBtn.innerHTML = '<i class="bi bi-box-arrow-in-right me-2"></i><span id="loginText">Sign In</span>';
-                    }
-
-                    if (request.status == 200) {
-                        var response = request.responseText.trim();
-
-                        // Handle response
-                        if (response.startsWith("success")) {
-
-                            var redirect = response.split("|")[1];
-                            window.location.href = redirect;
-                        } else {
-
-                            showMessage(response, "error");
-
-
-                            trackFailedAttempts();
-
-
-                            password.value = "";
-                            password.focus();
-                        }
-                    } else if (request.status == 0) {
-
-                        showMessage("Network error. Please check your connection.", "error");
-                    } else if (request.status == 429) {
-                        showMessage("Too many attempts. Please try again later.", "error");
-                    } else {
-                        showMessage("Server error. Please try again later.", "error");
-                    }
-                }
-            };
-
-            // Handle timeout
-            request.ontimeout = function() {
-                if (signinBtn) {
-                    signinBtn.disabled = false;
-                    if (loginText) {
-                        loginText.innerHTML = 'Sign In';
-                    }
-                    signinBtn.innerHTML = '<i class="bi bi-box-arrow-in-right me-2"></i><span id="loginText">Sign In</span>';
-                }
-                showMessage("Request timeout. Please try again.", "error");
-            };
-
-            // Handle network errors
-            request.onerror = function() {
-                if (signinBtn) {
-                    signinBtn.disabled = false;
-                    if (loginText) {
-                        loginText.innerHTML = 'Sign In';
-                    }
-                    signinBtn.innerHTML = '<i class="bi bi-box-arrow-in-right me-2"></i><span id="loginText">Sign In</span>';
-                }
-                showMessage("Network error. Please check your connection.", "error");
-            };
-
-            request.open("POST", "/LRRS/controllers/signin_process.php", true);
-
-            // Add headers for security
-            request.setRequestHeader("X-Requested-With", "XMLHttpRequest");
-
-            request.send(form);
+    // Disable button to prevent double submission
+    if (signinBtn) {
+        signinBtn.disabled = true;
+        if (loginText) {
+            loginText.innerHTML = 'Signing in...';
         }
+        signinBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Signing in...';
+    }
+
+    // Prepare form data
+    var form = new FormData();
+    form.append("university_id", university_id.value.trim().toUpperCase());
+    form.append("password", password.value);
+    form.append("remember_me", remember_me.checked ? "true" : "false");
+
+    var request = new XMLHttpRequest();
+
+    // Set timeout (10 seconds)
+    request.timeout = 10000;
+
+    request.onreadystatechange = function() {
+        if (request.readyState == 4) {
+
+            if (signinBtn) {
+                signinBtn.disabled = false;
+                if (loginText) {
+                    loginText.innerHTML = 'Sign In';
+                }
+                signinBtn.innerHTML = '<i class="bi bi-box-arrow-in-right me-2"></i><span id="loginText">Sign In</span>';
+            }
+
+            if (request.status == 200) {
+                var response = request.responseText.trim();
+
+                // Handle response
+                if (response.startsWith("success")) {
+                    var redirect = response.split("|")[1];  // FIXED: Define redirect first
+                    console.log("Redirecting to:", redirect);
+                    window.location.href = redirect;
+                } else {
+                    showMessage(response, "error");
+                    trackFailedAttempts();
+                    password.value = "";
+                    password.focus();
+                }
+            } else if (request.status == 0) {
+                showMessage("Network error. Please check your connection.", "error");
+            } else if (request.status == 429) {
+                showMessage("Too many attempts. Please try again later.", "error");
+            } else {
+                showMessage("Server error. Please try again later.", "error");
+            }
+        }
+    };
+
+    // Handle timeout
+    request.ontimeout = function() {
+        if (signinBtn) {
+            signinBtn.disabled = false;
+            if (loginText) {
+                loginText.innerHTML = 'Sign In';
+            }
+            signinBtn.innerHTML = '<i class="bi bi-box-arrow-in-right me-2"></i><span id="loginText">Sign In</span>';
+        }
+        showMessage("Request timeout. Please try again.", "error");
+    };
+
+    // Handle network errors
+    request.onerror = function() {
+        if (signinBtn) {
+            signinBtn.disabled = false;
+            if (loginText) {
+                loginText.innerHTML = 'Sign In';
+            }
+            signinBtn.innerHTML = '<i class="bi bi-box-arrow-in-right me-2"></i><span id="loginText">Sign In</span>';
+        }
+        showMessage("Network error. Please check your connection.", "error");
+    };
+
+    request.open("POST", "/LRRS/controllers/signin_process.php", true);
+    request.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+    request.send(form);
+}
 
         // Enhanced message display function
         function showMessage(message, type) {

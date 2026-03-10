@@ -39,9 +39,18 @@ if (strlen($new_password) < 6) {
     exit;
 }
 
-// Verify session (ensure they verified code first)
-if (!isset($_SESSION['reset_university_id']) || $_SESSION['reset_university_id'] !== $university_id) {
+// Verify session and verification status
+if (!isset($_SESSION['reset_university_id']) || 
+    $_SESSION['reset_university_id'] !== $university_id || 
+    !isset($_SESSION['reset_verified']) || 
+    $_SESSION['reset_verified'] !== true) {
     echo json_encode(['success' => false, 'message' => 'Please verify your code first']);
+    exit;
+}
+
+// Check if session is expired
+if (time() - $_SESSION['reset_time'] > 900) { // 15 minutes
+    echo json_encode(['success' => false, 'message' => 'Session expired. Please request a new code.']);
     exit;
 }
 
@@ -60,25 +69,24 @@ if ($result->num_rows === 0) {
 $user = $result->fetch_assoc();
 
 // Generate token for remember_me functionality
-$token = $university_id . $new_password;
+$token = bin2hex(random_bytes(32));
 
 // Hash password and token
 $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
 $hashed_token = password_hash($token, PASSWORD_DEFAULT);
 
-date_default_timezone_set('Asia/Colombo'); // Set timezone to Sri Lanka
-$now = date('Y-m-d H:i:s'); // Current date & time in Sri Lanka
+date_default_timezone_set('Asia/Colombo');
+$now = date('Y-m-d H:i:s');
 
-// Update both password and remember_token
+// Update password, remember_token, and clear verification_code
 $update_result = Database::iud(
-    "UPDATE lab_user SET password_user = ?, remember_token = ?, details_updated_datetime = ? WHERE university_id = ?",
-    "ssss", // 4 strings
+    "UPDATE lab_user SET password_user = ?, remember_token = ?, verification_code = NULL, details_updated_datetime = ? WHERE university_id = ?",
+    "ssss",
     [$hashed_password, $hashed_token, $now, $university_id]
 );
 
-
 if ($update_result) {
-    // Send confirmation email using PHPMailer 
+    // Send confirmation email
     $mail = new PHPMailer(true);
 
     try {
@@ -88,10 +96,10 @@ if ($update_result) {
         $mail->SMTPAuth   = true;
         $mail->Username   = 'microbiologylaboratorysystem@gmail.com';
         $mail->Password   = 'cesb lydd jord elyu';
-         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-    $mail->Port = 587;
-    $mail->CharSet = 'UTF-8';
-$mail->Encoding = 'base64';
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port = 587;
+        $mail->CharSet = 'UTF-8';
+        $mail->Encoding = 'base64';
 
         // Recipients
         $mail->setFrom('microbiologylaboratorysystem@gmail.com', 'Microbiology Lab System');
@@ -101,8 +109,7 @@ $mail->Encoding = 'base64';
         // Content
         $mail->isHTML(true);
         $mail->Subject = 'Password Changed Successfully - Microbiology Lab';
-
-       $mail->Body = '
+        $mail->Body = '
 <table width="100%" bgcolor="#f4f4f5" cellpadding="0" cellspacing="0" style="font-family:Arial,sans-serif;">
 <tr>
   <td align="center">
@@ -118,13 +125,12 @@ $mail->Encoding = 'base64';
           <p>Your password has been changed successfully.</p>
 
           <table width="100%" cellpadding="10" cellspacing="0" bgcolor="#f0fdf4" style="border:2px solid #22c55e; margin:20px 0;">
-           <tr>
-  <td style="color:#166534;">
-    <strong>University ID:</strong> '.htmlspecialchars($university_id).'<br>
-    <strong>Password:</strong> '.htmlspecialchars($new_password).'<br>
-    <strong>Date & Time:</strong> '.htmlspecialchars($now).'<br>
-  </td>
-</tr>
+            <tr>
+              <td style="color:#166534;">
+                <strong>University ID:</strong> '.htmlspecialchars($university_id).'<br>
+                <strong>Date & Time:</strong> '.htmlspecialchars($now).'<br>
+              </td>
+            </tr>
           </table>
 
           <table width="100%" cellpadding="10" cellspacing="0" bgcolor="#fff3cd" style="border:1px solid #ffc107; margin:20px 0;">
@@ -159,7 +165,6 @@ $mail->Encoding = 'base64';
         $mail->send();
     } catch (Exception $e) {
         error_log("Password Change Email Error: " . $mail->ErrorInfo);
-        // Don't stop the process if email fails
     }
     
     // Clear reset session
@@ -167,6 +172,7 @@ $mail->Encoding = 'base64';
     unset($_SESSION['reset_university_id']);
     unset($_SESSION['reset_email']);
     unset($_SESSION['reset_time']);
+    unset($_SESSION['reset_verified']);
     
     echo json_encode([
         'success' => true,

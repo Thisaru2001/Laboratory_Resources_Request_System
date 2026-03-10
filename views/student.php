@@ -1,14 +1,117 @@
-
 <?php
 session_start();
 require_once '../config/database.php';
 
+// Check if user is logged in and is a student
+if (!isset($_SESSION["user_id"]) || !isset($_SESSION["user_role"]) || $_SESSION["user_role"] !== 'student') {
+    header("Location: ../index.php");
+    exit();
+}
 
-if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user_role"] === 'Student') {
+// Get student ID from session
+$student_id = $_SESSION["user_id"];
+
+// Get user details
+$user_query = "SELECT first_name, last_name, img_path FROM lab_user WHERE id = ?";
+$user_result = Database::search($user_query, "i", [$student_id]);
+
+if (!$user_result) {
+    error_log("User query failed: " . Database::getLastError());
+    $first_name = 'Student';
+    $last_name = '';
+    $profile_image = '';
+} else {
+    $user_data = $user_result->fetch_assoc();
+    $first_name = $user_data['first_name'] ?? 'Student';
+    $last_name = $user_data['last_name'] ?? '';
+    $profile_image = $user_data['img_path'] ?? '';
+}
+$full_name = trim($first_name . ' ' . $last_name);
+
+// Get notification count
+$notif_query = "SELECT COUNT(*) as count FROM notification WHERE owner_of_notification = ?";
+$notif_result = Database::search($notif_query, "i", [$student_id]);
+$notif_count = 0;
+if ($notif_result) {
+    $notif_data = $notif_result->fetch_assoc();
+    $notif_count = $notif_data['count'] ?? 0;
+}
+
+// Get recent notifications
+// Get recent notifications - FIXED: use created_datetime instead of created_at
+$notif_list_query = "SELECT description, created_datetime 
+                     FROM notification 
+                     WHERE owner_of_notification = ? 
+                     ORDER BY created_datetime DESC LIMIT 5";
+$notif_list_result = Database::search($notif_list_query, "i", [$student_id]);
+
+// Get student's supervisor
+$supervisor_query = "SELECT supervisor_id_or_hod_id FROM supervisor_assigned_student WHERE student_id = ? LIMIT 1";
+$supervisor_result = Database::search($supervisor_query, "i", [$student_id]);
+$supervisor_id = null;
+if ($supervisor_result && $supervisor_result->num_rows > 0) {
+    $supervisor_data = $supervisor_result->fetch_assoc();
+    $supervisor_id = $supervisor_data['supervisor_id_or_hod_id'];
+}
+
+// Get locations for dropdown
+$location_query = "SELECT id, location FROM location ORDER BY location";
+$location_result = Database::search($location_query);
+
+// Get student's reservations - INCLUDING continue_days
+$res_query = "SELECT r.id, r.reservation_id, r.request_date, r.continue_days, l.location, 
+                     r.comment, r.created_datetime,
+                     CONCAT(s.first_name, ' ', s.last_name) as supervisor_name
+              FROM reservation r
+              JOIN location l ON r.location_id = l.id
+              LEFT JOIN lab_user s ON r.supervisor_id = s.id
+              WHERE r.student_id = ?
+              ORDER BY r.created_datetime DESC
+              LIMIT 5";
+$res_result = Database::search($res_query, "i", [$student_id]);
+
+// Fetch student's reservations for calendar - WITH continue_days (now that column exists)
+$calendar_events = [];
+$calendar_query = "SELECT r.id, r.reservation_id, r.request_date, r.continue_days,
+                          l.location,
+                          GROUP_CONCAT(CONCAT(e.name, ' (x', be.book_qty, ')') SEPARATOR '<br>') as equipment_list
+                   FROM reservation r
+                   JOIN location l ON r.location_id = l.id
+                   JOIN book_equipment be ON r.id = be.reservation_id
+                   JOIN equipment e ON be.equipment_id = e.id
+                   WHERE r.student_id = ?
+                   GROUP BY r.id
+                   ORDER BY r.request_date DESC";
+
+$calendar_result = Database::search($calendar_query, "i", [$student_id]);
+
+if ($calendar_result && $calendar_result->num_rows > 0) {
+    while ($row = $calendar_result->fetch_assoc()) {
+        $request_date = new DateTime($row['request_date']);
+        $end_date = clone $request_date;
+        $end_date->modify('+' . ($row['continue_days'] - 1) . ' days');
+        
+        $calendar_events[] = [
+            'day' => (int)$request_date->format('j'),
+            'month' => (int)$request_date->format('n'),
+            'year' => (int)$request_date->format('Y'),
+            'end_day' => (int)$end_date->format('j'),
+            'end_month' => (int)$end_date->format('n'),
+            'end_year' => (int)$end_date->format('Y'),
+            'title' => $row['reservation_id'],
+            'equipment' => $row['equipment_list'],
+            'location' => $row['location'],
+            'duration' => $row['continue_days'] . ' day(s)',
+            'time' => 'Full Day Booking'
+        ];
+    }
+}
+
+// Convert to JSON for JavaScript
+$calendar_events_json = json_encode($calendar_events);
 ?>
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -20,6 +123,7 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
 
     <style>
+        /* Keep ALL your existing CSS styles - they are perfect */
         * {
             margin: 0;
             padding: 0;
@@ -164,6 +268,7 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                 transform: translateY(-100%);
                 opacity: 0;
             }
+
             to {
                 transform: translateY(0);
                 opacity: 1;
@@ -171,8 +276,13 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
         }
 
         .profile-img {
@@ -226,8 +336,15 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
         }
 
         @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.2); }
+
+            0%,
+            100% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.2);
+            }
         }
 
         /* Notification Dropdown */
@@ -254,6 +371,7 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                 opacity: 0;
                 transform: translateY(-10px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -603,7 +721,7 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
         .position-relative {
             position: relative !important;
         }
-        
+
         #equipmentDropdown {
             position: absolute;
             top: 100%;
@@ -615,7 +733,7 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
             border-radius: 4px;
             max-height: 300px;
             overflow-y: auto;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
         .dropdown-item {
@@ -897,6 +1015,7 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                 opacity: 0;
                 transform: translate(-50%, -50%) scale(0.8);
             }
+
             100% {
                 opacity: 1;
                 transform: translate(-50%, -50%) scale(1);
@@ -1188,7 +1307,6 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
             box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
         }
     </style>
-      <!-- Keep original favicon -->
     <link rel="icon" type="image/svg+xml" href="../assets/resources/flask.svg">
 </head>
 
@@ -1196,14 +1314,13 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
     <!-- Sidebar Overlay -->
     <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
-    <!-- SIDEBAR - Student Version -->
+    <!-- SIDEBAR -->
     <div class="sidebar" id="sidebar">
         <h4><i class="bi bi-flask"></i> MicroLab</h4>
         <a onclick="showSection('dashboard')" class="active"><i class="bi bi-speedometer2"></i> Dashboard</a>
         <a onclick="showSection('equipment')"><i class="bi bi-tools"></i> Equipment</a>
         <a onclick="showSection('history')"><i class="bi bi-clock-history"></i> Reservation History</a>
-        <a href="#" onclick="logout()"><i class="bi bi-box-arrow-right"></i> Logout</a>
-
+        <a href="../logout.php"><i class="bi bi-box-arrow-right"></i> Logout</a>
         <div class="sidebar-footer">
             <i class="bi bi-building"></i><br>
             Microbiology Lab<br>
@@ -1211,9 +1328,8 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
         </div>
     </div>
 
-    <!-- MAIN -->
+    <!-- MAIN CONTENT -->
     <div class="main-content">
-
         <!-- TOPBAR -->
         <div class="topbar">
             <div class="d-flex align-items-center gap-3">
@@ -1221,48 +1337,71 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                     <i class="bi bi-list fs-3"></i>
                 </button>
                 <h5 class="fw-bold mb-0" style="background: linear-gradient(135deg, #22c55e, #16a34a); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
-                    Welcome, <span id="userName">John</span>
+                    Welcome, <span id="userName"><?php echo htmlspecialchars($first_name); ?></span>
                 </h5>
             </div>
             <div class="d-flex align-items-center gap-3">
                 <!-- Notification Bell -->
                 <div class="notification-bell" onclick="toggleNotifications()">
                     <i class="bi bi-bell"></i>
-                    <span class="notification-badge" id="notificationBadge">3</span>
+                    <span class="notification-badge" id="notificationBadge"><?php echo $notif_count; ?></span>
                 </div>
 
                 <!-- Notification Dropdown -->
                 <div class="notification-dropdown" id="notificationDropdown">
                     <div class="notification-header">
                         <h6>Notifications</h6>
-                        <span>3 new</span>
+                        <span><?php echo $notif_count; ?> new</span>
                     </div>
                     <div class="notification-list" id="notificationList">
-                        <div class="notification-item unread">
-                            <div><i class="bi bi-check-circle-fill text-success me-2"></i> Your booking #REQ004 has been approved</div>
-                            <div class="time">2 minutes ago</div>
-                        </div>
-                        <div class="notification-item unread">
-                            <div><i class="bi bi-clock-fill text-warning me-2"></i> Equipment ready for pickup</div>
-                            <div class="time">15 minutes ago</div>
-                        </div>
-                        <div class="notification-item unread">
-                            <div><i class="bi bi-exclamation-triangle-fill text-danger me-2"></i> Return reminder: Microscope due today</div>
-                            <div class="time">1 hour ago</div>
-                        </div>
+                        <?php
+                      if ($notif_list_result && $notif_list_result->num_rows > 0) {
+    while ($notif = $notif_list_result->fetch_assoc()) {
+        $time_ago = '';
+        $notif_time = strtotime($notif['created_datetime']); // FIXED: use created_datetime
+        $time_diff = time() - $notif_time;
+
+        if ($time_diff < 60) {
+            $time_ago = 'Just now';
+        } elseif ($time_diff < 3600) {
+            $minutes = floor($time_diff / 60);
+            $time_ago = $minutes . ' minute' . ($minutes > 1 ? 's' : '') . ' ago';
+        } elseif ($time_diff < 86400) {
+            $hours = floor($time_diff / 3600);
+            $time_ago = $hours . ' hour' . ($hours > 1 ? 's' : '') . ' ago';
+        } else {
+            $days = floor($time_diff / 86400);
+            $time_ago = $days . ' day' . ($days > 1 ? 's' : '') . ' ago';
+        }
+
+        echo '<div class="notification-item unread">';
+        echo '<div><i class="bi bi-info-circle-fill text-success me-2"></i> ' . htmlspecialchars($notif['description']) . '</div>';
+        echo '<div class="time">' . $time_ago . '</div>';
+        echo '</div>';
+    }
+} else {
+                            echo '<div class="text-center text-muted p-3">No new notifications</div>';
+                        }
+                        ?>
                     </div>
                 </div>
 
-                <span class="fw-semibold d-none d-sm-block" style="color: #166534;" id="userNameDisplay">John Doe</span>
+                <span class="fw-semibold d-none d-sm-block" style="color: #166534;" id="userNameDisplay">
+                    <?php echo htmlspecialchars($full_name); ?>
+                </span>
+
                 <div class="dropdown">
-                    <img src="https://ui-avatars.com/api/?name=John+Doe&background=22c55e&color=fff&size=100" class="profile-img dropdown-toggle" data-bs-toggle="dropdown">
+                    <?php
+                    if (empty($profile_image) || !file_exists($profile_image)) {
+                        $profile_image = 'https://ui-avatars.com/api/?name=' . urlencode($full_name) . '&background=22c55e&color=fff&size=100';
+                    }
+                    ?>
+                    <img src="<?php echo $profile_image; ?>" class="profile-img dropdown-toggle" data-bs-toggle="dropdown">
                     <ul class="dropdown-menu dropdown-menu-end" style="border-radius: 16px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
-                        <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i>Profile</a></li>
-                        <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i>Settings</a></li>
-                        <li>
-                            <hr class="dropdown-divider">
-                        </li>
-                        <li><a class="dropdown-item text-danger" href="#" onclick="logout()"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                        <li><a class="dropdown-item" href="profile.php"><i class="bi bi-person me-2"></i>Profile</a></li>
+                        <li><a class="dropdown-item" href="settings.php"><i class="bi bi-gear me-2"></i>Settings</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="../logout.php"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
                     </ul>
                 </div>
             </div>
@@ -1270,164 +1409,252 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
 
         <!-- CONTENT AREA -->
         <div class="content-area">
-
             <!-- Dashboard Section -->
             <div id="dashboardSection">
-           
-
-                <!-- Create Request Section - UPDATED -->
-<h4 class="mb-3" style="color: white;">Create Equipment Request</h4>
-<div class="card p-4 mb-4">
-    <form id="equipmentRequestForm">
-        <!-- Lab Location, Requested Date, Continue Days - ALL IN ONE ROW -->
-        <div class="row g-3 mb-3">
-
-
-
-
-     <div class="col-md-4">
-    <label class="form-label fw-semibold">Lab Location</label>
-    <select id="labLocation" class="form-select" required onchange="loadEquipmentByLab()">
-        <option value="" disabled selected>Select Lab</option>
-        <?php
-        // Enable error reporting for debugging (remove in production)
-        mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
-        
-        try {
-            // First, check if the table exists
-            $check_table_query = "SHOW TABLES LIKE 'lab_location'";
-            $table_result = Database::search($check_table_query);
-            
-            if ($table_result && $table_result->num_rows > 0) {
-                // Table exists, now query locations
-                $location_query = "SELECT DISTINCT location FROM lab_location WHERE location IS NOT NULL AND location != '' ORDER BY location";
-                $location_result = Database::search($location_query);
-                
-                if ($location_result && $location_result->num_rows > 0) {
-                    while ($row = $location_result->fetch_assoc()) {
-                        $location = htmlspecialchars($row['location']);
-                        echo "<option value=\"$location\">$location</option>";
-                    }
-                } else {
-                    // Table exists but no data
-                    echo '<option value="" disabled>No lab locations found in database</option>';
-                    // Still show fallback options
-                    echo '<option value="Microbiology Lab 01">Microbiology Lab 01</option>';
-                    echo '<option value="Microbiology Lab 02">Microbiology Lab 02</option>';
-                    echo '<option value="Research Laboratory">Research Laboratory</option>';
-                }
-            } else {
-                // Table doesn't exist
-                echo '<option value="" disabled>Lab location table not found</option>';
-                // Show fallback options
-                echo '<option value="Microbiology Lab 01">Microbiology Lab 01</option>';
-                echo '<option value="Microbiology Lab 02">Microbiology Lab 02</option>';
-                echo '<option value="Research Laboratory">Research Laboratory</option>';
-            }
-        } catch (Exception $e) {
-            // Log error and show fallback
-            error_log("Database error in lab location dropdown: " . $e->getMessage());
-            echo '<option value="" disabled>Error loading locations</option>';
-            echo '<option value="Microbiology Lab 01">Microbiology Lab 01</option>';
-            echo '<option value="Microbiology Lab 02">Microbiology Lab 02</option>';
-            echo '<option value="Research Laboratory">Research Laboratory</option>';
-        }
-        ?>
-    </select>
-</div>
-
-
-
-
-
-            <div class="col-md-4">
-                <label class="form-label fw-semibold">Requested Date</label>
-                <input type="date" id="requestDate" class="form-control" required>
-            </div>
-            <div class="col-md-4">
-                <label class="form-label fw-semibold">Continue Days</label>
-                <select id="continueDays" class="form-select" required>
-                    <option value="" disabled selected>Select Days</option>
-                    <option value="1">1 Day</option>
-                    <option value="2">2 Days</option>
-                    <option value="3">3 Days</option>
-                </select>
-            </div>
-        </div>
-
-        <!-- Equipment Search - Second (only relevant to selected lab) -->
-        <div class="row g-3 mb-3">
-            <div class="col-md-6 position-relative">
-                <label class="form-label fw-semibold">Search Equipment (by Lab)</label>
-                <input type="text" id="equipmentName" class="form-control" placeholder="Select lab location first" autocomplete="off" disabled>
-                <div id="equipmentDropdown" class="dropdown-menu w-100" style="display: none; max-height: 200px; overflow-y: auto;"></div>
-            </div>
-            <div class="col-md-2">
-                <label class="form-label fw-semibold">Quantity</label>
-                <input type="number" id="equipmentQty" class="form-control" min="1" value="1" disabled>
-            </div>
-            <div class="col-md-2 d-flex align-items-end">
-                <button type="button" class="btn btn-success w-100" onclick="addEquipment()" id="addEquipmentBtn" disabled>
-                    <i class="bi bi-plus-circle me-1"></i>Add
-                </button>
-            </div>
-        </div>
-
-        <!-- Equipment Table -->
-        <div class="table-responsive">
-            <table class="table table-bordered mb-4" id="equipmentTable">
-                <thead class="table-success">
-                    <tr>
-                        <th>Equipment</th>
-                        <th>Qty</th>
-                        <th>Remove</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
-        </div>
-
-        <!-- Additional Comments -->
-        <div class="mb-4">
-            <label class="form-label fw-semibold">Additional Comments</label>
-            <textarea id="requestComment" class="form-control" rows="3" placeholder="Enter any special requirements or notes..."></textarea>
-        </div>
-
-        <!-- Buttons - Only Submit and Reset -->
-        <div class="d-flex gap-2">
-            <button type="button" class="btn btn-success" onclick="submitRequest()">
-                <i class="bi bi-send me-1"></i>Submit Request
-            </button>
-            <button type="button" class="btn btn-secondary" onclick="resetForm()">
-                <i class="bi bi-arrow-counterclockwise me-1"></i>Reset
-            </button>
-        </div>
-    </form>
-</div>
-
-                <!-- Request Status Section -->
-                <h4 class="mb-3" style="color: white;">My Request Status</h4>
+                <!-- Create Reservation Form -->
+                <h4 class="mb-3" style="color: white;">Create Equipment Reservation</h4>
                 <div class="card p-4 mb-4">
-                    <div class="table-responsive">
-                        <table class="table table-bordered">
-                            <thead class="table-light">
-                                <tr>
-                                    <th>Request ID</th>
-                                  
-                                    <th>Date</th>
-                                    <th>Lab</th>
-                                    <th>Status</th>
-                                    <th>Reason (if rejected)</th>
-                                </tr>
-                            </thead>
-                            <tbody id="requestStatusBody">
-                                <!-- Dynamic content will be loaded here -->
-                            </tbody>
-                        </table>
-                    </div>
+                    <form id="equipmentRequestForm">
+                        <!-- Step 1: Basic Information - REMOVED RETURN DATE FIELD -->
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-12">
+                                <div class="alert alert-info">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    <strong>Step 1:</strong> Select lab location to view available equipment
+                                </div>
+                            </div>
+
+                            <!-- Lab Location -->
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">
+                                    <i class="bi bi-pin-map-fill text-success me-1"></i>Lab Location
+                                </label>
+                                <select id="labLocation" class="form-select" required onchange="loadEquipmentByLocation()">
+                                    <option value="" disabled selected>-- Select Lab Location --</option>
+                                    <?php
+                                    if ($location_result && $location_result->num_rows > 0) {
+                                        while ($row = $location_result->fetch_assoc()) {
+                                            echo "<option value='" . $row['id'] . "'>" . htmlspecialchars($row['location']) . "</option>";
+                                        }
+                                    }
+                                    ?>
+                                </select>
+                                <small class="text-muted">Equipment available only in selected lab</small>
+                            </div>
+
+                            <!-- Request Date -->
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold">
+                                    <i class="bi bi-calendar-date text-success me-1"></i>Request Date
+                                </label>
+                                <input type="date" id="requestDate" class="form-control"
+                                    value="<?php echo date('Y-m-d'); ?>"
+                                    min="<?php echo date('Y-m-d'); ?>" required>
+                            </div>
+
+                            <!-- Duration -->
+                            <div class="col-md-3">
+                                <label class="form-label fw-semibold">
+                                    <i class="bi bi-calendar-week text-success me-1"></i>Duration
+                                </label>
+                                <select id="continueDays" class="form-select" required>
+                                    <option value="1" selected>1 Day (Full Day Booking)</option>
+                                    <option value="2">2 Days</option>
+                                    <option value="3">3 Days</option>
+                                </select>
+                                <small class="text-muted">Equipment booked for the entire selected day(s)</small>
+                            </div>
+                        </div>
+
+                        <!-- Step 2: Equipment Selection (unchanged) -->
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-12">
+                                <div class="alert alert-success">
+                                    <i class="bi bi-info-circle me-2"></i>
+                                    <strong>Step 2:</strong> Search and add equipment to your reservation
+                                </div>
+                            </div>
+
+                            <!-- Equipment Search -->
+                            <div class="col-md-6 position-relative">
+                                <label class="form-label fw-semibold">
+                                    <i class="bi bi-search text-success me-1"></i>Search Equipment
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-white">
+                                        <i class="bi bi-microscope"></i>
+                                    </span>
+                                    <input type="text" id="equipmentSearch" class="form-control"
+                                        placeholder="Type to search equipment..."
+                                        autocomplete="off" disabled>
+                                </div>
+                                <div id="equipmentDropdown" class="dropdown-menu w-100 p-2"
+                                    style="display: none; max-height: 300px; overflow-y: auto;"></div>
+                                <small class="text-muted" id="searchHint">Select a lab location first</small>
+                            </div>
+
+                            <!-- Available Quantity -->
+                            <div class="col-md-2">
+                                <label class="form-label fw-semibold">
+                                    <i class="bi bi-box-seam text-success me-1"></i>Available
+                                </label>
+                                <input type="text" id="availableQty" class="form-control bg-light" readonly placeholder="0">
+                            </div>
+
+                            <!-- Book Quantity -->
+                            <div class="col-md-2">
+                                <label class="form-label fw-semibold">
+                                    <i class="bi bi-sort-numeric-up text-success me-1"></i>Book Qty
+                                </label>
+                                <input type="number" id="bookQty" class="form-control" min="1" value="1" disabled>
+                            </div>
+
+                            <!-- Add Button -->
+                            <div class="col-md-2 d-flex align-items-end">
+                                <button type="button" class="btn btn-success w-100" onclick="addEquipment()" id="addEquipmentBtn" disabled>
+                                    <i class="bi bi-plus-circle me-1"></i>Add Item
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Selected Equipment Table (unchanged) -->
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">
+                                <i class="bi bi-list-check text-success me-1"></i>Selected Equipment
+                            </label>
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-hover" id="equipmentTable">
+                                    <thead class="table-success">
+                                        <tr>
+                                            <th width="50%">Equipment Name</th>
+                                            <th width="15%">Code</th>
+                                            <th width="15%">Quantity</th>
+                                            <th width="20%">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="selectedEquipmentBody">
+                                        <tr>
+                                            <td colspan="4" class="text-center text-muted py-3">
+                                                <i class="bi bi-inbox me-2"></i>No equipment added yet
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Additional Comments (unchanged) -->
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">
+                                <i class="bi bi-chat-text text-success me-1"></i>Additional Comments
+                            </label>
+                            <textarea id="requestComment" class="form-control" rows="2"
+                                placeholder="Enter any special requirements..."></textarea>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex gap-2 justify-content-end">
+                            <button type="button" class="btn btn-outline-secondary" onclick="resetForm()">
+                                <i class="bi bi-arrow-counterclockwise me-1"></i>Reset
+                            </button>
+                            <button type="button" class="btn btn-success px-4" onclick="submitReservation()" id="submitBtn">
+                                <i class="bi bi-send me-1"></i>Submit Reservation
+                            </button>
+                        </div>
+                        
+                        <div class="alert alert-warning mt-3 mb-0" id="formWarning" style="display: none;">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            <span id="warningMessage"></span>
+                        </div>
+                    </form>
                 </div>
 
-                <!-- Booking Calendar Section -->
+           <!-- My Reservation Status Section -->
+<h4 class="mb-3" style="color: white;">
+    <i class="bi bi-clock-history me-2"></i>My Reservation Status
+</h4>
+<div class="card p-4 mb-4">
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th>Reservation ID</th>
+                    <th>Date(s)</th>
+                    <th>Lab Location</th>
+                    <th>Equipment</th>
+                    <th>Status</th>
+                    <th>Supervisor</th>
+                    <th>Reason (if rejected)</th>
+                </tr>
+            </thead>
+            <tbody id="reservationStatusBody">
+                <?php
+                // Update the reservation query to include continue_days
+                $res_query = "SELECT r.id, r.reservation_id, r.request_date, r.continue_days, l.location, 
+                                     r.comment, r.created_datetime,
+                                     CONCAT(s.first_name, ' ', s.last_name) as supervisor_name
+                              FROM reservation r
+                              JOIN location l ON r.location_id = l.id
+                              LEFT JOIN lab_user s ON r.supervisor_id = s.id
+                              WHERE r.student_id = ?
+                              ORDER BY r.created_datetime DESC
+                              LIMIT 5";
+                $res_result = Database::search($res_query, "i", [$student_id]);
+                
+                if ($res_result && $res_result->num_rows > 0) {
+                    while ($row = $res_result->fetch_assoc()) {
+                        // Get equipment for this reservation
+                        $eq_query = "SELECT e.name, be.book_qty 
+                                     FROM book_equipment be
+                                     JOIN equipment e ON be.equipment_id = e.id
+                                     WHERE be.reservation_id = ?";
+                        $eq_result = Database::search($eq_query, "i", [$row['id']]);
+
+                        $equipment_list = [];
+                        if ($eq_result) {
+                            while ($eq = $eq_result->fetch_assoc()) {
+                                $equipment_list[] = $eq['name'] . " (x" . $eq['book_qty'] . ")";
+                            }
+                        }
+                        $equipment_display = implode("<br>", $equipment_list);
+
+                        // Calculate date range
+                        $start_date = date('Y-m-d', strtotime($row['request_date']));
+                        $end_date = date('Y-m-d', strtotime($row['request_date'] . ' + ' . ($row['continue_days'] - 1) . ' days'));
+                        $date_display = $start_date;
+                        if ($row['continue_days'] > 1) {
+                            $date_display .= " to " . $end_date . " (" . $row['continue_days'] . " days)";
+                        }
+
+                        // Check if rejected
+                        $reject_query = "SELECT reason FROM reject_reason WHERE reservation_id = ?";
+                        $reject_result = Database::search($reject_query, "i", [$row['id']]);
+                        $reject_reason = '-';
+                        if ($reject_result && $reject_result->num_rows > 0) {
+                            $reject_data = $reject_result->fetch_assoc();
+                            $reject_reason = $reject_data['reason'];
+                        }
+
+                        echo "<tr>";
+                        echo "<td><strong>" . htmlspecialchars($row['reservation_id']) . "</strong></td>";
+                        echo "<td>" . $date_display . "</td>";
+                        echo "<td>" . htmlspecialchars($row['location']) . "</td>";
+                        echo "<td>" . $equipment_display . "</td>";
+                        echo "<td><span class='badge bg-warning'>Pending</span></td>";
+                        echo "<td>" . htmlspecialchars($row['supervisor_name'] ?? 'Not Assigned') . "</td>";
+                        echo "<td><small class='text-danger'>" . htmlspecialchars($reject_reason) . "</small></td>";
+                        echo "</tr>";
+                    }
+                } else {
+                    echo "<tr><td colspan='7' class='text-center text-muted py-3'>No reservations found</td></tr>";
+                }
+                ?>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+                <!-- Booking Calendar -->
                 <h4 class="mb-3" style="color: white;">My Booking Calendar</h4>
                 <div class="calendar-container">
                     <div class="calendar-wrapper">
@@ -1458,18 +1685,18 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                                 <div class="event-day" id="eventDay"></div>
                                 <div class="event-date" id="eventDate"></div>
                             </div>
-                            <div class="events-list" id="eventsList"></div>
+                            <div class="events-list" id="eventsList">
+                                <div class="no-event">Select a date to view bookings</div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Equipment Section (Table View) - UPDATED with Search -->
+            <!-- Equipment Section (unchanged) -->
             <div id="equipmentSection" style="display: none;">
-                <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Equipment</h3>
-
+                <h3 class="mb-4" style="color: white;">Equipment</h3>
                 <div class="card p-4">
-                    <!-- Search Bar -->
                     <div class="search-add-row">
                         <div class="search-container">
                             <input type="text" id="equipmentSearch" class="search-input" placeholder="Search by equipment name...">
@@ -1479,21 +1706,16 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                         </div>
                     </div>
 
-                    <!-- Filter Section -->
                     <div class="filter-section">
                         <select class="filter-select" id="labFilter" onchange="filterEquipmentTable()">
                             <option value="all">All Labs</option>
-                            <option value="lab1">Microbiology Lab 01</option>
-                            <option value="lab2">Microbiology Lab 02</option>
-                            <option value="research">Research Laboratory</option>
+                            <?php
+                            $labs_for_filter = Database::search("SELECT id, location FROM location ORDER BY location");
+                            while ($lab = $labs_for_filter->fetch_assoc()) {
+                                echo "<option value='" . $lab['id'] . "'>" . htmlspecialchars($lab['location']) . "</option>";
+                            }
+                            ?>
                         </select>
-
-                        <!-- <select class="filter-select" id="statusFilter" onchange="filterEquipmentTable()">
-                            <option value="all">All Status</option>
-                            <option value="available">Available</option>
-                            <option value="in-use">In Use</option>
-                            <option value="maintenance">Maintenance</option>
-                        </select> -->
                     </div>
 
                     <div class="table-responsive">
@@ -1503,103 +1725,62 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                                     <th>Image</th>
                                     <th>Name</th>
                                     <th>Location</th>
-                                    <th>Today Availability</th>
+                                    <th>Available</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody id="equipmentTableBody">
-                                <!-- Dynamic content will be loaded here -->
+                                <!-- Dynamic content will be loaded via AJAX -->
                             </tbody>
                         </table>
                     </div>
                 </div>
             </div>
 
-           <!-- Reservation History Section -->
-<div id="historySection" style="display: none;">
-    <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Reservation History</h3>
+            <!-- Reservation History Section (unchanged) -->
+            <div id="historySection" style="display: none;">
+                <h3 class="mb-4" style="color: white;">Reservation History</h3>
+                <div class="card p-4">
+                    <div class="filter-section">
+                        <select class="filter-select" id="timeFilter" onchange="filterReservations()">
+                            <option value="all">All Time</option>
+                            <option value="weekly">Weekly</option>
+                            <option value="monthly">Monthly</option>
+                        </select>
+                    </div>
 
-    <div class="card p-4">
-        <!-- Time Filter -->
-        <div class="filter-section" style="margin-bottom: 20px;">
-            <select class="filter-select" id="timeFilter" onchange="filterReservations()" style="min-width: 200px;">
-                <option value="all">All Time</option>
-                <option value="weekly">Weekly</option>
-                <option value="monthly">Monthly</option>
-            </select>
-        </div>
-
-        <div class="table-responsive">
-            <table class="equipment-table">
-                <thead>
-                    <tr>
-                        <th>Reservation ID</th>
-                        <th>Date & Time</th>
-                        <th>Location</th>
-                        <th>Status</th>
-                        <th>Action</th> <!-- New column for View button -->
-                    </tr>
-                </thead>
-                <tbody id="reservationHistoryBody">
-                    <!-- Dynamic content will be loaded here -->
-                </tbody>
-            </table>
+                    <div class="table-responsive">
+                        <table class="equipment-table">
+                            <thead>
+                                <tr>
+                                    <th>Reservation ID</th>
+                                    <th>Date & Time</th>
+                                    <th>Location</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reservationHistoryBody">
+                                <!-- Dynamic content will be loaded via AJAX -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
-</div>
-            <!-- Equipment Details Modal -->
-            <div class="modal fade" id="equipmentDetailsModal" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-lg modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header bg-success text-white">
-                            <h5 class="modal-title">
-                                <i class="bi bi-info-circle me-2"></i>
-                                Equipment Details
-                            </h5>
-                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body" id="equipmentDetailsContent">
-                            <!-- Content will be populated by JavaScript -->
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
-            <!-- Success/Error Modal -->
-            <div class="modal fade" id="submissionModal" tabindex="-1">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                        <div class="modal-header" id="submissionModalHeader">
-                            <h5 class="modal-title" id="submissionModalTitle">Success!</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body" id="submissionModalBody">
-                            <!-- Content will be dynamically inserted -->
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        </div>
-                    </div>
+    <!-- Modals (unchanged) -->
+    <div class="modal fade" id="equipmentDetailsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">Equipment Details</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
-            </div>
-
-            <!-- Add Event Modal (Keep if needed) -->
-            <div class="add-event-wrapper" id="addEventWrapper">
-                <div class="add-event-header">
-                    <div class="title">Equipment Request Details</div>
-                    <i class="fas fa-times close" id="closeEventBtn"></i>
-                </div>
-                <div class="add-event-body">
-                    <input type="text" placeholder="Equipment Request Title" id="eventName" maxlength="60">
-                    <textarea placeholder="Request Details" id="eventDetails" rows="3"></textarea>
-                    <input type="text" placeholder="Start Time (HH:MM)" id="eventTimeFrom" readonly>
-                    <input type="text" placeholder="End Time (HH:MM)" id="eventTimeTo" readonly>
-                </div>
-                <div class="add-event-footer">
-                    <button id="addEventSubmit">Confirm Request</button>
+                <div class="modal-body" id="equipmentDetailsContent"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
@@ -1607,1078 +1788,630 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // ============ GLOBAL VARIABLES ============
+        let selectedEquipment = [];
+        let currentEquipmentId = null;
+        let currentEquipmentName = '';
+        let currentEquipmentCode = '';
+        let currentAvailableQty = 0;
 
-   <script>
-// ============ GLOBAL VARIABLES ============
-let selectedEquipment = [];
-let currentUser = { name: "John", id: 1 };
+        // Calendar variables
+        let activeDay = new Date().getDate();
+        let month = new Date().getMonth();
+        let year = new Date().getFullYear();
 
-// Equipment data by lab (detailed version with all fields)
-const equipmentByLab = {
-    'Microbiology Lab 01': [
-        { equipment_id: 1, name: 'Microscope', equipment_code: 'MIC001', available_units: 5, total_units: 8, manufacturer: 'Olympus', model: 'CX23' },
-        { equipment_id: 4, name: 'Autoclave', equipment_code: 'AUT004', available_units: 6, total_units: 6, manufacturer: 'Hirayama', model: 'HVE-50' },
-        { equipment_id: 8, name: 'Microcentrifuge', equipment_code: 'MIC008', available_units: 4, total_units: 6, manufacturer: 'Eppendorf', model: '5424' }
-    ],
-    'Microbiology Lab 02': [
-        { equipment_id: 3, name: 'Incubator', equipment_code: 'INC003', available_units: 2, total_units: 4, manufacturer: 'Thermo Scientific', model: 'Heratherm' },
-        { equipment_id: 6, name: 'Water Bath', equipment_code: 'WAT006', available_units: 5, total_units: 7, manufacturer: 'Memmert', model: 'WNB 14' }
-    ],
-    'Research Laboratory': [
-        { equipment_id: 2, name: 'Centrifuge', equipment_code: 'CEN002', available_units: 3, total_units: 5, manufacturer: 'Eppendorf', model: '5424R' },
-        { equipment_id: 5, name: 'pH Meter', equipment_code: 'PHM005', available_units: 3, total_units: 3, manufacturer: 'Mettler Toledo', model: 'FiveEasy' },
-        { equipment_id: 7, name: 'Spectrophotometer', equipment_code: 'SPE007', available_units: 2, total_units: 3, manufacturer: 'Thermo Scientific', model: 'Genesys 150' }
-    ]
-};
+        const months = [
+            "January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"
+        ];
 
-// Equipment data for table display
-const equipmentData = [
-    { 
-        id: 1,
-        name: 'Microscope', 
-        image: 'https://cdn-icons-png.flaticon.com/512/2941/2941514.png', 
-        location: 'Microbiology Lab 01', 
-        status: 'available', 
-        lab: 'lab1',
-        labName: 'Microbiology Lab 01',
-        available: 5,
-        total: 8,
-        manufacturer: 'Olympus',
-        model: 'CX23',
-        description: 'Binocular microscope with LED illumination'
-    },
-    { 
-        id: 2,
-        name: 'Centrifuge', 
-        image: 'https://cdn-icons-png.flaticon.com/512/2941/2941543.png', 
-        location: 'Research Laboratory', 
-        status: 'in-use', 
-        lab: 'research',
-        labName: 'Research Laboratory',
-        available: 3,
-        total: 5,
-        manufacturer: 'Eppendorf',
-        model: '5424R',
-        description: 'Refrigerated microcentrifuge'
-    },
-    { 
-        id: 3,
-        name: 'Incubator', 
-        image: 'https://cdn-icons-png.flaticon.com/512/2941/2941538.png', 
-        location: 'Microbiology Lab 02', 
-        status: 'maintenance', 
-        lab: 'lab2',
-        labName: 'Microbiology Lab 02',
-        available: 2,
-        total: 4,
-        manufacturer: 'Thermo Scientific',
-        model: 'Heratherm',
-        description: 'Microbiological incubator'
-    },
-    { 
-        id: 4,
-        name: 'Autoclave', 
-        image: 'https://cdn-icons-png.flaticon.com/512/2941/2941521.png', 
-        location: 'Microbiology Lab 01', 
-        status: 'available', 
-        lab: 'lab1',
-        labName: 'Microbiology Lab 01',
-        available: 6,
-        total: 6,
-        manufacturer: 'Hirayama',
-        model: 'HVE-50',
-        description: 'Vertical sterilization autoclave'
-    },
-    { 
-        id: 5,
-        name: 'pH Meter', 
-        image: 'https://cdn-icons-png.flaticon.com/512/2941/2941556.png', 
-        location: 'Research Laboratory', 
-        status: 'available', 
-        lab: 'research',
-        labName: 'Research Laboratory',
-        available: 3,
-        total: 3,
-        manufacturer: 'Mettler Toledo',
-        model: 'FiveEasy',
-        description: 'Digital pH meter'
-    },
-    { 
-        id: 6,
-        name: 'Water Bath', 
-        image: 'https://cdn-icons-png.flaticon.com/512/2941/2941578.png', 
-        location: 'Microbiology Lab 02', 
-        status: 'in-use', 
-        lab: 'lab2',
-        labName: 'Microbiology Lab 02',
-        available: 5,
-        total: 7,
-        manufacturer: 'Memmert',
-        model: 'WNB 14',
-        description: 'Digital water bath'
-    },
-    { 
-        id: 7,
-        name: 'Spectrophotometer', 
-        image: 'https://cdn-icons-png.flaticon.com/512/2941/2941563.png', 
-        location: 'Research Laboratory', 
-        status: 'available', 
-        lab: 'research',
-        labName: 'Research Laboratory',
-        available: 2,
-        total: 3,
-        manufacturer: 'Thermo Scientific',
-        model: 'Genesys 150',
-        description: 'UV-Vis spectrophotometer'
-    },
-    { 
-        id: 8,
-        name: 'Microcentrifuge', 
-        image: 'https://cdn-icons-png.flaticon.com/512/2941/2941543.png', 
-        location: 'Microbiology Lab 01', 
-        status: 'available', 
-        lab: 'lab1',
-        labName: 'Microbiology Lab 01',
-        available: 4,
-        total: 6,
-        manufacturer: 'Eppendorf',
-        model: '5424',
-        description: 'Personal microcentrifuge'
-    }
-];
+        // Real events from database (now includes duration)
+        let eventsArr = <?php echo $calendar_events_json ?: '[]'; ?>;
 
-// Calendar variables
-let activeDay;
-let month = new Date().getMonth();
-let year = new Date().getFullYear();
+        // ============ REMOVED RETURN DATE FUNCTIONS ============
+        // The updateReturnDate function and event listeners have been removed
 
-const months = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December"
-];
+        // ============ EQUIPMENT SEARCH ============
+        function loadEquipmentByLocation() {
+            const locationId = document.getElementById('labLocation').value;
+            const searchInput = document.getElementById('equipmentSearch');
+            const bookQty = document.getElementById('bookQty');
+            const addBtn = document.getElementById('addEquipmentBtn');
+            const searchHint = document.getElementById('searchHint');
 
-let eventsArr = [
-    { day: 20, month: 2, year: 2026, events: [{ title: "Microscope Booking", time: "10:00 AM - 12:00 PM", details: "Lab 01" }] },
-    { day: 21, month: 2, year: 2026, events: [{ title: "Centrifuge Booking", time: "2:00 PM - 4:00 PM", details: "Research Lab" }] },
-    { day: 22, month: 2, year: 2026, events: [{ title: "Autoclave Booking", time: "1:00 PM - 3:00 PM", details: "Lab 01" }] }
-];
-
-// Enhanced Reservation History Data with more details
-const reservationHistoryData = [
-    { id: 'RES001', dateTime: '2026-03-01 10:30 AM', timestamp: new Date('2026-03-01T10:30:00'), location: 'Microbiology Lab 01', status: 'completed', equipment: 'Microscope (2), Centrifuge (1)', duration: '2 hours', purpose: 'Research Project' },
-    { id: 'RES002', dateTime: '2026-02-28 02:00 PM', timestamp: new Date('2026-02-28T14:00:00'), location: 'Research Laboratory', status: 'completed', equipment: 'Spectrophotometer (1)', duration: '1.5 hours', purpose: 'Sample Analysis' },
-    { id: 'RES003', dateTime: '2026-02-25 09:00 AM', timestamp: new Date('2026-02-25T09:00:00'), location: 'Microbiology Lab 02', status: 'pending', equipment: 'Incubator (1), Water Bath (1)', duration: '3 hours', purpose: 'Culture Growth' },
-    { id: 'RES004', dateTime: '2026-02-20 01:00 PM', timestamp: new Date('2026-02-20T13:00:00'), location: 'Microbiology Lab 01', status: 'completed', equipment: 'Autoclave (1)', duration: '1 hour', purpose: 'Sterilization' },
-    { id: 'RES005', dateTime: '2026-02-15 11:00 AM', timestamp: new Date('2026-02-15T11:00:00'), location: 'Research Laboratory', status: 'completed', equipment: 'pH Meter (1), Balance (1)', duration: '2 hours', purpose: 'Solution Preparation' },
-    { id: 'RES006', dateTime: '2026-02-10 03:30 PM', timestamp: new Date('2026-02-10T15:30:00'), location: 'Microbiology Lab 02', status: 'completed', equipment: 'Microscope (1)', duration: '2 hours', purpose: 'Cell Observation' },
-    { id: 'RES007', dateTime: '2026-02-05 10:00 AM', timestamp: new Date('2026-02-05T10:00:00'), location: 'Microbiology Lab 01', status: 'completed', equipment: 'Centrifuge (1)', duration: '1.5 hours', purpose: 'Sample Preparation' },
-    { id: 'RES008', dateTime: '2026-02-01 02:00 PM', timestamp: new Date('2026-02-01T14:00:00'), location: 'Research Laboratory', status: 'pending', equipment: 'Spectrophotometer (1), pH Meter (1)', duration: '3 hours', purpose: 'Experiment' }
-];
-
-// ============ INITIALIZATION ============
-document.addEventListener('DOMContentLoaded', function() {
-    // Set minimum date for request
-    const today = new Date().toISOString().split('T')[0];
-    const requestDate = document.getElementById('requestDate');
-    if (requestDate) {
-        requestDate.min = today;
-        requestDate.value = today;
-    }
-    
-    // Load initial data
-    loadLabLocations();
-    loadMyRequests();
-    showSection('dashboard');
-    
-    // Display equipment table
-    const equipmentTableBody = document.getElementById('equipmentTableBody');
-    if (equipmentTableBody) displayEquipmentTable(equipmentData);
-    
-    // Display reservation history with slight delay to ensure functions are loaded
-    setTimeout(() => {
-        const historyBody = document.getElementById('reservationHistoryBody');
-        if (historyBody) {
-            filterReservations(); // This will call the correct display function
-        }
-    }, 100);
-    
-    initCalendar();
-    loadEvents();
-});
-
-// ============ LOGOUT ============
-function logout() {
-    alert('Logged out successfully');
-}
-
-// ============ LAB LOCATIONS ============
-function loadLabLocations() {
-    const select = document.getElementById('labLocation');
-    if (!select) return;
-    
-    select.innerHTML = '<option value="" disabled selected>Select Lab</option>';
-    const labs = ['Microbiology Lab 01', 'Microbiology Lab 02', 'Research Laboratory'];
-    labs.forEach(lab => {
-        const option = document.createElement('option');
-        option.value = lab;
-        option.textContent = lab;
-        select.appendChild(option);
-    });
-}
-
-// ============ LOAD EQUIPMENT BY LAB ============
-let searchTimeout;
-function loadEquipmentByLab() {
-    const selectedLab = document.getElementById('labLocation').value;
-    const equipmentInput = document.getElementById('equipmentName');
-    const qtyInput = document.getElementById('equipmentQty');
-    const addBtn = document.getElementById('addEquipmentBtn');
-    
-    if (!equipmentInput || !qtyInput || !addBtn) return;
-    
-    if (selectedLab) {
-        equipmentInput.disabled = false;
-        equipmentInput.placeholder = `Search equipment in ${selectedLab}`;
-        qtyInput.disabled = false;
-        addBtn.disabled = false;
-        equipmentInput.value = '';
-        
-        // Add event listener for search
-        equipmentInput.removeEventListener('input', searchHandler);
-        equipmentInput.addEventListener('input', searchHandler);
-    } else {
-        equipmentInput.disabled = true;
-        equipmentInput.placeholder = 'Select lab location first';
-        qtyInput.disabled = true;
-        addBtn.disabled = true;
-    }
-}
-
-// Search handler function
-function searchHandler() {
-    const lab = document.getElementById('labLocation').value;
-    searchEquipmentByLab(lab);
-}
-
-function searchEquipmentByLab(labName) {
-    clearTimeout(searchTimeout);
-    const term = document.getElementById('equipmentName').value;
-    
-    if (term.length < 2) return; // Only search after 2 characters
-    
-    searchTimeout = setTimeout(() => {
-        const labEquipment = equipmentByLab[labName] || [];
-        const filtered = labEquipment.filter(item => 
-            item.name.toLowerCase().includes(term.toLowerCase()) ||
-            item.equipment_code.toLowerCase().includes(term.toLowerCase())
-        );
-        
-        showEquipmentDropdown(filtered);
-    }, 300);
-}
-
-// Show equipment dropdown
-function showEquipmentDropdown(equipment) {
-    let dropdown = document.getElementById('equipmentDropdown');
-    if (!dropdown) {
-        dropdown = document.createElement('div');
-        dropdown.id = 'equipmentDropdown';
-        dropdown.className = 'dropdown-menu show position-absolute w-100';
-        dropdown.style.maxHeight = '200px';
-        dropdown.style.overflowY = 'auto';
-        dropdown.style.zIndex = '1000';
-        
-        const parent = document.getElementById('equipmentName').parentNode;
-        parent.style.position = 'relative';
-        parent.appendChild(dropdown);
-    }
-    
-    dropdown.innerHTML = '';
-    
-    if (equipment.length === 0) {
-        const div = document.createElement('div');
-        div.className = 'dropdown-item text-muted';
-        div.textContent = 'No equipment found';
-        dropdown.appendChild(div);
-        return;
-    }
-    
-    equipment.forEach(item => {
-        const div = document.createElement('div');
-        div.className = 'dropdown-item';
-        div.style.cursor = 'pointer';
-        div.innerHTML = `
-            <div class="d-flex justify-content-between align-items-center">
-                <span><strong>${item.name}</strong> (${item.equipment_code})</span>
-                <span class="badge bg-success">Available: ${item.available_units || 0}/${item.total_units || 0}</span>
-            </div>
-        `;
-        div.onclick = () => selectEquipment(item);
-        dropdown.appendChild(div);
-    });
-}
-
-// Select equipment
-function selectEquipment(item) {
-    document.getElementById('equipmentName').value = item.name;
-    const qtyInput = document.getElementById('equipmentQty');
-    qtyInput.max = item.available_units || 1;
-    qtyInput.value = 1;
-    document.getElementById('equipmentDropdown')?.remove();
-}
-
-// ============ ADD EQUIPMENT ============
-function addEquipment() {
-    const name = document.getElementById('equipmentName').value;
-    const qty = parseInt(document.getElementById('equipmentQty').value);
-    const selectedLab = document.getElementById('labLocation').value;
-    
-    if (!selectedLab) {
-        showNotification('Please select a lab location first', 'warning');
-        return;
-    }
-    
-    if (!name || !qty) {
-        showNotification('Please search and select equipment', 'warning');
-        return;
-    }
-    
-    // Get equipment from the current lab's list
-    const labEquipment = equipmentByLab[selectedLab] || [];
-    const equipment = labEquipment.find(e => e.name.toLowerCase() === name.toLowerCase());
-    
-    if (equipment) {
-        // Check if quantity exceeds available units
-        const existing = selectedEquipment.find(e => e.equipment_id === equipment.equipment_id);
-        const currentQty = existing ? existing.qty : 0;
-        
-        if (currentQty + qty > equipment.available_units) {
-            showNotification(`Only ${equipment.available_units} units available`, 'warning');
-            return;
-        }
-        
-        if (existing) {
-            existing.qty += qty;
-        } else {
-            selectedEquipment.push({
-                equipment_id: equipment.equipment_id,
-                name: equipment.name,
-                qty: qty,
-                available: equipment.available_units || 0
-            });
-        }
-        
-        updateEquipmentTable();
-        document.getElementById('equipmentName').value = '';
-        document.getElementById('equipmentQty').value = 1;
-        document.getElementById('equipmentDropdown')?.remove();
-    } else {
-        showNotification('Equipment not found in this lab', 'warning');
-    }
-}
-
-// Update equipment table
-function updateEquipmentTable() {
-    const tbody = document.querySelector('#equipmentTable tbody');
-    if (!tbody) return;
-    
-    tbody.innerHTML = '';
-    
-    selectedEquipment.forEach((item, index) => {
-        const row = tbody.insertRow();
-        row.innerHTML = `
-            <td>${item.name}</td>
-            <td>${item.qty}</td>
-            <td>
-                <button class="btn btn-danger btn-sm" onclick="removeEquipment(${index})">
-                    <i class="bi bi-trash"></i>
-                </button>
-            </td>
-        `;
-    });
-}
-
-// Remove equipment
-function removeEquipment(index) {
-    selectedEquipment.splice(index, 1);
-    updateEquipmentTable();
-}
-
-// Reset form
-function resetForm() {
-    const form = document.getElementById('equipmentRequestForm');
-    if (form) form.reset();
-    
-    selectedEquipment = [];
-    updateEquipmentTable();
-    
-    const today = new Date().toISOString().split('T')[0];
-    const requestDate = document.getElementById('requestDate');
-    if (requestDate) requestDate.value = today;
-    
-    // Disable equipment search until lab is selected
-    const equipmentInput = document.getElementById('equipmentName');
-    const qtyInput = document.getElementById('equipmentQty');
-    const addBtn = document.getElementById('addEquipmentBtn');
-    
-    if (equipmentInput) {
-        equipmentInput.disabled = true;
-        equipmentInput.placeholder = 'Select lab location first';
-    }
-    if (qtyInput) qtyInput.disabled = true;
-    if (addBtn) addBtn.disabled = true;
-}
-
-// Submit request
-function submitRequest() {
-    // Validate form
-    if (selectedEquipment.length === 0) {
-        showNotification('Please add at least one equipment', 'warning');
-        return;
-    }
-    
-    const required = ['labLocation', 'requestDate', 'continueDays'];
-    for (const field of required) {
-        if (!document.getElementById(field)?.value) {
-            showNotification(`Please fill in all required fields`, 'warning');
-            return;
-        }
-    }
-    
-    // Show success modal
-    const modalTitle = document.getElementById('submissionModalTitle');
-    const modalBody = document.getElementById('submissionModalBody');
-    const modalHeader = document.getElementById('submissionModalHeader');
-    
-    if (modalTitle) modalTitle.textContent = '✅ Request Submitted!';
-    if (modalHeader) modalHeader.className = 'modal-header bg-success text-white';
-    if (modalBody) {
-        modalBody.innerHTML = `
-            <div class="text-center">
-                <i class="bi bi-check-circle-fill text-success" style="font-size: 3rem;"></i>
-                <h5 class="mt-3">Your equipment request has been submitted successfully!</h5>
-                <p class="text-muted">Request ID: #REQ${Math.floor(Math.random() * 1000)}</p>
-                <p>You will be notified once your request is processed.</p>
-            </div>
-        `;
-    }
-    
-    const modalElement = document.getElementById('submissionModal');
-    if (modalElement) {
-        const modal = new bootstrap.Modal(modalElement);
-        modal.show();
-        
-        // Auto close after 3 seconds
-        setTimeout(() => modal.hide(), 3000);
-    }
-    
-    // Add to request status (mock)
-    addToRequestStatus();
-    
-    resetForm();
-}
-
-// Add to request status (mock function)
-function addToRequestStatus() {
-    console.log('Request added to status');
-    // In a real app, this would add to database
-}
-
-// Show notification
-function showNotification(message, type) {
-    const notification = document.createElement('div');
-    notification.className = `alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show position-fixed top-0 end-0 m-3`;
-    notification.style.zIndex = '9999';
-    notification.innerHTML = `${message}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
-    document.body.appendChild(notification);
-    setTimeout(() => notification.remove(), 5000);
-}
-
-// Load my requests
-function loadMyRequests() {
-    const tbody = document.getElementById('requestStatusBody');
-    if (!tbody) return;
-    
-    tbody.innerHTML = '';
-    
-    const mockRequests = [
-        { reservation_id: 1, total_equipment: 2, request_date: '2026-02-20', lab_name: 'Lab 01', status: 'Pending', rejected_reason: null },
-        { reservation_id: 2,  total_equipment: 1, request_date: '2026-02-21', lab_name: 'Research Lab', status: 'Pending', rejected_reason: null },
-        { reservation_id: 3,  total_equipment: 1, request_date: '2026-02-19', lab_name: 'Lab 02', status: 'Rejected', rejected_reason: 'Equipment under maintenance' }
-    ];
-    
-    mockRequests.forEach(req => {
-        const row = tbody.insertRow();
-        
-        let statusBadge = '';
-        if (req.status === 'Approved') {
-            statusBadge = '<span class="badge bg-success">Approved</span>';
-        } else if (req.status === 'Pending') {
-            statusBadge = '<span class="badge bg-warning">Pending</span>';
-        } else if (req.status === 'Rejected') {
-            statusBadge = '<span class="badge bg-danger">Rejected</span>';
-        }
-        
-        row.innerHTML = `
-            <td><span class="fw-semibold">#REQ${String(req.reservation_id).padStart(3, '0')}</span></td>
-         
-            <td>${req.request_date}</td>
-            <td>${req.lab_name}</td>
-            <td>${statusBadge}</td>
-            <td class="text-danger">${req.rejected_reason || '-'}</td>
-        `;
-    });
-}
-
-// ============ SIDEBAR FUNCTIONS ============
-function toggleSidebar() {
-    document.getElementById("sidebar")?.classList.toggle("active");
-    document.getElementById("sidebarOverlay")?.classList.toggle("active");
-}
-
-function toggleNotifications() {
-    document.getElementById("notificationDropdown")?.classList.toggle("show");
-}
-
-// Close notifications when clicking outside
-document.addEventListener('click', function(event) {
-    const bell = document.querySelector('.notification-bell');
-    const dropdown = document.getElementById('notificationDropdown');
-    if (bell && dropdown && !bell.contains(event.target) && !dropdown.contains(event.target)) {
-        dropdown.classList.remove('show');
-    }
-    
-    // Close equipment dropdown when clicking outside
-    if (!event.target.closest('#equipmentName') && !event.target.closest('#equipmentDropdown')) {
-        const dropdown = document.getElementById('equipmentDropdown');
-        if (dropdown) dropdown.remove();
-    }
-});
-
-// Show different sections
-function showSection(section) {
-    const sections = ['dashboardSection', 'equipmentSection', 'historySection'];
-    sections.forEach(s => {
-        const el = document.getElementById(s);
-        if (el) el.style.display = 'none';
-    });
-
-    const sectionEl = document.getElementById(section + 'Section');
-    if (sectionEl) sectionEl.style.display = 'block';
-
-    document.querySelectorAll('.sidebar a').forEach(link => {
-        link.classList.remove('active');
-        if (link.getAttribute('onclick')?.includes(section)) {
-            link.classList.add('active');
-        }
-    });
-
-    if (section === 'history') {
-        filterReservations();
-    }
-}
-
-// ============ EQUIPMENT TABLE FUNCTIONS ============
-let filteredEquipment = [...equipmentData];
-
-function displayEquipmentTable(equipment) {
-    const tableBody = document.getElementById('equipmentTableBody');
-    if (!tableBody) return;
-    
-    tableBody.innerHTML = '';
-    
-    equipment.forEach(item => {
-        const row = document.createElement('tr');
-        
-        // All badges are green - no conditional logic needed
-        const badgeColor = '#22c55e';
-        
-        row.innerHTML = `
-            <td data-label="Image"><img src="${item.image}" class="equipment-image" alt="${item.name}" style="width: 40px; height: 40px; object-fit: contain; border-radius: 4px;"></td>
-            <td data-label="Name">${item.name}</td>
-            <td data-label="Location">${item.location}</td>
-            <td data-label="Availability">
-                <span class="availability-badge" style="background: ${badgeColor}20; color: ${badgeColor}; padding: 4px 8px; border-radius: 4px; font-weight: 500;">
-                    ${item.available}/${item.total}
-                </span>
-            </td>
-            <td data-label="Action">
-                <button class="btn-view" onclick="viewEquipmentDetails(${item.id})" title="View Details">
-                    <i class="bi bi-eye"></i> View
-                </button>
-            </td>
-        `;
-        tableBody.appendChild(row);
-    });
-}
-
-function viewEquipmentDetails(id) {
-    const equipment = equipmentData.find(item => item.id === id);
-    if (!equipment) return;
-    
-    const detailsContent = document.getElementById('equipmentDetailsContent');
-    if (!detailsContent) return;
-    
-    // Determine status badge
-    let statusBadge = '';
-    if (equipment.status === 'available') {
-        statusBadge = '<span class="badge bg-success">Available</span>';
-    } else if (equipment.status === 'in-use') {
-        statusBadge = '<span class="badge bg-warning">In Use</span>';
-    } else {
-        statusBadge = '<span class="badge bg-danger">Maintenance</span>';
-    }
-    
-    detailsContent.innerHTML = `
-        <div class="row">
-            <div class="col-md-4 text-center">
-                <img src="${equipment.image}" style="width: 150px; height: 150px; object-fit: contain;" class="mb-3">
-                <h4>${equipment.name}</h4>
-                ${statusBadge}
-            </div>
-            <div class="col-md-8">
-                <table class="table table-borderless">
-                    <tr><th style="width: 150px;">Location:</th><td>${equipment.location}</td></tr>
-                    <tr><th>Manufacturer:</th><td>${equipment.manufacturer}</td></tr>
-                    <tr><th>Model:</th><td>${equipment.model}</td></tr>
-                    <tr><th>Today Availability:</th><td><span class="availability-badge" style="background: #22c55e20; color: #22c55e; padding: 4px 8px; border-radius: 4px; font-weight: 500;">${equipment.available}/${equipment.total}</span></td></tr>
-                    <tr><th>Description:</th><td>${equipment.description}</td></tr>
-                </table>
-            </div>
-        </div>
-    `;
-    
-    const modalElement = document.getElementById('equipmentDetailsModal');
-    if (modalElement) {
-        const modal = new bootstrap.Modal(modalElement);
-        modal.show();
-    }
-}
-
-// ============ RESERVATION HISTORY FUNCTIONS ============
-function displayReservationHistory(reservations) {
-    const tableBody = document.getElementById('reservationHistoryBody');
-    if (!tableBody) return;
-    
-    // Sort by date (newest first)
-    reservations.sort((a, b) => b.timestamp - a.timestamp);
-    
-    tableBody.innerHTML = '';
-    
-    reservations.forEach(res => {
-        const row = document.createElement('tr');
-        
-        // Determine status badge
-        let statusBadge = '';
-        if (res.status === 'completed') {
-            statusBadge = '<span class="badge bg-success">Completed</span>';
-        } else {
-            statusBadge = '<span class="badge bg-warning">Pending</span>';
-        }
-        
-        row.innerHTML = `
-            <td data-label="Reservation ID">${res.id}</td>
-            <td data-label="Date & Time">${res.dateTime}</td>
-            <td data-label="Location">${res.location}</td>
-            <td data-label="Status">${statusBadge}</td>
-            <td data-label="Action">
-                <button class="btn-view" onclick="viewReservationDetails('${res.id}')" title="View Details">
-                    <i class="bi bi-eye"></i> View
-                </button>
-            </td>
-        `;
-        tableBody.appendChild(row);
-    });
-}
-
-// View reservation details function
-function viewReservationDetails(reservationId) {
-    const reservation = reservationHistoryData.find(item => item.id === reservationId);
-    if (!reservation) return;
-    
-    // Check if modal exists, if not create it
-    let modalElement = document.getElementById('reservationDetailsModal');
-    
-    if (!modalElement) {
-        // Create modal dynamically
-        modalElement = document.createElement('div');
-        modalElement.className = 'modal fade';
-        modalElement.id = 'reservationDetailsModal';
-        modalElement.setAttribute('tabindex', '-1');
-        modalElement.setAttribute('aria-hidden', 'true');
-        modalElement.innerHTML = `
-            <div class="modal-dialog modal-lg modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header bg-success text-white">
-                        <h5 class="modal-title">
-                            <i class="bi bi-calendar-check me-2"></i>
-                            Reservation Details
-                        </h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body" id="reservationDetailsContent">
-                        <!-- Content will be populated here -->
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    </div>
-                </div>
-            </div>
-        `;
-        document.body.appendChild(modalElement);
-    }
-    
-    // Determine status badge for modal
-    let statusBadge = '';
-    if (reservation.status === 'completed') {
-        statusBadge = '<span class="badge bg-success">Completed</span>';
-    } else {
-        statusBadge = '<span class="badge bg-warning">Pending</span>';
-    }
-    
-    // Populate modal content with all details
-    const detailsContent = document.getElementById('reservationDetailsContent');
-    if (detailsContent) {
-        detailsContent.innerHTML = `
-            <div class="row">
-                <div class="col-md-12">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h4>Reservation: ${reservation.id}</h4>
-                        ${statusBadge}
-                    </div>
-                    
-                    <table class="table table-borderless">
-                        <tr>
-                            <th style="width: 150px;">Date & Time:</th>
-                            <td>${reservation.dateTime}</td>
-                        </tr>
-                        <tr>
-                            <th>Location:</th>
-                            <td>${reservation.location}</td>
-                        </tr>
-                        <tr>
-                            <th>Status:</th>
-                            <td>${statusBadge}</td>
-                        </tr>
-                        <tr>
-                            <th>Equipment:</th>
-                            <td>${reservation.equipment || 'Not specified'}</td>
-                        </tr>
-                        <tr>
-                            <th>Duration:</th>
-                            <td>${reservation.duration || 'Not specified'}</td>
-                        </tr>
-                        <tr>
-                            <th>Purpose:</th>
-                            <td>${reservation.purpose || 'Not specified'}</td>
-                        </tr>
-                    </table>
-                </div>
-            </div>
-        `;
-    }
-    
-    // Show modal
-    const modal = new bootstrap.Modal(modalElement);
-    modal.show();
-}
-
-function filterReservations() {
-    const filter = document.getElementById('timeFilter')?.value || 'all';
-    const today = new Date();
-    let filtered = [];
-    
-    if (filter === 'weekly') {
-        const weekAgo = new Date();
-        weekAgo.setDate(today.getDate() - 7);
-        filtered = reservationHistoryData.filter(item => item.timestamp >= weekAgo);
-    } else if (filter === 'monthly') {
-        const monthAgo = new Date();
-        monthAgo.setDate(today.getDate() - 30);
-        filtered = reservationHistoryData.filter(item => item.timestamp >= monthAgo);
-    } else {
-        filtered = reservationHistoryData;
-    }
-    
-    displayReservationHistory(filtered);
-}
-
-// ============ CALENDAR FUNCTIONS ============
-function loadEvents() {
-    const saved = localStorage.getItem("studentCalendarEvents");
-    if (saved) {
-        eventsArr = JSON.parse(saved);
-    }
-}
-
-function saveEvents() {
-    localStorage.setItem("studentCalendarEvents", JSON.stringify(eventsArr));
-}
-
-function initCalendar() {
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
-    const prevLastDay = new Date(year, month, 0);
-    const prevDays = prevLastDay.getDate();
-    const lastDate = lastDay.getDate();
-    const day = firstDay.getDay();
-    const nextDays = 7 - lastDay.getDay() - 1;
-
-    const displayMonth = document.getElementById('displayMonth');
-    if (displayMonth) {
-        displayMonth.innerHTML = months[month] + " " + year;
-    }
-
-    let days = "";
-
-    // Previous month days
-    for (let x = day; x > 0; x--) {
-        days += `<div class="day-cell prev-date">${prevDays - x + 1}</div>`;
-    }
-
-    // Current month days
-    for (let i = 1; i <= lastDate; i++) {
-        let hasEvent = false;
-        eventsArr.forEach(event => {
-            if (event.day === i && event.month === month + 1 && event.year === year) {
-                hasEvent = true;
+            if (!locationId) {
+                searchInput.disabled = true;
+                bookQty.disabled = true;
+                addBtn.disabled = true;
+                searchHint.innerText = 'Select a lab location first';
+                document.getElementById('equipmentDropdown').style.display = 'none';
+                return;
             }
+
+            searchInput.disabled = false;
+            searchInput.value = '';
+            searchInput.placeholder = 'Type to search equipment...';
+            searchHint.innerText = 'Start typing to search equipment in this lab';
+        }
+
+        document.getElementById('equipmentSearch')?.addEventListener('input', function() {
+            const searchTerm = this.value.trim();
+            const locationId = document.getElementById('labLocation').value;
+            const dropdown = document.getElementById('equipmentDropdown');
+
+            if (!locationId) {
+                alert('Please select a lab location first');
+                this.value = '';
+                return;
+            }
+
+            if (searchTerm.length < 2) {
+                dropdown.style.display = 'none';
+                return;
+            }
+
+            // AJAX call to search equipment
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', `search_equipment.php?location_id=${locationId}&term=${encodeURIComponent(searchTerm)}`, true);
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    try {
+                        const equipment = JSON.parse(xhr.responseText);
+                        displayEquipmentDropdown(equipment);
+                    } catch (e) {
+                        console.error('Parse error:', e);
+                    }
+                }
+            };
+            xhr.send();
         });
 
-        let classes = "day-cell";
-        if (i === new Date().getDate() && year === new Date().getFullYear() && month === new Date().getMonth()) {
-            classes += " today";
-        }
-        if (hasEvent) {
-            classes += " event";
-        }
+        function displayEquipmentDropdown(equipment) {
+            const dropdown = document.getElementById('equipmentDropdown');
+            dropdown.innerHTML = '';
 
-        days += `<div class="${classes}" data-day="${i}">${i}</div>`;
-    }
-
-    // Next month days
-    for (let j = 1; j <= nextDays; j++) {
-        days += `<div class="day-cell next-date">${j}</div>`;
-    }
-
-    const daysGrid = document.getElementById('daysGrid');
-    if (daysGrid) {
-        daysGrid.innerHTML = days;
-    }
-    updateActiveDay();
-
-    if (activeDay) {
-        updateEventDisplay(activeDay);
-    } else {
-        updateEventDisplay(new Date().getDate());
-    }
-}
-
-function updateActiveDay() {
-    const dayCells = document.querySelectorAll('.day-cell');
-    dayCells.forEach(cell => {
-        cell.addEventListener('click', function(e) {
-            if (!this.classList.contains('prev-date') && !this.classList.contains('next-date')) {
-                dayCells.forEach(c => c.classList.remove('active'));
-                this.classList.add('active');
-
-                const day = parseInt(this.textContent);
-                activeDay = day;
-                updateEventDisplay(day);
+            if (equipment.length === 0) {
+                dropdown.innerHTML = '<div class="text-muted p-2">No equipment found</div>';
+                dropdown.style.display = 'block';
+                return;
             }
-        });
-    });
-}
 
-function updateEventDisplay(day) {
-    const date = new Date(year, month, day);
-    const dayName = date.toString().split(' ')[0];
-
-    const eventDayEl = document.getElementById('eventDay');
-    const eventDateEl = document.getElementById('eventDate');
-
-    if (eventDayEl) eventDayEl.innerHTML = dayName;
-    if (eventDateEl) eventDateEl.innerHTML = `${day} ${months[month]} ${year}`;
-
-    let eventsHtml = "";
-    eventsArr.forEach(event => {
-        if (event.day === day && event.month === month + 1 && event.year === year) {
-            event.events.forEach(ev => {
-                eventsHtml += `
-                    <div class="event-item">
-                        <div class="title">
-                            <i class="fas fa-circle"></i>
-                            <span class="event-title">${ev.title}</span>
+            equipment.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'dropdown-item p-2 border-bottom';
+                div.style.cursor = 'pointer';
+                div.onclick = () => selectEquipment(item);
+                div.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>${item.name}</strong><br>
+                            <small class="text-muted">Code: ${item.code}</small>
                         </div>
-                        <div class="event-time">${ev.time}</div>
-                        <div class="event-time" style="margin-left: 28px; font-size: 0.8rem;">${ev.details || ''}</div>
+                        <div class="text-end">
+                            <span class="badge bg-success">Available: ${item.available_qty}</span>
+                        </div>
                     </div>
                 `;
+                dropdown.appendChild(div);
+            });
+
+            dropdown.style.display = 'block';
+        }
+
+        function selectEquipment(item) {
+            currentEquipmentId = item.id;
+            currentEquipmentName = item.name;
+            currentEquipmentCode = item.code;
+            currentAvailableQty = item.available_qty;
+
+            document.getElementById('equipmentSearch').value = item.name + ' (' + item.code + ')';
+            document.getElementById('availableQty').value = item.available_qty;
+            document.getElementById('bookQty').disabled = false;
+            document.getElementById('bookQty').max = item.available_qty;
+            document.getElementById('bookQty').value = 1;
+            document.getElementById('addEquipmentBtn').disabled = false;
+            document.getElementById('equipmentDropdown').style.display = 'none';
+        }
+
+        // ============ ADD/REMOVE EQUIPMENT ============
+        function addEquipment() {
+            const qty = parseInt(document.getElementById('bookQty').value);
+
+            if (!currentEquipmentId) {
+                alert('Please select equipment first');
+                return;
+            }
+
+            if (qty < 1 || qty > currentAvailableQty) {
+                alert(`Quantity must be between 1 and ${currentAvailableQty}`);
+                return;
+            }
+
+            const existing = selectedEquipment.find(e => e.id === currentEquipmentId);
+            if (existing) {
+                if (existing.qty + qty > currentAvailableQty) {
+                    alert(`Total quantity would exceed available (${currentAvailableQty})`);
+                    return;
+                }
+                existing.qty += qty;
+            } else {
+                selectedEquipment.push({
+                    id: currentEquipmentId,
+                    name: currentEquipmentName,
+                    code: currentEquipmentCode,
+                    qty: qty
+                });
+            }
+
+            updateEquipmentTable();
+            resetSelection();
+        }
+
+        function updateEquipmentTable() {
+            const tbody = document.getElementById('selectedEquipmentBody');
+
+            if (selectedEquipment.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted py-3"><i class="bi bi-inbox me-2"></i>No equipment added yet</td></tr>';
+                return;
+            }
+
+            let html = '';
+            selectedEquipment.forEach((item, index) => {
+                html += `
+                    <tr>
+                        <td>${item.name}</td>
+                        <td>${item.code || '-'}</td>
+                        <td>
+                            <input type="number" class="form-control form-control-sm" 
+                                   value="${item.qty}" min="1" 
+                                   onchange="updateQuantity(${index}, this.value)"
+                                   style="width: 80px;">
+                        </td>
+                        <td>
+                            <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeEquipment(${index})">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tbody.innerHTML = html;
+        }
+
+        function updateQuantity(index, newQty) {
+            if (newQty < 1) {
+                alert('Quantity must be at least 1');
+                updateEquipmentTable();
+                return;
+            }
+            selectedEquipment[index].qty = parseInt(newQty);
+        }
+
+        function removeEquipment(index) {
+            selectedEquipment.splice(index, 1);
+            updateEquipmentTable();
+        }
+
+        function resetSelection() {
+            currentEquipmentId = null;
+            currentEquipmentName = '';
+            currentEquipmentCode = '';
+            currentAvailableQty = 0;
+            document.getElementById('equipmentSearch').value = '';
+            document.getElementById('availableQty').value = '';
+            document.getElementById('bookQty').disabled = true;
+            document.getElementById('bookQty').value = 1;
+            document.getElementById('addEquipmentBtn').disabled = true;
+        }
+
+        function resetForm() {
+            if (selectedEquipment.length > 0 && !confirm('Are you sure you want to reset? All selected equipment will be cleared.')) {
+                return;
+            }
+
+            document.getElementById('labLocation').value = '';
+            document.getElementById('requestDate').value = '<?php echo date('Y-m-d'); ?>';
+            document.getElementById('continueDays').value = '1';
+            document.getElementById('requestComment').value = '';
+
+            selectedEquipment = [];
+            updateEquipmentTable();
+            resetSelection();
+            document.getElementById('equipmentSearch').disabled = true;
+            document.getElementById('formWarning').style.display = 'none';
+        }
+
+        function submitReservation() {
+            const locationId = document.getElementById('labLocation').value;
+            const requestDate = document.getElementById('requestDate').value;
+
+            if (!locationId) {
+                showWarning('Please select a lab location');
+                return;
+            }
+
+            if (!requestDate) {
+                showWarning('Please select a request date');
+                return;
+            }
+
+            if (selectedEquipment.length === 0) {
+                showWarning('Please add at least one equipment item');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('location_id', locationId);
+            formData.append('request_date', requestDate);
+            formData.append('continue_days', document.getElementById('continueDays').value);
+            formData.append('comment', document.getElementById('requestComment').value);
+            formData.append('equipment', JSON.stringify(selectedEquipment));
+
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Submitting...';
+
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', 'submit_reservation.php', true);
+            xhr.onload = function() {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="bi bi-send me-1"></i>Submit Reservation';
+
+                if (xhr.status === 200) {
+                    try {
+                        const response = JSON.parse(xhr.responseText);
+                        if (response.success) {
+                            alert('Reservation submitted successfully!');
+                            resetForm();
+                            location.reload();
+                        } else {
+                            alert('Error: ' + response.message);
+                        }
+                    } catch (e) {
+                        alert('Server error occurred');
+                    }
+                }
+            };
+            xhr.send(formData);
+        }
+
+        function showWarning(message) {
+            document.getElementById('warningMessage').innerText = message;
+            document.getElementById('formWarning').style.display = 'block';
+            setTimeout(() => {
+                document.getElementById('formWarning').style.display = 'none';
+            }, 5000);
+        }
+
+        // ============ NOTIFICATION FUNCTIONS ============
+        function toggleNotifications() {
+            document.getElementById("notificationDropdown")?.classList.toggle("show");
+            if (document.getElementById("notificationDropdown").classList.contains("show")) {
+                markNotificationsAsRead();
+            }
+        }
+
+        function markNotificationsAsRead() {
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', 'mark_notifications_read.php', true);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    document.getElementById('notificationBadge').textContent = '0';
+                    document.querySelectorAll('.notification-item').forEach(item => {
+                        item.classList.remove('unread');
+                    });
+                }
+            };
+            xhr.send('student_id=<?php echo $student_id; ?>');
+        }
+
+        // ============ CALENDAR FUNCTIONS ============
+        function initCalendar() {
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const prevLastDay = new Date(year, month, 0);
+            const prevDays = prevLastDay.getDate();
+            const lastDate = lastDay.getDate();
+            const day = firstDay.getDay();
+            const nextDays = 7 - lastDay.getDay() - 1;
+
+            document.getElementById('displayMonth').innerHTML = months[month] + " " + year;
+
+            let days = "";
+
+            for (let x = day; x > 0; x--) {
+                days += `<div class="day-cell prev-date">${prevDays - x + 1}</div>`;
+            }
+
+            for (let i = 1; i <= lastDate; i++) {
+                let hasEvent = false;
+                eventsArr.forEach(event => {
+                    if (event.day === i && event.month === month + 1 && event.year === year) {
+                        hasEvent = true;
+                    }
+                    if (event.year === year && event.month === month + 1) {
+                        if (i >= event.day && i <= event.end_day) {
+                            hasEvent = true;
+                        }
+                    }
+                });
+
+                let classes = "day-cell";
+                if (i === new Date().getDate() && year === new Date().getFullYear() && month === new Date().getMonth()) {
+                    classes += " today";
+                }
+                if (hasEvent) {
+                    classes += " event";
+                }
+                if (i === activeDay) {
+                    classes += " active";
+                }
+
+                days += `<div class="${classes}" data-day="${i}">${i}</div>`;
+            }
+
+            for (let j = 1; j <= nextDays; j++) {
+                days += `<div class="day-cell next-date">${j}</div>`;
+            }
+
+            document.getElementById('daysGrid').innerHTML = days;
+            attachDayClickHandlers();
+            updateEventDisplay(activeDay);
+        }
+
+        function attachDayClickHandlers() {
+            document.querySelectorAll('.day-cell').forEach(cell => {
+                cell.addEventListener('click', function() {
+                    if (!this.classList.contains('prev-date') && !this.classList.contains('next-date')) {
+                        document.querySelectorAll('.day-cell').forEach(c => c.classList.remove('active'));
+                        this.classList.add('active');
+                        activeDay = parseInt(this.textContent);
+                        updateEventDisplay(activeDay);
+                    }
+                });
             });
         }
+
+      function updateEventDisplay(day) {
+    const date = new Date(year, month, day);
+    document.getElementById('eventDay').innerHTML = date.toString().split(' ')[0];
+    document.getElementById('eventDate').innerHTML = `${day} ${months[month]} ${year}`;
+
+    let dayEvents = [];
+    eventsArr.forEach(event => {
+        if (event.day === day && event.month === month + 1 && event.year === year) {
+            dayEvents.push(event);
+        }
+        if (event.year === year && event.month === month + 1) {
+            if (day >= event.day && day <= event.end_day && !dayEvents.includes(event)) {
+                dayEvents.push(event);
+            }
+        }
     });
 
-    if (eventsHtml === "") {
-        eventsHtml = '<div class="no-event">No bookings scheduled</div>';
+    let eventsHtml = "";
+    if (dayEvents.length > 0) {
+        dayEvents.forEach(event => {
+            let dateRange = '';
+            if (event.day !== event.end_day || event.month !== event.end_month) {
+                dateRange = `<div class="event-date-range" style="font-size:0.8rem; color: #ffd700;">
+                    ${event.day} ${months[event.month-1]} - ${event.end_day} ${months[event.end_month-1]} ${event.end_year}
+                </div>`;
+            }
+            
+            eventsHtml += `
+                <div class="event-item" onclick="viewBookingDetails('${event.title}')">
+                    <div class="title">
+                        <i class="fas fa-circle"></i>
+                        <span class="event-title">${event.title}</span>
+                    </div>
+                    ${dateRange}
+                    <div class="event-time">${event.time} (${event.duration})</div>
+                    <div class="event-details">
+                        <i class="bi bi-pin-map-fill" style="color: #ffd700;"></i> ${event.location}<br>
+                        <i class="bi bi-tools" style="color: #ffd700;"></i> ${event.equipment}
+                    </div>
+                </div>
+            `;
+        });
+    } else {
+        eventsHtml = '<div class="no-event">No bookings scheduled for this day</div>';
     }
 
-    const eventsList = document.getElementById('eventsList');
-    if (eventsList) {
-        eventsList.innerHTML = eventsHtml;
-    }
+    document.getElementById('eventsList').innerHTML = eventsHtml;
 }
 
-// Calendar Navigation
-const prevBtn = document.querySelector('.prev');
-const nextBtn = document.querySelector('.next');
-
-if (prevBtn) {
-    prevBtn.addEventListener('click', () => {
-        month--;
-        if (month < 0) {
-            month = 11;
-            year--;
+        function viewBookingDetails(reservationId) {
+            alert('Viewing details for: ' + reservationId);
         }
-        initCalendar();
-    });
-}
 
-if (nextBtn) {
-    nextBtn.addEventListener('click', () => {
-        month++;
-        if (month > 11) {
-            month = 0;
-            year++;
-        }
-        initCalendar();
-    });
-}
+        // ============ CALENDAR NAVIGATION ============
+        document.querySelector('.prev')?.addEventListener('click', () => {
+            month--;
+            if (month < 0) {
+                month = 11;
+                year--;
+            }
+            initCalendar();
+        });
 
-const todayBtn = document.getElementById('todayBtn');
-if (todayBtn) {
-    todayBtn.addEventListener('click', () => {
-        const today = new Date();
-        month = today.getMonth();
-        year = today.getFullYear();
-        initCalendar();
-        updateEventDisplay(today.getDate());
-    });
-}
+        document.querySelector('.next')?.addEventListener('click', () => {
+            month++;
+            if (month > 11) {
+                month = 0;
+                year++;
+            }
+            initCalendar();
+        });
 
-const gotoBtn = document.getElementById('gotoBtn');
-if (gotoBtn) {
-    gotoBtn.addEventListener('click', () => {
-        const input = document.getElementById('gotoInput').value;
-        const parts = input.split('/');
-        if (parts.length === 2) {
-            const m = parseInt(parts[0]) - 1;
-            const y = parseInt(parts[1]);
-            if (m >= 0 && m < 12 && y > 0) {
-                month = m;
-                year = y;
-                initCalendar();
+        document.getElementById('todayBtn')?.addEventListener('click', () => {
+            const today = new Date();
+            month = today.getMonth();
+            year = today.getFullYear();
+            activeDay = today.getDate();
+            initCalendar();
+        });
+
+        document.getElementById('gotoBtn')?.addEventListener('click', () => {
+            const input = document.getElementById('gotoInput').value;
+            const parts = input.split('/');
+            if (parts.length === 2) {
+                const m = parseInt(parts[0]) - 1;
+                const y = parseInt(parts[1]);
+                if (m >= 0 && m < 12 && y >= 2000 && y <= 2100) {
+                    month = m;
+                    year = y;
+                    initCalendar();
+                } else {
+                    alert('Invalid date format. Use MM/YYYY');
+                }
             } else {
                 alert('Invalid date format. Use MM/YYYY');
             }
+        });
+
+        // ============ SIDEBAR FUNCTIONS ============
+        function toggleSidebar() {
+            document.getElementById("sidebar")?.classList.toggle("active");
+            document.getElementById("sidebarOverlay")?.classList.toggle("active");
+        }
+
+        function showSection(section) {
+            document.getElementById('dashboardSection').style.display = 'none';
+            document.getElementById('equipmentSection').style.display = 'none';
+            document.getElementById('historySection').style.display = 'none';
+            document.getElementById(section + 'Section').style.display = 'block';
+
+            document.querySelectorAll('.sidebar a').forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('onclick')?.includes(section)) {
+                    link.classList.add('active');
+                }
+            });
+
+            if (section === 'history') {
+                loadReservationHistory();
+            } else if (section === 'equipment') {
+                loadEquipmentList();
+            }
+        }
+
+        function loadEquipmentList() {
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', 'get_equipment_list.php', true);
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    document.getElementById('equipmentTableBody').innerHTML = xhr.responseText;
+                }
+            };
+            xhr.send();
+        }
+
+        function loadReservationHistory() {
+            const filter = document.getElementById('timeFilter').value;
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', 'get_reservation_history.php?filter=' + filter, true);
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    document.getElementById('reservationHistoryBody').innerHTML = xhr.responseText;
+                }
+            };
+            xhr.send();
+        }
+
+        function filterReservations() {
+            loadReservationHistory();
+        }
+
+        function filterEquipmentTable() {
+            const labId = document.getElementById('labFilter').value;
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', 'get_equipment_list.php?lab_id=' + labId, true);
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    document.getElementById('equipmentTableBody').innerHTML = xhr.responseText;
+                }
+            };
+            xhr.send();
+        }
+
+      function searchEquipmentTable() {
+    const searchTerm = document.getElementById('equipmentSearch').value;
+    const labId = document.getElementById('labFilter').value;
+    
+    // Add loading indicator
+    document.getElementById('equipmentTableBody').innerHTML = '<tr><td colspan="5" class="text-center py-4"><div class="spinner-border text-success"></div></td></tr>';
+    
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', 'search_equipment_table.php?term=' + encodeURIComponent(searchTerm) + '&lab_id=' + labId, true);
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            document.getElementById('equipmentTableBody').innerHTML = xhr.responseText;
         } else {
-            alert('Invalid date format. Use MM/YYYY');
+            document.getElementById('equipmentTableBody').innerHTML = '<tr><td colspan="5" class="text-center text-danger">Error loading equipment</td></tr>';
         }
-    });
+    };
+    xhr.onerror = function() {
+        document.getElementById('equipmentTableBody').innerHTML = '<tr><td colspan="5" class="text-center text-danger">Network error</td></tr>';
+    };
+    xhr.send();
 }
 
-// ============ ADD EVENT MODAL ============
-const closeEventBtn = document.getElementById('closeEventBtn');
-if (closeEventBtn) {
-    closeEventBtn.addEventListener('click', () => {
-        document.getElementById('addEventWrapper')?.classList.remove('active');
-    });
+function filterEquipmentTable() {
+    const labId = document.getElementById('labFilter').value;
+    
+    // Clear search input when filtering
+    document.getElementById('equipmentSearch').value = '';
+    
+    // Add loading indicator
+    document.getElementById('equipmentTableBody').innerHTML = '<tr><td colspan="5" class="text-center py-4"><div class="spinner-border text-success"></div></td></tr>';
+    
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', 'get_equipment_list.php?lab_id=' + labId, true);
+    xhr.onload = function() {
+        if (xhr.status === 200) {
+            document.getElementById('equipmentTableBody').innerHTML = xhr.responseText;
+        } else {
+            document.getElementById('equipmentTableBody').innerHTML = '<tr><td colspan="5" class="text-center text-danger">Error loading equipment</td></tr>';
+        }
+    };
+    xhr.send();
 }
 
-window.addEventListener('click', (e) => {
-    if (e.target === document.getElementById('addEventWrapper')) {
-        document.getElementById('addEventWrapper')?.classList.remove('active');
-    }
-});
-
-const addEventSubmit = document.getElementById('addEventSubmit');
-if (addEventSubmit) {
-    addEventSubmit.addEventListener('click', () => {
-        const title = document.getElementById('eventName')?.value.trim();
-        const details = document.getElementById('eventDetails')?.value.trim();
-        const from = document.getElementById('eventTimeFrom')?.value;
-        const to = document.getElementById('eventTimeTo')?.value;
-
-        if (!title || !from || !to) {
-            alert('Please fill all fields');
-            return;
+        function viewEquipmentDetails(id) {
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', 'get_equipment_details.php?id=' + id, true);
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    document.getElementById('equipmentDetailsContent').innerHTML = xhr.responseText;
+                    new bootstrap.Modal(document.getElementById('equipmentDetailsModal')).show();
+                }
+            };
+            xhr.send();
         }
 
-        const requestDate = new Date(year, month, activeDay || new Date().getDate());
-        const eventDay = requestDate.getDate();
-        const eventMonth = requestDate.getMonth() + 1;
-        const eventYear = requestDate.getFullYear();
+        // Close notifications when clicking outside
+        document.addEventListener('click', function(event) {
+            const bell = document.querySelector('.notification-bell');
+            const dropdown = document.getElementById('notificationDropdown');
+            if (bell && dropdown && !bell.contains(event.target) && !dropdown.contains(event.target)) {
+                dropdown.classList.remove('show');
+            }
 
-        const newEvent = {
-            title: title,
-            time: `${from} - ${to}`,
-            details: details
-        };
-
-        let added = false;
-        eventsArr.forEach(event => {
-            if (event.day === eventDay && event.month === eventMonth && event.year === eventYear) {
-                event.events.push(newEvent);
-                added = true;
+            if (!event.target.closest('#equipmentSearch') && !event.target.closest('#equipmentDropdown')) {
+                document.getElementById('equipmentDropdown').style.display = 'none';
             }
         });
 
-        if (!added) {
-            eventsArr.push({
-                day: eventDay,
-                month: eventMonth,
-                year: eventYear,
-                events: [newEvent]
-            });
-        }
-
-        saveEvents();
-        initCalendar();
-
-        // Add notification
-        addNotification('New equipment request submitted', 'info');
-
-        document.getElementById('addEventWrapper')?.classList.remove('active');
-        alert('Equipment request submitted successfully!');
-    });
-}
-
-// Add notification function
-function addNotification(message, type) {
-    const badge = document.getElementById('notificationBadge');
-    if (badge) {
-        const currentCount = parseInt(badge.textContent);
-        badge.textContent = currentCount + 1;
-    }
-
-    const list = document.getElementById('notificationList');
-    if (list) {
-        const newNotif = document.createElement('div');
-        newNotif.className = 'notification-item unread';
-        newNotif.innerHTML = `
-            <div><i class="bi bi-${type === 'success' ? 'check-circle-fill' : 'info-circle-fill'} me-2"></i> ${message}</div>
-            <div class="time">Just now</div>
-        `;
-        list.insertBefore(newNotif, list.firstChild);
-    }
-}
-</script>
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            initCalendar();
+            showSection('dashboard');
+        });
+    </script>
 </body>
 </html>
-
-<?php
-} else {
-    // If not HOD, redirect to login
-    header("Location: ../index.php");
-    exit();
-}
-?>

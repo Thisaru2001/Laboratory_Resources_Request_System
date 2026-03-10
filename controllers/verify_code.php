@@ -3,51 +3,58 @@ session_start();
 require_once "../config/database.php";
 
 header('Content-Type: application/json');
+header('X-Content-Type-Options: nosniff');
+header('X-Frame-Options: DENY');
+header('X-XSS-Protection: 1; mode=block');
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     echo json_encode(['success' => false, 'message' => 'Invalid request method']);
     exit;
 }
 
-$code = trim($_POST['code'] ?? '');
 $university_id = strtoupper(trim($_POST['university_id'] ?? ''));
+$code = trim($_POST['code'] ?? '');
 
-if (empty($code) || empty($university_id)) {
-    echo json_encode(['success' => false, 'message' => 'Code and University ID are required']);
+if (empty($university_id) || empty($code)) {
+    echo json_encode(['success' => false, 'message' => 'University ID and verification code are required']);
     exit;
 }
 
-// Check session
-if (!isset($_SESSION['reset_code']) || !isset($_SESSION['reset_university_id']) || !isset($_SESSION['reset_time'])) {
-    echo json_encode(['success' => false, 'message' => 'No verification session found. Please request again.']);
+// Verify session
+if (!isset($_SESSION['reset_university_id']) || $_SESSION['reset_university_id'] !== $university_id) {
+    echo json_encode(['success' => false, 'message' => 'Invalid session. Please request a new code.']);
     exit;
 }
 
-// Verify university ID matches
-if ($_SESSION['reset_university_id'] !== $university_id) {
-    echo json_encode(['success' => false, 'message' => 'University ID mismatch']);
+// Check if code is expired (15 minutes)
+if (time() - $_SESSION['reset_time'] > 900) {
+    echo json_encode(['success' => false, 'message' => 'Verification code has expired. Please request a new one.']);
     exit;
 }
 
-// Check if code expired (10 minutes)
-if (time() - $_SESSION['reset_time'] > 600) {
-    // Clear expired session
-    unset($_SESSION['reset_code']);
-    unset($_SESSION['reset_university_id']);
-    unset($_SESSION['reset_email']);
-    unset($_SESSION['reset_time']);
-    
-    echo json_encode(['success' => false, 'message' => 'Verification code expired. Please request again.']);
+// Get user and verify code from database
+$result = Database::search(
+    "SELECT verification_code FROM lab_user WHERE university_id = ?",
+    "s",
+    [$university_id]
+);
+
+if ($result->num_rows === 0) {
+    echo json_encode(['success' => false, 'message' => 'User not found']);
     exit;
 }
 
-// Verify code
-if ($_SESSION['reset_code'] !== $code) {
+$user = $result->fetch_assoc();
+
+// Verify the code
+if ($user['verification_code'] !== $code) {
     echo json_encode(['success' => false, 'message' => 'Invalid verification code']);
     exit;
 }
 
-// Code verified successfully
+// Code is valid - store verification status in session
+$_SESSION['reset_verified'] = true;
+
 echo json_encode([
     'success' => true,
     'message' => 'Code verified successfully'
