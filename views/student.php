@@ -1342,10 +1342,28 @@ $calendar_events_json = json_encode($calendar_events);
                 </h5>
             </div>
             <div class="d-flex align-items-center gap-3">
+
+
+
+
                 <!-- Notification Bell -->
                 <div class="notification-bell" onclick="toggleNotifications()">
                     <i class="bi bi-bell"></i>
-                    <span class="notification-badge" id="notificationBadge"><?php echo $notif_count; ?></span>
+                    <span class="notification-badge" id="notificationBadge">
+                        <?php
+                        // Get current student ID from session
+                        $current_student_id = $_SESSION['student_id'] ?? 0;
+
+                        // Count unread notifications
+                        $unread_query = "SELECT COUNT(*) as unread_count 
+                         FROM notification 
+                         WHERE owner_of_notification = ? AND status = 'unread'";
+                        $unread_result = Database::search($unread_query, "i", [$current_student_id]);
+                        $unread_data = $unread_result->fetch_assoc();
+                        $notif_count = $unread_data['unread_count'] ?? 0;
+                        echo $notif_count;
+                        ?>
+                    </span>
                 </div>
 
                 <!-- Notification Dropdown -->
@@ -1356,10 +1374,19 @@ $calendar_events_json = json_encode($calendar_events);
                     </div>
                     <div class="notification-list" id="notificationList">
                         <?php
+                        // Get notifications for specific student
+                        $notif_query = "SELECT id, description, created_datetime, status 
+                        FROM notification 
+                        WHERE owner_of_notification = ? 
+                        ORDER BY created_datetime DESC 
+                        LIMIT 20";
+
+                        $notif_list_result = Database::search($notif_query, "i", [$current_student_id]);
+
                         if ($notif_list_result && $notif_list_result->num_rows > 0) {
                             while ($notif = $notif_list_result->fetch_assoc()) {
                                 $time_ago = '';
-                                $notif_time = strtotime($notif['created_datetime']); // FIXED: use created_datetime
+                                $notif_time = strtotime($notif['created_datetime']);
                                 $time_diff = time() - $notif_time;
 
                                 if ($time_diff < 60) {
@@ -1375,53 +1402,60 @@ $calendar_events_json = json_encode($calendar_events);
                                     $time_ago = $days . ' day' . ($days > 1 ? 's' : '') . ' ago';
                                 }
 
-                                echo '<div class="notification-item unread">';
+                                // Add unread class only if status is unread
+                                $unread_class = ($notif['status'] == 'unread') ? 'unread' : '';
+
+                                echo '<div class="notification-item ' . $unread_class . '" data-notification-id="' . htmlspecialchars($notif['id']) . '">';
                                 echo '<div><i class="bi bi-info-circle-fill text-success me-2"></i> ' . htmlspecialchars($notif['description']) . '</div>';
                                 echo '<div class="time">' . $time_ago . '</div>';
                                 echo '</div>';
                             }
                         } else {
-                            echo '<div class="text-center text-muted p-3">No new notifications</div>';
+                            echo '<div class="text-center text-muted p-3">No notifications</div>';
                         }
                         ?>
                     </div>
                 </div>
+
+
 
                 <span class="fw-semibold d-none d-sm-block" style="color: #166534;" id="userNameDisplay">
                     <?php echo htmlspecialchars($full_name); ?>
                 </span>
 
                 <div class="dropdown">
-    <?php
-    $profile_image = $user_data['img_path'] ?? '';
-    
-    if (!empty($profile_image)) {
-        // Clean the path
-        $clean_path = str_replace('\\', '/', $profile_image);
-        $clean_path = ltrim($clean_path, '/');
-        
-        // Full system path with LRRS
-        $full_path = $_SERVER['DOCUMENT_ROOT'] . '/LRRS/' . $clean_path;
-        $full_path = str_replace('/', DIRECTORY_SEPARATOR, $full_path);
-        
-        if (file_exists($full_path)) {
-            // Web path needs LRRS prefix
-            $profile_image = '/LRRS/' . $clean_path;
-        } else {
-            $profile_image = 'https://ui-avatars.com/api/?name=' . urlencode($full_name) . '&background=22c55e&color=fff&size=100';
-        }
-    } else {
-        $profile_image = 'https://ui-avatars.com/api/?name=' . urlencode($full_name) . '&background=22c55e&color=fff&size=100';
-    }
-    ?>
-    <img src="<?php echo $profile_image; ?>" class="profile-img dropdown-toggle" data-bs-toggle="dropdown">
-    <ul class="dropdown-menu dropdown-menu-end" style="border-radius: 16px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
-        <li><a class="dropdown-item" href="profile.php"><i class="bi bi-person me-2"></i>Profile</a></li>
-        <li><a class="dropdown-item" href="settings.php"><i class="bi bi-gear me-2"></i>Settings</a></li>
-        <li><hr class="dropdown-divider"></li>
-        <li><a class="dropdown-item text-danger" href="../logout.php"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
-    </ul>
-</div>
+                    <?php
+                    $profile_image = $user_data['img_path'] ?? '';
+
+                    if (!empty($profile_image)) {
+                        // Clean the path
+                        $clean_path = str_replace('\\', '/', $profile_image);
+                        $clean_path = ltrim($clean_path, '/');
+
+                        // Full system path with LRRS
+                        $full_path = $_SERVER['DOCUMENT_ROOT'] . '/LRRS/' . $clean_path;
+                        $full_path = str_replace('/', DIRECTORY_SEPARATOR, $full_path);
+
+                        if (file_exists($full_path)) {
+                            // Web path needs LRRS prefix
+                            $profile_image = '/LRRS/' . $clean_path;
+                        } else {
+                            $profile_image = 'https://ui-avatars.com/api/?name=' . urlencode($full_name) . '&background=22c55e&color=fff&size=100';
+                        }
+                    } else {
+                        $profile_image = 'https://ui-avatars.com/api/?name=' . urlencode($full_name) . '&background=22c55e&color=fff&size=100';
+                    }
+                    ?>
+                    <img src="<?php echo $profile_image; ?>" class="profile-img dropdown-toggle" data-bs-toggle="dropdown">
+                    <ul class="dropdown-menu dropdown-menu-end" style="border-radius: 16px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+                        <li><a class="dropdown-item" href="profile.php"><i class="bi bi-person me-2"></i>Profile</a></li>
+                        <li><a class="dropdown-item" href="settings.php"><i class="bi bi-gear me-2"></i>Settings</a></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li><a class="dropdown-item text-danger" href="../logout.php"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                    </ul>
+                </div>
             </div>
         </div>
 
@@ -2223,6 +2257,7 @@ $calendar_events_json = json_encode($calendar_events);
 
         // ============ NOTIFICATION FUNCTIONS ============
         function toggleNotifications() {
+           
             document.getElementById("notificationDropdown")?.classList.toggle("show");
             if (document.getElementById("notificationDropdown").classList.contains("show")) {
                 markNotificationsAsRead();
@@ -2231,18 +2266,79 @@ $calendar_events_json = json_encode($calendar_events);
 
         function markNotificationsAsRead() {
             const xhr = new XMLHttpRequest();
-            xhr.open('POST', 'mark_notifications_read.php', true);
+          //  alert("ok");
+            xhr.open('POST', '../controllers/mark_notifications_read.php', true);
             xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
             xhr.onload = function() {
                 if (xhr.status === 200) {
-                    document.getElementById('notificationBadge').textContent = '0';
-                    document.querySelectorAll('.notification-item').forEach(item => {
-                        item.classList.remove('unread');
-                    });
+                    try {
+                        const response = JSON.parse(xhr.responseText);
+                        if (response.success) {
+                            // Update badge to 0
+                            document.getElementById('notificationBadge').textContent = '0';
+
+                            // Remove unread class from all notification items
+                            document.querySelectorAll('.notification-item').forEach(item => {
+                                item.classList.remove('unread');
+                            });
+
+                            // Update the header "new" count
+                            const headerSpan = document.querySelector('.notification-header span');
+                            if (headerSpan) {
+                                headerSpan.textContent = '0 new';
+                            }
+                        }
+                    } catch (e) {
+                        console.error('Error parsing response:', e);
+                    }
                 }
             };
-            xhr.send('student_id=<?php echo $student_id; ?>');
+
+            // Get student_id from PHP
+            const studentId = '<?php echo $current_student_id; ?>';
+            xhr.send('user_id=' + encodeURIComponent(studentId));
         }
+
+        // Auto-refresh notification count periodically
+        setInterval(function() {
+            if (!document.getElementById("notificationDropdown").classList.contains("show")) {
+                // Refresh notification count via AJAX
+                const xhr = new XMLHttpRequest();
+                xhr.open('GET', '../controllers/get_notification_count.php?user_id=<?php echo $current_student_id; ?>', true);
+                xhr.onload = function() {
+                    if (xhr.status === 200) {
+                        try {
+                            const response = JSON.parse(xhr.responseText);
+                            document.getElementById('notificationBadge').textContent = response.count;
+
+                            // Update header span if dropdown is closed
+                            const headerSpan = document.querySelector('.notification-header span');
+                            if (headerSpan && !document.getElementById("notificationDropdown").classList.contains("show")) {
+                                headerSpan.textContent = response.count + ' new';
+                            }
+                        } catch (e) {
+                            console.error('Error updating notification count:', e);
+                        }
+                    }
+                };
+                xhr.send();
+            }
+        }, 30000); // Refresh every 30 seconds
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('notificationDropdown');
+            const bell = document.querySelector('.notification-bell');
+
+            if (dropdown && bell && !dropdown.contains(event.target) && !bell.contains(event.target)) {
+                dropdown.classList.remove('show');
+            }
+        });
+
+        // Prevent dropdown from closing when clicking inside it
+        document.getElementById('notificationDropdown')?.addEventListener('click', function(event) {
+            event.stopPropagation();
+        });
 
         // ============ CALENDAR FUNCTIONS ============
         function initCalendar() {
