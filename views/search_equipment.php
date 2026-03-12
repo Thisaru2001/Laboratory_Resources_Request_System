@@ -2,22 +2,22 @@
 session_start();
 require_once '../config/database.php';
 
-// Check if user is logged in - FIXED: use user_id
+// Check if user is logged in
 if (!isset($_SESSION["user_id"])) {
     http_response_code(401);
     echo json_encode(['error' => 'Unauthorized']);
     exit();
 }
 
-$location_id = $_GET['location_id'] ?? 0;
 $term = $_GET['term'] ?? '';
 
-if (!$location_id) {
+// If no search term, return empty results
+if (empty($term) || strlen($term) < 2) {
     echo json_encode([]);
     exit();
 }
 
-// Calculate available quantity for future bookings with proper date range
+// Calculate available quantity for future bookings
 $query = "SELECT e.id, e.code, e.name, e.total_qty,
           COALESCE((SELECT SUM(broken_qty) FROM broken WHERE equipment_id = e.id), 0) as broken_qty,
           COALESCE((SELECT SUM(repair_qty) FROM repair WHERE equipment_id = e.id), 0) as repair_qty,
@@ -27,22 +27,13 @@ $query = "SELECT e.id, e.code, e.name, e.total_qty,
                    AND r.request_date <= DATE_ADD(CURDATE(), INTERVAL 30 DAY)
                    AND DATE_ADD(r.request_date, INTERVAL (r.continue_days - 1) DAY) >= CURDATE()), 0) as booked_qty
           FROM equipment e
-          WHERE e.location_id = ? AND e.is_hod_checked = 1";
+          WHERE e.is_hod_checked = 1
+          AND (e.name LIKE ? OR e.code LIKE ?)
+          ORDER BY e.name 
+          LIMIT 20";
 
-$params = [$location_id];
-$types = "i";
-
-if (!empty($term)) {
-    $query .= " AND (e.name LIKE ? OR e.code LIKE ?)";
-    $search_term = "%$term%";
-    $params[] = $search_term;
-    $params[] = $search_term;
-    $types .= "ss";
-}
-
-$query .= " ORDER BY e.name LIMIT 20";
-
-$result = Database::search($query, $types, $params);
+$search_term = "%$term%";
+$result = Database::search($query, "ss", [$search_term, $search_term]);
 
 if (!$result) {
     echo json_encode([]);

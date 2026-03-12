@@ -18,13 +18,14 @@ import os
 from collections import defaultdict
 from datetime import datetime
 
-# ── DB CONFIG ──────────────────────────────────────────────
-DB_CONFIG = {
-    "host":     "localhost",
-    "user":     "root",
-    "password": "root",
-    "database": "lab_db",
-    "port":     3306
+load_dotenv()  # loads .env file
+
+B_CONFIG = {
+    "host": os.getenv("DB_HOST"),
+    "user": os.getenv("DB_USER"),
+    "password": os.getenv("DB_PASS"),
+    "database": os.getenv("DB_NAME"),
+    "port": int(os.getenv("DB_PORT"))
 }
 
 # ── OUTPUT JSON saved in SAME folder as this script ────────

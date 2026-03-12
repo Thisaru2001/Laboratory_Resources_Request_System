@@ -1,9 +1,9 @@
 <?php
 session_start();
 
-error_log("=== SUPERVISOR.PHP LOADED ===");
-error_log("Session user_id: " . ($_SESSION["user_id"] ?? 'NOT SET'));
-error_log("Session user_role: " . ($_SESSION["user_role"] ?? 'NOT SET'));
+// error_log("=== SUPERVISOR.PHP LOADED ===");
+// error_log("Session user_id: " . ($_SESSION["user_id"] ?? 'NOT SET'));
+// error_log("Session user_role: " . ($_SESSION["user_role"] ?? 'NOT SET'));
 
 // Rest of your code...
 // Remove duplicate session_start() - already started in included files
@@ -124,7 +124,7 @@ $reservations_q = "SELECT r.id, r.reservation_id, r.request_date, r.continue_day
                           GROUP_CONCAT(DISTINCT CONCAT(e.name,' (x',be.book_qty,')') ORDER BY e.name SEPARATOR '<br>') as equipment_list,
                           CASE 
                             WHEN rr.id IS NOT NULL THEN 'rejected'
-                            WHEN r.supervisor_id IS NOT NULL THEN 'approved'
+                            WHEN r.supervisor_id IS NOT NULL THEN 'TO Pending'
                             ELSE 'pending'
                           END as status,
                           rr.reason as reject_reason
@@ -180,6 +180,189 @@ if ($students_result && $students_result->num_rows > 0) {
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
     <link rel="icon" type="image/svg+xml" href="../assets/resources/flask.svg">
     <style>
+        /* Notification Modal Styles */
+.request-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 15px;
+    background-color: #fff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+}
+
+.request-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(34,197,94,0.15);
+    border-color: #22c55e;
+}
+
+.request-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.request-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 1.2rem;
+    margin-right: 15px;
+    box-shadow: 0 4px 10px rgba(34,197,94,0.3);
+}
+
+.request-info {
+    flex: 1;
+}
+
+.request-name {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #166534;
+    margin-bottom: 3px;
+}
+
+.request-university {
+    color: #6c757d;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.request-details {
+    margin: 15px 0;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 12px;
+    font-size: 0.95rem;
+    color: #495057;
+    border-left: 4px solid #22c55e;
+}
+
+.request-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+}
+
+.btn-accept {
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: white;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 12px rgba(34,197,94,0.3);
+}
+
+.btn-accept:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(34,197,94,0.4);
+}
+/* Student Details Modal Styles */
+.info-card {
+    transition: all 0.3s ease;
+}
+
+.info-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+}
+
+.student-avatar-large {
+    transition: all 0.3s ease;
+}
+
+.student-avatar-large:hover {
+    transform: scale(1.05);
+    box-shadow: 0 15px 30px rgba(34,197,94,0.4) !important;
+}
+
+.status-badge {
+    padding: 5px 12px;
+    border-radius: 50px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.status-pending {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.status-accepted {
+    background: #d1e7dd;
+    color: #0a3622;
+}
+
+#modalAcceptStudentBtn {
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: white;
+    border: none;
+    padding: 8px 24px;
+    border-radius: 50px;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+#modalAcceptStudentBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(34,197,94,0.4);
+}
+
+.btn-view {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+    color: white;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 12px rgba(59,130,246,0.3);
+}
+
+.btn-view:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(59,130,246,0.4);
+}
+
+          /* Notification Bell */
+            .notification-bell {
+                position: relative;
+                cursor: pointer;
+                margin-right: 15px;
+            }
+
+            .notification-bell i {
+                font-size: 1.5rem;
+                color: #166534;
+                transition: all 0.3s;
+            }
+
+            .notification-bell:hover i {
+                transform: rotate(15deg);
+                color: #22c55e;
+            }
         * { margin:0; padding:0; box-sizing:border-box; }
         body { font-family:'Inter','Segoe UI',sans-serif; background:linear-gradient(135deg,#22c55e 0%,#16a34a 100%); overflow-x:hidden; }
 
@@ -340,7 +523,7 @@ if ($students_result && $students_result->num_rows > 0) {
     <h4><i class="bi bi-flask"></i> MicroLab</h4>
     <a onclick="showSection('dashboard')" class="active"><i class="bi bi-speedometer2"></i> Dashboard</a>
     <a onclick="showSection('students')"><i class="bi bi-people"></i> My Students</a>
-    <a onclick="showSection('requests')"><i class="bi bi-clipboard-check"></i> Reservation Requests
+    <a onclick="showSection('requests')"><i class="bi bi-clipboard-check"></i> Reservation
         <?php if ($pending_count > 0): ?>
             <span class="badge bg-danger ms-auto"><?= $pending_count ?></span>
         <?php endif; ?>
@@ -366,16 +549,57 @@ if ($students_result && $students_result->num_rows > 0) {
             </h5>
         </div>
         <div class="d-flex align-items-center gap-3">
+         
+    <!-- Notification Bell -->
+<div class="notification-bell" onclick="openNotificationModal()">
+    <i class="bi bi-bell"></i>
+    <span class="notification-badge" id="notificationBadge">0</span>
+</div>
+
             <span class="fw-semibold d-none d-sm-block" style="color:#166534;">
                 <?= htmlspecialchars($full_name) ?>
             </span>
+         
             <div class="dropdown">
                 <?php
-                if (empty($profile_image) || !file_exists($profile_image)) {
-                    $profile_image = 'https://ui-avatars.com/api/?name=' . urlencode($full_name) . '&background=22c55e&color=fff&size=100';
-                }
-                ?>
-                <img src="<?= $profile_image ?>" class="profile-img dropdown-toggle" data-bs-toggle="dropdown">
+error_log("Raw DB path: " . ($user_data['img_path'] ?? 'empty'));
+
+$profile_image = $user_data['img_path'] ?? '';
+
+if (!empty($profile_image)) {
+    // Clean the path (replace backslashes with forward slashes)
+    $clean_path = str_replace('\\', '/', $profile_image);
+    $clean_path = ltrim($clean_path, '/');
+    
+    // DEBUG: Log the clean path
+    error_log("Clean path: " . $clean_path);
+    
+    // Full system path with LRRS
+    $full_path = $_SERVER['DOCUMENT_ROOT'] . '/LRRS/' . $clean_path;
+    error_log("Full system path: " . $full_path);
+    
+    // Convert to Windows format for file_exists
+    $windows_path = str_replace('/', DIRECTORY_SEPARATOR, $full_path);
+    error_log("Windows path to check: " . $windows_path);
+    
+    if (file_exists($windows_path)) {
+        // File exists - use web path with LRRS prefix
+        $profile_image = '/LRRS/' . $clean_path;
+        error_log("File FOUND! Using: " . $profile_image);
+    } else {
+        // File doesn't exist - use avatar
+        error_log("File NOT FOUND at: " . $windows_path);
+        $profile_image = 'https://ui-avatars.com/api/?name=' . urlencode($full_name) . '&background=22c55e&color=fff&size=100';
+    }
+} else {
+    error_log("No profile image in database");
+    $profile_image = 'https://ui-avatars.com/api/?name=' . urlencode($full_name) . '&background=22c55e&color=fff&size=100';
+}
+
+error_log("Final profile image: " . $profile_image);
+?>
+
+    <img src="<?php echo $profile_image; ?>" class="profile-img dropdown-toggle" data-bs-toggle="dropdown">
                 <ul class="dropdown-menu dropdown-menu-end" style="border-radius:16px;border:none;box-shadow:0 10px 30px rgba(0,0,0,0.1);">
                     <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i>Profile</a></li>
                     <li><hr class="dropdown-divider"></li>
@@ -384,6 +608,86 @@ if ($students_result && $students_result->num_rows > 0) {
             </div>
         </div>
     </div>
+
+    <!-- Notification Modal -->
+<div class="modal fade" id="notificationModal" tabindex="-1" aria-labelledby="notificationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content" style="border-radius: 24px; border: none;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #22c55e, #16a34a); color: white; border-radius: 24px 24px 0 0;">
+                <h5 class="modal-title" id="notificationModalLabel">
+                    <i class="bi bi-bell me-2"></i>Student Account Requests
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4" style="min-height: 300px;">
+                <!-- Loading Spinner -->
+                <div id="notificationLoading" class="text-center py-5">
+                    <div class="spinner-border text-success" role="status" style="width: 3rem; height: 3rem;">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-3 text-muted">Loading requests...</p>
+                </div>
+                
+                <!-- Requests Container -->
+                <div id="requestsContainer" style="display: none;"></div>
+                
+                <!-- No Requests Message -->
+                <div id="noRequestsMessage" class="text-center py-5" style="display: none;">
+                    <i class="bi bi-check-circle-fill text-success" style="font-size: 4rem;"></i>
+                    <p class="mt-3 text-muted fs-5">No pending student requests</p>
+                </div>
+            </div>
+            <div class="modal-footer" style="border-top: 1px solid #e0e0e0;">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-2"></i>Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Student Details Modal -->
+<div class="modal fade" id="studentDetailsModal" tabindex="-1" aria-labelledby="studentDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 24px; border: none;">
+            <div class="modal-header" style="background: linear-gradient(135deg, #22c55e, #16a34a); color: white; border-radius: 24px 24px 0 0;">
+                <h5 class="modal-title" id="studentDetailsModalLabel">
+                    <i class="bi bi-person-badge me-2"></i>Student Details
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4" id="studentDetailsContent">
+                <!-- Loading spinner -->
+                <div class="text-center py-4" id="studentDetailsLoading">
+                    <div class="spinner-border text-success" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2 text-muted">Loading student details...</p>
+                </div>
+                
+                <!-- Student details will be loaded here -->
+                <div id="studentDetailsDisplay" style="display: none;"></div>
+                
+                <!-- Error message -->
+                <div id="studentDetailsError" style="display: none;" class="text-center py-4">
+                    <i class="bi bi-exclamation-triangle-fill text-danger" style="font-size: 3rem;"></i>
+                    <p class="mt-2 text-danger">Error loading student details</p>
+                </div>
+            </div>
+            <div class="modal-footer" style="border-top: 1px solid #e0e0e0;">
+                <div id="studentModalActions">
+                    <button class="btn-accept me-2" id="modalAcceptStudentBtn" onclick="acceptStudentFromModal()" style="display: none;">
+                        <i class="bi bi-check-circle me-2"></i>Accept Request
+                    </button>
+                    
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-2"></i>Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
     <!-- CONTENT AREA -->
     <div class="content-area">
@@ -402,7 +706,7 @@ if ($students_result && $students_result->num_rows > 0) {
                 <div class="stat-card" onclick="showSection('requests')">
                     <i class="bi bi-hourglass-split"></i>
                     <h3><?= $pending_count ?></h3>
-                    <p>Pending Approvals</p>
+                    <p>Reseravtion Pending Approvals</p>
                 </div>
                 <div class="stat-card">
                     <i class="bi bi-calendar-check"></i>
@@ -425,10 +729,10 @@ if ($students_result && $students_result->num_rows > 0) {
                             <tr>
                                 <th>Reservation ID</th>
                                 <th>Student</th>
-                                <th>Reg. No.</th>
+                                <th>University ID</th>
                                 <th>Request Date</th>
                                 <th>Location</th>
-                                <th>Equipment</th>
+                               
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -445,12 +749,12 @@ if ($students_result && $students_result->num_rows > 0) {
                                 : '';
                         ?>
                         <tr>
-                            <td><strong><?= htmlspecialchars($res['reservation_id']) ?></strong></td>
-                            <td><?= htmlspecialchars($res['student_name']) ?></td>
+                            <td><small class="text-muted"><?= htmlspecialchars($res['reservation_id']) ?></small></td>
+                            <td><small class="text-muted"><?= htmlspecialchars($res['student_name']) ?></small></td>
                             <td><small class="text-muted"><?= htmlspecialchars($res['university_id']) ?></small></td>
-                            <td><?= $start . $end ?></td>
-                            <td><?= htmlspecialchars($res['location']) ?></td>
-                            <td style="max-width:200px;font-size:0.82rem;"><?= $res['equipment_list'] ?></td>
+                            <td><small class="text-muted"><?= $start . $end ?></small></td>
+                            <td><small class="text-muted"><?= htmlspecialchars($res['location']) ?></small></td>
+                           
                             <td>
                                 <button class="btn-view me-1" onclick="openRequestModal(<?= $res['id'] ?>)">
                                     <i class="bi bi-eye"></i>
@@ -598,12 +902,8 @@ if ($students_result && $students_result->num_rows > 0) {
                     <table class="user-table">
                         <thead>
                             <tr>
-                                <th>Reservation ID</th>
-                                <th>Created</th>
-                                <th>Student</th>
-                                <th>Location</th>
-                                <th>Date(s)</th>
-                                <th>Equipment</th>
+                                <th>Reservation ID</th>                             
+                                <th>Student</th>                         
                                 <th>Status</th>
                                 <th>Actions</th>
                             </tr>
@@ -619,15 +919,15 @@ if ($students_result && $students_result->num_rows > 0) {
                         <tr data-status="<?= $res['status'] ?>"
                             data-created="<?= $res['created_datetime'] ?>"
                             data-search="<?= strtolower($res['reservation_id'].' '.$res['student_name'].' '.$res['location']) ?>">
-                            <td><strong><?= htmlspecialchars($res['reservation_id']) ?></strong></td>
-                            <td><small><?= $created ?></small></td>
+                            <td><small class="text-muted"><?= htmlspecialchars($res['reservation_id']) ?></small></td>
+                           
                             <td>
                                 <?= htmlspecialchars($res['student_name']) ?><br>
                                 <small class="text-muted"><?= htmlspecialchars($res['university_id']) ?></small>
                             </td>
-                            <td><?= htmlspecialchars($res['location']) ?></td>
-                            <td><?= $start . ' ' . $end ?><br><small class="text-muted"><?= $res['continue_days'] ?> day(s)</small></td>
-                            <td style="max-width:180px;font-size:0.8rem;"><?= $res['equipment_list'] ?></td>
+                       
+                          
+                          
                             <td><span class="status-badge status-<?= $res['status'] ?>"><?= ucfirst($res['status']) ?></span></td>
                             <td>
                                 <div class="d-flex gap-1 flex-wrap">
@@ -725,6 +1025,482 @@ if ($students_result && $students_result->num_rows > 0) {
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+
+
+
+
+// Update your openNotificationModal function
+function openNotificationModal() {
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('notificationModal'));
+    modal.show();
+    
+    // Fetch pending requests
+    fetchPendingRequests();
+}
+
+// Update your fetchPendingRequests function
+function fetchPendingRequests() {
+    // Show loading, hide others
+    document.getElementById('notificationLoading').style.display = 'block';
+    document.getElementById('requestsContainer').style.display = 'none';
+    document.getElementById('noRequestsMessage').style.display = 'none';
+    
+    // AJAX request to get pending students
+    fetch('../controllers/get_pending_students.php')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            document.getElementById('notificationLoading').style.display = 'none';
+            
+            if (data.success && data.requests.length > 0) {
+                displayRequests(data.requests);
+                document.getElementById('requestsContainer').style.display = 'block';
+                
+                // Update notification badge
+                const badge = document.getElementById('notificationBadge');
+                if (badge) {
+                    badge.textContent = data.requests.length;
+                    badge.style.backgroundColor = '#dc3545';
+                }
+            } else {
+                document.getElementById('noRequestsMessage').style.display = 'block';
+                
+                // Update badge to 0
+                const badge = document.getElementById('notificationBadge');
+                if (badge) {
+                    badge.textContent = '0';
+                    badge.style.backgroundColor = '#6c757d';
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            document.getElementById('notificationLoading').style.display = 'none';
+            document.getElementById('noRequestsMessage').style.display = 'block';
+            document.getElementById('noRequestsMessage').innerHTML = `
+                <i class="bi bi-exclamation-triangle-fill text-danger" style="font-size: 3rem;"></i>
+                <p class="mt-2">Error loading requests</p>
+            `;
+        });
+}
+
+// Function to display requests
+function displayRequests(requests) {
+    const container = document.getElementById('requestsContainer');
+    container.innerHTML = '';
+    
+    requests.forEach(request => {
+        const initials = (request.first_name?.[0] || '') + (request.last_name?.[0] || '');
+        const fullName = `${request.first_name} ${request.last_name}`.trim();
+        const createdDate = new Date(request.join_datetime).toLocaleString();
+        
+        const card = document.createElement('div');
+        card.className = 'request-card';
+        card.id = `request-${request.id}`;
+        card.innerHTML = `
+            <div class="request-header">
+                <div class="request-avatar">${initials || '?'}</div>
+                <div class="request-info">
+                    <div class="request-name">${fullName || 'Unknown'}</div>
+                    <div class="request-university">${request.university_id || 'No University ID'}</div>
+                </div>
+            </div>
+            <div class="request-details">
+                <i class="bi bi-person-plus me-1"></i>
+                Student account creation request
+                <br>
+                <small class="text-muted">
+                    <i class="bi bi-clock me-1"></i>
+                    Requested: ${createdDate}
+                </small>
+            </div>
+            <div class="request-actions">
+               <button class="btn-view" onclick="viewStudent(${request.id})">
+    <i class="bi bi-eye me-1"></i>View
+</button>
+              <button class="btn-accept" onclick="acceptStudent(${request.id}, 'modal', event)">
+                    <i class="bi bi-check-circle me-1"></i>Accept
+                </button>
+            </div>
+        `;
+        container.appendChild(card);
+    });
+}
+
+// Function to accept student
+// Function to accept student
+function acceptStudent(studentId, source = 'modal', event) {
+    
+    if (!confirm('Accept this student account request?')) return;
+
+    
+    // Prevent default and stop propagation to avoid any issues
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+      // Find and hide the button FIRST (before removing card)
+            if (event && event.target) {
+                const clickedBtn = event.target.closest('.btn-accept');
+                if (clickedBtn) {
+                    clickedBtn.style.display = 'none'; // Hide the button
+                    console.log('Button hidden successfully'); // Debug log
+                }
+            }
+    
+    fetch('../controllers/accept_student.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ student_id: studentId })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Show success message
+          //  alert('Student accepted successfully!');
+            
+          
+            
+            if (source === 'modal') {
+                // Remove card from modal
+                const card = document.getElementById(`request-${studentId}`);
+                if (card) {
+                    // Add a small delay before removing so user can see button disappear
+                    setTimeout(() => {
+                        card.remove();
+                        
+                        // Update badge
+                        const badge = document.getElementById('notificationBadge');
+                        if (badge) {
+                            badge.textContent = Math.max(0, parseInt(badge.textContent) - 1);
+                        }
+                        
+                        // If no more requests, show empty message
+                        if (document.querySelectorAll('.request-card').length === 0) {
+                            const container = document.getElementById('requestsContainer');
+                            const noRequests = document.getElementById('noRequestsMessage');
+                            if (container) container.style.display = 'none';
+                            if (noRequests) noRequests.style.display = 'block';
+                        }
+                    }, 300); // Small delay to see button hide before card removes
+                }
+                
+                // Update badge immediately
+                const badge = document.getElementById('notificationBadge');
+                if (badge) {
+                    badge.textContent = Math.max(0, parseInt(badge.textContent) - 1);
+                }
+                
+            } else if (source === 'view') {
+                // If on view page, show accepted message and disable buttons
+                const acceptBtn = document.querySelector('button[onclick*="acceptStudent"]');
+                const viewBtns = document.querySelectorAll('.btn-view, .btn-secondary');
+                
+                if (acceptBtn) {
+                    acceptBtn.disabled = true;
+                    acceptBtn.innerHTML = '<i class="bi bi-check-circle-fill"></i> Accepted';
+                    acceptBtn.classList.remove('btn-success');
+                    acceptBtn.classList.add('btn-secondary');
+                }
+                
+                // Disable any other action buttons
+                viewBtns.forEach(btn => {
+                    if (btn.onclick && btn.onclick.toString().includes('window.close')) {
+                        // Keep close button enabled
+                    } else {
+                        btn.disabled = true;
+                    }
+                });
+                
+                // Show status message on page
+                const statusDiv = document.createElement('div');
+                statusDiv.className = 'alert alert-success mt-3';
+                statusDiv.innerHTML = '<i class="bi bi-check-circle-fill me-2"></i> This student has been accepted.';
+                
+                const card = document.querySelector('.card-body');
+                if (card) {
+                    card.insertBefore(statusDiv, card.querySelector('hr'));
+                }
+            }
+            
+            // Refresh parent window if it exists (for view page opened from modal)
+            if (window.opener && !window.opener.closed) {
+                window.opener.refreshNotifications();
+            }
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error accepting student');
+    });
+}
+
+// Global variable to store current student ID
+let currentStudentId = null;
+
+// Function to view student details in modal
+function viewStudent(studentId) {
+    currentStudentId = studentId;
+    
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('studentDetailsModal'));
+    modal.show();
+    
+    // Show loading, hide content and error
+    document.getElementById('studentDetailsLoading').style.display = 'block';
+    document.getElementById('studentDetailsDisplay').style.display = 'none';
+    document.getElementById('studentDetailsError').style.display = 'none';
+    document.getElementById('modalAcceptStudentBtn').style.display = 'none';
+    
+    // Fetch student details via AJAX
+    fetch(`../controllers/get_student_details.php?id=${studentId}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            document.getElementById('studentDetailsLoading').style.display = 'none';
+            
+            if (data.success) {
+                displayStudentDetails(data.student);
+                document.getElementById('studentDetailsDisplay').style.display = 'block';
+                
+                // Show accept button only if status is pending (0)
+                if (data.student.status == 0) {
+                    document.getElementById('modalAcceptStudentBtn').style.display = 'inline-block';
+                }
+            } else {
+                document.getElementById('studentDetailsError').style.display = 'block';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            document.getElementById('studentDetailsLoading').style.display = 'none';
+            document.getElementById('studentDetailsError').style.display = 'block';
+        });
+}
+
+// Function to display student details in modal
+function displayStudentDetails(student) {
+    const fullName = `${student.first_name || ''} ${student.last_name || ''}`.trim();
+    const joinDate = new Date(student.join_datetime).toLocaleString();
+    const statusText = student.status == 0 ? 'Pending Approval' : 'Accepted';
+    const statusClass = student.status == 0 ? 'status-pending' : 'status-accepted';
+    
+    const html = `
+        <div class="row">
+            <div class="col-12 text-center mb-4">
+                <div class="student-avatar-large" style="width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, #22c55e, #16a34a); color: white; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: bold; margin: 0 auto; box-shadow: 0 10px 20px rgba(34,197,94,0.3);">
+                    ${(student.first_name?.[0] || '') + (student.last_name?.[0] || '') || '?'}
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="info-card p-3 mb-3" style="background: #f8f9fa; border-radius: 16px;">
+                    <h6 class="text-success fw-bold mb-3"><i class="bi bi-person me-2"></i>Personal Info</h6>
+                    <table class="table table-borderless mb-0" style="font-size: 0.95rem;">
+                        <tr>
+                            <th style="width: 120px; color: #6c757d;">Full Name</th>
+                            <td class="fw-semibold">${fullName}</td>
+                        </tr>
+                        <tr>
+                            <th style="color: #6c757d;">University ID</th>
+                            <td><span class="badge bg-info text-white p-2">${student.university_id || 'N/A'}</span></td>
+                        </tr>
+                        <tr>
+                            <th style="color: #6c757d;">Status</th>
+                            <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="col-md-6">
+                <div class="info-card p-3 mb-3" style="background: #f8f9fa; border-radius: 16px;">
+                    <h6 class="text-success fw-bold mb-3"><i class="bi bi-envelope me-2"></i>Contact Info</h6>
+                    <table class="table table-borderless mb-0" style="font-size: 0.95rem;">
+                        <tr>
+                            <th style="width: 80px; color: #6c757d;">Email</th>
+                            <td><a href="mailto:${student.email}" class="text-success">${student.email}</a></td>
+                        </tr>
+                        <tr>
+                            <th style="color: #6c757d;">Mobile</th>
+                            <td>${student.mobile || 'Not provided'}</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="col-12">
+                <div class="info-card p-3" style="background: #f0fdf4; border-radius: 16px; border-left: 4px solid #22c55e;">
+                    <h6 class="text-success fw-bold mb-3"><i class="bi bi-calendar me-2"></i>Account Info</h6>
+                    <table class="table table-borderless mb-0" style="font-size: 0.95rem;">
+                        <tr>
+                            <th style="width: 120px; color: #6c757d;">Request Date</th>
+                            <td>${joinDate}</td>
+                        </tr>
+                       
+                    </table>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('studentDetailsDisplay').innerHTML = html;
+}
+
+// Function to accept student from modal
+// Function to accept student from modal
+function acceptStudentFromModal() {
+    if (!currentStudentId) return;
+    
+    if (!confirm('Accept this student account request?')) return;
+    
+    // Get the accept button
+    const modalAcceptBtn = document.getElementById('modalAcceptStudentBtn');
+    
+    // Store original button text and disable it
+    if (modalAcceptBtn) {
+        modalAcceptBtn.disabled = true;
+        modalAcceptBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Waiting...';
+        console.log('Modal accept button - waiting state');
+    }
+    
+    fetch('../controllers/accept_student.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ student_id: currentStudentId })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Change button to "Notify Student" before hiding
+            if (modalAcceptBtn) {
+                modalAcceptBtn.innerHTML = '<i class="bi bi-check-circle me-1"></i> Notify Student';
+                modalAcceptBtn.style.background = '#28a745';
+                modalAcceptBtn.disabled = false;
+            }
+            
+            // Update the status badge in the modal to show "Accepted"
+            const statusBadge = document.querySelector('#studentDetailsDisplay .status-badge');
+            if (statusBadge) {
+                statusBadge.className = 'status-badge status-accepted';
+                statusBadge.textContent = 'Accepted';
+                statusBadge.style.background = '#d1e7dd';
+                statusBadge.style.color = '#0a3622';
+            }
+            
+            // Close modal after a short delay
+            setTimeout(() => {
+                const modal = bootstrap.Modal.getInstance(document.getElementById('studentDetailsModal'));
+                if (modal) {
+                    modal.hide();
+                }
+            }, 1500); // Longer delay to show "Notify Student" message
+            
+            // Remove card from notification modal if it exists
+            const card = document.getElementById(`request-${currentStudentId}`);
+            if (card) {
+                setTimeout(() => {
+                    card.remove();
+                }, 1500);
+            }
+            
+            // Update badge
+            const badge = document.getElementById('notificationBadge');
+            if (badge) {
+                const currentCount = parseInt(badge.textContent) || 0;
+                badge.textContent = Math.max(0, currentCount - 1);
+                
+                if (badge.textContent === '0') {
+                    badge.style.backgroundColor = '#6c757d';
+                }
+            }
+            
+            // Refresh pending requests if modal is open
+            const notificationModal = document.getElementById('notificationModal');
+            if (notificationModal && notificationModal.classList.contains('show')) {
+                fetchPendingRequests();
+            }
+            
+            // Refresh parent window if it exists
+            if (window.opener && !window.opener.closed) {
+                window.opener.refreshNotifications();
+            }
+            
+        } else {
+            alert('Error: ' + data.message);
+            // If error, restore original button
+            if (modalAcceptBtn) {
+                modalAcceptBtn.disabled = false;
+                modalAcceptBtn.innerHTML = '<i class="bi bi-check-circle me-2"></i>Accept Request';
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error accepting student');
+        // If error, restore original button
+        if (modalAcceptBtn) {
+            modalAcceptBtn.disabled = false;
+            modalAcceptBtn.innerHTML = '<i class="bi bi-check-circle me-2"></i>Accept Request';
+        }
+    });
+}
+
+// Function to refresh notifications (called from child window)
+function refreshNotifications() {
+ fetch('../controllers/get_pending_students.php')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                document.getElementById('notificationBadge').textContent = data.requests.length;
+                
+                // If modal is open, refresh the display
+                const modal = document.getElementById('notificationModal');
+                if (modal.classList.contains('show')) {
+                    if (data.requests.length > 0) {
+                        displayRequests(data.requests);
+                        document.getElementById('requestsContainer').style.display = 'block';
+                        document.getElementById('noRequestsMessage').style.display = 'none';
+                    } else {
+                        document.getElementById('requestsContainer').style.display = 'none';
+                        document.getElementById('noRequestsMessage').style.display = 'block';
+                    }
+                }
+            }
+        })
+        .catch(error => console.error('Error refreshing:', error));
+}
+
+// Auto-refresh notifications every 30 seconds
+setInterval(() => {
+    const modal = document.getElementById('notificationModal');
+    if (!modal.classList.contains('show')) {
+        refreshNotifications();
+    }
+}, 30000);
+
+
+
+
+
+
+
+
 // ===== RESERVATION DATA (from PHP) =====
 const allReservations = <?php echo json_encode($all_reservations); ?>;
 const allStudents     = <?php echo json_encode($all_students); ?>;
@@ -907,7 +1683,7 @@ function submitAction(resId, action, reason) {
     formData.append('action', action);
     formData.append('reason', reason);
 
-    fetch('handle_reservation.php', { method:'POST', body: formData })
+    fetch('../controllers/handle_reservation.php', { method:'POST', body: formData })
         .then(r => r.json())
         .then(data => {
             if (data.success) {
@@ -927,7 +1703,7 @@ function viewStudentReservations(studentId, studentName) {
     document.getElementById('studentReservationsTitle').innerHTML =
         `<i class="bi bi-journal-text me-2"></i>${studentName} — Reservations`;
 
-    fetch(`get_student_reservations.php?student_id=${studentId}`)
+    fetch(`../controllers/get_student_reservations.php?student_id=${studentId}`)
         .then(r => r.text())
         .then(html => {
             document.getElementById('studentReservationsContent').innerHTML = html;
@@ -1070,9 +1846,50 @@ if (gotoBtn) {
     });
 }
 
+// Function to check pending students and update badge
+function checkPendingStudents() {
+    fetch('../controllers/get_pending_students.php')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            const badge = document.getElementById('notificationBadge');
+            if (badge) {
+                if (data.success && data.count > 0) {
+                    badge.textContent = data.count;
+                    badge.style.display = 'inline-block';
+                    badge.style.backgroundColor = '#dc3545'; // Red for notifications
+                    
+                    // Optional: Add animation
+                    badge.style.animation = 'pulse 1s';
+                    setTimeout(() => {
+                        badge.style.animation = '';
+                    }, 1000);
+                } else {
+                    badge.style.display = 'none';
+                  //  badge.textContent = '0';
+                    // badge.style.display = 'inline-block'; 
+                  //  badge.style.backgroundColor = '#6c757d'; // Gray for zero
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error checking pending students:', error);
+            // Don't hide badge on error, just keep current value
+        });
+}
+
+
 document.addEventListener('DOMContentLoaded', () => {
     showSection('dashboard');
     initCalendar();
+    checkPendingStudents();
+    
+    // Set up interval to check every 30 seconds
+    setInterval(checkPendingStudents, 30000);
 });
 </script>
 </body>

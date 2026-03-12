@@ -74,7 +74,7 @@ if ($count == 1) {
 
     // Check if account is deactivated
     if (isset($user['status']) && $user['status'] == 0) {
-        echo "Your account has been deactivated. Please contact Supervisor or HOD.";
+      echo "Your account is not activated. Please contact the supervisor.";
         exit;
     }
 

@@ -90,7 +90,7 @@ if ($calendar_result && $calendar_result->num_rows > 0) {
         $request_date = new DateTime($row['request_date']);
         $end_date = clone $request_date;
         $end_date->modify('+' . ($row['continue_days'] - 1) . ' days');
-        
+
         $calendar_events[] = [
             'day' => (int)$request_date->format('j'),
             'month' => (int)$request_date->format('n'),
@@ -112,6 +112,7 @@ $calendar_events_json = json_encode($calendar_events);
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -1355,31 +1356,31 @@ $calendar_events_json = json_encode($calendar_events);
                     </div>
                     <div class="notification-list" id="notificationList">
                         <?php
-                      if ($notif_list_result && $notif_list_result->num_rows > 0) {
-    while ($notif = $notif_list_result->fetch_assoc()) {
-        $time_ago = '';
-        $notif_time = strtotime($notif['created_datetime']); // FIXED: use created_datetime
-        $time_diff = time() - $notif_time;
+                        if ($notif_list_result && $notif_list_result->num_rows > 0) {
+                            while ($notif = $notif_list_result->fetch_assoc()) {
+                                $time_ago = '';
+                                $notif_time = strtotime($notif['created_datetime']); // FIXED: use created_datetime
+                                $time_diff = time() - $notif_time;
 
-        if ($time_diff < 60) {
-            $time_ago = 'Just now';
-        } elseif ($time_diff < 3600) {
-            $minutes = floor($time_diff / 60);
-            $time_ago = $minutes . ' minute' . ($minutes > 1 ? 's' : '') . ' ago';
-        } elseif ($time_diff < 86400) {
-            $hours = floor($time_diff / 3600);
-            $time_ago = $hours . ' hour' . ($hours > 1 ? 's' : '') . ' ago';
-        } else {
-            $days = floor($time_diff / 86400);
-            $time_ago = $days . ' day' . ($days > 1 ? 's' : '') . ' ago';
-        }
+                                if ($time_diff < 60) {
+                                    $time_ago = 'Just now';
+                                } elseif ($time_diff < 3600) {
+                                    $minutes = floor($time_diff / 60);
+                                    $time_ago = $minutes . ' minute' . ($minutes > 1 ? 's' : '') . ' ago';
+                                } elseif ($time_diff < 86400) {
+                                    $hours = floor($time_diff / 3600);
+                                    $time_ago = $hours . ' hour' . ($hours > 1 ? 's' : '') . ' ago';
+                                } else {
+                                    $days = floor($time_diff / 86400);
+                                    $time_ago = $days . ' day' . ($days > 1 ? 's' : '') . ' ago';
+                                }
 
-        echo '<div class="notification-item unread">';
-        echo '<div><i class="bi bi-info-circle-fill text-success me-2"></i> ' . htmlspecialchars($notif['description']) . '</div>';
-        echo '<div class="time">' . $time_ago . '</div>';
-        echo '</div>';
-    }
-} else {
+                                echo '<div class="notification-item unread">';
+                                echo '<div><i class="bi bi-info-circle-fill text-success me-2"></i> ' . htmlspecialchars($notif['description']) . '</div>';
+                                echo '<div class="time">' . $time_ago . '</div>';
+                                echo '</div>';
+                            }
+                        } else {
                             echo '<div class="text-center text-muted p-3">No new notifications</div>';
                         }
                         ?>
@@ -1391,19 +1392,36 @@ $calendar_events_json = json_encode($calendar_events);
                 </span>
 
                 <div class="dropdown">
-                    <?php
-                    if (empty($profile_image) || !file_exists($profile_image)) {
-                        $profile_image = 'https://ui-avatars.com/api/?name=' . urlencode($full_name) . '&background=22c55e&color=fff&size=100';
-                    }
-                    ?>
-                    <img src="<?php echo $profile_image; ?>" class="profile-img dropdown-toggle" data-bs-toggle="dropdown">
-                    <ul class="dropdown-menu dropdown-menu-end" style="border-radius: 16px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
-                        <li><a class="dropdown-item" href="profile.php"><i class="bi bi-person me-2"></i>Profile</a></li>
-                        <li><a class="dropdown-item" href="settings.php"><i class="bi bi-gear me-2"></i>Settings</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item text-danger" href="../logout.php"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
-                    </ul>
-                </div>
+    <?php
+    $profile_image = $user_data['img_path'] ?? '';
+    
+    if (!empty($profile_image)) {
+        // Clean the path
+        $clean_path = str_replace('\\', '/', $profile_image);
+        $clean_path = ltrim($clean_path, '/');
+        
+        // Full system path with LRRS
+        $full_path = $_SERVER['DOCUMENT_ROOT'] . '/LRRS/' . $clean_path;
+        $full_path = str_replace('/', DIRECTORY_SEPARATOR, $full_path);
+        
+        if (file_exists($full_path)) {
+            // Web path needs LRRS prefix
+            $profile_image = '/LRRS/' . $clean_path;
+        } else {
+            $profile_image = 'https://ui-avatars.com/api/?name=' . urlencode($full_name) . '&background=22c55e&color=fff&size=100';
+        }
+    } else {
+        $profile_image = 'https://ui-avatars.com/api/?name=' . urlencode($full_name) . '&background=22c55e&color=fff&size=100';
+    }
+    ?>
+    <img src="<?php echo $profile_image; ?>" class="profile-img dropdown-toggle" data-bs-toggle="dropdown">
+    <ul class="dropdown-menu dropdown-menu-end" style="border-radius: 16px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
+        <li><a class="dropdown-item" href="profile.php"><i class="bi bi-person me-2"></i>Profile</a></li>
+        <li><a class="dropdown-item" href="settings.php"><i class="bi bi-gear me-2"></i>Settings</a></li>
+        <li><hr class="dropdown-divider"></li>
+        <li><a class="dropdown-item text-danger" href="../logout.php"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+    </ul>
+</div>
             </div>
         </div>
 
@@ -1475,7 +1493,7 @@ $calendar_events_json = json_encode($calendar_events);
                                 </div>
                             </div>
 
-                            <!-- Equipment Search -->
+                            <!-- Equipment Search Input -->
                             <div class="col-md-6 position-relative">
                                 <label class="form-label fw-semibold">
                                     <i class="bi bi-search text-success me-1"></i>Search Equipment
@@ -1485,7 +1503,7 @@ $calendar_events_json = json_encode($calendar_events);
                                         <i class="bi bi-microscope"></i>
                                     </span>
                                     <input type="text" id="equipmentSearch" class="form-control"
-                                        placeholder="Type to search equipment..."
+                                        placeholder="Select a lab location first"
                                         autocomplete="off" disabled>
                                 </div>
                                 <div id="equipmentDropdown" class="dropdown-menu w-100 p-2"
@@ -1561,7 +1579,7 @@ $calendar_events_json = json_encode($calendar_events);
                                 <i class="bi bi-send me-1"></i>Submit Reservation
                             </button>
                         </div>
-                        
+
                         <div class="alert alert-warning mt-3 mb-0" id="formWarning" style="display: none;">
                             <i class="bi bi-exclamation-triangle me-2"></i>
                             <span id="warningMessage"></span>
@@ -1569,90 +1587,133 @@ $calendar_events_json = json_encode($calendar_events);
                     </form>
                 </div>
 
-           <!-- My Reservation Status Section -->
-<h4 class="mb-3" style="color: white;">
-    <i class="bi bi-clock-history me-2"></i>My Reservation Status
-</h4>
-<div class="card p-4 mb-4">
-    <div class="table-responsive">
-        <table class="table table-bordered table-hover">
-            <thead class="table-light">
-                <tr>
-                    <th>Reservation ID</th>
-                    <th>Date(s)</th>
-                    <th>Lab Location</th>
-                    <th>Equipment</th>
-                    <th>Status</th>
-                    <th>Supervisor</th>
-                    <th>Reason (if rejected)</th>
-                </tr>
-            </thead>
-            <tbody id="reservationStatusBody">
-                <?php
-                // Update the reservation query to include continue_days
-                $res_query = "SELECT r.id, r.reservation_id, r.request_date, r.continue_days, l.location, 
-                                     r.comment, r.created_datetime,
-                                     CONCAT(s.first_name, ' ', s.last_name) as supervisor_name
-                              FROM reservation r
-                              JOIN location l ON r.location_id = l.id
-                              LEFT JOIN lab_user s ON r.supervisor_id = s.id
-                              WHERE r.student_id = ?
-                              ORDER BY r.created_datetime DESC
-                              LIMIT 5";
-                $res_result = Database::search($res_query, "i", [$student_id]);
-                
-                if ($res_result && $res_result->num_rows > 0) {
-                    while ($row = $res_result->fetch_assoc()) {
-                        // Get equipment for this reservation
-                        $eq_query = "SELECT e.name, be.book_qty 
-                                     FROM book_equipment be
-                                     JOIN equipment e ON be.equipment_id = e.id
-                                     WHERE be.reservation_id = ?";
-                        $eq_result = Database::search($eq_query, "i", [$row['id']]);
+                <!-- My Reservation Status Section -->
+                <h4 class="mb-3" style="color: white;">
+                    <i class="bi bi-clock-history me-2"></i>My Reservation Status
+                </h4>
+                <div class="card p-4 mb-4">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Reservation ID</th>
+                                    <th>Date(s)</th>
+                                    <th>Lab Location</th>
 
-                        $equipment_list = [];
-                        if ($eq_result) {
-                            while ($eq = $eq_result->fetch_assoc()) {
-                                $equipment_list[] = $eq['name'] . " (x" . $eq['book_qty'] . ")";
-                            }
-                        }
-                        $equipment_display = implode("<br>", $equipment_list);
+                                    <th>Status</th>
 
-                        // Calculate date range
-                        $start_date = date('Y-m-d', strtotime($row['request_date']));
-                        $end_date = date('Y-m-d', strtotime($row['request_date'] . ' + ' . ($row['continue_days'] - 1) . ' days'));
-                        $date_display = $start_date;
-                        if ($row['continue_days'] > 1) {
-                            $date_display .= " to " . $end_date . " (" . $row['continue_days'] . " days)";
-                        }
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reservationStatusBody">
+                                <?php
+                                // Update the reservation query to include continue_days and status
+                                $res_query = "SELECT r.id, r.reservation_id, r.request_date, r.continue_days, l.location, 
+                         r.comment, r.created_datetime,
+                         CONCAT(s.first_name, ' ', s.last_name) as supervisor_name,
+                         r.supervisor_id,
+                         r.technical_officer_id,
+                         CASE 
+                            WHEN rr.id IS NOT NULL THEN 'rejected'
+                            WHEN r.technical_officer_id IS NOT NULL THEN 'to_checked'
+                            WHEN r.supervisor_id IS NOT NULL THEN 'to_pending'
+                            ELSE 'pending'
+                         END as status,
+                         rr.reason as reject_reason
+                  FROM reservation r
+                  JOIN location l ON r.location_id = l.id
+                  LEFT JOIN lab_user s ON r.supervisor_id = s.id
+                  LEFT JOIN reject_reason rr ON r.id = rr.reservation_id
+                  WHERE r.student_id = ?
+                  ORDER BY r.created_datetime DESC
+                  LIMIT 5";
+                                $res_result = Database::search($res_query, "i", [$student_id]);
 
-                        // Check if rejected
-                        $reject_query = "SELECT reason FROM reject_reason WHERE reservation_id = ?";
-                        $reject_result = Database::search($reject_query, "i", [$row['id']]);
-                        $reject_reason = '-';
-                        if ($reject_result && $reject_result->num_rows > 0) {
-                            $reject_data = $reject_result->fetch_assoc();
-                            $reject_reason = $reject_data['reason'];
-                        }
+                                if ($res_result && $res_result->num_rows > 0) {
+                                    while ($row = $res_result->fetch_assoc()) {
+                                        // Get equipment for this reservation
+                                        $eq_query = "SELECT e.name, be.book_qty 
+                         FROM book_equipment be
+                         JOIN equipment e ON be.equipment_id = e.id
+                         WHERE be.reservation_id = ?";
+                                        $eq_result = Database::search($eq_query, "i", [$row['id']]);
 
-                        echo "<tr>";
-                        echo "<td><strong>" . htmlspecialchars($row['reservation_id']) . "</strong></td>";
-                        echo "<td>" . $date_display . "</td>";
-                        echo "<td>" . htmlspecialchars($row['location']) . "</td>";
-                        echo "<td>" . $equipment_display . "</td>";
-                        echo "<td><span class='badge bg-warning'>Pending</span></td>";
-                        echo "<td>" . htmlspecialchars($row['supervisor_name'] ?? 'Not Assigned') . "</td>";
-                        echo "<td><small class='text-danger'>" . htmlspecialchars($reject_reason) . "</small></td>";
-                        echo "</tr>";
-                    }
-                } else {
-                    echo "<tr><td colspan='7' class='text-center text-muted py-3'>No reservations found</td></tr>";
-                }
-                ?>
-            </tbody>
-        </table>
-    </div>
-</div>
+                                        $equipment_list = [];
+                                        if ($eq_result) {
+                                            while ($eq = $eq_result->fetch_assoc()) {
+                                                $equipment_list[] = $eq['name'] . " (x" . $eq['book_qty'] . ")";
+                                            }
+                                        }
+                                        $equipment_display = implode("<br>", $equipment_list);
+
+                                        // Calculate date range
+                                        $start_date = date('Y-m-d', strtotime($row['request_date']));
+                                        $end_date = date('Y-m-d', strtotime($row['request_date'] . ' + ' . ($row['continue_days'] - 1) . ' days'));
+                                        $date_display = $start_date;
+                                        if ($row['continue_days'] > 1) {
+                                            $date_display .= " to " . $end_date . " (" . $row['continue_days'] . " days)";
+                                        }
+
+                                        // Determine status badge based on status
+                                        $status_badge = '';
+                                        $status_text = '';
+
+                                        switch ($row['status']) {
+                                            case 'pending':
+                                                $status_badge = 'bg-warning';
+                                                $status_text = 'Pending';
+                                                break;
+                                            case 'to_pending':
+                                                $status_badge = 'bg-info';
+                                                $status_text = 'To Pending';
+                                                break;
+                                            case 'to_checked':
+                                                $status_badge = 'bg-success';
+                                                $status_text = 'Approve';
+                                                break;
+                                            case 'rejected':
+                                                $status_badge = 'bg-danger';
+                                                $status_text = 'Rejected';
+                                                break;
+                                            default:
+                                                $status_badge = 'bg-secondary';
+                                                $status_text = 'Unknown';
+                                        }
+
+                                        echo "<tr>";
+                                        echo "<td><strong>" . htmlspecialchars($row['reservation_id']) . "</strong></td>";
+                                        echo "<td>" . $date_display . "</td>";
+                                        echo "<td>" . htmlspecialchars($row['location']) . "</td>";
+                                        echo "<td><span class='badge " . $status_badge . "'>" . $status_text . "</span></td>";
+
+                                        // Action buttons column
+                                        echo "<td>";
+                                        echo "<div class='action-buttons'>";
+
+                                        // View button for all statuses
+                                        echo "<button class='btn-view' onclick='viewReservation(\"" . htmlspecialchars($row['reservation_id']) . "\")' title='View Details'>";
+                                        echo "<i class='bi bi-eye'></i>";
+                                        echo "</button>";
+
+                                        // Remove button only for Pending status
+                                        if ($row['status'] === 'pending') {
+                                            echo "<button class='btn-remove' onclick='removeReservation(\"" . htmlspecialchars($row['reservation_id']) . "\")' title='Remove'>";
+                                            echo "<i class='bi bi-x-circle'></i>";
+                                            echo "</button>";
+                                        }
+
+                                        echo "</div>";
+                                        echo "</td>";
+                                        echo "</tr>";
+                                    }
+                                } else {
+                                    echo "<tr><td colspan='5' class='text-center text-muted py-3'>No reservations found</td></tr>";
+                                }
+                                ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
 
                 <!-- Booking Calendar -->
                 <h4 class="mb-3" style="color: white;">My Booking Calendar</h4>
@@ -1788,8 +1849,42 @@ $calendar_events_json = json_encode($calendar_events);
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    
+
     <script>
+        // View reservation details
+        function viewReservation(reservationId) {
+            // Your existing view function
+            viewRequest(reservationId);
+        }
+
+        // Remove reservation (for pending only)
+        function removeReservation(reservationId) {
+            if (confirm('Are you sure you want to remove this pending reservation?')) {
+                // Add your remove logic here
+                fetch('../controllers/remove_reservation.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            reservation_id: reservationId
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('Reservation removed successfully');
+                            location.reload();
+                        } else {
+                            alert('Error: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Error removing reservation');
+                    });
+            }
+        }
         // ============ GLOBAL VARIABLES ============
         let selectedEquipment = [];
         let currentEquipmentId = null;
@@ -1823,38 +1918,54 @@ $calendar_events_json = json_encode($calendar_events);
 
             if (!locationId) {
                 searchInput.disabled = true;
+                searchInput.value = '';
+                searchInput.placeholder = 'Select a lab location first';
                 bookQty.disabled = true;
                 addBtn.disabled = true;
                 searchHint.innerText = 'Select a lab location first';
+                document.getElementById('availableQty').value = '';
                 document.getElementById('equipmentDropdown').style.display = 'none';
                 return;
             }
 
             searchInput.disabled = false;
             searchInput.value = '';
-            searchInput.placeholder = 'Type to search equipment...';
-            searchHint.innerText = 'Start typing to search equipment in this lab';
+            searchInput.placeholder = 'Type to search equipment by name or code...';
+            bookQty.disabled = true;
+            addBtn.disabled = true;
+            searchHint.innerText = 'Start typing to search equipment in this lab (min 2 characters)';
+            document.getElementById('availableQty').value = '';
+            document.getElementById('equipmentDropdown').style.display = 'none';
         }
 
+        // Add input event listener for equipment search
         document.getElementById('equipmentSearch')?.addEventListener('input', function() {
             const searchTerm = this.value.trim();
             const locationId = document.getElementById('labLocation').value;
             const dropdown = document.getElementById('equipmentDropdown');
 
+            // Validate location selected
             if (!locationId) {
                 alert('Please select a lab location first');
                 this.value = '';
+                dropdown.style.display = 'none';
                 return;
             }
 
+            // Require at least 2 characters for search
             if (searchTerm.length < 2) {
                 dropdown.style.display = 'none';
                 return;
             }
 
+            // Show loading indicator
+            dropdown.innerHTML = '<div class="text-center p-3"><span class="spinner-border spinner-border-sm text-success" role="status"></span> Searching equipment...</div>';
+            dropdown.style.display = 'block';
+
             // AJAX call to search equipment
             const xhr = new XMLHttpRequest();
             xhr.open('GET', `search_equipment.php?location_id=${locationId}&term=${encodeURIComponent(searchTerm)}`, true);
+
             xhr.onload = function() {
                 if (xhr.status === 200) {
                     try {
@@ -1862,9 +1973,22 @@ $calendar_events_json = json_encode($calendar_events);
                         displayEquipmentDropdown(equipment);
                     } catch (e) {
                         console.error('Parse error:', e);
+                        dropdown.innerHTML = '<div class="text-danger p-3">Error processing response</div>';
                     }
+                } else if (xhr.status === 401) {
+                    dropdown.innerHTML = '<div class="text-danger p-3">Session expired. Please login again.</div>';
+                    setTimeout(() => {
+                        window.location.href = '../index.php';
+                    }, 2000);
+                } else {
+                    dropdown.innerHTML = `<div class="text-danger p-3">Server error (Status: ${xhr.status}). Please try again.</div>`;
                 }
             };
+
+            xhr.onerror = function() {
+                dropdown.innerHTML = '<div class="text-danger p-3">Network error. Please check your connection.</div>';
+            };
+
             xhr.send();
         });
 
@@ -1872,28 +1996,33 @@ $calendar_events_json = json_encode($calendar_events);
             const dropdown = document.getElementById('equipmentDropdown');
             dropdown.innerHTML = '';
 
-            if (equipment.length === 0) {
-                dropdown.innerHTML = '<div class="text-muted p-2">No equipment found</div>';
+            if (!equipment || equipment.length === 0) {
+                dropdown.innerHTML = '<div class="text-muted p-3 text-center"><i class="bi bi-search me-2"></i>No available equipment found matching your search</div>';
                 dropdown.style.display = 'block';
                 return;
             }
 
             equipment.forEach(item => {
                 const div = document.createElement('div');
-                div.className = 'dropdown-item p-2 border-bottom';
+                div.className = 'dropdown-item p-3 border-bottom';
                 div.style.cursor = 'pointer';
+                div.onmouseover = () => div.style.backgroundColor = '#f0fdf4';
+                div.onmouseout = () => div.style.backgroundColor = '';
                 div.onclick = () => selectEquipment(item);
+
                 div.innerHTML = `
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <strong>${item.name}</strong><br>
-                            <small class="text-muted">Code: ${item.code}</small>
-                        </div>
-                        <div class="text-end">
-                            <span class="badge bg-success">Available: ${item.available_qty}</span>
-                        </div>
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <strong class="fs-6">${item.name}</strong>
+                    <div class="mt-1">
+                        <small class="text-muted"><i class="bi bi-upc-scan me-1"></i>Code: ${item.code}</small>
                     </div>
-                `;
+                </div>
+                <div class="text-end">
+                    <span class="badge bg-success p-2">Available: ${item.available_qty}</span>
+                </div>
+            </div>
+        `;
                 dropdown.appendChild(div);
             });
 
@@ -1901,16 +2030,22 @@ $calendar_events_json = json_encode($calendar_events);
         }
 
         function selectEquipment(item) {
+            // Store current equipment details
             currentEquipmentId = item.id;
             currentEquipmentName = item.name;
             currentEquipmentCode = item.code;
             currentAvailableQty = item.available_qty;
 
-            document.getElementById('equipmentSearch').value = item.name + ' (' + item.code + ')';
+            // Update form fields
+            document.getElementById('equipmentSearch').value = `${item.name} (${item.code})`;
             document.getElementById('availableQty').value = item.available_qty;
-            document.getElementById('bookQty').disabled = false;
-            document.getElementById('bookQty').max = item.available_qty;
-            document.getElementById('bookQty').value = 1;
+
+            const bookQty = document.getElementById('bookQty');
+            bookQty.disabled = false;
+            bookQty.max = item.available_qty;
+            bookQty.value = 1;
+            bookQty.min = 1;
+
             document.getElementById('addEquipmentBtn').disabled = false;
             document.getElementById('equipmentDropdown').style.display = 'none';
         }
@@ -2008,9 +2143,9 @@ $calendar_events_json = json_encode($calendar_events);
         }
 
         function resetForm() {
-            if (selectedEquipment.length > 0 && !confirm('Are you sure you want to reset? All selected equipment will be cleared.')) {
-                return;
-            }
+            // if (selectedEquipment.length > 0 && !confirm('Are you sure you want to reset? All selected equipment will be cleared.')) {
+            //     return;
+            // }
 
             document.getElementById('labLocation').value = '';
             document.getElementById('requestDate').value = '<?php echo date('Y-m-d'); ?>';
@@ -2176,34 +2311,34 @@ $calendar_events_json = json_encode($calendar_events);
             });
         }
 
-      function updateEventDisplay(day) {
-    const date = new Date(year, month, day);
-    document.getElementById('eventDay').innerHTML = date.toString().split(' ')[0];
-    document.getElementById('eventDate').innerHTML = `${day} ${months[month]} ${year}`;
+        function updateEventDisplay(day) {
+            const date = new Date(year, month, day);
+            document.getElementById('eventDay').innerHTML = date.toString().split(' ')[0];
+            document.getElementById('eventDate').innerHTML = `${day} ${months[month]} ${year}`;
 
-    let dayEvents = [];
-    eventsArr.forEach(event => {
-        if (event.day === day && event.month === month + 1 && event.year === year) {
-            dayEvents.push(event);
-        }
-        if (event.year === year && event.month === month + 1) {
-            if (day >= event.day && day <= event.end_day && !dayEvents.includes(event)) {
-                dayEvents.push(event);
-            }
-        }
-    });
+            let dayEvents = [];
+            eventsArr.forEach(event => {
+                if (event.day === day && event.month === month + 1 && event.year === year) {
+                    dayEvents.push(event);
+                }
+                if (event.year === year && event.month === month + 1) {
+                    if (day >= event.day && day <= event.end_day && !dayEvents.includes(event)) {
+                        dayEvents.push(event);
+                    }
+                }
+            });
 
-    let eventsHtml = "";
-    if (dayEvents.length > 0) {
-        dayEvents.forEach(event => {
-            let dateRange = '';
-            if (event.day !== event.end_day || event.month !== event.end_month) {
-                dateRange = `<div class="event-date-range" style="font-size:0.8rem; color: #ffd700;">
+            let eventsHtml = "";
+            if (dayEvents.length > 0) {
+                dayEvents.forEach(event => {
+                    let dateRange = '';
+                    if (event.day !== event.end_day || event.month !== event.end_month) {
+                        dateRange = `<div class="event-date-range" style="font-size:0.8rem; color: #ffd700;">
                     ${event.day} ${months[event.month-1]} - ${event.end_day} ${months[event.end_month-1]} ${event.end_year}
                 </div>`;
-            }
-            
-            eventsHtml += `
+                    }
+
+                    eventsHtml += `
                 <div class="event-item" onclick="viewBookingDetails('${event.title}')">
                     <div class="title">
                         <i class="fas fa-circle"></i>
@@ -2217,13 +2352,13 @@ $calendar_events_json = json_encode($calendar_events);
                     </div>
                 </div>
             `;
-        });
-    } else {
-        eventsHtml = '<div class="no-event">No bookings scheduled for this day</div>';
-    }
+                });
+            } else {
+                eventsHtml = '<div class="no-event">No bookings scheduled for this day</div>';
+            }
 
-    document.getElementById('eventsList').innerHTML = eventsHtml;
-}
+            document.getElementById('eventsList').innerHTML = eventsHtml;
+        }
 
         function viewBookingDetails(reservationId) {
             alert('Viewing details for: ' + reservationId);
@@ -2339,48 +2474,48 @@ $calendar_events_json = json_encode($calendar_events);
             xhr.send();
         }
 
-      function searchEquipmentTable() {
-    const searchTerm = document.getElementById('equipmentSearch').value;
-    const labId = document.getElementById('labFilter').value;
-    
-    // Add loading indicator
-    document.getElementById('equipmentTableBody').innerHTML = '<tr><td colspan="5" class="text-center py-4"><div class="spinner-border text-success"></div></td></tr>';
-    
-    const xhr = new XMLHttpRequest();
-    xhr.open('GET', 'search_equipment_table.php?term=' + encodeURIComponent(searchTerm) + '&lab_id=' + labId, true);
-    xhr.onload = function() {
-        if (xhr.status === 200) {
-            document.getElementById('equipmentTableBody').innerHTML = xhr.responseText;
-        } else {
-            document.getElementById('equipmentTableBody').innerHTML = '<tr><td colspan="5" class="text-center text-danger">Error loading equipment</td></tr>';
-        }
-    };
-    xhr.onerror = function() {
-        document.getElementById('equipmentTableBody').innerHTML = '<tr><td colspan="5" class="text-center text-danger">Network error</td></tr>';
-    };
-    xhr.send();
-}
+        function searchEquipmentTable() {
+            const searchTerm = document.getElementById('equipmentSearch').value;
+            const labId = document.getElementById('labFilter').value;
 
-function filterEquipmentTable() {
-    const labId = document.getElementById('labFilter').value;
-    
-    // Clear search input when filtering
-    document.getElementById('equipmentSearch').value = '';
-    
-    // Add loading indicator
-    document.getElementById('equipmentTableBody').innerHTML = '<tr><td colspan="5" class="text-center py-4"><div class="spinner-border text-success"></div></td></tr>';
-    
-    const xhr = new XMLHttpRequest();
-    xhr.open('GET', 'get_equipment_list.php?lab_id=' + labId, true);
-    xhr.onload = function() {
-        if (xhr.status === 200) {
-            document.getElementById('equipmentTableBody').innerHTML = xhr.responseText;
-        } else {
-            document.getElementById('equipmentTableBody').innerHTML = '<tr><td colspan="5" class="text-center text-danger">Error loading equipment</td></tr>';
+            // Add loading indicator
+            document.getElementById('equipmentTableBody').innerHTML = '<tr><td colspan="5" class="text-center py-4"><div class="spinner-border text-success"></div></td></tr>';
+
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', 'search_equipment_table.php?term=' + encodeURIComponent(searchTerm) + '&lab_id=' + labId, true);
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    document.getElementById('equipmentTableBody').innerHTML = xhr.responseText;
+                } else {
+                    document.getElementById('equipmentTableBody').innerHTML = '<tr><td colspan="5" class="text-center text-danger">Error loading equipment</td></tr>';
+                }
+            };
+            xhr.onerror = function() {
+                document.getElementById('equipmentTableBody').innerHTML = '<tr><td colspan="5" class="text-center text-danger">Network error</td></tr>';
+            };
+            xhr.send();
         }
-    };
-    xhr.send();
-}
+
+        function filterEquipmentTable() {
+            const labId = document.getElementById('labFilter').value;
+
+            // Clear search input when filtering
+            document.getElementById('equipmentSearch').value = '';
+
+            // Add loading indicator
+            document.getElementById('equipmentTableBody').innerHTML = '<tr><td colspan="5" class="text-center py-4"><div class="spinner-border text-success"></div></td></tr>';
+
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', 'get_equipment_list.php?lab_id=' + labId, true);
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    document.getElementById('equipmentTableBody').innerHTML = xhr.responseText;
+                } else {
+                    document.getElementById('equipmentTableBody').innerHTML = '<tr><td colspan="5" class="text-center text-danger">Error loading equipment</td></tr>';
+                }
+            };
+            xhr.send();
+        }
 
         function viewEquipmentDetails(id) {
             const xhr = new XMLHttpRequest();
@@ -2414,4 +2549,5 @@ function filterEquipmentTable() {
         });
     </script>
 </body>
+
 </html>

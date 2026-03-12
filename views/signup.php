@@ -376,6 +376,7 @@ session_start();
             padding: 30px 35px;
             overflow-y: auto;
         }
+        
 
         .auth-form::-webkit-scrollbar {
             width: 5px;
@@ -845,17 +846,20 @@ session_start();
                     </div>
 
                     <!-- New Password -->
-                    <div class="mb-3">
-                        <label class="form-label">Password</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="bi bi-lock"></i></span>
-                            <input type="password" id="password" class="form-control"
-                                placeholder="••••••••"
-                                onkeyup="checkPasswordStrength()"
-                                required>
-                        </div>
-                        <small class="text-muted" id="passwordStrength">Use 8+ characters with letters & numbers</small>
-                    </div>
+                   <div class="mb-3">
+    <label class="form-label">Password</label>
+    <div class="input-group">
+        <span class="input-group-text"><i class="bi bi-lock"></i></span>
+        <input type="password" id="password" class="form-control" 
+            placeholder="••••••••" 
+            onkeyup="checkPasswordStrength()" 
+            required>
+        <span class="input-group-text p-0 bg-transparent border-0" style="cursor: pointer;" id="togglePassword">
+            <i class="bi bi-eye fs-5 mx-2" style="color: #28a745;" id="eyeIcon"></i>
+        </span>
+    </div>
+    <small class="text-muted" id="passwordStrength">Use 8+ characters with letters & numbers</small>
+</div>
 
                     <!-- Supervisor Email -->
                     <div class="mb-3" id="emailField">
@@ -956,6 +960,21 @@ session_start();
     </div>
 
     <script>
+
+    document.getElementById('togglePassword').addEventListener('click', function() {
+    const password = document.getElementById('password');
+    const eyeIcon = document.getElementById('eyeIcon');
+    
+    if (password.type === 'password') {
+        password.type = 'text';
+        eyeIcon.classList.remove('bi-eye', 'bi-eye-slash');
+        eyeIcon.classList.add('bi-eye-slash');  // Slash eye when showing password
+    } else {
+        password.type = 'password';
+        eyeIcon.classList.remove('bi-eye', 'bi-eye-slash');
+        eyeIcon.classList.add('bi-eye');  // Regular eye when hiding password
+    }
+});
         var inputrole = '';
 
         function updateEmailField() {

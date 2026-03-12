@@ -8,6 +8,7 @@ header('Content-Type: application/json');
 header('X-Content-Type-Options: nosniff');
 header('X-Frame-Options: DENY');
 header('X-XSS-Protection: 1; mode=block');
+  $env = parse_ini_file(__DIR__ . '/../.env');
 
 // Enable error reporting for debugging
 error_reporting(E_ALL);
@@ -32,7 +33,6 @@ $response = [
     'message' => '',
     'fields' => []
 ];
-
 try {
     // Check if it's a POST request
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
@@ -263,7 +263,7 @@ try {
 
     // If there are validation errors from role validation, return them
     if (!empty($response['fields'])) {
-        $response['message'] = 'Please correct the errors';
+        $response['message'] = 'Somthing went wrong!';
         echo json_encode($response);
         exit;
     }
@@ -315,7 +315,7 @@ try {
             remember_token, status
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
-        $status = 0; // 0 = pending approval
+        $status = 0; 
 
         $insert_success = Database::iud($insert_sql_table1, "issssssssssi", [
             $supervisor_id,
@@ -450,24 +450,24 @@ function handleImageUpload($file)
 // Unified notification function for all roles
 function sendRoleNotification($recipient_email, $first_name, $last_name, $user_id, $user_type, $recipient_role)
 {
+    global $env;
+
     $mail = new PHPMailer(true);
 
     try {
-        // Server settings
         $mail->isSMTP();
-        $mail->Host       = 'smtp.gmail.com';
+        $mail->Host       = $env["MAIL_HOST"];
         $mail->SMTPAuth   = true;
-        $mail->Username   = 'microbiologylaboratorysystem@gmail.com';
-        $mail->Password   = 'cesb lydd jord elyu';
+        $mail->Username   = $env["MAIL_USERNAME"];
+        $mail->Password   = $env["MAIL_PASSWORD"];
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-        $mail->Port       = 587;
-        $mail->CharSet    = 'UTF-8';
+        $mail->Port       = $env["MAIL_PORT"];
+        $mail->CharSet    = "UTF-8";
 
-        // Recipients
-        $mail->setFrom('microbiologylaboratorysystem@gmail.com', 'Microbiology Lab System');
+        $mail->setFrom($env["MAIL_USERNAME"], "Microbiology Lab System");
         $mail->addAddress($recipient_email);
-        $mail->addReplyTo('microbiologylaboratorysystem@gmail.com', 'Microbiology Lab System');
-
+        $mail->addReplyTo($env["MAIL_USERNAME"], "Microbiology Lab System");
+        
         // Content
         $mail->isHTML(true);
 

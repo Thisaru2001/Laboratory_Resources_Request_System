@@ -8,6 +8,7 @@ use PHPMailer\PHPMailer\Exception;
 require 'PHPMailer.php';
 require 'SMTP.php';
 require 'Exception.php';
+ $env = parse_ini_file(__DIR__ . '/../.env');
 
 header('Content-Type: application/json');
 header('X-Content-Type-Options: nosniff');
@@ -86,23 +87,22 @@ $update_result = Database::iud(
 );
 
 if ($update_result) {
-    // Send confirmation email
+  global $env;
+
     $mail = new PHPMailer(true);
 
     try {
-        // Server settings
         $mail->isSMTP();
-        $mail->Host       = 'smtp.gmail.com';
+        $mail->Host       = $env["MAIL_HOST"];
         $mail->SMTPAuth   = true;
-        $mail->Username   = 'microbiologylaboratorysystem@gmail.com';
-        $mail->Password   = 'cesb lydd jord elyu';
+        $mail->Username   = $env["MAIL_USERNAME"];
+        $mail->Password   = $env["MAIL_PASSWORD"];
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-        $mail->Port = 587;
-        $mail->CharSet = 'UTF-8';
-        $mail->Encoding = 'base64';
+        $mail->Port       = $env["MAIL_PORT"];
+        $mail->CharSet    = "UTF-8";
 
         // Recipients
-        $mail->setFrom('microbiologylaboratorysystem@gmail.com', 'Microbiology Lab System');
+      $mail->setFrom($env["MAIL_USERNAME"], "Microbiology Lab System");
         $mail->addAddress($user['email'], $user['first_name'] . ' ' . $user['last_name']);
         $mail->addReplyTo('microbiologylaboratorysystem@gmail.com', 'Microbiology Lab System');
 

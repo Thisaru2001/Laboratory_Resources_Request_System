@@ -14,11 +14,17 @@ DB schema facts:
 import sys, json, re
 import mysql.connector
 
-DB_CONFIG = {
-    "host":     "localhost",
-    "user":     "root",
-    "password": "root",
-    "database": "lab_db"
+from dotenv import load_dotenv
+import os
+
+load_dotenv()  # loads .env file
+
+B_CONFIG = {
+    "host": os.getenv("DB_HOST"),
+    "user": os.getenv("DB_USER"),
+    "password": os.getenv("DB_PASS"),
+    "database": os.getenv("DB_NAME"),
+    "port": int(os.getenv("DB_PORT"))
 }
 
 POSITIVE_WORDS = {
