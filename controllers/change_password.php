@@ -140,7 +140,7 @@ if ($update_result) {
           </table>
 
           <p style="text-align: center;">
-            <a href="http://'.$_SERVER['HTTP_HOST'].'/LRRS/index.php" 
+            <a href="http://'.$_SERVER['HTTP_HOST'].'index.php" 
                style="background-color:#16a34a; color:#ffffff; padding:12px 30px; 
                       text-decoration:none; border-radius:5px; display:inline-block;">
               Login to System

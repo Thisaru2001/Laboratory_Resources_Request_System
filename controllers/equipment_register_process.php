@@ -1061,7 +1061,7 @@
 
             // AJAX request to your equipment registration endpoint
             const xhr = new XMLHttpRequest();
-            xhr.open('POST', '../controllers/equipment_register_process.php', true);
+            xhr.open('POST', 'controllers/equipment_register_process.php', true);
             xhr.timeout = 30000;
 
             xhr.onload = function() {

@@ -12,7 +12,7 @@ if (!isset($_SESSION["user_id"]) || !isset($_SESSION["user_role"]) || $_SESSION[
 
 $reservation_display_id = $_GET['id'] ?? '';
 
-error_log("get_reservation_details_for_to.php - Received Display ID: " . $reservation_display_id);
+
 
 if (empty($reservation_display_id)) {
     echo json_encode(['success' => false, 'message' => 'Reservation ID required']);

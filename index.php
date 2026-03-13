@@ -1162,7 +1162,7 @@ $university_id = $_COOKIE["university_id"] ?? '';
         showMessage("Network error. Please check your connection.", "error");
     };
 
-    request.open("POST", "/LRRS/controllers/signin_process.php", true);
+    request.open("POST", "controllers/signin_process.php", true);
     request.setRequestHeader("X-Requested-With", "XMLHttpRequest");
     request.send(form);
 }
@@ -1337,7 +1337,7 @@ $university_id = $_COOKIE["university_id"] ?? '';
                 }
             };
 
-            request.open("POST", "/LRRS/controllers/send_verification.php", true);
+            request.open("POST", "controllers/send_verification.php", true);
             request.send(form);
         }
 
@@ -1394,7 +1394,7 @@ $university_id = $_COOKIE["university_id"] ?? '';
                 }
             };
 
-            request.open("POST", "/LRRS/controllers/verify_code.php", true);
+            request.open("POST", "controllers/verify_code.php", true);
             request.send(form);
         }
 
@@ -1472,7 +1472,7 @@ Confirm_Change.disabled = true;
                 }
             };
 
-            request.open("POST", "/LRRS/controllers/change_password.php", true);
+            request.open("POST", "controllers/change_password.php", true);
             request.send(form);
         }
     </script>

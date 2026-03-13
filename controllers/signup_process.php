@@ -484,8 +484,8 @@ function sendRoleNotification($recipient_email, $first_name, $last_name, $user_i
 
         // Get base URL
         $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https://' : 'http://';
-        $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-        $base_url = $protocol . $host . '/LRRS/';
+        $host = $_SERVER['HTTP_HOST'] ?? '100.27.246.223';
+       $base_url = $protocol . $host . '/';  // FIXED - remove /LRRS/
 
         $mail->Body = "
         <html>

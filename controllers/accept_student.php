@@ -15,8 +15,7 @@ use PHPMailer\PHPMailer\Exception;
 
 header('Content-Type: application/json');
 
- $env = parse_ini_file(__DIR__ . '/../.env');
-
+$env = parse_ini_file(__DIR__ . '/../.env');
 // Check if supervisor is logged in
 if (!isset($_SESSION['user_id'])) {
     echo json_encode(['success' => false, 'message' => 'Not authenticated']);
@@ -154,8 +153,8 @@ function sendAcceptanceEmail($student) {
 
         // Get base URL
         $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https://' : 'http://';
-        $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-        $base_url = $protocol . $host . '/LRRS/';
+        $host = $_SERVER['HTTP_HOST'] ?? '100.27.246.223';
+        $base_url = $protocol . $host . '/';
 
         $fullName = $student['first_name'] . ' ' . $student['last_name'];
         $approvedDate = date('F d, Y');

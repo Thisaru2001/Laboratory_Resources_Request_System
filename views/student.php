@@ -323,7 +323,7 @@ $calendar_events_json = json_encode($calendar_events);
             position: absolute;
             top: -8px;
             right: -8px;
-            background: #206106;
+            background: #e10101;
             color: white;
             border-radius: 50%;
             width: 20px;
@@ -563,6 +563,9 @@ $calendar_events_json = json_encode($calendar_events);
             width: 50px;
             height: 50px;
             object-fit: contain;
+            border-radius: 8px;
+            background: #f8f9fa;
+            padding: 5px;
         }
 
         .availability-badge {
@@ -1347,23 +1350,29 @@ $calendar_events_json = json_encode($calendar_events);
 
 
                 <!-- Notification Bell -->
-                <div class="notification-bell" onclick="toggleNotifications()">
-                    <i class="bi bi-bell"></i>
-                    <span class="notification-badge" id="notificationBadge">
-                        <?php
-                        // Get current student ID from session
-                        $current_student_id = $_SESSION['student_id'] ?? 0;
+                <div class="notification-bell" onclick="toggleNotificationDropdown()">
+                    <i class="fas fa-bell"></i>
+                    <?php
+                    // Count unread notifications using the existing $student_id variable
+                    $unread_query = "SELECT COUNT(*) as unread_count 
+                     FROM notification 
+                     WHERE owner_of_notification = ? AND status = 'unread'";
+                    $unread_result = Database::search($unread_query, "i", [$student_id]);
 
-                        // Count unread notifications
-                        $unread_query = "SELECT COUNT(*) as unread_count 
-                         FROM notification 
-                         WHERE owner_of_notification = ? AND status = 'unread'";
-                        $unread_result = Database::search($unread_query, "i", [$current_student_id]);
+                    if ($unread_result) {
                         $unread_data = $unread_result->fetch_assoc();
                         $notif_count = $unread_data['unread_count'] ?? 0;
-                        echo $notif_count;
-                        ?>
-                    </span>
+                    } else {
+                        $notif_count = 0;
+                    }
+
+                    // Only show badge if count is greater than 0
+                    if ($notif_count > 0):
+                    ?>
+                        <span class="notification-badge" id="notificationBadge">
+                            <?php echo $notif_count; ?>
+                        </span>
+                    <?php endif; ?>
                 </div>
 
                 <!-- Notification Dropdown -->
@@ -1381,10 +1390,11 @@ $calendar_events_json = json_encode($calendar_events);
                         ORDER BY created_datetime DESC 
                         LIMIT 20";
 
-                        $notif_list_result = Database::search($notif_query, "i", [$current_student_id]);
+                        $notif_list_result = Database::search($notif_query, "i", [$student_id]);
 
                         if ($notif_list_result && $notif_list_result->num_rows > 0) {
                             while ($notif = $notif_list_result->fetch_assoc()) {
+                                // Calculate time ago
                                 $time_ago = '';
                                 $notif_time = strtotime($notif['created_datetime']);
                                 $time_diff = time() - $notif_time;
@@ -1405,7 +1415,7 @@ $calendar_events_json = json_encode($calendar_events);
                                 // Add unread class only if status is unread
                                 $unread_class = ($notif['status'] == 'unread') ? 'unread' : '';
 
-                                echo '<div class="notification-item ' . $unread_class . '" data-notification-id="' . htmlspecialchars($notif['id']) . '">';
+                                echo '<div class="notification-item ' . $unread_class . '" onclick="markNotificationRead(' . $notif['id'] . ')">';
                                 echo '<div><i class="bi bi-info-circle-fill text-success me-2"></i> ' . htmlspecialchars($notif['description']) . '</div>';
                                 echo '<div class="time">' . $time_ago . '</div>';
                                 echo '</div>';
@@ -1416,7 +1426,6 @@ $calendar_events_json = json_encode($calendar_events);
                         ?>
                     </div>
                 </div>
-
 
 
                 <span class="fw-semibold d-none d-sm-block" style="color: #166534;" id="userNameDisplay">
@@ -1481,7 +1490,7 @@ $calendar_events_json = json_encode($calendar_events);
                                 <label class="form-label fw-semibold">
                                     <i class="bi bi-pin-map-fill text-success me-1"></i>Lab Location
                                 </label>
-                                <select id="labLocation" class="form-select" required onchange="loadEquipmentByLocation()">
+                                <select id="labLocation" class="form-select" required onchange="loadEquipment()">
                                     <option value="" disabled selected>-- Select Lab Location --</option>
                                     <?php
                                     if ($location_result && $location_result->num_rows > 0) {
@@ -1553,7 +1562,7 @@ $calendar_events_json = json_encode($calendar_events);
                                 <input type="text" id="availableQty" class="form-control bg-light" readonly placeholder="0">
                             </div>
 
-                            <!-- Book Quantity -->
+                            <!-- Book Quantity   assets\equipment\1.jpg C:\xampp\htdocs\LRRS\assets\equipment\1.jpg-->
                             <div class="col-md-2">
                                 <label class="form-label fw-semibold">
                                     <i class="bi bi-sort-numeric-up text-success me-1"></i>Book Qty
@@ -1725,14 +1734,14 @@ $calendar_events_json = json_encode($calendar_events);
                                         echo "<div class='action-buttons'>";
 
                                         // View button for all statuses
-                                        echo "<button class='btn-view' onclick='viewReservation(\"" . htmlspecialchars($row['reservation_id']) . "\")' title='View Details'>";
+                                        echo "<button class='btn-view me-2' onclick='viewReservation(\"" . htmlspecialchars($row['reservation_id']) . "\")' title='View Details'>";
                                         echo "<i class='bi bi-eye'></i>";
                                         echo "</button>";
 
                                         // Remove button only for Pending status
                                         if ($row['status'] === 'pending') {
-                                            echo "<button class='btn-remove' onclick='removeReservation(\"" . htmlspecialchars($row['reservation_id']) . "\")' title='Remove'>";
-                                            echo "<i class='bi bi-x-circle'></i>";
+                                            echo "<button class='btn btn-danger btn-sm rounded-pill px-3' onclick='removeReservation(\"" . htmlspecialchars($row['reservation_id']) . "\")' title='Remove Reservation' style='background: linear-gradient(135deg, #dc3545, #c82333); border: none; box-shadow: 0 4px 10px rgba(220,53,69,0.3);'>";
+                                            echo "<i class='bi bi-trash3-fill me-1'></i> Remove";
                                             echo "</button>";
                                         }
 
@@ -1794,10 +1803,8 @@ $calendar_events_json = json_encode($calendar_events);
                 <div class="card p-4">
                     <div class="search-add-row">
                         <div class="search-container">
-                            <input type="text" id="equipmentSearch" class="search-input" placeholder="Search by equipment name...">
-                            <button class="search-btn" onclick="searchEquipmentTable()">
-                                <i class="bi bi-search"></i> Search
-                            </button>
+                            <input type="text" id="equipmentSearch1" class="search-input" placeholder="Search by equipment name...">
+
                         </div>
                     </div>
 
@@ -1820,7 +1827,7 @@ $calendar_events_json = json_encode($calendar_events);
                                     <th>Image</th>
                                     <th>Name</th>
                                     <th>Location</th>
-                                    <th>Available</th>
+                                    <!-- <th>Available</th> -->
                                     <th>Action</th>
                                 </tr>
                             </thead>
@@ -1943,7 +1950,7 @@ $calendar_events_json = json_encode($calendar_events);
         // The updateReturnDate function and event listeners have been removed
 
         // ============ EQUIPMENT SEARCH ============
-        function loadEquipmentByLocation() {
+        function loadEquipment() {
             const locationId = document.getElementById('labLocation').value;
             const searchInput = document.getElementById('equipmentSearch');
             const bookQty = document.getElementById('bookQty');
@@ -2133,10 +2140,10 @@ $calendar_events_json = json_encode($calendar_events);
                         <td>${item.name}</td>
                         <td>${item.code || '-'}</td>
                         <td>
-                            <input type="number" class="form-control form-control-sm" 
-                                   value="${item.qty}" min="1" 
-                                   onchange="updateQuantity(${index}, this.value)"
-                                   style="width: 80px;">
+                           <input type="number" class="form-control form-control-sm" 
+       value="${item.qty}" min="1" 
+       readonly
+       style="width: 80px; background-color: #f8f9fa;">
                         </td>
                         <td>
                             <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeEquipment(${index})">
@@ -2256,17 +2263,37 @@ $calendar_events_json = json_encode($calendar_events);
         }
 
         // ============ NOTIFICATION FUNCTIONS ============
-        function toggleNotifications() {
-           
-            document.getElementById("notificationDropdown")?.classList.toggle("show");
-            if (document.getElementById("notificationDropdown").classList.contains("show")) {
+        // ============ NOTIFICATION FUNCTIONS ============
+        function toggleNotificationDropdown() {
+            const dropdown = document.getElementById("notificationDropdown");
+            dropdown.classList.toggle("show");
+
+            // Mark as read when opened
+            if (dropdown.classList.contains("show")) {
                 markNotificationsAsRead();
             }
         }
 
+        function markNotificationRead(notificationId) {
+            // Optional: Mark individual notification as read
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', '../controllers/mark_notification_read.php', true);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    // Remove unread class from this notification
+                    const notifItem = event.currentTarget;
+                    notifItem.classList.remove('unread');
+
+                    // Update badge count
+                    updateNotificationCount();
+                }
+            };
+            xhr.send('notification_id=' + notificationId);
+        }
+
         function markNotificationsAsRead() {
             const xhr = new XMLHttpRequest();
-          //  alert("ok");
             xhr.open('POST', '../controllers/mark_notifications_read.php', true);
             xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
             xhr.onload = function() {
@@ -2274,8 +2301,11 @@ $calendar_events_json = json_encode($calendar_events);
                     try {
                         const response = JSON.parse(xhr.responseText);
                         if (response.success) {
-                            // Update badge to 0
-                            document.getElementById('notificationBadge').textContent = '0';
+                            // Hide the badge
+                            const badge = document.getElementById('notificationBadge');
+                            if (badge) {
+                                badge.style.display = 'none';
+                            }
 
                             // Remove unread class from all notification items
                             document.querySelectorAll('.notification-item').forEach(item => {
@@ -2294,34 +2324,48 @@ $calendar_events_json = json_encode($calendar_events);
                 }
             };
 
-            // Get student_id from PHP
-            const studentId = '<?php echo $current_student_id; ?>';
-            xhr.send('user_id=' + encodeURIComponent(studentId));
+            // Send student_id
+            xhr.send('user_id=' + encodeURIComponent('<?php echo $student_id; ?>'));
+        }
+
+        function updateNotificationCount() {
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', '../controllers/get_notification_count.php?user_id=<?php echo $student_id; ?>', true);
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    try {
+                        const response = JSON.parse(xhr.responseText);
+                        const badge = document.getElementById('notificationBadge');
+                        const headerSpan = document.querySelector('.notification-header span');
+
+                        if (response.count > 0) {
+                            if (badge) {
+                                badge.textContent = response.count;
+                                badge.style.display = 'flex';
+                            }
+                            if (headerSpan) {
+                                headerSpan.textContent = response.count + ' new';
+                            }
+                        } else {
+                            if (badge) {
+                                badge.style.display = 'none';
+                            }
+                            if (headerSpan) {
+                                headerSpan.textContent = '0 new';
+                            }
+                        }
+                    } catch (e) {
+                        console.error('Error updating notification count:', e);
+                    }
+                }
+            };
+            xhr.send();
         }
 
         // Auto-refresh notification count periodically
         setInterval(function() {
             if (!document.getElementById("notificationDropdown").classList.contains("show")) {
-                // Refresh notification count via AJAX
-                const xhr = new XMLHttpRequest();
-                xhr.open('GET', '../controllers/get_notification_count.php?user_id=<?php echo $current_student_id; ?>', true);
-                xhr.onload = function() {
-                    if (xhr.status === 200) {
-                        try {
-                            const response = JSON.parse(xhr.responseText);
-                            document.getElementById('notificationBadge').textContent = response.count;
-
-                            // Update header span if dropdown is closed
-                            const headerSpan = document.querySelector('.notification-header span');
-                            if (headerSpan && !document.getElementById("notificationDropdown").classList.contains("show")) {
-                                headerSpan.textContent = response.count + ' new';
-                            }
-                        } catch (e) {
-                            console.error('Error updating notification count:', e);
-                        }
-                    }
-                };
-                xhr.send();
+                updateNotificationCount();
             }
         }, 30000); // Refresh every 30 seconds
 
@@ -2532,13 +2576,39 @@ $calendar_events_json = json_encode($calendar_events);
         }
 
         function loadEquipmentList() {
+            console.log('Loading equipment list...');
+
+            // Show loading indicator - CHANGED colspan from 5 to 4
+            document.getElementById('equipmentTableBody').innerHTML = '<tr><td colspan="4" class="text-center py-4"><div class="spinner-border text-success"></div> Loading equipment...</td></tr>';
+
+            // Get the current filter value (default to 'all')
+            const labFilter = document.getElementById('labFilter')?.value || 'all';
+
             const xhr = new XMLHttpRequest();
-            xhr.open('GET', 'get_equipment_list.php', true);
+            xhr.open('GET', 'get_equipment_list.php?lab_id=' + labFilter, true);
+
             xhr.onload = function() {
+                console.log('Equipment list response status:', xhr.status);
+
                 if (xhr.status === 200) {
                     document.getElementById('equipmentTableBody').innerHTML = xhr.responseText;
+                } else if (xhr.status === 404) {
+                    console.error('get_equipment_list.php not found');
+                    // CHANGED colspan from 5 to 4
+                    document.getElementById('equipmentTableBody').innerHTML = '<tr><td colspan="4" class="text-center text-danger">Equipment list file not found (404). Please check if get_equipment_list.php exists in the student folder.</td></tr>';
+                } else {
+                    console.error('Error loading equipment. Status:', xhr.status);
+                    // CHANGED colspan from 5 to 4
+                    document.getElementById('equipmentTableBody').innerHTML = '<tr><td colspan="4" class="text-center text-danger">Error loading equipment (Status: ' + xhr.status + '). Please try again.</td></tr>';
                 }
             };
+
+            xhr.onerror = function() {
+                console.error('Network error loading equipment');
+                // CHANGED colspan from 5 to 4
+                document.getElementById('equipmentTableBody').innerHTML = '<tr><td colspan="4" class="text-center text-danger">Network error. Please check your connection.</td></tr>';
+            };
+
             xhr.send();
         }
 
@@ -2558,36 +2628,33 @@ $calendar_events_json = json_encode($calendar_events);
             loadReservationHistory();
         }
 
-        function filterEquipmentTable() {
-            const labId = document.getElementById('labFilter').value;
-            const xhr = new XMLHttpRequest();
-            xhr.open('GET', 'get_equipment_list.php?lab_id=' + labId, true);
-            xhr.onload = function() {
-                if (xhr.status === 200) {
-                    document.getElementById('equipmentTableBody').innerHTML = xhr.responseText;
-                }
-            };
-            xhr.send();
-        }
 
         function searchEquipmentTable() {
-            const searchTerm = document.getElementById('equipmentSearch').value;
+            const searchTerm = document.getElementById('equipmentSearch').value.trim();
             const labId = document.getElementById('labFilter').value;
 
-            // Add loading indicator
-            document.getElementById('equipmentTableBody').innerHTML = '<tr><td colspan="5" class="text-center py-4"><div class="spinner-border text-success"></div></td></tr>';
+            if (searchTerm.length < 2) {
+                alert('Please enter at least 2 characters to search');
+                loadEquipmentList();
+                return;
+            }
+
+            // Add loading indicator - CHANGED colspan from 5 to 4
+            document.getElementById('equipmentTableBody').innerHTML = '<tr><td colspan="4" class="text-center py-4"><div class="spinner-border text-success"></div> Searching equipment...</td></tr>';
 
             const xhr = new XMLHttpRequest();
-            xhr.open('GET', 'search_equipment_table.php?term=' + encodeURIComponent(searchTerm) + '&lab_id=' + labId, true);
+            xhr.open('GET', 'get_equipment_list.php?lab_id=' + labId + '&term=' + encodeURIComponent(searchTerm), true);
             xhr.onload = function() {
                 if (xhr.status === 200) {
                     document.getElementById('equipmentTableBody').innerHTML = xhr.responseText;
                 } else {
-                    document.getElementById('equipmentTableBody').innerHTML = '<tr><td colspan="5" class="text-center text-danger">Error loading equipment</td></tr>';
+                    // CHANGED colspan from 5 to 4
+                    document.getElementById('equipmentTableBody').innerHTML = '<tr><td colspan="4" class="text-center text-danger">Error searching equipment</td></tr>';
                 }
             };
             xhr.onerror = function() {
-                document.getElementById('equipmentTableBody').innerHTML = '<tr><td colspan="5" class="text-center text-danger">Network error</td></tr>';
+                // CHANGED colspan from 5 to 4
+                document.getElementById('equipmentTableBody').innerHTML = '<tr><td colspan="4" class="text-center text-danger">Network error</td></tr>';
             };
             xhr.send();
         }
@@ -2596,10 +2663,10 @@ $calendar_events_json = json_encode($calendar_events);
             const labId = document.getElementById('labFilter').value;
 
             // Clear search input when filtering
-            document.getElementById('equipmentSearch').value = '';
+            document.getElementById('equipmentSearch1').value = '';
 
-            // Add loading indicator
-            document.getElementById('equipmentTableBody').innerHTML = '<tr><td colspan="5" class="text-center py-4"><div class="spinner-border text-success"></div></td></tr>';
+            // Add loading indicator - CHANGED colspan from 5 to 4
+            document.getElementById('equipmentTableBody').innerHTML = '<tr><td colspan="4" class="text-center py-4"><div class="spinner-border text-success"></div> Loading equipment...</td></tr>';
 
             const xhr = new XMLHttpRequest();
             xhr.open('GET', 'get_equipment_list.php?lab_id=' + labId, true);
@@ -2607,8 +2674,13 @@ $calendar_events_json = json_encode($calendar_events);
                 if (xhr.status === 200) {
                     document.getElementById('equipmentTableBody').innerHTML = xhr.responseText;
                 } else {
-                    document.getElementById('equipmentTableBody').innerHTML = '<tr><td colspan="5" class="text-center text-danger">Error loading equipment</td></tr>';
+                    // CHANGED colspan from 5 to 4
+                    document.getElementById('equipmentTableBody').innerHTML = '<tr><td colspan="4" class="text-center text-danger">Error loading equipment</td></tr>';
                 }
+            };
+            xhr.onerror = function() {
+                // CHANGED colspan from 5 to 4
+                document.getElementById('equipmentTableBody').innerHTML = '<tr><td colspan="4" class="text-center text-danger">Network error</td></tr>';
             };
             xhr.send();
         }
@@ -2643,6 +2715,95 @@ $calendar_events_json = json_encode($calendar_events);
             initCalendar();
             showSection('dashboard');
         });
+
+
+        // ============ AUTO SEARCH FUNCTIONALITY ============
+        let searchTimeout;
+
+        // Auto-search for equipment
+        const searchInput = document.getElementById('equipmentSearch1');
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.trim();
+                const labId = document.getElementById('labFilter')?.value || 'all';
+
+                // Clear previous timeout
+                if (searchTimeout) {
+                    clearTimeout(searchTimeout);
+                }
+
+                // Show loading indicator for short searches
+                if (searchTerm.length > 0 && searchTerm.length < 2) {
+                    document.getElementById('equipmentTableBody').innerHTML = '<tr><td colspan="4" class="text-center text-muted py-4"><i class="bi bi-search fs-1 d-block mb-2"></i>Type at least 2 characters to search</td></tr>';
+                    return;
+                }
+
+                // Set new timeout (300ms delay)
+                searchTimeout = setTimeout(() => {
+                    if (searchTerm.length === 0) {
+                        // If search is empty, load all equipment
+                        loadEquipmentList();
+                    } else if (searchTerm.length >= 2) {
+                        // Show loading indicator
+                        document.getElementById('equipmentTableBody').innerHTML = '<tr><td colspan="4" class="text-center py-4"><div class="spinner-border text-success" style="width: 2rem; height: 2rem;"></div><p class="mt-2">Searching...</p></td></tr>';
+
+                        // Perform search
+                        const xhr = new XMLHttpRequest();
+                        xhr.open('GET', 'get_equipment_list.php?lab_id=' + labId + '&term=' + encodeURIComponent(searchTerm), true);
+
+                        xhr.onload = function() {
+                            if (xhr.status === 200) {
+                                document.getElementById('equipmentTableBody').innerHTML = xhr.responseText;
+                            } else {
+                                document.getElementById('equipmentTableBody').innerHTML = '<tr><td colspan="4" class="text-center text-danger">Error searching equipment</td></tr>';
+                            }
+                        };
+
+                        xhr.onerror = function() {
+                            document.getElementById('equipmentTableBody').innerHTML = '<tr><td colspan="4" class="text-center text-danger">Network error</td></tr>';
+                        };
+
+                        xhr.send();
+                    }
+                }, 300); // Wait 300ms after user stops typing
+            });
+
+            // Add clear button functionality (optional)
+            searchInput.addEventListener('keyup', function(e) {
+                if (e.key === 'Escape') {
+                    this.value = '';
+                    loadEquipmentList();
+                }
+            });
+        }
+
+        // Also update filterEquipmentTable to work with search
+        function filterEquipmentTable() {
+            const labId = document.getElementById('labFilter').value;
+
+            // Clear search input when filtering
+            const searchInput = document.getElementById('equipmentSearch1');
+            if (searchInput) {
+                searchInput.value = '';
+            }
+
+            // Add loading indicator
+            document.getElementById('equipmentTableBody').innerHTML = '<tr><td colspan="4" class="text-center py-4"><div class="spinner-border text-success"></div> Loading equipment...</td></tr>';
+
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', 'get_equipment_list.php?lab_id=' + labId, true);
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    document.getElementById('equipmentTableBody').innerHTML = xhr.responseText;
+                } else {
+                    document.getElementById('equipmentTableBody').innerHTML = '<tr><td colspan="4" class="text-center text-danger">Error loading equipment</td></tr>';
+                }
+            };
+            xhr.onerror = function() {
+                document.getElementById('equipmentTableBody').innerHTML = '<tr><td colspan="4" class="text-center text-danger">Network error</td></tr>';
+            };
+            xhr.send();
+        }
     </script>
 </body>
 

@@ -106,19 +106,19 @@ if ($count == 1) {
             $role_lower = strtolower($user_role);
             switch ($role_lower) {
                 case 'student':
-                    $redirect = "/LRRS/views/student.php";
+                    $redirect = "views/student.php";
                     break;
                 case 'technical_officer':
-                    $redirect = "/LRRS/views/tec_officer.php";
+                    $redirect = "views/tec_officer.php";
                     break;
                 case 'supervisor':
-                    $redirect = "/LRRS/views/supervisor.php";
+                    $redirect = "views/supervisor.php";
                     break;
                 case 'hod':
-                    $redirect = "/LRRS/views/hod.php";
+                    $redirect = "views/hod.php";
                     break;
                 default:
-                    $redirect = "/LRRS/views/student.php";
+                    $redirect = "views/student.php";
             }
 
             error_log("Redirect URL: " . $redirect);

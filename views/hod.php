@@ -2903,7 +2903,7 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
 
 
 
-      <!-- Reservation Details Modal -->
+        <!-- Reservation Details Modal -->
         <!-- Reservation Details Modal - Fixed Version -->
         <div id="resModal"
             style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
@@ -3004,12 +3004,47 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
 
 
 
-                    <span class="fw-semibold d-none d-sm-block" style="color: #166534;">Surangi</span>
+                    <span class="fw-semibold d-none d-sm-block" style="color: #166534;">
+                        <?php echo htmlspecialchars($_SESSION['user_first_name'] ?? 'User'); ?>
+                    </span>
                     <div class="dropdown">
-                        <img src="https://ui-avatars.com/api/?name=Admin+User&background=22c55e&color=fff&size=100" class="profile-img dropdown-toggle" data-bs-toggle="dropdown">
+                        <?php
+                        // Get user data from session
+                        $first_name = $_SESSION['user']['first_name'] ?? $_SESSION['user_first_name'] ?? 'User';
+                        $last_name = $_SESSION['user']['last_name'] ?? $_SESSION['user_last_name'] ?? '';
+                        $full_name = trim($first_name . ' ' . $last_name);
+
+                        // Get profile image path from session
+                        $profile_image = $_SESSION['user']['img_path'] ?? $_SESSION['img_path'] ?? '';
+
+                        if (!empty($profile_image)) {
+                            // Clean the path (remove any leading slashes and fix backslashes)
+                            $clean_path = str_replace('\\', '/', $profile_image);
+                            $clean_path = ltrim($clean_path, '/');
+
+                            // For web path, use relative path from document root
+                            $image_url = '/LRRS/' . $clean_path;
+
+                            // Check if file exists (optional - remove in production for performance)
+                            $full_path = $_SERVER['DOCUMENT_ROOT'] . '/LRRS/' . $clean_path;
+                            if (!file_exists($full_path)) {
+                                // Fallback to avatar if image doesn't exist
+                                $image_url = "https://ui-avatars.com/api/?name=" . urlencode($full_name) . "&background=22c55e&color=fff&size=100";
+                            }
+                        } else {
+                            // No profile image, use avatar
+                            $image_url = "https://ui-avatars.com/api/?name=" . urlencode($full_name) . "&background=22c55e&color=fff&size=100";
+                        }
+                        ?>
+
+                        <img src="<?php echo htmlspecialchars($image_url); ?>"
+                            class="profile-img dropdown-toggle"
+                            data-bs-toggle="dropdown"
+                            alt="<?php echo htmlspecialchars($full_name); ?>">
+
                         <ul class="dropdown-menu dropdown-menu-end" style="border-radius: 16px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
-                            <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i>Profile</a></li>
-                            <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i>Settings</a></li>
+                            <li><a class="dropdown-item" href="profile.php"><i class="bi bi-person me-2"></i>Profile</a></li>
+                            <li><a class="dropdown-item" href="settings.php"><i class="bi bi-gear me-2"></i>Settings</a></li>
                             <li>
                                 <hr class="dropdown-divider">
                             </li>
@@ -3028,13 +3063,13 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
 
                     <div class="analytics-grid">
                         <?php
-                        // Define the function for role counts
+                        // Define the function for role counts - FIXED column names
                         function getCountByRole(string $role): int
                         {
-                            $query = "SELECT COUNT(lab_user.user_id) as count 
+                            $query = "SELECT COUNT(lab_user.id) as count 
                   FROM lab_user 
-                  INNER JOIN user_has_role ON lab_user.user_id = user_has_role.user_id 
-                  INNER JOIN role ON user_has_role.role_id = role.role_id 
+                  INNER JOIN lab_user_has_role ON lab_user.id = lab_user_has_role.lab_user_id 
+                  INNER JOIN role ON lab_user_has_role.role_id = role.id 
                   WHERE role.role = ?";
 
                             $types = "s";
@@ -3050,17 +3085,17 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                             return 0;
                         }
 
-                        // Get user counts by role
-                        $student_count = getCountByRole('Student');
-                        $supervisor_count = getCountByRole('Supervisor');
-                        $technical_count = getCountByRole('Technical Officer');
+                        // Get user counts by role - FIXED role names to match your database
+                        $student_count = getCountByRole('student');      // lowercase 'student' from your role table
+                        $supervisor_count = getCountByRole('supervisor'); // lowercase 'supervisor'
+                        $technical_count = getCountByRole('technical_officer'); // from your role table
 
-                        // Calculate Equipment Utilization Rate
+                        // Calculate Equipment Utilization Rate - FIXED queries
                         $utilization_query = "
         SELECT 
-            (SELECT COALESCE(SUM(qty), 0) FROM equipment) as total_qty,
-            (SELECT COALESCE(SUM(qty), 0) FROM broken) as broken_qty,
-            (SELECT COALESCE(SUM(qty), 0) FROM equipment_maintenance) as maintenance_qty
+            (SELECT COALESCE(SUM(total_qty), 0) FROM equipment) as total_qty,
+            (SELECT COALESCE(SUM(broken_qty), 0) FROM broken) as broken_qty,
+            (SELECT COALESCE(SUM(repair_qty), 0) FROM repair) as repair_qty
     ";
 
                         $utilization_result = Database::search($utilization_query);
@@ -3070,13 +3105,22 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                             $row = $utilization_result->fetch_assoc();
                             $total_qty = (int)$row['total_qty'];
                             $broken_qty = (int)$row['broken_qty'];
-                            $maintenance_qty = (int)$row['maintenance_qty'];
+                            $repair_qty = (int)$row['repair_qty'];
 
-                            $available_qty = $total_qty - ($broken_qty + $maintenance_qty);
+                            $available_qty = $total_qty - ($broken_qty + $repair_qty);
 
                             if ($total_qty > 0) {
                                 $utilization_rate = round(($available_qty / $total_qty) * 100);
                             }
+                        }
+
+                        // Get maintenance/repair count from repair table
+                        $repair_query = "SELECT COUNT(*) as repair_count FROM repair";
+                        $repair_result = Database::search($repair_query);
+                        $repair_count = 0;
+                        if ($repair_result && $repair_result->num_rows > 0) {
+                            $row = $repair_result->fetch_assoc();
+                            $repair_count = $row['repair_count'];
                         }
                         ?>
 
@@ -3095,13 +3139,13 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                         <div class="stat-card">
                             <i class="bi bi-person-gear"></i>
                             <h3><?php echo $technical_count; ?></h3>
-                            <p>Technical Officer</p>
+                            <p>Technical Officers</p>
                         </div>
 
                         <div class="stat-card">
                             <i class="bi bi-graph-up"></i>
                             <h3><?php echo $utilization_rate; ?>%</h3>
-                            <p>Equipment Utilization Rate</p>
+                            <p>Equipment Utilization</p>
                         </div>
                     </div>
 
@@ -3109,8 +3153,11 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                     <div class="row mb-4 justify-content-center">
                         <div class="col-md-3 mb-3">
                             <?php
-                            // Count pending reservations
-                            $pending_query = "SELECT COUNT(*) as pending_count FROM reservation WHERE status = 'Pending'";
+                            // Count reservations where technical_officer_id is NULL (pending TO approval)
+                            $pending_query = "SELECT COUNT(*) as pending_count 
+                      FROM reservation 
+                      WHERE technical_officer_id IS NULL";
+
                             $pending_result = Database::search($pending_query);
                             $pending_count = 0;
 
@@ -3166,21 +3213,15 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                         <div class="col-md-3 mb-3">
                             <div class="card p-3 text-center">
                                 <?php
-                                // Count maintenance records with "Inprogress" status
-                                $maintenance_query = "SELECT COUNT(equipment_maintenance.equipment_maintenance_id) as maintenance_count 
-                          FROM equipment_maintenance 
-                          INNER JOIN status_of_maintenance ON equipment_maintenance.status_of_maintenance_id = status_of_maintenance.status_of_maintenance_id 
-                          WHERE status_of_maintenance.status = ?";
+                                // Count repair records from repair table
+                                $repair_query = "SELECT COUNT(*) as repair_count FROM repair";
 
-                                $types = "s";
-                                $params = ["In Progress"]; // or "In Progress" depending on your exact value
+                                $repair_result = Database::search($repair_query);
+                                $repair_count = 0;
 
-                                $maintenance_result = Database::search($maintenance_query, $types, $params);
-                                $maintenance_count = 0;
-
-                                if ($maintenance_result && $maintenance_result->num_rows > 0) {
-                                    $row = $maintenance_result->fetch_assoc();
-                                    $maintenance_count = $row['maintenance_count'];
+                                if ($repair_result && $repair_result->num_rows > 0) {
+                                    $row = $repair_result->fetch_assoc();
+                                    $repair_count = $row['repair_count'];
                                 }
                                 ?>
 
@@ -3190,7 +3231,7 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                                     </button>
                                 </h6>
 
-                                <h3 class="text-danger"><?php echo $maintenance_count; ?></h3>
+                                <h3 class="text-danger"><?php echo $repair_count; ?></h3>
                             </div>
                         </div>
                     </div>
@@ -3356,24 +3397,24 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                                 <tbody id="studentTableBody">
                                     <?php
                                     // Query to get ALL approved students (both active and inactive)
-                                    $query = "SELECT 
-                            lu.user_id,
-                            lu.first_name,
-                            lu.last_name,
-                            lu.university_id,
-                            lu.mobile,
-                            lu.email,
-                            lu.img_path,
-                            lu.status_user,
-                            lu.request_status_id,
-                            lu.approved_datetime
-                          FROM lab_user lu
-                          INNER JOIN user_has_role uhr ON lu.user_id = uhr.user_id
-                          INNER JOIN role r ON uhr.role_id = r.role_id
-                          WHERE r.role = 'Student' 
-                          AND lu.request_status_id = 5 
-                          AND lu.approved_datetime IS NOT NULL
-                          ORDER BY lu.status_user DESC, lu.join_datetime DESC"; // Active first, then inactive
+                                    // Query to get ALL approved students
+                                  // Query to get ALL approved students
+$query = "SELECT 
+            lu.id as user_id,          
+            lu.first_name,
+            lu.last_name,
+            lu.university_id,
+            lu.mobile,
+            lu.email,
+            lu.img_path,
+            lu.status,                  
+            lu.approved_datetime
+          FROM lab_user lu
+          INNER JOIN lab_user_has_role uhr ON lu.id = uhr.lab_user_id  
+          INNER JOIN role r ON uhr.role_id = r.id                     
+          WHERE r.role = 'student'                                     
+          AND lu.approved_datetime IS NOT NULL
+          ORDER BY lu.status DESC, lu.join_datetime DESC";
 
                                     $result = Database::search($query);
 
@@ -3383,10 +3424,10 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                                             $full_name = $row['first_name'] . ' ' . $row['last_name'];
 
                                             // Fix image path
+                                            // Fix image path
                                             $profile_image = !empty($row['img_path'])
-                                                ? '../' . $row['img_path']
+                                                ? '/LRRS/' . ltrim(str_replace('\\', '/', $row['img_path']), '/')  // FIXED: full web path
                                                 : 'https://ui-avatars.com/api/?name=' . urlencode($full_name) . '&background=22c55e&color=fff&size=50';
-
                                             // Format mobile number
                                             $mobile = $row['mobile'];
                                             if (strlen($mobile) == 10) {
@@ -3394,7 +3435,7 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                                             }
 
                                             // Set status based on database value
-                                            $status = ($row['status_user'] == 1) ? 'active' : 'inactive';
+                                            $status = ($row['status'] == 1) ? 'active' : 'inactive';
 
                                             // Output the row with dynamic status
                                             echo '<tr data-user-id="' . htmlspecialchars($row['university_id']) . '" data-status="' . $status . '">';
@@ -3413,7 +3454,7 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                                             echo '</button>';
 
                                             // ✅ Show appropriate button based on status_user
-                                            if ($row['status_user'] == 1) {
+                                            if ($row['status'] == 1) {
                                                 // ACTIVE user - show RED Deactivate button
                                                 echo '<button class="btn-deactivate" onclick="toggleUserStatus(\'' . htmlspecialchars($row['university_id']) . '\')">';
                                                 echo '<i class="bi bi-person-x"></i> Deactivate';
@@ -3471,24 +3512,22 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                                 <tbody id="supervisorTableBody">
                                     <?php
                                     // Query to get ALL approved supervisors (both active and inactive)
-                                    $sup_query = "SELECT 
-                                lu.user_id,
-                                lu.first_name,
-                                lu.last_name,
-                                lu.university_id,
-                                lu.mobile,
-                                lu.email,
-                                lu.img_path,
-                                lu.status_user,
-                                lu.request_status_id,
-                                lu.approved_datetime
-                              FROM lab_user lu
-                              INNER JOIN user_has_role uhr ON lu.user_id = uhr.user_id
-                              INNER JOIN role r ON uhr.role_id = r.role_id
-                              WHERE r.role = 'Supervisor' 
-                              AND lu.request_status_id = 5 
-                              AND lu.approved_datetime IS NOT NULL
-                              ORDER BY lu.status_user DESC, lu.join_datetime DESC";
+                                  $sup_query = "SELECT 
+                lu.id,
+                lu.first_name,
+                lu.last_name,
+                lu.university_id,
+                lu.mobile,
+                lu.email,
+                lu.img_path,
+                lu.status,  
+                lu.approved_datetime
+              FROM lab_user lu
+              INNER JOIN lab_user_has_role uhr ON lu.id = uhr.lab_user_id
+              INNER JOIN role r ON uhr.role_id = r.id
+              WHERE r.role = 'supervisor'  
+              AND lu.approved_datetime IS NOT NULL
+              ORDER BY lu.status DESC, lu.join_datetime DESC";
 
                                     $sup_result = Database::search($sup_query);
 
@@ -3498,7 +3537,7 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
 
                                             // Fix image path
                                             $profile_image = !empty($row['img_path'])
-                                                ? '../' . $row['img_path']
+                                                ? '/LRRS/' . ltrim(str_replace('\\', '/', $row['img_path']), '/')  // FIXED: full web path
                                                 : 'https://ui-avatars.com/api/?name=' . urlencode($full_name) . '&background=22c55e&color=fff&size=50';
 
                                             // Format mobile number
@@ -3508,7 +3547,7 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                                             }
 
                                             // Set status based on database value
-                                            $status = ($row['status_user'] == 1) ? 'active' : 'inactive';
+                                           $status = ($row['status'] == 1) ? 'active' : 'inactive';
 
                                             // Output the row with dynamic status
                                             echo '<tr data-user-id="' . htmlspecialchars($row['university_id']) . '" data-status="' . $status . '">';
@@ -3527,7 +3566,7 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                                             echo '</button>';
 
                                             // Show appropriate button based on status_user
-                                            if ($row['status_user'] == 1) {
+                                            if ($row['status'] == 1) {
                                                 // ACTIVE user - show RED Deactivate button
                                                 echo '<button class="btn-deactivate" onclick="toggleUserStatus(\'' . htmlspecialchars($row['university_id']) . '\')">';
                                                 echo '<i class="bi bi-person-x"></i> Deactivate';
@@ -3551,7 +3590,7 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                             </table>
                         </div>
                     </div>
-                  
+
 
 
 
@@ -3589,24 +3628,22 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                                 <tbody id="techOfficerTableBody">
                                     <?php
                                     // Query to get ALL approved technical officers (both active and inactive)
-                                    $tech_query = "SELECT 
-                                lu.user_id,
-                                lu.first_name,
-                                lu.last_name,
-                                lu.university_id,
-                                lu.mobile,
-                                lu.email,
-                                lu.img_path,
-                                lu.status_user,
-                                lu.request_status_id,
-                                lu.approved_datetime
-                              FROM lab_user lu
-                              INNER JOIN user_has_role uhr ON lu.user_id = uhr.user_id
-                              INNER JOIN role r ON uhr.role_id = r.role_id
-                              WHERE r.role = 'Technical Officer' 
-                              AND lu.request_status_id = 5 
-                              AND lu.approved_datetime IS NOT NULL
-                              ORDER BY lu.status_user DESC, lu.join_datetime DESC";
+                                   $tech_query = "SELECT 
+                lu.id,
+                lu.first_name,
+                lu.last_name,
+                lu.university_id,
+                lu.mobile,
+                lu.email,
+                lu.img_path,
+                lu.status,  
+                lu.approved_datetime
+              FROM lab_user lu
+              INNER JOIN lab_user_has_role uhr ON lu.id = uhr.lab_user_id
+              INNER JOIN role r ON uhr.role_id = r.id
+              WHERE r.role = 'technical_officer'  
+              AND lu.approved_datetime IS NOT NULL
+              ORDER BY lu.status DESC, lu.join_datetime DESC";
 
                                     $tech_result = Database::search($tech_query);
 
@@ -3626,7 +3663,7 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                                             }
 
                                             // Set status based on database value
-                                            $status = ($row['status_user'] == 1) ? 'active' : 'inactive';
+                                            $status = ($row['status'] == 1) ? 'active' : 'inactive';
 
                                             // Output the row with dynamic status
                                             echo '<tr data-user-id="' . htmlspecialchars($row['university_id']) . '" data-status="' . $status . '">';
@@ -3645,7 +3682,7 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                                             echo '</button>';
 
                                             // Show appropriate button based on status_user
-                                            if ($row['status_user'] == 1) {
+                                            if ($row['status'] == 1) {
                                                 // ACTIVE user - show RED Deactivate button
                                                 echo '<button class="btn-deactivate" onclick="toggleUserStatus(\'' . htmlspecialchars($row['university_id']) . '\')">';
                                                 echo '<i class="bi bi-person-x"></i> Deactivate';
@@ -3670,7 +3707,7 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                         </div>
                     </div>
                 </div>
-              
+
 
 
 
@@ -3792,9 +3829,9 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                             </select>
                         </div>
                         <!-- Add Button -->
-                           <button class="add-btn" style="background: linear-gradient(135deg, #f87171, #ef4444);">
-    <i class="bi bi-plus-circle"></i> Block Reservation
-</button>
+                        <button class="add-btn" style="background: linear-gradient(135deg, #f87171, #ef4444);">
+                            <i class="bi bi-plus-circle"></i> Block Reservation
+                        </button>
                         <!-- <button class="add-btn" onclick="addReservation()" style="background: linear-gradient(135deg, #22c55e, #16a34a);">
                             <i class="bi bi-plus-circle"></i> Add Reservation
                         </button> -->
@@ -3832,133 +3869,133 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
 
                 <!-- Request Section -->
                 <!-- Request Section -->
-<div id="activitySection" style="display: none;">
-    <h3 class="mb-4" style="color:white; text-shadow:2px 2px 4px rgba(0,0,0,0.2);">Requests</h3>
+                <div id="activitySection" style="display: none;">
+                    <h3 class="mb-4" style="color:white; text-shadow:2px 2px 4px rgba(0,0,0,0.2);">Requests</h3>
 
-    <div class="card p-4">
+                    <div class="card p-4">
 
-        <!-- Tabs -->
-        <div class="request-tabs" style="margin-bottom:20px;">
-            <button class="request-tab active" onclick="switchRequestType('technical')">
-                Technical Officer Requests
-                <span class="request-count-badge" id="technicalRequestCount">0</span>
-            </button>
-            <button class="request-tab" onclick="switchRequestType('supervisor')">
-                Supervisor Requests
-                <span class="request-count-badge" id="supervisorRequestCount">0</span>
-            </button>
-        </div>
+                        <!-- Tabs -->
+                        <div class="request-tabs" style="margin-bottom:20px;">
+                            <button class="request-tab active" onclick="switchRequestType('technical')">
+                                Technical Officer Requests
+                                <span class="request-count-badge" id="technicalRequestCount">0</span>
+                            </button>
+                            <button class="request-tab" onclick="switchRequestType('supervisor')">
+                                Supervisor Requests
+                                <span class="request-count-badge" id="supervisorRequestCount">0</span>
+                            </button>
+                        </div>
 
-        <!-- Time filter -->
-        <div class="filter-section" style="margin-bottom:20px;">
-            <select class="filter-select" id="timeRangeFilter"
-                    onchange="filterRequestsByTime()" style="min-width:200px;">
-                <option value="all">All Time</option>
-                <option value="daily">Daily</option>
-                <option value="weekly">Weekly</option>
-                <option value="monthly">Monthly</option>
-            </select>
-        </div>
+                        <!-- Time filter -->
+                        <div class="filter-section" style="margin-bottom:20px;">
+                            <select class="filter-select" id="timeRangeFilter"
+                                onchange="filterRequestsByTime()" style="min-width:200px;">
+                                <option value="all">All Time</option>
+                                <option value="daily">Daily</option>
+                                <option value="weekly">Weekly</option>
+                                <option value="monthly">Monthly</option>
+                            </select>
+                        </div>
 
-        <!-- Table -->
-        <div class="table-responsive mt-3">
-            <table class="user-table">
-                <thead>
-                    <tr id="reqTableHead">
-                        <!-- injected by JS -->
-                    </tr>
-                </thead>
-                <tbody id="requestListBody">
-                    <!-- injected by JS -->
-                </tbody>
-            </table>
-        </div>
+                        <!-- Table -->
+                        <div class="table-responsive mt-3">
+                            <table class="user-table">
+                                <thead>
+                                    <tr id="reqTableHead">
+                                        <!-- injected by JS -->
+                                    </tr>
+                                </thead>
+                                <tbody id="requestListBody">
+                                    <!-- injected by JS -->
+                                </tbody>
+                            </table>
+                        </div>
 
-    </div>
-</div><!-- end activitySection -->
+                    </div>
+                </div><!-- end activitySection -->
 
 
-<!-- ── Request Detail Modal (replaces old requestDetailsModal) ── -->
-<div id="reqDetailModal"
-     style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+                <!-- ── Request Detail Modal (replaces old requestDetailsModal) ── -->
+                <div id="reqDetailModal"
+                    style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
             background:rgba(0,0,0,0.6); z-index:999998;
             justify-content:center; align-items:center; overflow-y:auto;">
-    <div style="background:white; border-radius:16px; width:90%; max-width:560px;
+                    <div style="background:white; border-radius:16px; width:90%; max-width:560px;
                 margin:30px auto; box-shadow:0 25px 60px rgba(0,0,0,0.4); position:relative;">
 
-        <!-- Header -->
-        <div style="background:linear-gradient(135deg,#22c55e,#16a34a);
+                        <!-- Header -->
+                        <div style="background:linear-gradient(135deg,#22c55e,#16a34a);
                     padding:18px 24px; border-radius:16px 16px 0 0;
                     display:flex; justify-content:space-between; align-items:center;">
-            <h5 style="margin:0; color:white; font-weight:600;">
-                <i class="bi bi-journal-check"></i>&nbsp;Request Details
-            </h5>
-            <button onclick="closeReqModal()"
-                style="background:rgba(255,255,255,0.25); border:none; color:white;
+                            <h5 style="margin:0; color:white; font-weight:600;">
+                                <i class="bi bi-journal-check"></i>&nbsp;Request Details
+                            </h5>
+                            <button onclick="closeReqModal()"
+                                style="background:rgba(255,255,255,0.25); border:none; color:white;
                        width:34px; height:34px; border-radius:50%; cursor:pointer;
                        font-size:1.1rem; display:flex; align-items:center; justify-content:center;">✕</button>
-        </div>
+                        </div>
 
-        <!-- Body -->
-        <div id="reqModalContent"
-             style="padding:24px; max-height:55vh; overflow-y:auto;"></div>
+                        <!-- Body -->
+                        <div id="reqModalContent"
+                            style="padding:24px; max-height:55vh; overflow-y:auto;"></div>
 
-        <!-- Footer -->
-        <div style="padding:16px 24px; border-top:1px solid #eee;
+                        <!-- Footer -->
+                        <div style="padding:16px 24px; border-top:1px solid #eee;
                     display:flex; justify-content:flex-end; gap:10px; flex-wrap:wrap;">
-            <button id="reqApproveBtn" onclick="submitReqAction('approve')"
-                style="background:linear-gradient(135deg,#22c55e,#16a34a);
+                            <button id="reqApproveBtn" onclick="submitReqAction('approve')"
+                                style="background:linear-gradient(135deg,#22c55e,#16a34a);
                        color:white; border:none; padding:10px 22px;
                        border-radius:10px; font-weight:600; cursor:pointer;">
-                <i class="bi bi-check-circle me-1"></i>Approve
-            </button>
-            <button id="reqRejectBtn" onclick="openRejectBox()"
-                style="background:linear-gradient(135deg,#ef4444,#dc2626);
+                                <i class="bi bi-check-circle me-1"></i>Approve
+                            </button>
+                            <button id="reqRejectBtn" onclick="openRejectBox()"
+                                style="background:linear-gradient(135deg,#ef4444,#dc2626);
                        color:white; border:none; padding:10px 22px;
                        border-radius:10px; font-weight:600; cursor:pointer;">
-                <i class="bi bi-x-circle me-1"></i>Reject
-            </button>
-            <button onclick="closeReqModal()"
-                style="background:#6c757d; color:white; border:none;
+                                <i class="bi bi-x-circle me-1"></i>Reject
+                            </button>
+                            <button onclick="closeReqModal()"
+                                style="background:#6c757d; color:white; border:none;
                        padding:10px 22px; border-radius:10px; font-weight:600; cursor:pointer;">
-                Close
-            </button>
-        </div>
+                                Close
+                            </button>
+                        </div>
 
-    </div>
-</div>
+                    </div>
+                </div>
 
 
-<!-- ── Reject-reason sub-modal ──────────────────────────────────── -->
-<div id="reqRejectModal"
-     style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
+                <!-- ── Reject-reason sub-modal ──────────────────────────────────── -->
+                <div id="reqRejectModal"
+                    style="display:none; position:fixed; top:0; left:0; width:100%; height:100%;
             background:rgba(0,0,0,0.72); z-index:999999;
             justify-content:center; align-items:center;">
-    <div style="background:white; border-radius:16px; width:90%; max-width:420px;
+                    <div style="background:white; border-radius:16px; width:90%; max-width:420px;
                 padding:28px; box-shadow:0 20px 50px rgba(0,0,0,0.4);">
-        <h5 style="color:#dc2626; margin-bottom:16px;">
-            <i class="bi bi-exclamation-triangle me-2"></i>Rejection Reason
-        </h5>
-        <textarea id="reqRejectText" rows="4"
-            placeholder="Enter reason for rejection..."
-            style="width:100%; padding:12px; border:2px solid #e0e0e0;
+                        <h5 style="color:#dc2626; margin-bottom:16px;">
+                            <i class="bi bi-exclamation-triangle me-2"></i>Rejection Reason
+                        </h5>
+                        <textarea id="reqRejectText" rows="4"
+                            placeholder="Enter reason for rejection..."
+                            style="width:100%; padding:12px; border:2px solid #e0e0e0;
                    border-radius:10px; font-size:0.95rem; resize:vertical;
                    font-family:inherit; box-sizing:border-box;"></textarea>
-        <div style="margin-top:16px; display:flex; justify-content:flex-end; gap:10px;">
-            <button onclick="closeRejectBox()"
-                style="background:#6c757d; color:white; border:none;
+                        <div style="margin-top:16px; display:flex; justify-content:flex-end; gap:10px;">
+                            <button onclick="closeRejectBox()"
+                                style="background:#6c757d; color:white; border:none;
                        padding:10px 20px; border-radius:10px; font-weight:600; cursor:pointer;">
-                Cancel
-            </button>
-            <button onclick="submitReqAction('reject')"
-                style="background:linear-gradient(135deg,#ef4444,#dc2626);
+                                Cancel
+                            </button>
+                            <button onclick="submitReqAction('reject')"
+                                style="background:linear-gradient(135deg,#ef4444,#dc2626);
                        color:white; border:none; padding:10px 22px;
                        border-radius:10px; font-weight:600; cursor:pointer;">
-                Confirm Reject
-            </button>
-        </div>
-    </div>
-</div>
+                                Confirm Reject
+                            </button>
+                        </div>
+                    </div>
+                </div>
 
 
 
@@ -4103,7 +4140,7 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                                         </tbody>
                                     </table>
                                 </div>
-                             
+
                             </div>
                         </div>
                     </div>
@@ -4254,46 +4291,46 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
 
 
             // ========== REQUEST SECTION FUNCTIONS ==========
-          // ========== REQUEST SECTION FUNCTIONS (DB-connected) ==========
+            // ========== REQUEST SECTION FUNCTIONS (DB-connected) ==========
 
-let currentRequestType = 'technical';
-let currentRequestId   = null;   // integer PK of selected reservation
-let allRequests        = [];     // raw data from server
+            let currentRequestType = 'technical';
+            let currentRequestId = null; // integer PK of selected reservation
+            let allRequests = []; // raw data from server
 
-// ── Called from showSection('activity') ─────────────────────────
-function initRequestSection() {
-    currentRequestType = 'technical';
-    // Ensure correct tab is highlighted
-    const tabs = document.querySelectorAll('.request-tab');
-    tabs.forEach(t => t.classList.remove('active'));
-    if (tabs[0]) tabs[0].classList.add('active');
-    // Reset filter
-    const filter = document.getElementById('timeRangeFilter');
-    if (filter) filter.value = 'all';
-    // Load badges for both tabs immediately
-    fetchBothBadgeCounts();
-    // Load table
-    loadRequests('technical');
-}
+            // ── Called from showSection('activity') ─────────────────────────
+            function initRequestSection() {
+                currentRequestType = 'technical';
+                // Ensure correct tab is highlighted
+                const tabs = document.querySelectorAll('.request-tab');
+                tabs.forEach(t => t.classList.remove('active'));
+                if (tabs[0]) tabs[0].classList.add('active');
+                // Reset filter
+                const filter = document.getElementById('timeRangeFilter');
+                if (filter) filter.value = 'all';
+                // Load badges for both tabs immediately
+                fetchBothBadgeCounts();
+                // Load table
+                loadRequests('technical');
+            }
 
-// ── Fetch data from PHP ──────────────────────────────────────────
-function loadRequests(type) {
-    const tableBody = document.getElementById('requestListBody');
-    if (!tableBody) return;
+            // ── Fetch data from PHP ──────────────────────────────────────────
+            function loadRequests(type) {
+                const tableBody = document.getElementById('requestListBody');
+                if (!tableBody) return;
 
-    // Set column headers
-    const head = document.getElementById('reqTableHead');
-    if (head) {
-        const idLabel = (type === 'technical') ? 'Technical Officer ID' : 'Supervisor ID';
-        head.innerHTML = `
+                // Set column headers
+                const head = document.getElementById('reqTableHead');
+                if (head) {
+                    const idLabel = (type === 'technical') ? 'Technical Officer ID' : 'Supervisor ID';
+                    head.innerHTML = `
             <th>Reservation ID</th>
             <th>${idLabel}</th>
             <th>Date &amp; Time</th>
             <th>Status</th>
             <th>Action</th>`;
-    }
+                }
 
-    tableBody.innerHTML = `
+                tableBody.innerHTML = `
         <tr>
             <td colspan="5" class="text-center py-4">
                 <div class="spinner-border spinner-border-sm text-success me-2"></div>
@@ -4301,67 +4338,75 @@ function loadRequests(type) {
             </td>
         </tr>`;
 
-    fetch(`../controllers/get_requests.php?type=${type}`)
-        .then(r => r.json())
-        .then(res => {
-            allRequests = res.success ? res.data : [];
-            // Update THIS tab's badge
-            const badgeId = (type === 'technical') ? 'technicalRequestCount' : 'supervisorRequestCount';
-            const badgeEl = document.getElementById(badgeId);
-            if (badgeEl) badgeEl.textContent = allRequests.length;
-            filterRequestsByTime();
-        })
-        .catch(() => {
-            tableBody.innerHTML =
-                `<tr><td colspan="5" class="text-center py-4 text-danger">
+                fetch(`../controllers/get_requests.php?type=${type}`)
+                    .then(r => r.json())
+                    .then(res => {
+                        allRequests = res.success ? res.data : [];
+                        // Update THIS tab's badge
+                        const badgeId = (type === 'technical') ? 'technicalRequestCount' : 'supervisorRequestCount';
+                        const badgeEl = document.getElementById(badgeId);
+                        if (badgeEl) badgeEl.textContent = allRequests.length;
+                        filterRequestsByTime();
+                    })
+                    .catch(() => {
+                        tableBody.innerHTML =
+                            `<tr><td colspan="5" class="text-center py-4 text-danger">
                     ❌ Failed to load requests. Check server connection.
                  </td></tr>`;
-        });
-}
+                    });
+            }
 
-// ── Tab switch ───────────────────────────────────────────────────
-function switchRequestType(type) {
-    currentRequestType = type;
-    const tabs = document.querySelectorAll('.request-tab');
-    tabs.forEach(t => t.classList.remove('active'));
-    tabs[type === 'technical' ? 0 : 1].classList.add('active');
-    document.getElementById('timeRangeFilter').value = 'all';
-    loadRequests(type);
-}
+            // ── Tab switch ───────────────────────────────────────────────────
+            function switchRequestType(type) {
+                currentRequestType = type;
+                const tabs = document.querySelectorAll('.request-tab');
+                tabs.forEach(t => t.classList.remove('active'));
+                tabs[type === 'technical' ? 0 : 1].classList.add('active');
+                document.getElementById('timeRangeFilter').value = 'all';
+                loadRequests(type);
+            }
 
-// ── Time filter ──────────────────────────────────────────────────
-function filterRequestsByTime() {
-    const range = document.getElementById('timeRangeFilter')?.value || 'all';
-    const now   = new Date();
+            // ── Time filter ──────────────────────────────────────────────────
+            function filterRequestsByTime() {
+                const range = document.getElementById('timeRangeFilter')?.value || 'all';
+                const now = new Date();
 
-    const filtered = allRequests.filter(item => {
-        const d = new Date(item.date);
-        if (range === 'daily')   return d.toDateString() === now.toDateString();
-        if (range === 'weekly')  { const c = new Date(); c.setDate(now.getDate()-7);  return d >= c; }
-        if (range === 'monthly') { const c = new Date(); c.setDate(now.getDate()-30); return d >= c; }
-        return true;
-    });
+                const filtered = allRequests.filter(item => {
+                    const d = new Date(item.date);
+                    if (range === 'daily') return d.toDateString() === now.toDateString();
+                    if (range === 'weekly') {
+                        const c = new Date();
+                        c.setDate(now.getDate() - 7);
+                        return d >= c;
+                    }
+                    if (range === 'monthly') {
+                        const c = new Date();
+                        c.setDate(now.getDate() - 30);
+                        return d >= c;
+                    }
+                    return true;
+                });
 
-    renderRequestTable(filtered);
-}
+                renderRequestTable(filtered);
+            }
 
-// ── Build table rows ─────────────────────────────────────────────
-function renderRequestTable(rows) {
-    const tbody = document.getElementById('requestListBody');
-    if (!tbody) return;
-    tbody.innerHTML = '';
+            // ── Build table rows ─────────────────────────────────────────────
+            function renderRequestTable(rows) {
+                const tbody = document.getElementById('requestListBody');
+                if (!tbody) return;
+                tbody.innerHTML = '';
 
-    if (rows.length === 0) {
-        tbody.innerHTML =
-            `<tr><td colspan="5" class="text-center py-4 text-muted">
+                if (rows.length === 0) {
+                    tbody.innerHTML =
+                        `<tr><td colspan="5" class="text-center py-4 text-muted">
                 No pending requests found
              </td></tr>`;
-        return;
-    }
+                    return;
+                }
 
-    rows.forEach(item => {
-        // Green check-mark status pill
-        const statusPill = `
+                rows.forEach(item => {
+                    // Green check-mark status pill
+                    const statusPill = `
             <span style="display:inline-flex; align-items:center; gap:5px;
                          background:#dcfce7; color:#166534; padding:4px 12px;
                          border-radius:20px; font-size:0.82rem; font-weight:600;">
@@ -4369,8 +4414,8 @@ function renderRequestTable(rows) {
                 Pending
             </span>`;
 
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
             <td>${item.display_id}</td>
             <td><strong style="color:#166534;">${item.officer_id}</strong></td>
             <td>${item.date}</td>
@@ -4380,23 +4425,23 @@ function renderRequestTable(rows) {
                     <i class="bi bi-eye"></i> View
                 </button>
             </td>`;
-        tbody.appendChild(tr);
-    });
-}
+                    tbody.appendChild(tr);
+                });
+            }
 
-// ── Open detail modal ────────────────────────────────────────────
-function openReqDetail(id) {
-    const item = allRequests.find(r => r.id === id);
-    if (!item) return;
-    currentRequestId = id;
+            // ── Open detail modal ────────────────────────────────────────────
+            function openReqDetail(id) {
+                const item = allRequests.find(r => r.id === id);
+                if (!item) return;
+                currentRequestId = id;
 
-    const roleLabel = (currentRequestType === 'technical') ? 'Technical Officer ID' : 'Supervisor ID';
+                const roleLabel = (currentRequestType === 'technical') ? 'Technical Officer ID' : 'Supervisor ID';
 
-    // Notification banner (comment fields)
-    let notifHtml = '';
-    if (item.comment || item.any_comment) {
-        const msg = item.comment || item.any_comment;
-        notifHtml = `
+                // Notification banner (comment fields)
+                let notifHtml = '';
+                if (item.comment || item.any_comment) {
+                    const msg = item.comment || item.any_comment;
+                    notifHtml = `
             <div style="background:#fffbeb; border-left:4px solid #f59e0b;
                         padding:12px 16px; border-radius:8px; margin-bottom:16px;
                         display:flex; align-items:flex-start; gap:10px;">
@@ -4408,9 +4453,9 @@ function openReqDetail(id) {
                     <div style="color:#78350f; font-size:0.9rem;">${msg}</div>
                 </div>
             </div>`;
-    }
+                }
 
-    document.getElementById('reqModalContent').innerHTML = `
+                document.getElementById('reqModalContent').innerHTML = `
         ${notifHtml}
         <table style="width:100%; border-collapse:collapse;">
             <tr>
@@ -4469,94 +4514,99 @@ function openReqDetail(id) {
             </tr>
         </table>`;
 
-    document.getElementById('reqDetailModal').style.display = 'flex';
-    document.body.style.overflow = 'hidden';
-}
-
-function closeReqModal() {
-    document.getElementById('reqDetailModal').style.display = 'none';
-    document.body.style.overflow = '';
-}
-
-// Close on backdrop click
-document.getElementById('reqDetailModal').addEventListener('click', function(e) {
-    if (e.target === this) closeReqModal();
-});
-
-// ── Reject sub-modal ─────────────────────────────────────────────
-function openRejectBox() {
-    document.getElementById('reqRejectText').value = '';
-    document.getElementById('reqRejectModal').style.display = 'flex';
-}
-
-function closeRejectBox() {
-    document.getElementById('reqRejectModal').style.display = 'none';
-}
-
-// ── Submit approve / reject ──────────────────────────────────────
-function submitReqAction(action) {
-    if (!currentRequestId) return;
-
-    const reason = action === 'reject'
-                   ? (document.getElementById('reqRejectText')?.value.trim() || '')
-                   : '';
-
-    if (action === 'reject' && !reason) {
-        alert('Please enter a rejection reason.');
-        return;
-    }
-
-    // Disable buttons
-    ['reqApproveBtn','reqRejectBtn'].forEach(id => {
-        const btn = document.getElementById(id);
-        if (btn) btn.disabled = true;
-    });
-
-    const fd = new FormData();
-    fd.append('reservation_id', currentRequestId);
-    fd.append('action', action);
-    if (reason) fd.append('reason', reason);
-
-    fetch('../controllers/process_request_action.php', { method: 'POST', body: fd })
-        .then(r => r.json())
-        .then(res => {
-            if (res.success) {
-                closeRejectBox();
-                closeReqModal();
-                showSuccess(`Request ${action === 'approve' ? 'approved ✓' : 'rejected'} successfully!`);
-                // Refresh table + both badges
-                loadRequests(currentRequestType);
-                fetchBothBadgeCounts();
-            } else {
-                showError(res.message || 'Action failed.');
+                document.getElementById('reqDetailModal').style.display = 'flex';
+                document.body.style.overflow = 'hidden';
             }
-        })
-        .catch(() => showError('Network error. Please try again.'))
-        .finally(() => {
-            ['reqApproveBtn','reqRejectBtn'].forEach(id => {
-                const btn = document.getElementById(id);
-                if (btn) btn.disabled = false;
+
+            function closeReqModal() {
+                document.getElementById('reqDetailModal').style.display = 'none';
+                document.body.style.overflow = '';
+            }
+
+            // Close on backdrop click
+            document.getElementById('reqDetailModal').addEventListener('click', function(e) {
+                if (e.target === this) closeReqModal();
             });
-        });
-}
 
-// ── Refresh both tab badge counts ───────────────────────────────
-function fetchBothBadgeCounts() {
-    Promise.all([
-        fetch('../controllers/get_requests.php?type=technical').then(r => r.json()),
-        fetch('../controllers/get_requests.php?type=supervisor').then(r => r.json())
-    ]).then(([tech, sup]) => {
-        const tCount = tech.success ? tech.count : 0;
-        const sCount = sup.success  ? sup.count  : 0;
-        document.getElementById('technicalRequestCount').textContent = tCount;
-        document.getElementById('supervisorRequestCount').textContent = sCount;
-        const badge = document.getElementById('requestBadge');
-        if (badge) badge.textContent = tCount + sCount;
-    }).catch(() => {});
-}
+            // ── Reject sub-modal ─────────────────────────────────────────────
+            function openRejectBox() {
+                document.getElementById('reqRejectText').value = '';
+                document.getElementById('reqRejectModal').style.display = 'flex';
+            }
 
-// Keep old name working (called from DOMContentLoaded)
-function updateRequestCounts() { fetchBothBadgeCounts(); }
+            function closeRejectBox() {
+                document.getElementById('reqRejectModal').style.display = 'none';
+            }
+
+            // ── Submit approve / reject ──────────────────────────────────────
+            function submitReqAction(action) {
+                if (!currentRequestId) return;
+
+                const reason = action === 'reject' ?
+                    (document.getElementById('reqRejectText')?.value.trim() || '') :
+                    '';
+
+                if (action === 'reject' && !reason) {
+                    alert('Please enter a rejection reason.');
+                    return;
+                }
+
+                // Disable buttons
+                ['reqApproveBtn', 'reqRejectBtn'].forEach(id => {
+                    const btn = document.getElementById(id);
+                    if (btn) btn.disabled = true;
+                });
+
+                const fd = new FormData();
+                fd.append('reservation_id', currentRequestId);
+                fd.append('action', action);
+                if (reason) fd.append('reason', reason);
+
+                fetch('../controllers/process_request_action.php', {
+                        method: 'POST',
+                        body: fd
+                    })
+                    .then(r => r.json())
+                    .then(res => {
+                        if (res.success) {
+                            closeRejectBox();
+                            closeReqModal();
+                            showSuccess(`Request ${action === 'approve' ? 'approved ✓' : 'rejected'} successfully!`);
+                            // Refresh table + both badges
+                            loadRequests(currentRequestType);
+                            fetchBothBadgeCounts();
+                        } else {
+                            showError(res.message || 'Action failed.');
+                        }
+                    })
+                    .catch(() => showError('Network error. Please try again.'))
+                    .finally(() => {
+                        ['reqApproveBtn', 'reqRejectBtn'].forEach(id => {
+                            const btn = document.getElementById(id);
+                            if (btn) btn.disabled = false;
+                        });
+                    });
+            }
+
+            // ── Refresh both tab badge counts ───────────────────────────────
+            function fetchBothBadgeCounts() {
+                Promise.all([
+                    fetch('../controllers/get_requests.php?type=technical').then(r => r.json()),
+                    fetch('../controllers/get_requests.php?type=supervisor').then(r => r.json())
+                ]).then(([tech, sup]) => {
+                    const tCount = tech.success ? tech.count : 0;
+                    const sCount = sup.success ? sup.count : 0;
+                    document.getElementById('technicalRequestCount').textContent = tCount;
+                    document.getElementById('supervisorRequestCount').textContent = sCount;
+                    const badge = document.getElementById('requestBadge');
+                    if (badge) badge.textContent = tCount + sCount;
+                }).catch(() => {});
+            }
+
+            // Keep old name working (called from DOMContentLoaded)
+            function updateRequestCounts() {
+                fetchBothBadgeCounts();
+            }
 
 
 
@@ -5318,12 +5368,12 @@ function updateRequestCounts() { fetchBothBadgeCounts(); }
                                     <td>${eq.qty ?? '—'}</td>
                                 </tr>
 
-                                ${eq.lab_location ? `
+                                ${eq.location ? `
                                 <tr>
                                     <th class="text-muted fw-normal">Location</th>
                                     <td>
                                         <i class="bi bi-geo-alt-fill text-danger me-1"></i>
-                                        ${eq.lab_location}
+                                        ${eq.location}
                                     </td>
                                 </tr>` : ''}
 
@@ -5555,7 +5605,7 @@ function updateRequestCounts() { fetchBothBadgeCounts(); }
                             row.setAttribute('data-status', statusLower);
                             row.innerHTML = `
                   <td>${item.display_id}</td>
-                    <td>${item.lab_location}</td>
+                    <td>${item.location}</td>
                     <td>${item.student_id}</td>
                     <td><span class="badge ${badgeClass}">${item.status}</span></td>
                     <td>${item.date}</td>
@@ -5639,7 +5689,7 @@ function updateRequestCounts() { fetchBothBadgeCounts(); }
                     <tr><td style="padding:10px 0;color:#166534;font-weight:600;width:170px;">Reservation ID:</td>
                         <td style="padding:10px 0;"><strong>${res.id}</strong></td></tr>
                     <tr><td style="padding:10px 0;color:#166534;font-weight:600;border-top:1px solid #f5f5f5;">Lab Location:</td>
-                        <td style="padding:10px 0;border-top:1px solid #f5f5f5;">${res.lab_location}</td></tr>
+                        <td style="padding:10px 0;border-top:1px solid #f5f5f5;">${res.location}</td></tr>
                     <tr><td style="padding:10px 0;color:#166534;font-weight:600;border-top:1px solid #f5f5f5;">Student ID:</td>
                         <td style="padding:10px 0;border-top:1px solid #f5f5f5;">${res.student_id}</td></tr>
                     <tr><td style="padding:10px 0;color:#166534;font-weight:600;border-top:1px solid #f5f5f5;">Supervisor ID:</td>
@@ -5689,49 +5739,12 @@ function updateRequestCounts() { fetchBothBadgeCounts(); }
 
 
             // ========== ANALYTICS FUNCTIONS ==========
-            let usageChart, monthlyChart, equipmentUsageChart;
+            let usageChart, monthlyChart;
 
 
 
 
 
-            let equipmentUsageData = [{
-                    name: 'Microscope',
-                    usage: 80
-                },
-                {
-                    name: 'Centrifuge',
-                    usage: 65
-                },
-                {
-                    name: 'Incubator',
-                    usage: 45
-                },
-                {
-                    name: 'Autoclave',
-                    usage: 70
-                },
-                {
-                    name: 'pH Meter',
-                    usage: 35
-                },
-                {
-                    name: 'Water Bath',
-                    usage: 20
-                },
-                {
-                    name: 'Shaker',
-                    usage: 55
-                },
-                {
-                    name: 'Hot Plate',
-                    usage: 30
-                },
-                {
-                    name: 'Balance',
-                    usage: 25
-                }
-            ];
 
             function initCharts() {
                 const usageCtx = document.getElementById('usageChart')?.getContext('2d');
@@ -6005,115 +6018,200 @@ function updateRequestCounts() { fetchBothBadgeCounts(); }
 
 
                 // Initialize equipment usage table
-                displayEquipmentUsageTable(equipmentUsageData);
+               // displayEquipmentUsageTable(equipmentUsageData);
             }
 
-            function initAnalyticsCharts() {
-                const ctx = document.getElementById('equipmentUsageChart')?.getContext('2d');
-                if (!ctx) return;
+           // Global chart variable
+let equipmentUsageChart = null;
+
+function initAnalyticsCharts() {
+    const ctx = document.getElementById('equipmentUsageChart')?.getContext('2d');
+    if (!ctx) return;
+    
+    // Show loading state
+    ctx.canvas.style.opacity = '0.5';
+    
+    // Fetch real data for chart
+    fetch('../controllers/get_equipment_usage_stats.php?limit=6')
+        .then(response => response.json())
+        .then(data => {
+            ctx.canvas.style.opacity = '1';
+            
+            if (data.success && data.equipment.length > 0) {
+                // Destroy old chart if exists
                 if (equipmentUsageChart) equipmentUsageChart.destroy();
+                
+                // Get top 6 equipment by usage
+                const topEquipment = data.equipment.slice(0, 6);
+                const labels = topEquipment.map(e => e.name);
+                const usageData = topEquipment.map(e => e.usage);
+                
+                // Generate colors based on usage
+                const colors = usageData.map(usage => {
+                    if (usage >= 70) return '#22c55e';  // high usage - green
+                    if (usage >= 40) return '#f59e0b';  // medium usage - orange
+                    return '#ef4444';                    // low usage - red
+                });
+                
                 equipmentUsageChart = new Chart(ctx, {
                     type: 'bar',
                     data: {
-                        labels: ['Microscope', 'Centrifuge', 'Incubator', 'Autoclave', 'pH Meter', 'Water Bath'],
+                        labels: labels,
                         datasets: [{
                             label: 'Usage Percentage',
-                            data: [80, 65, 45, 70, 35, 20],
-                            backgroundColor: ['#22c55e', '#3b82f6', '#f59e0b', '#8b5cf6', '#ec4899', '#ef4444'],
-                            borderRadius: 8
+                            data: usageData,
+                            backgroundColor: colors,
+                            borderRadius: 8,
+                            barPercentage: 0.7
                         }]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
                         plugins: {
-                            legend: {
-                                display: false
+                            legend: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    label: (context) => {
+                                        const item = topEquipment[context.dataIndex];
+                                        return `${context.raw}% (${item.bookings} bookings)`;
+                                    }
+                                }
                             }
                         },
                         scales: {
                             y: {
                                 beginAtZero: true,
                                 max: 100,
-                                title: {
-                                    display: true,
-                                    text: 'Usage %'
-                                }
+                                title: { display: true, text: 'Usage %' }
                             }
                         }
                     }
                 });
+            } else {
+                ctx.canvas.parentNode.innerHTML = '<div class="text-center py-4 text-muted">No equipment data available</div>';
             }
+        })
+        .catch(error => {
+            console.error('Error loading chart data:', error);
+            ctx.canvas.parentNode.innerHTML = '<div class="text-center py-4 text-danger">Error loading chart data</div>';
+        });
+}
 
-            // Filter equipment usage table (real-time search)
-            function filterEquipmentUsage() {
-                const searchTerm = document.getElementById('equipmentUsageSearch').value.toLowerCase().trim();
-
-                const filtered = equipmentUsageData.filter(item =>
-                    item.name.toLowerCase().includes(searchTerm)
-                );
-
-                displayEquipmentUsageTable(filtered);
+// Load equipment usage data from database
+function loadEquipmentUsageData() {
+    const tableBody = document.getElementById('equipmentUsageTableBody');
+    if (!tableBody) return;
+    
+    // Show loading state
+    tableBody.innerHTML = `
+        <tr>
+            <td colspan="2" class="text-center py-4">
+                <div class="spinner-border spinner-border-sm text-success me-2"></div>
+                Loading equipment data...
+            </td>
+        </tr>`;
+    
+    // Fetch equipment usage data from server
+    fetch('../controllers/get_equipment_usage_stats.php')
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                equipmentUsageData = data.equipment;
+                displayEquipmentUsageTable(equipmentUsageData);
+            } else {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="2" class="text-center py-4 text-danger">
+                            ❌ Failed to load equipment data
+                        </td>
+                    </tr>`;
             }
+        })
+        .catch(error => {
+            console.error('Error loading equipment usage:', error);
+            tableBody.innerHTML = `
+                <tr>
+                    <td colspan="2" class="text-center py-4 text-danger">
+                        ❌ Connection error
+                    </td>
+                </tr>`;
+        });
+}
 
-            // Display equipment usage table
-            function displayEquipmentUsageTable(data) {
-                const tableBody = document.getElementById('equipmentUsageTableBody');
-                if (!tableBody) return;
+// Filter equipment usage table (real-time search)
+function filterEquipmentUsage() {
+    const searchTerm = document.getElementById('equipmentUsageSearch').value.toLowerCase().trim();
+    
+    const filtered = equipmentUsageData.filter(item =>
+        item.name.toLowerCase().includes(searchTerm)
+    );
+    
+    displayEquipmentUsageTable(filtered);
+}
 
-                tableBody.innerHTML = '';
-
-                if (data.length === 0) {
-                    tableBody.innerHTML = '<tr><td colspan="2" class="text-center py-4">No equipment found</td></tr>';
-                    return;
-                }
-
-                data.forEach(item => {
-                    // Determine color based on usage percentage
-                    let color = '#22c55e'; // green
-                    if (item.usage < 30) color = '#ef4444'; // red
-                    else if (item.usage < 60) color = '#f59e0b'; // orange
-
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-    <td>${item.display_id}</td>
+// Display equipment usage table
+function displayEquipmentUsageTable(data) {
+    const tableBody = document.getElementById('equipmentUsageTableBody');
+    if (!tableBody) return;
+    
+    tableBody.innerHTML = '';
+    
+    if (!data || data.length === 0) {
+        tableBody.innerHTML = '<tr><td colspan="2" class="text-center py-4">No equipment found</td></tr>';
+        return;
+    }
+    
+    data.forEach(item => {
+        // Determine color based on usage percentage
+        let color = '#22c55e'; // green for >=60%
+        if (item.usage < 30) color = '#ef4444'; // red for <30%
+        else if (item.usage < 60) color = '#f59e0b'; // orange for 30-59%
+        
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>
+                <div class="d-flex align-items-center">
+                    <span class="fw-semibold">${item.name}</span>
+                    <small class="text-muted ms-2">(${item.code})</small>
+                </div>
+            </td>
             <td>
                 <div class="d-flex align-items-center gap-2">
-                    <div class="progress-bar" style="width: 150px;">
-                        <div class="progress-fill" style="width: ${item.usage}%; background: ${color};"></div>
+                    <div class="progress-bar" style="width: 120px; height: 8px; background: #e9ecef; border-radius: 4px; overflow: hidden;">
+                        <div class="progress-fill" style="width: ${item.usage}%; height: 8px; background: ${color}; border-radius: 4px;"></div>
                     </div>
-                    <span style="color: ${color}; font-weight: 600;">${item.usage}%</span>
+                    <span style="color: ${color}; font-weight: 600; min-width: 45px;">${item.usage}%</span>
+                    <small class="text-muted">(${item.bookings} bookings)</small>
                 </div>
             </td>
         `;
-                    tableBody.appendChild(row);
-                });
-            }
+        tableBody.appendChild(row);
+    });
+}
 
-            // Download full inventory
-            function downloadInventory() {
-                // Create CSV content
-                let csv = "Equipment Code,Equipment Name,Available/Total,Maintenance Pending,Usage %,Location,Manufacturer,Model\n";
+// Call this when analytics section is shown
+function initAnalyticsSection() {
+    loadEquipmentUsageData();
+}
 
-                equipmentDataTable.forEach(item => {
-                    csv += `${item.code},${item.name},${item.available}/${item.total},${item.maintenance},${item.usage}%,${item.location},${item.manufacturer},${item.model}\n`;
-                });
-
-                // Create download link
-                const blob = new Blob([csv], {
-                    type: 'text/csv'
-                });
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = 'equipment_inventory.csv';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                window.URL.revokeObjectURL(url);
-
-                alert('Inventory list downloaded successfully!');
-            }
+       function downloadInventory() {
+    fetch('../controllers/get_equipment_list.php?format=csv')
+        .then(response => response.text())
+        .then(csv => {
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'equipment_inventory.csv';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            showSuccess('Inventory downloaded successfully!');
+        })
+        .catch(() => alert('Error downloading inventory'));
+}
 
             const rejectionReasons = {
                 'REQ003': {
@@ -6154,45 +6252,65 @@ function updateRequestCounts() { fetchBothBadgeCounts(); }
                 new bootstrap.Modal(document.getElementById('rejectionReasonModal')).show();
             }
 
-            function generateReport(type) {
-                if (type === 'rejected') {
-                    // Generate rejected requests report
+          function generateReport(type) {
+    if (type === 'rejected') {
+        // Fetch real rejected requests data
+        fetch('../controllers/get_rejected_requests.php')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.requests.length > 0) {
                     let report = "REJECTED REQUESTS REPORT\n";
                     report += "=======================\n\n";
-                    report += "Request ID | Student ID | Reason | Date & Time\n";
+                    report += "Request ID | Student ID | Reason | Date\n";
                     report += "----------------------------------------\n";
-
-                    Object.keys(rejectionReasons).forEach(reqId => {
-                        const r = rejectionReasons[reqId];
-                        report += `${reqId} | ${r.studentId} | ${r.reason} | ${r.dateTime}\n`;
+                    
+                    data.requests.forEach(req => {
+                        report += `${req.reservation_id} | ${req.university_id} | ${req.reason} | ${req.rejected_date}\n`;
                     });
-
+                    
                     console.log(report);
-                    alert('Rejected requests report generated! Check console for preview.');
-
-                } else if (type === 'usage') {
-                    // Generate equipment usage report
-                    let report = "EQUIPMENT USAGE REPORT\n";
-                    report += "======================\n\n";
-                    report += "Equipment Name | Usage Percentage\n";
-                    report += "--------------------------------\n";
-
-                    equipmentUsageData.forEach(item => {
-                        report += `${item.name} | ${item.usage}%\n`;
-                    });
-
-                    console.log(report);
-                    alert('Equipment usage report generated! Check console for preview.');
+                    downloadReport(report, 'rejected_requests.txt');
+                } else {
+                    alert('No rejected requests found');
                 }
+            })
+            .catch(() => alert('Error loading rejected requests'));
+            
+    } else if (type === 'usage') {
+        // Use existing equipmentUsageData
+        if (equipmentUsageData.length > 0) {
+            let report = "EQUIPMENT USAGE REPORT\n";
+            report += "======================\n\n";
+            report += "Equipment Name | Code | Usage % | Bookings\n";
+            report += "----------------------------------------\n";
+            
+            equipmentUsageData.forEach(item => {
+                report += `${item.name} | ${item.code} | ${item.usage}% | ${item.bookings}\n`;
+            });
+            
+            console.log(report);
+            downloadReport(report, 'equipment_usage.txt');
+        } else {
+            alert('No equipment data available');
+        }
+    }
+}
 
-                // Show success message
-                const msg = document.createElement('div');
-                msg.className = 'alert alert-success position-fixed top-0 end-0 m-3';
-                msg.style.zIndex = '9999';
-                msg.innerHTML = `${type.charAt(0).toUpperCase() + type.slice(1)} report generated!`;
-                document.body.appendChild(msg);
-                setTimeout(() => msg.remove(), 3000);
-            }
+// Helper function to download report
+function downloadReport(content, filename) {
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+    
+    // Show success message
+    showSuccess(`${filename} generated successfully!`);
+}
 
 
 
@@ -6359,7 +6477,7 @@ function updateRequestCounts() { fetchBothBadgeCounts(); }
                         </div>
                         <div class="event-time" style="margin-left:28px;">
                             <i class="bi bi-geo-alt-fill me-1" style="color:#ffd700;"></i>
-                            ${ev.lab_location}
+                            ${ev.location}
                         </div>
                         <div style="margin-left:28px;margin-top:4px;">
                             <span style="background:${badgeColor};color:white;padding:2px 8px;

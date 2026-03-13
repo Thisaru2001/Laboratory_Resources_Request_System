@@ -7,8 +7,7 @@ header('Content-Type: application/json');
 
 require_once '../config/database.php';
 
-// ── YOUR EXACT PYTHON PATH (confirmed by: (Get-Command python).Source) ──
-define('PYTHON_EXE', 'C:\\Users\\CYBORG\\AppData\\Local\\Programs\\Python\\Python39\\python.exe');
+define('PYTHON_EXE', '/usr/bin/python3');
 
 try {
 

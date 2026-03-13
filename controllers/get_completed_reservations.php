@@ -4,14 +4,17 @@ date_default_timezone_set('Asia/Colombo');
 header('Content-Type: application/json');
 require_once '../config/database.php';
 
+// In your database, a "completed" reservation is one where:
+// - technical_officer_id IS NOT NULL (approved by TO)
+// - AND request_date is in the past
 $sql = "
     SELECT 
         DATE_FORMAT(request_date, '%b %Y') AS month_label,
         DATE_FORMAT(request_date, '%Y-%m') AS month_sort,
         COUNT(*) AS total
     FROM reservation
-    WHERE status = 'Approved'
-      AND request_date < CURDATE()
+    WHERE technical_officer_id IS NOT NULL  -- Approved by Technical Officer
+      AND request_date < CURDATE()          -- Date has passed
     GROUP BY month_sort, month_label
     ORDER BY month_sort ASC
 ";

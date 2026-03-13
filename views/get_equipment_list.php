@@ -2,9 +2,13 @@
 session_start();
 require_once '../config/database.php';
 
-// Check if user is logged in - FIXED: use user_id
+// Enable error reporting
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+// Check if user is logged in
 if (!isset($_SESSION["user_id"])) {
-    echo '<tr><td colspan="5" class="text-center text-danger">Unauthorized</td></tr>';
+    echo '<tr><td colspan="4" class="text-center text-danger">Unauthorized</td></tr>';
     exit();
 }
 
@@ -12,24 +16,20 @@ $student_id = $_SESSION["user_id"];
 $lab_id = $_GET['lab_id'] ?? 'all';
 $search_term = $_GET['term'] ?? '';
 
-// Build query with availability calculation for today
-$query = "SELECT e.id, e.code, e.name, e.total_qty, l.id as location_id, l.location,
-          COALESCE((SELECT SUM(broken_qty) FROM broken WHERE equipment_id = e.id), 0) as broken_qty,
-          COALESCE((SELECT SUM(repair_qty) FROM repair WHERE equipment_id = e.id), 0) as repair_qty,
-          COALESCE((SELECT SUM(be.book_qty) FROM book_equipment be 
-                   JOIN reservation r ON be.reservation_id = r.id 
-                   WHERE be.equipment_id = e.id 
-                   AND r.request_date <= CURDATE() 
-                   AND DATE_ADD(r.request_date, INTERVAL (r.continue_days - 1) DAY) >= CURDATE()), 0) as booked_qty
+// Build query - include image_path
+$query = "SELECT e.id, e.code, e.name, e.total_qty, e.image_path,
+          GROUP_CONCAT(DISTINCT l.location SEPARATOR ', ') as locations,
+          GROUP_CONCAT(DISTINCT l.id SEPARATOR ',') as location_ids
           FROM equipment e
-          JOIN location l ON e.location_id = l.id
+          LEFT JOIN equipment_has_location ehl ON e.id = ehl.equipment_id
+          LEFT JOIN location l ON ehl.location_id = l.id
           WHERE e.is_hod_checked = 1";
 
 $params = [];
 $types = "";
 
 if ($lab_id !== 'all') {
-    $query .= " AND e.location_id = ?";
+    $query .= " AND e.id IN (SELECT equipment_id FROM equipment_has_location WHERE location_id = ?)";
     $params[] = $lab_id;
     $types .= "i";
 }
@@ -42,32 +42,51 @@ if (!empty($search_term)) {
     $types .= "ss";
 }
 
-$query .= " ORDER BY e.name LIMIT 50";
+$query .= " GROUP BY e.id ORDER BY e.name LIMIT 50";
 
-$result = Database::search($query, $types, $params);
+// Execute query
+if (!empty($params)) {
+    $result = Database::search($query, $types, $params);
+} else {
+    $result = Database::search($query);
+}
 
-if (!$result || $result->num_rows === 0) {
-    echo '<tr><td colspan="5" class="text-center text-muted py-4">No equipment found</td></tr>';
+if (!$result) {
+    echo '<tr><td colspan="4" class="text-center text-danger">Database error: ' . Database::getLastError() . '</td></tr>';
+    exit();
+}
+
+if ($result->num_rows === 0) {
+    echo '<tr><td colspan="4" class="text-center text-muted py-4">';
+    echo '<i class="bi bi-inbox fs-1 d-block mb-2"></i>';
+    echo 'No equipment found.';
+    echo '</td></tr>';
     exit();
 }
 
 while ($row = $result->fetch_assoc()) {
-    $available = $row['total_qty'] - $row['broken_qty'] - $row['repair_qty'] - $row['booked_qty'];
-    $status_color = $available > 0 ? '#22c55e' : '#dc3545';
-    $status_text = $available > 0 ? 'Available' : 'Not Available';
+    // Handle image path
+    $image_url = 'https://upload.wikimedia.org/wikipedia/commons/b/b7/Ukrainian_microscope_%28cropped%29.jpg'; // Default image
     
-    // Default image
-    $image_url = 'https://cdn-icons-png.flaticon.com/512/2941/2941514.png';
+    if (!empty($row['image_path'])) {
+        // Clean the path
+        $clean_path = str_replace('\\', '/', $row['image_path']);
+        $clean_path = ltrim($clean_path, '/');
+        
+        // Check if file exists
+        $full_path = $_SERVER['DOCUMENT_ROOT'] . '/LRRS/' . $clean_path;
+        if (file_exists($full_path)) {
+            $image_url = '/LRRS/' . $clean_path;
+        }
+    }
+    
+    // Display locations or "No location assigned"
+    $location_display = !empty($row['locations']) ? $row['locations'] : '<span class="text-muted">Not assigned to any lab</span>';
     
     echo '<tr>';
-    echo '<td data-label="Image"><img src="' . $image_url . '" class="equipment-image" alt="' . htmlspecialchars($row['name']) . '" style="width: 40px; height: 40px; object-fit: contain;"></td>';
-    echo '<td data-label="Name">' . htmlspecialchars($row['name']) . '<br><small class="text-muted">Code: ' . htmlspecialchars($row['code']) . '</small></td>';
-    echo '<td data-label="Location">' . htmlspecialchars($row['location']) . '</td>';
-    echo '<td data-label="Availability">';
-    echo '<span class="availability-badge" style="background: ' . $status_color . '20; color: ' . $status_color . '; padding: 4px 8px; border-radius: 4px; font-weight: 500;">';
-    echo $available . '/' . $row['total_qty'] . ' ' . $status_text;
-    echo '</span>';
-    echo '</td>';
+    echo '<td data-label="Image"><img src="' . $image_url . '" class="equipment-image" alt="' . htmlspecialchars($row['name']) . '" style="width: 50px; height: 50px; object-fit: contain;"></td>';
+    echo '<td data-label="Name"><strong>' . htmlspecialchars($row['name']) . '</strong><br><small class="text-muted">Code: ' . htmlspecialchars($row['code']) . '</small></td>';
+    echo '<td data-label="Location">' . $location_display . '</td>';
     echo '<td data-label="Action">';
     echo '<button class="btn-view" onclick="viewEquipmentDetails(' . $row['id'] . ')" title="View Details">';
     echo '<i class="bi bi-eye"></i> View';

@@ -1,12 +1,11 @@
 <?php
 session_start();
 
-// error_log("=== SUPERVISOR.PHP LOADED ===");
-// error_log("Session user_id: " . ($_SESSION["user_id"] ?? 'NOT SET'));
-// error_log("Session user_role: " . ($_SESSION["user_role"] ?? 'NOT SET'));
+// Enable error logging
+error_log("=== SUPERVISOR.PHP LOADED ===");
+error_log("Session user_id: " . ($_SESSION["user_id"] ?? 'NOT SET'));
+error_log("Session user_role: " . ($_SESSION["user_role"] ?? 'NOT SET'));
 
-// Rest of your code...
-// Remove duplicate session_start() - already started in included files
 require_once '../config/database.php';
 
 // Check if user is logged in and is a supervisor
@@ -20,14 +19,18 @@ $supervisor_id = $_SESSION["user_id"];
 // Get supervisor details
 $user_query = "SELECT first_name, last_name, img_path FROM lab_user WHERE id = ?";
 $user_result = Database::search($user_query, "i", [$supervisor_id]);
-$first_name = 'Supervisor'; 
-$last_name = ''; 
-$profile_image = '';
-if ($user_result && $user_result->num_rows > 0) {
-    $u = $user_result->fetch_assoc();
-    $first_name   = $u['first_name'] ?? 'Supervisor';
-    $last_name    = $u['last_name']  ?? '';
-    $profile_image = $u['img_path']   ?? '';
+
+if (!$user_result) {
+    error_log("User query failed: " . Database::getLastError());
+    $first_name = 'Supervisor';
+    $last_name = '';
+    $profile_image = '';
+    $user_data = ['img_path' => '']; // Initialize user_data
+} else {
+    $user_data = $user_result->fetch_assoc();
+    $first_name = $user_data['first_name'] ?? 'Supervisor';
+    $last_name = $user_data['last_name'] ?? '';
+    $profile_image = $user_data['img_path'] ?? '';
 }
 $full_name = trim($first_name . ' ' . $last_name);
 
@@ -37,7 +40,10 @@ $students_count_q = "SELECT COUNT(DISTINCT student_id) as cnt
                      FROM supervisor_assigned_student 
                      WHERE supervisor_id_or_hod_id = ?";
 $sc = Database::search($students_count_q, "i", [$supervisor_id]);
-$students_count = ($sc && $sc->num_rows > 0) ? $sc->fetch_assoc()['cnt'] : 0;
+$students_count = 0;
+if ($sc && $sc->num_rows > 0) {
+    $students_count = $sc->fetch_assoc()['cnt'] ?? 0;
+}
 
 // Pending reservations (waiting for supervisor approval)
 $pending_q = "SELECT COUNT(DISTINCT r.id) as cnt 
@@ -48,7 +54,10 @@ $pending_q = "SELECT COUNT(DISTINCT r.id) as cnt
               WHERE r.supervisor_id IS NULL
                 AND NOT EXISTS (SELECT 1 FROM reject_reason rr WHERE rr.reservation_id = r.id)";
 $pq = Database::search($pending_q, "i", [$supervisor_id]);
-$pending_count = ($pq && $pq->num_rows > 0) ? $pq->fetch_assoc()['cnt'] : 0;
+$pending_count = 0;
+if ($pq && $pq->num_rows > 0) {
+    $pending_count = $pq->fetch_assoc()['cnt'] ?? 0;
+}
 
 // Today's practicals
 $today = date('Y-m-d');
@@ -62,7 +71,10 @@ $today_q = "SELECT COUNT(DISTINCT r.id) as cnt
               AND r.supervisor_id IS NOT NULL
               AND NOT EXISTS (SELECT 1 FROM reject_reason rr WHERE rr.reservation_id = r.id)";
 $tq = Database::search($today_q, "is", [$supervisor_id, $today]);
-$today_count = ($tq && $tq->num_rows > 0) ? $tq->fetch_assoc()['cnt'] : 0;
+$today_count = 0;
+if ($tq && $tq->num_rows > 0) {
+    $today_count = $tq->fetch_assoc()['cnt'] ?? 0;
+}
 
 // Total reservations
 $total_res_q = "SELECT COUNT(DISTINCT r.id) as cnt 
@@ -71,7 +83,10 @@ $total_res_q = "SELECT COUNT(DISTINCT r.id) as cnt
                   ON r.student_id = sas.student_id 
                   AND sas.supervisor_id_or_hod_id = ?";
 $trq = Database::search($total_res_q, "i", [$supervisor_id]);
-$total_reservations = ($trq && $trq->num_rows > 0) ? $trq->fetch_assoc()['cnt'] : 0;
+$total_reservations = 0;
+if ($trq && $trq->num_rows > 0) {
+    $total_reservations = $trq->fetch_assoc()['cnt'] ?? 0;
+}
 
 // ---------- CALENDAR EVENTS ----------
 $cal_q = "SELECT r.id, r.reservation_id, r.request_date, r.continue_days,
@@ -86,8 +101,7 @@ $cal_q = "SELECT r.id, r.reservation_id, r.request_date, r.continue_days,
           INNER JOIN supervisor_assigned_student sas 
             ON r.student_id = sas.student_id 
             AND sas.supervisor_id_or_hod_id = ?
-          WHERE r.supervisor_id IS NOT NULL
-            AND NOT EXISTS (SELECT 1 FROM reject_reason rr WHERE rr.reservation_id = r.id)
+          WHERE NOT EXISTS (SELECT 1 FROM reject_reason rr WHERE rr.reservation_id = r.id)
           GROUP BY r.id, r.reservation_id, r.request_date, r.continue_days, l.location, st.first_name, st.last_name";
 $cal_result = Database::search($cal_q, "i", [$supervisor_id]);
 
@@ -124,7 +138,7 @@ $reservations_q = "SELECT r.id, r.reservation_id, r.request_date, r.continue_day
                           GROUP_CONCAT(DISTINCT CONCAT(e.name,' (x',be.book_qty,')') ORDER BY e.name SEPARATOR '<br>') as equipment_list,
                           CASE 
                             WHEN rr.id IS NOT NULL THEN 'rejected'
-                            WHEN r.supervisor_id IS NOT NULL THEN 'TO Pending'
+                            WHEN r.supervisor_id IS NOT NULL THEN 'approved'
                             ELSE 'pending'
                           END as status,
                           rr.reason as reject_reason
@@ -831,7 +845,7 @@ error_log("Final profile image: " . $profile_image);
                             <tr>
                                 <th>Photo</th>
                                 <th>Name</th>
-                                <th>Reg. No.</th>
+                                <th>University ID</th>
                                 <th>Email</th>
                                 <th>Reservations</th>
                                 <th>Actions</th>
@@ -1037,6 +1051,13 @@ function openNotificationModal() {
     
     // Fetch pending requests
     fetchPendingRequests();
+    
+    // Optional: Mark notification as read when opened
+    // You can add this if you want to clear the badge when modal is opened
+    const badge = document.getElementById('notificationBadge');
+    if (badge) {
+        badge.style.display = 'none';
+    }
 }
 
 // Update your fetchPendingRequests function
@@ -1061,20 +1082,20 @@ function fetchPendingRequests() {
                 displayRequests(data.requests);
                 document.getElementById('requestsContainer').style.display = 'block';
                 
-                // Update notification badge
+                // Update notification badge ONLY if there are requests
                 const badge = document.getElementById('notificationBadge');
                 if (badge) {
                     badge.textContent = data.requests.length;
-                    badge.style.backgroundColor = '#dc3545';
+                    badge.style.display = 'flex'; // Show badge
+                    badge.style.backgroundColor = '#dc3545'; // Red color for pending requests
                 }
             } else {
                 document.getElementById('noRequestsMessage').style.display = 'block';
                 
-                // Update badge to 0
+                // Hide the badge completely when there are no requests
                 const badge = document.getElementById('notificationBadge');
                 if (badge) {
-                    badge.textContent = '0';
-                    badge.style.backgroundColor = '#6c757d';
+                    badge.style.display = 'none'; // Hide badge when 0
                 }
             }
         })
@@ -1086,6 +1107,12 @@ function fetchPendingRequests() {
                 <i class="bi bi-exclamation-triangle-fill text-danger" style="font-size: 3rem;"></i>
                 <p class="mt-2">Error loading requests</p>
             `;
+            
+            // Hide badge on error
+            const badge = document.getElementById('notificationBadge');
+            if (badge) {
+                badge.style.display = 'none';
+            }
         });
 }
 

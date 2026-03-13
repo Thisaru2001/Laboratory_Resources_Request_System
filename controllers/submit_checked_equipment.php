@@ -3,9 +3,9 @@ session_start();
 require_once '../config/database.php';
 
 // Include PHPMailer
-require_once '../PHPMailer/src/Exception.php';
-require_once '../PHPMailer/src/PHPMailer.php';
-require_once '../PHPMailer/src/SMTP.php';
+require_once 'Exception.php';
+require_once 'PHPMailer.php';
+require_once 'SMTP.php';
  $env = parse_ini_file(__DIR__ . '/../.env');
 
 use PHPMailer\PHPMailer\PHPMailer;
@@ -221,8 +221,8 @@ try {
     
     // Get base URL
     $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https://' : 'http://';
-    $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-    $base_url = $protocol . $host . '/LRRS/';
+    $host = $_SERVER['HTTP_HOST'] ?? '100.27.246.223';
+   $base_url = $protocol . $host . '/';  // FIXED - remove /LRRS/
     
     // Send email to student
     if (!empty($student_email)) {
