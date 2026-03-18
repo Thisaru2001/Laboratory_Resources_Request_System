@@ -2371,13 +2371,13 @@ $calendar_events_json = json_encode($calendar_events);
         function markNotificationRead(notificationId) {
             // Optional: Mark individual notification as read
             const xhr = new XMLHttpRequest();
-            xhr.open('POST', '../controllers/mark_notification_read.php', true);
+            xhr.open('POST', '../controllers/mark_notifications_read.php', true);
             xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
             xhr.onload = function() {
                 if (xhr.status === 200) {
                     // Remove unread class from this notification
                     const notifItem = event.currentTarget;
-                    notifItem.classList.remove('unread');
+                    if (notifItem) notifItem.classList.remove('unread');
 
                     // Update badge count
                     updateNotificationCount();

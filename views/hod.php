@@ -872,8 +872,9 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
 
             .action-buttons {
                 display: flex;
-                gap: 10px;
-                flex-wrap: wrap;
+                gap: 4px;
+                flex-wrap: nowrap;
+                align-items: center;
             }
 
             .btn-approve {
@@ -994,15 +995,19 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
                 background: linear-gradient(135deg, #3b82f6, #2563eb);
                 color: white;
                 border: none;
-                padding: 6px 12px;
-                border-radius: 8px;
-                font-size: 0.85rem;
-                transition: all 0.3s;
+                padding: 4px 8px;
+                border-radius: 6px;
+                font-size: 11px;
+                transition: all 0.3s ease;
+                white-space: nowrap;
+                display: inline-flex;
+                align-items: center;
+                gap: 2px;
             }
 
             .btn-view:hover {
-                transform: scale(1.05);
-                box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
+                transform: translateY(-2px);
+                box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
             }
 
             /* Report Card */
@@ -1626,14 +1631,15 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
                 background: linear-gradient(135deg, #22c55e, #16a34a);
                 color: white;
                 border: none;
-                padding: 6px 12px;
+                padding: 4px 8px;
                 border-radius: 6px;
-                font-size: 12px;
+                font-size: 11px;
                 cursor: pointer;
                 transition: all 0.3s ease;
                 display: inline-flex;
                 align-items: center;
-                gap: 4px;
+                gap: 2px;
+                white-space: nowrap;
             }
 
             .btn-activate:hover {
@@ -1645,14 +1651,15 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
                 background: linear-gradient(135deg, #ef4444, #dc2626);
                 color: white;
                 border: none;
-                padding: 6px 12px;
+                padding: 4px 8px;
                 border-radius: 6px;
-                font-size: 12px;
+                font-size: 11px;
                 cursor: pointer;
                 transition: all 0.3s ease;
                 display: inline-flex;
                 align-items: center;
-                gap: 4px;
+                gap: 2px;
+                white-space: nowrap;
             }
 
             .btn-deactivate:hover {
@@ -2375,22 +2382,24 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
             /* Action Buttons */
             .action-buttons {
                 display: flex;
-                gap: 8px;
-                flex-wrap: wrap;
+                gap: 4px;
+                flex-wrap: nowrap;
+                align-items: center;
             }
 
             .btn-edit {
                 background: linear-gradient(135deg, #3b82f6, #2563eb);
                 color: white;
                 border: none;
-                padding: 6px 12px;
+                padding: 4px 8px;
                 border-radius: 6px;
-                font-size: 12px;
+                font-size: 11px;
                 cursor: pointer;
                 transition: all 0.3s ease;
                 display: inline-flex;
                 align-items: center;
-                gap: 4px;
+                gap: 2px;
+                white-space: nowrap;
             }
 
             .btn-edit:hover {
@@ -2402,14 +2411,15 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
                 background: linear-gradient(135deg, #ef4444, #dc2626);
                 color: white;
                 border: none;
-                padding: 6px 12px;
+                padding: 4px 8px;
                 border-radius: 6px;
-                font-size: 12px;
+                font-size: 11px;
                 cursor: pointer;
                 transition: all 0.3s ease;
                 display: inline-flex;
                 align-items: center;
-                gap: 4px;
+                gap: 2px;
+                white-space: nowrap;
             }
 
             .btn-remove:hover {
@@ -2453,14 +2463,15 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
                 background: linear-gradient(135deg, #3b82f6, #2563eb);
                 color: white;
                 border: none;
-                padding: 6px 12px;
+                padding: 4px 8px;
                 border-radius: 6px;
-                font-size: 12px;
+                font-size: 11px;
                 cursor: pointer;
                 transition: all 0.3s ease;
                 display: inline-flex;
                 align-items: center;
-                gap: 4px;
+                gap: 2px;
+                white-space: nowrap;
             }
 
             .btn-view:hover {
@@ -2537,14 +2548,15 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
                 background: linear-gradient(135deg, #ef4444, #dc2626);
                 color: white;
                 border: none;
-                padding: 6px 12px;
+                padding: 4px 8px;
                 border-radius: 6px;
-                font-size: 12px;
+                font-size: 11px;
                 cursor: pointer;
                 transition: all 0.3s ease;
                 display: inline-flex;
                 align-items: center;
-                gap: 4px;
+                gap: 2px;
+                white-space: nowrap;
             }
 
             .btn-deactivate:hover {
@@ -3380,14 +3392,15 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
                 background: linear-gradient(135deg, #22c55e, #16a34a);
                 color: white;
                 border: none;
-                padding: 6px 12px;
+                padding: 4px 8px;
                 border-radius: 6px;
-                font-size: 12px;
+                font-size: 11px;
                 cursor: pointer;
                 transition: all 0.3s ease;
                 display: inline-flex;
                 align-items: center;
-                gap: 4px;
+                gap: 2px;
+                white-space: nowrap;
             }
 
             /* Request Count Badges */
@@ -3604,43 +3617,43 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
                 </div> -->
 
                     <!-- Replace this entire block in your topbar -->
-<div style="position: relative;">
+                    <div style="position: relative; display: flex; gap: 12px; align-items: center;">
 
-    <!-- Notification Bell -->
-     <!-- Add this BEFORE the notification bell wrapper div -->
-<div class="notification-bell" onclick="showSection('activity')" style="position:relative;">
-    <i class="bi bi-journal-check fs-5" style="color: #166534;"></i>
-    <span class="request-badge" id="requestBadge">0</span>
-</div>
-    <div class="notification-bell" onclick="toggleNotifications()" style="position: relative; cursor: pointer;">
-        <i class="bi bi-bell fs-5" style="color: #166534;"></i>
-        <span class="notification-badge" id="notificationBadge" style="display:none;">0</span>
-    </div>
+                        <!-- Notification Bell -->
+                        <!-- Add this BEFORE the notification bell wrapper div -->
+                        <div class="notification-bell" onclick="showSection('activity')" style="position:relative;">
+                            <i class="bi bi-journal-check fs-5" style="color: #166534;"></i>
+                            <span class="request-badge" id="requestBadge">0</span>
+                        </div>
+                        <div class="notification-bell" onclick="toggleNotifications()" style="position: relative; cursor: pointer;">
+                            <i class="bi bi-bell fs-5" style="color: #166534;"></i>
+                            <span class="notification-badge" id="notificationBadge" style="display:none;">0</span>
+                        </div>
 
-    <!-- Notification Dropdown — INSIDE same relative parent as bell -->
-    <div class="notification-dropdown" id="notificationDropdown">
-        <div class="notification-header">
-            <h6 class="mb-0">Notifications</h6>
-            <div class="d-flex gap-2 align-items-center">
-                <span id="notificationNewCount" class="badge bg-success">0 new</span>
-                <button onclick="markAllRead()" class="btn btn-sm btn-outline-light py-0"
-                    style="font-size:0.75rem; color:white; border-color:rgba(255,255,255,0.5);">
-                    Mark all read
-                </button>
-            </div>
-        </div>
-        <div class="notification-list" id="notificationList">
-            <div class="text-center py-3 text-muted">
-                <div class="spinner-border spinner-border-sm"></div>
-                <span class="ms-2">Loading...</span>
-            </div>
-        </div>
-        <div class="notification-footer">
-            <a href="#" onclick="markAllRead(); return false;">Clear all</a>
-        </div>
-    </div>
+                        <!-- Notification Dropdown — INSIDE same relative parent as bell -->
+                        <div class="notification-dropdown" id="notificationDropdown">
+                            <div class="notification-header">
+                                <h6 class="mb-0">Notifications</h6>
+                                <div class="d-flex gap-2 align-items-center">
+                                    <span id="notificationNewCount" class="badge bg-success">0 new</span>
+                                    <button onclick="markAllRead()" class="btn btn-sm btn-outline-light py-0"
+                                        style="font-size:0.75rem; color:white; border-color:rgba(255,255,255,0.5);">
+                                        Mark all read
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="notification-list" id="notificationList">
+                                <div class="text-center py-3 text-muted">
+                                    <div class="spinner-border spinner-border-sm"></div>
+                                    <span class="ms-2">Loading...</span>
+                                </div>
+                            </div>
+                            <div class="notification-footer">
+                                <a href="#" onclick="markAllRead(); return false;">Clear all</a>
+                            </div>
+                        </div>
 
-</div>
+                    </div>
 
 
 
@@ -3719,7 +3732,7 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
                             <li>
                                 <hr class="dropdown-divider">
                             </li>
-                           <li><a class="dropdown-item text-danger" href="../logout.php"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                            <li><a class="dropdown-item text-danger" href="../logout.php"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
                         </ul>
                     </div>
                 </div>
@@ -4002,7 +4015,6 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
                                         <th>Profile Image</th>
                                         <th>University ID</th>
                                         <th>Name</th>
-                                        <th>Mobile</th>
                                         <th>Email</th>
                                         <th>Actions</th>
                                     </tr>
@@ -4040,11 +4052,6 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
                                             $profile_image = !empty($row['img_path'])
                                                 ? '/' . ltrim(str_replace('\\', '/', $row['img_path']), '/')  // Just add leading slash
                                                 : 'https://ui-avatars.com/api/?name=' . urlencode($full_name) . '&background=22c55e&color=fff&size=50';
-                                            // Format mobile number
-                                            $mobile = $row['mobile'];
-                                            if (strlen($mobile) == 10) {
-                                                $mobile = substr($mobile, 0, 3) . '-' . substr($mobile, 3, 3) . '-' . substr($mobile, 6, 4);
-                                            }
 
                                             // Set status based on database value
                                             $status = ($row['status'] == 1) ? 'active' : 'inactive';
@@ -4060,7 +4067,6 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
                                             echo '</td>';
                                             echo '<td>' . htmlspecialchars($row['university_id']) . '</td>';
                                             echo '<td>' . htmlspecialchars($full_name) . '</td>';
-                                            echo '<td>' . htmlspecialchars($mobile) . '</td>';
                                             echo '<td>' . htmlspecialchars($row['email']) . '</td>';
                                             echo '<td>';
                                             echo '<div class="action-buttons">';
@@ -4086,7 +4092,7 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
                                             echo '</tr>';
                                         }
                                     } else {
-                                        echo '<tr><td colspan="6" class="text-center py-4">No approved students found</td></tr>';
+                                        echo '<tr><td colspan="5" class="text-center py-4">No approved students found</td></tr>';
                                     }
                                     ?>
                                 </tbody>
@@ -4119,7 +4125,6 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
                                         <th>Profile Image</th>
                                         <th>University ID</th>
                                         <th>Name</th>
-                                        <th>Mobile</th>
                                         <th>Email</th>
                                         <th>Actions</th>
                                     </tr>
@@ -4155,12 +4160,6 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
                                                 : 'https://ui-avatars.com/api/?name=' . urlencode($full_name) . '&background=22c55e&color=fff&size=50';
 
 
-                                            $mobile = $row['mobile'];
-                                            if (strlen($mobile) == 10) {
-                                                $mobile = substr($mobile, 0, 3) . '-' . substr($mobile, 3, 3) . '-' . substr($mobile, 6, 4);
-                                            }
-
-
                                             $status = ($row['status'] == 1) ? 'active' : 'inactive';
 
 
@@ -4173,7 +4172,6 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
                                             echo '</td>';
                                             echo '<td>' . htmlspecialchars($row['university_id']) . '</td>';
                                             echo '<td>' . htmlspecialchars($full_name) . '</td>';
-                                            echo '<td>' . htmlspecialchars($mobile) . '</td>';
                                             echo '<td>' . htmlspecialchars($row['email']) . '</td>';
                                             echo '<td>';
                                             echo '<div class="action-buttons">';
@@ -4199,7 +4197,7 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
                                             echo '</tr>';
                                         }
                                     } else {
-                                        echo '<tr><td colspan="6" class="text-center py-4">No approved supervisors found</td></tr>';
+                                        echo '<tr><td colspan="5" class="text-center py-4">No approved supervisors found</td></tr>';
                                     }
                                     ?>
                                 </tbody>
@@ -4372,8 +4370,8 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
                                     <tr>
                                         <th>Image</th>
                                         <th>Equipment Name</th>
-                                        <th>Maintenance Pending</th>
-                                        <th>Broken</th>
+                                        <th>Maintenance Qty</th>
+                                        <th>Broken Qty</th>
                                         <th>Usage %</th>
                                         <th>Actions</th>
                                     </tr>
@@ -5992,13 +5990,13 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
                      onerror="this.src='https://cdn-icons-png.flaticon.com/512/2941/2941514.png'"
                      alt="${name}">
             </td>
-            <td><strong>${name}</strong></td>
-            <td>
+            <td style="font-size: 0.9rem;">${name}</td>
+            <td style="width: 120px; padding: 8px 4px;">
                 ${maintenance > 0 
                     ? `<span class="badge bg-warning">${maintenance}</span>` 
                     : '<span class="text-muted">------</span>'}
             </td>
-            <td>
+            <td style="width: 100px; padding: 8px 4px;">
                 ${broken > 0 
                     ? `<span class="badge bg-danger">${broken}</span>` 
                     : '<span class="text-muted">------</span>'}
@@ -6011,9 +6009,9 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
                     <span style="font-weight:600;color:${barColor};min-width:45px;">${usage}%</span>
                 </div>
             </td>
-            <td>
+            <td style="width: 140px; padding: 6px 2px;">
                 <div class="action-buttons">
-                    <button class="btn-view" onclick="viewEquipmentByCode('${code}')" title="View Details">
+                    <button class="btn-view" onclick="viewEquipmentByCode('${code}')" title="View">
                         <i class="bi bi-eye"></i>
                     </button>
                     <button class="btn-edit" onclick="editEquipment('${code}')" title="Edit">
@@ -9399,25 +9397,14 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
                 initCalendarListeners(); // Add this line
                 loadUserCounts();
                 setTimeout(() => addDayCellClickHandlers(), 100);
-                 loadNotifications();      
-    startNotificationPolling(); 
+                loadNotifications();
+                startNotificationPolling();
 
 
 
                 loadEquipmentWithUsage();
                 if (document.getElementById('analyticsSection')) setTimeout(initAnalyticsCharts, 500);
             });
-            
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -9425,87 +9412,87 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
 
 
             // ========== NOTIFICATION SYSTEM ==========
-let notificationsData = [];
-let notificationPollInterval = null;
+            let notificationsData = [];
+            let notificationPollInterval = null;
 
-function toggleNotifications() {
-    const dropdown = document.getElementById('notificationDropdown');
-    const isShowing = dropdown.classList.contains('show');
+            function toggleNotifications() {
+                const dropdown = document.getElementById('notificationDropdown');
+                const isShowing = dropdown.classList.contains('show');
 
-    // Close if already open
-    if (isShowing) {
-        dropdown.classList.remove('show');
-        return;
-    }
+                // Close if already open
+                if (isShowing) {
+                    dropdown.classList.remove('show');
+                    return;
+                }
 
-    // Open and load
-    dropdown.classList.add('show');
-    loadNotifications();
-}
+                // Open and load
+                dropdown.classList.add('show');
+                loadNotifications();
+            }
 
-// Close dropdown when clicking outside
-document.addEventListener('click', function(e) {
-    const bell     = e.target.closest('.notification-bell');
-    const dropdown = e.target.closest('.notification-dropdown');
-    if (!bell && !dropdown) {
-        document.getElementById('notificationDropdown').classList.remove('show');
-    }
-});
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(e) {
+                const bell = e.target.closest('.notification-bell');
+                const dropdown = e.target.closest('.notification-dropdown');
+                if (!bell && !dropdown) {
+                    document.getElementById('notificationDropdown').classList.remove('show');
+                }
+            });
 
-function loadNotifications() {
-    fetch('../controllers/fetch_notifications.php')
-        .then(r => r.json())
-        .then(data => {
-            if (!data.success) return;
+            function loadNotifications() {
+                fetch('../controllers/fetch_notifications.php')
+                    .then(r => r.json())
+                    .then(data => {
+                        if (!data.success) return;
 
-            notificationsData = data.notifications;
-            renderNotifications(data.notifications);
-            updateNotificationBadge(data.unread_count);
-        })
-        .catch(err => {
-            console.error('Notification fetch error:', err);
-            document.getElementById('notificationList').innerHTML = `
+                        notificationsData = data.notifications;
+                        renderNotifications(data.notifications);
+                        updateNotificationBadge(data.unread_count);
+                    })
+                    .catch(err => {
+                        console.error('Notification fetch error:', err);
+                        document.getElementById('notificationList').innerHTML = `
                 <div class="no-notifications">
                     <i class="bi bi-wifi-off d-block"></i>
                     Failed to load notifications
                 </div>`;
-        });
-}
+                    });
+            }
 
-function renderNotifications(notifications) {
-    const list    = document.getElementById('notificationList');
-    const newSpan = document.getElementById('notificationNewCount');
+            function renderNotifications(notifications) {
+                const list = document.getElementById('notificationList');
+                const newSpan = document.getElementById('notificationNewCount');
 
-    const unread = notifications.filter(n => n.status === 'unread').length;
-    newSpan.textContent = unread + ' new';
+                const unread = notifications.filter(n => n.status === 'unread').length;
+                newSpan.textContent = unread + ' new';
 
-    if (!notifications || notifications.length === 0) {
-        list.innerHTML = `
+                if (!notifications || notifications.length === 0) {
+                    list.innerHTML = `
             <div class="no-notifications">
                 <i class="bi bi-bell-slash d-block"></i>
                 <p class="mt-2">No notifications yet</p>
             </div>`;
-        return;
-    }
+                    return;
+                }
 
-    let html = '';
-    notifications.forEach(n => {
-        const isUnread   = n.status === 'unread';
-        const isApproval = n.need_approval == 1;
-        const isHod      = <?php echo json_encode($_SESSION['user_role'] ?? ''); ?> === 'hod';
+                let html = '';
+                notifications.forEach(n => {
+                    const isUnread = n.status === 'unread';
+                    const isApproval = n.need_approval == 1;
+                    const isHod = <?php echo json_encode($_SESSION['user_role'] ?? ''); ?> === 'hod';
 
-        // Icon based on content
-        let icon = 'bi-info-circle-fill text-primary';
-        if (isApproval)                                               icon = 'bi-exclamation-circle-fill text-warning';
-        if (n.description.toLowerCase().includes('approved'))         icon = 'bi-check-circle-fill text-success';
-        if (n.description.toLowerCase().includes('rejected'))         icon = 'bi-x-circle-fill text-danger';
+                    // Icon based on content
+                    let icon = 'bi-info-circle-fill text-primary';
+                    if (isApproval) icon = 'bi-exclamation-circle-fill text-warning';
+                    if (n.description.toLowerCase().includes('approved')) icon = 'bi-check-circle-fill text-success';
+                    if (n.description.toLowerCase().includes('rejected')) icon = 'bi-x-circle-fill text-danger';
 
-        const timeAgo = getTimeAgo(n.created_datetime);
+                    const timeAgo = getTimeAgo(n.created_datetime);
 
-        // Approve/Reject buttons — only for HOD on equipment approval notifications
-        let approvalBtns = '';
-        if (isApproval && isHod) {
-            approvalBtns = `
+                    // Approve/Reject buttons — only for HOD on equipment approval notifications
+                    let approvalBtns = '';
+                    if (isApproval && isHod) {
+                        approvalBtns = `
                 <div class="approve-btns" style="display:flex; gap:6px; margin-top:8px;">
                     <button class="btn btn-sm btn-success py-1 px-2"
                             onclick="approveEquipmentFromNotif(${n.id}, event)"
@@ -9518,17 +9505,17 @@ function renderNotifications(notifications) {
                         <i class="bi bi-x me-1"></i>Reject
                     </button>
                 </div>`;
-        }
+                    }
 
-        // Mark as read button — shown on ALL unread notifications
-        const markReadBtn = (isUnread && !isApproval) ? `
+                    // Mark as read button — shown on ALL unread notifications
+                    const markReadBtn = (isUnread && !isApproval) ? `
     <button class="btn btn-sm btn-outline-secondary py-0 px-2 mt-1"
             onclick="markOneRead(${n.id}, this.closest('.notification-item'), event)"
             style="font-size:0.72rem;">
         <i class="bi bi-check me-1"></i>Mark read
     </button>` : '';
 
-        html += `
+                    html += `
             <div class="notification-item ${isUnread ? 'unread' : ''} ${isApproval ? 'approval' : ''}"
                  data-notif-id="${n.id}">
                 <div class="d-flex gap-2">
@@ -9543,200 +9530,296 @@ function renderNotifications(notifications) {
                     </div>
                 </div>
             </div>`;
-    });
+                });
 
-    list.innerHTML = html;
-}
-
-function updateNotificationBadge(count) {
-    const badge = document.getElementById('notificationBadge');
-    if (count > 0) {
-        badge.textContent = count > 99 ? '99+' : count;
-        badge.style.display = 'inline-block';
-    } else {
-        badge.style.display = 'none';
-    }
-}
-
-function markOneRead(notifId, element, event) {
-    // Stop propagation if triggered by button click
-    if (event) event.stopPropagation();
-
-    // Already read — do nothing
-    if (!element.classList.contains('unread')) return;
-
-    element.classList.remove('unread', 'approval');
-
-    // Hide the mark read button
-    const markBtn = element.querySelector('.btn-outline-secondary');
-    if (markBtn) markBtn.remove();
-
-    const formData = new FormData();
-    formData.append('notification_id', notifId);
-
-    fetch('../controllers/mark_notification_read.php', {
-        method: 'POST',
-        body: formData
-    })
-    .then(r => r.json())
-    .then(data => {
-        if (data.success) {
-            const currentCount = parseInt(document.getElementById('notificationBadge').textContent) || 0;
-            updateNotificationBadge(Math.max(0, currentCount - 1));
-
-            // Update the "X new" counter
-            const remaining = document.querySelectorAll('.notification-item.unread').length;
-            document.getElementById('notificationNewCount').textContent = remaining + ' new';
-        }
-    });
-}
-
-function markAllRead() {
-    fetch('../controllers/mark_notification_read.php', {
-        method: 'POST',
-        body: new FormData() // empty = mark all
-    })
-    .then(r => r.json())
-    .then(data => {
-        if (data.success) {
-            // Update UI
-            document.querySelectorAll('.notification-item').forEach(item => {
-                item.classList.remove('unread', 'approval');
-            });
-            updateNotificationBadge(0);
-            document.getElementById('notificationNewCount').textContent = '0 new';
-        }
-    });
-}
-
-// HOD: Approve equipment from notification
-function approveEquipmentFromNotif(notifId, event) {
-    event.stopPropagation();
-
-    if (!confirm('Approve this equipment?')) return;
-
-    const btn = event.target.closest('button');
-    btn.disabled = true;
-    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
-
-    // Get equipment_id from notification reference
-    fetch('../controllers/get_equipment_from_notif.php?notif_id=' + notifId)
-        .then(r => r.json())
-        .then(data => {
-            if (!data.success) {
-                alert('Error: ' + data.message);
-                btn.disabled = false;
-                btn.innerHTML = '<i class="bi bi-check2 me-1"></i>Approve';
-                return;
+                list.innerHTML = html;
             }
 
-            const formData = new FormData();
-            formData.append('equipment_id', data.equipment_id);
-            formData.append('action', 'approve');
-
-            return fetch('../controllers/approve_equipment.php', {
-                method: 'POST',
-                body: formData
-            });
-        })
-        .then(r => r.json())
-        .then(data => {
-            if (data.success) {
-                alert('Equipment approved!');
-                loadNotifications();
-                // Refresh equipment list if on equipment section
-                if (document.getElementById('equipmentSection').style.display === 'block') {
-                    loadEquipmentWithUsage();
+            function updateNotificationBadge(count) {
+                const badge = document.getElementById('notificationBadge');
+                if (count > 0) {
+                    badge.textContent = count > 99 ? '99+' : count;
+                    badge.style.display = 'inline-block';
+                } else {
+                    badge.style.display = 'none';
                 }
-            } else {
-                alert('Error: ' + data.message);
             }
-        })
-        .catch(err => {
-            console.error(err);
-            alert('Network error');
-        });
-}
 
-// HOD: Reject equipment from notification
-function rejectEquipmentFromNotif(notifId, event) {
+            function markOneRead(notifId, element, event) {
+                // Stop propagation if triggered by button click
+                if (event) event.stopPropagation();
+
+                // Already read — do nothing
+                if (!element.classList.contains('unread')) return;
+
+                element.classList.remove('unread', 'approval');
+
+                // Hide the mark read button
+                const markBtn = element.querySelector('.btn-outline-secondary');
+                if (markBtn) markBtn.remove();
+
+                const formData = new FormData();
+                formData.append('notification_id', notifId);
+
+                fetch('../controllers/mark_notifications_read.php', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success) {
+                            const currentCount = parseInt(document.getElementById('notificationBadge').textContent) || 0;
+                            updateNotificationBadge(Math.max(0, currentCount - 1));
+
+                            // Update the "X new" counter
+                            const remaining = document.querySelectorAll('.notification-item.unread').length;
+                            document.getElementById('notificationNewCount').textContent = remaining + ' new';
+                        }
+                    });
+            }
+
+            function markAllRead() {
+                fetch('../controllers/mark_notifications_read.php', {
+                        method: 'POST',
+                        body: new FormData() // empty = mark all
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Update UI
+                            document.querySelectorAll('.notification-item').forEach(item => {
+                                item.classList.remove('unread', 'approval');
+                            });
+                            updateNotificationBadge(0);
+                            document.getElementById('notificationNewCount').textContent = '0 new';
+                        }
+                    });
+            }
+
+            // HOD: Approve equipment from notification
+          function approveEquipmentFromNotif(notifId, event) {
     event.stopPropagation();
 
-    const reason = prompt('Reason for rejection (optional):');
-    if (reason === null) return; // cancelled
+    // Replace confirm() with a toast-style confirmation
+    showConfirmToast('Approve this equipment?', () => {
+        const btn = event.target.closest('button');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
 
-    const btn = event.target.closest('button');
-    btn.disabled = true;
-
-    fetch('../controllers/get_equipment_from_notif.php?notif_id=' + notifId)
-        .then(r => r.json())
-        .then(data => {
-            if (!data.success) {
-                alert('Error: ' + data.message);
-                return;
-            }
-
-            const formData = new FormData();
-            formData.append('equipment_id', data.equipment_id);
-            formData.append('action', 'reject');
-            formData.append('reason', reason);
-
-            return fetch('../controllers/approve_equipment.php', {
-                method: 'POST',
-                body: formData
-            });
-        })
-        .then(r => r.json())
-        .then(data => {
-            if (data.success) {
-                alert('Equipment rejected.');
-                loadNotifications();
-            } else {
-                alert('Error: ' + data.message);
-            }
-        })
-        .catch(err => {
-            console.error(err);
-            alert('Network error');
-        });
-}
-
-// Helper: time ago
-function getTimeAgo(datetimeStr) {
-    if (!datetimeStr) return 'Unknown time';
-    const now  = new Date();
-    const past = new Date(datetimeStr.replace(' ', 'T'));
-    const diff = Math.floor((now - past) / 1000);
-
-    if (diff < 60)     return 'Just now';
-    if (diff < 3600)   return Math.floor(diff / 60) + ' min ago';
-    if (diff < 86400)  return Math.floor(diff / 3600) + ' hr ago';
-    if (diff < 604800) return Math.floor(diff / 86400) + ' day(s) ago';
-    return past.toLocaleDateString();
-}
-
-// Auto-refresh badge every 30 seconds (even when dropdown is closed)
-function startNotificationPolling() {
-    notificationPollInterval = setInterval(() => {
-        fetch('../controllers/fetch_notifications.php')
+        fetch('../controllers/get_equipment_from_notif.php?notif_id=' + notifId)
             .then(r => r.json())
             .then(data => {
-                if (data.success) updateNotificationBadge(data.unread_count);
+                if (!data.success) {
+                    showError('Error: ' + data.message);
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="bi bi-check2 me-1"></i>Approve';
+                    return null;
+                }
+
+                // If already processed, just refresh and return
+                if (data.already_processed) {
+                    showSuccess('Equipment already approved!');
+                    loadNotifications();
+                    return null;
+                }
+
+                const formData = new FormData();
+                formData.append('equipment_id', data.equipment_id);
+                formData.append('action', 'approve');
+                formData.append('notif_id', notifId);
+
+                return fetch('../controllers/approve_equipment.php', {
+                    method: 'POST',
+                    body: formData
+                });
             })
-            .catch(() => {}); // silently fail
-    }, 30000);
+            .then(r => r ? r.json() : null)
+            .then(data => {
+                if (!data) return;
+                if (data.success) {
+                    showSuccess('Equipment approved successfully!');
+                    loadNotifications();
+                    if (document.getElementById('equipmentSection').style.display === 'block') {
+                        loadEquipmentWithUsage();
+                    }
+                    // Refresh page after 1.5 seconds to show all updates
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1500);
+                } else {
+                    showError('Error: ' + data.message);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                showError('Network error. Please try again.');
+            });
+    });
 }
 
-// ========== INIT ==========
-// document.addEventListener('DOMContentLoaded', function() {
-   
-// });
+// Add this helper function alongside your existing showSuccess/showError
+function showConfirmToast(message, onConfirm) {
+    // Remove any existing confirm toast
+    const existing = document.getElementById('confirmToast');
+    if (existing) existing.remove();
+
+    const toast = document.createElement('div');
+    toast.id = 'confirmToast';
+    toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 99999;
+        background: white;
+        border-radius: 16px;
+        padding: 20px 24px;
+        box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+        max-width: 340px;
+        width: 90%;
+        animation: slideInRight 0.3s ease;
+        border-left: 4px solid #f59e0b;
+    `;
+
+    toast.innerHTML = `
+        <style>
+            @keyframes slideInRight {
+                from { opacity: 0; transform: translateX(50px); }
+                to   { opacity: 1; transform: translateX(0); }
+            }
+        </style>
+        <div style="display:flex; align-items:flex-start; gap:12px;">
+            <i class="bi bi-question-circle-fill"
+               style="color:#f59e0b; font-size:1.4rem; flex-shrink:0; margin-top:2px;"></i>
+            <div style="flex:1;">
+                <div style="font-weight:700; color:#1a1a1a; margin-bottom:4px;">Confirm Action</div>
+                <div style="color:#555; font-size:0.9rem; margin-bottom:14px;">${message}</div>
+                <div style="display:flex; gap:8px;">
+                    <button id="confirmToastYes"
+                        style="flex:1; background:linear-gradient(135deg,#22c55e,#16a34a);
+                               color:white; border:none; padding:8px 0;
+                               border-radius:8px; font-weight:600; cursor:pointer;
+                               font-size:0.88rem;">
+                        <i class="bi bi-check2 me-1"></i>Yes, Approve
+                    </button>
+                    <button id="confirmToastNo"
+                        style="flex:1; background:#f1f5f9; color:#555;
+                               border:none; padding:8px 0;
+                               border-radius:8px; font-weight:600; cursor:pointer;
+                               font-size:0.88rem;">
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.body.appendChild(toast);
+
+    document.getElementById('confirmToastYes').onclick = () => {
+        toast.remove();
+        onConfirm();
+    };
+    document.getElementById('confirmToastNo').onclick = () => {
+        toast.remove();
+    };
+
+    // Auto-dismiss after 10 seconds
+    setTimeout(() => { if (toast.parentNode) toast.remove(); }, 10000);
+}
+
+            // HOD: Reject equipment from notification
+            function rejectEquipmentFromNotif(notifId, event) {
+                event.stopPropagation();
+
+                const reason = prompt('Reason for rejection (optional):');
+                if (reason === null) return; // cancelled
+
+                const btn = event.target.closest('button');
+                btn.disabled = true;
+
+                fetch('../controllers/get_equipment_from_notif.php?notif_id=' + notifId)
+                    .then(r => r.json())
+                    .then(data => {
+                        if (!data.success) {
+                            alert('Error: ' + data.message);
+                            btn.disabled = false;
+                            return null;
+                        }
+
+                        // If already processed, just refresh
+                        if (data.already_processed) {
+                            alert('Equipment already processed!');
+                            loadNotifications();
+                            return null;
+                        }
+
+                        const formData = new FormData();
+                        formData.append('equipment_id', data.equipment_id);
+                        formData.append('action', 'reject');
+                        formData.append('reason', reason);
+                        formData.append('notif_id', notifId);
+
+                        return fetch('../controllers/approve_equipment.php', {
+                            method: 'POST',
+                            body: formData
+                        });
+                    })
+                    .then(r => r ? r.json() : null)
+                    .then(data => {
+                        if (!data) return;
+                        if (data.success) {
+                            alert('Equipment rejected.');
+                            loadNotifications();
+                            // Refresh page after 1.5 seconds to show all updates
+                            setTimeout(() => {
+                                location.reload();
+                            }, 1500);
+                        } else {
+                            alert('Error: ' + data.message);
+                        }
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        alert('Network error');
+                    });
+            }
+
+            // Helper: time ago
+            function getTimeAgo(datetimeStr) {
+                if (!datetimeStr) return 'Unknown time';
+                const now = new Date();
+                const past = new Date(datetimeStr.replace(' ', 'T'));
+                const diff = Math.floor((now - past) / 1000);
+
+                if (diff < 60) return 'Just now';
+                if (diff < 3600) return Math.floor(diff / 60) + ' min ago';
+                if (diff < 86400) return Math.floor(diff / 3600) + ' hr ago';
+                if (diff < 604800) return Math.floor(diff / 86400) + ' day(s) ago';
+                return past.toLocaleDateString();
+            }
+
+            // Auto-refresh badge every 30 seconds (even when dropdown is closed)
+            function startNotificationPolling() {
+                notificationPollInterval = setInterval(() => {
+                    fetch('../controllers/fetch_notifications.php')
+                        .then(r => r.json())
+                        .then(data => {
+                            if (data.success) updateNotificationBadge(data.unread_count);
+                        })
+                        .catch(() => {}); // silently fail
+                }, 30000);
+            }
+
+            // ========== INIT ==========
+            // document.addEventListener('DOMContentLoaded', function() {
+
+            // });
         </script>
 
         <!-- Add this before the closing </body> tag -->
         <!-- Notification Dropdown -->
         <!-- Notification Dropdown -->
-       
+
         <!-- <div class="notification-dropdown" id="notificationDropdown">
             <div class="notification-header">
                 <h6>Notifications</h6>

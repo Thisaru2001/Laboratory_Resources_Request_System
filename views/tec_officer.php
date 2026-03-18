@@ -545,15 +545,20 @@ if ($requests_result && $requests_result->num_rows > 0) {
             background: linear-gradient(135deg, #3b82f6, #2563eb);
             color: white;
             border: none;
-            padding: 6px 12px;
-            border-radius: 8px;
-            font-size: 0.85rem;
-            transition: all 0.3s;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 2px;
+            white-space: nowrap;
         }
 
         .btn-view:hover {
-            transform: scale(1.05);
-            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
         }
 
         .btn-success {
@@ -1030,22 +1035,24 @@ if ($requests_result && $requests_result->num_rows > 0) {
         /* Action Buttons */
         .action-buttons {
             display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
+            gap: 4px;
+            flex-wrap: nowrap;
+            align-items: center;
         }
 
         .btn-edit {
             background: linear-gradient(135deg, #3b82f6, #2563eb);
             color: white;
             border: none;
-            padding: 6px 12px;
+            padding: 4px 8px;
             border-radius: 6px;
-            font-size: 12px;
+            font-size: 11px;
             cursor: pointer;
             transition: all 0.3s ease;
             display: inline-flex;
             align-items: center;
-            gap: 4px;
+            gap: 2px;
+            white-space: nowrap;
         }
 
         .btn-edit:hover {
@@ -1057,14 +1064,15 @@ if ($requests_result && $requests_result->num_rows > 0) {
             background: linear-gradient(135deg, #ef4444, #dc2626);
             color: white;
             border: none;
-            padding: 6px 12px;
+            padding: 4px 8px;
             border-radius: 6px;
-            font-size: 12px;
+            font-size: 11px;
             cursor: pointer;
             transition: all 0.3s ease;
             display: inline-flex;
             align-items: center;
-            gap: 4px;
+            gap: 2px;
+            white-space: nowrap;
         }
 
         .btn-remove:hover {
@@ -1315,11 +1323,11 @@ if ($requests_result && $requests_result->num_rows > 0) {
                 <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Dashboard Overview</h3>
 
                 <div class="analytics-grid">
-                    <div class="stat-card">
+                    <!-- <div class="stat-card">
                         <i class="bi bi-mortarboard-fill"></i>
                         <h3><?= $students_count ?></h3>
                         <p>Students</p>
-                    </div>
+                    </div> -->
                     <div class="stat-card">
                         <i class="bi bi-flask"></i>
                         <h3><?= $equipment_count ?></h3>
@@ -1638,7 +1646,7 @@ if ($requests_result && $requests_result->num_rows > 0) {
                         <select class="filter-select" id="statusFilter" onchange="filterRequestsByStatus()" style="min-width: 200px;">
                             <option value="all">All Status</option>
                             <option value="pending">Pending</option>
-                            <option value="approved">Checked</option>
+                            <option value="approved">Approved</option>
                             <option value="rejected">Rejected</option>
                         </select>
                     </div>
@@ -1668,7 +1676,7 @@ if ($requests_result && $requests_result->num_rows > 0) {
                                             break;
                                         case 'approved':
                                             $statusClass = 'bg-success';
-                                            $statusText = 'Checked';
+                                            $statusText = 'Approved';
                                             break;
                                         case 'rejected':
                                             $statusClass = 'bg-danger';
@@ -2697,7 +2705,7 @@ if ($requests_result && $requests_result->num_rows > 0) {
                     <tr>
                         <th>Usage Rate:</th>
                         <td>
-                            <div class="progress-bar" style="width: 200px;">
+                            <div class="progress-bar" style="width: 100px;">
                                 <div class="progress-fill" style="width: ${equipment.usage}%"></div>
                             </div>
                             ${equipment.usage}%
@@ -2945,7 +2953,7 @@ if ($requests_result && $requests_result->num_rows > 0) {
             requestsList.forEach((item, idx) => {
                 const row = document.createElement('tr');
                 let statusClass = item.status === 'pending' ? 'bg-warning' : item.status === 'approved' ? 'bg-success' : 'bg-danger';
-                let statusText = item.status === 'pending' ? 'Pending' : item.status === 'approved' ? 'Checked' : 'Rejected';
+                let statusText = item.status === 'pending' ? 'Pending' : item.status === 'approved' ? 'Approved' : 'Rejected';
                 row.innerHTML = `
             <td>${item.id}</td>
             <td>${item.dateTime}</td>

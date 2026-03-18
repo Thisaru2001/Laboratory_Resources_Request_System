@@ -39,7 +39,17 @@ if ($action === 'approve') {
     $eq_name = $eq_row['name'] ?? 'Equipment';
     $eq_code = $eq_row['code'] ?? '';
 
-    // Mark HOD's approval notifications for this equipment as read
+    // Mark the specific notification as read (if notif_id provided)
+    $notif_id = intval($_POST['notif_id'] ?? 0);
+    if ($notif_id > 0) {
+        Database::iud(
+            "UPDATE notification SET status = 'read' 
+             WHERE id = ? AND owner_of_notification = ?",
+            "ii", [$notif_id, $hod_id]
+        );
+    }
+    
+    // Also mark other HOD's approval notifications for this equipment as read
     Database::iud(
         "UPDATE notification SET status = 'read' 
          WHERE owner_of_notification = ? 
@@ -84,7 +94,17 @@ if ($action === 'approve') {
     $eq_name = $eq_row['name'] ?? 'Equipment';
     $eq_code = $eq_row['code'] ?? '';
 
-    // Mark HOD's approval notifications as read
+    // Mark the specific notification as read (if notif_id provided)
+    $notif_id = intval($_POST['notif_id'] ?? 0);
+    if ($notif_id > 0) {
+        Database::iud(
+            "UPDATE notification SET status = 'read' 
+             WHERE id = ? AND owner_of_notification = ?",
+            "ii", [$notif_id, $hod_id]
+        );
+    }
+    
+    // Also mark other HOD's approval notifications as read
     Database::iud(
         "UPDATE notification SET status = 'read' 
          WHERE owner_of_notification = ? 

@@ -39,14 +39,30 @@ if (empty($matches[1])) {
 
 $code = trim($matches[1]);
 
-// Get equipment ID
+// Get equipment ID - first check if already processed
+$eq_processed = Database::search(
+    "SELECT id FROM equipment WHERE code = ? AND is_hod_checked = 1",
+    "s", [$code]
+);
+
+// If already processed, mark the notification as read and return success
+if ($eq_processed && $eq_processed->num_rows > 0) {
+    Database::iud(
+        "UPDATE notification SET status = 'read' WHERE id = ?",
+        "i", [$notif_id]
+    );
+    echo json_encode(['success' => true, 'message' => 'Already processed', 'already_processed' => true]);
+    exit();
+}
+
+// Get equipment ID - unprocessed
 $eq = Database::search(
     "SELECT id FROM equipment WHERE code = ? AND is_hod_checked = 0",
     "s", [$code]
 );
 
 if (!$eq || $eq->num_rows === 0) {
-    echo json_encode(['success' => false, 'message' => 'Equipment not found or already processed']);
+    echo json_encode(['success' => false, 'message' => 'Equipment not found']);
     exit();
 }
 
