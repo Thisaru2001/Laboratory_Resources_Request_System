@@ -284,7 +284,7 @@ if (!checkDatabaseConnection()) {
 
 require_once '../config/database.php';
 
-if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user_role"] === 'hod') {
+if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["user_role"] === 'hod') {
 ?>
 
 
@@ -2059,15 +2059,17 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
             }
 
 
-           .modal {
-    z-index: 9000 !important;
-}
-.modal-backdrop {
-    z-index: 8999 !important;
-}
-.modal-content {
-    z-index: 9001 !important;
-}
+            .modal {
+                z-index: 9000 !important;
+            }
+
+            .modal-backdrop {
+                z-index: 8999 !important;
+            }
+
+            .modal-content {
+                z-index: 9001 !important;
+            }
 
             /* Form Elements */
             .form-control,
@@ -3203,6 +3205,169 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                 margin-left: 8px;
             }
 
+            .notification-bell {
+                position: relative;
+                cursor: pointer;
+                padding: 8px;
+                border-radius: 12px;
+                transition: background 0.3s;
+            }
+
+            .notification-bell:hover {
+                background: rgba(34, 197, 94, 0.1);
+            }
+
+            .notification-badge {
+                position: absolute;
+                top: 2px;
+                right: 2px;
+                background: #dc3545;
+                color: white;
+                border-radius: 50%;
+                padding: 1px 5px;
+                font-size: 11px;
+                font-weight: bold;
+                min-width: 18px;
+                text-align: center;
+                animation: pulse 2s infinite;
+            }
+
+            .notification-dropdown {
+                display: none;
+                position: absolute;
+                top: calc(100% + 15px);
+                right: 0;
+                width: 360px;
+                background: white;
+                border-radius: 20px;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+                z-index: 9999;
+                overflow: hidden;
+                border: 1px solid rgba(0, 0, 0, 0.08);
+            }
+
+            .notification-dropdown.show {
+                display: block;
+                animation: slideDown 0.3s ease;
+            }
+
+            @keyframes slideDown {
+                from {
+                    opacity: 0;
+                    transform: translateY(-10px);
+                }
+
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            .notification-header {
+                padding: 16px 20px;
+                background: linear-gradient(135deg, #22c55e, #16a34a);
+                color: white;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .notification-header h6 {
+                color: white;
+            }
+
+            .notification-list {
+                max-height: 380px;
+                overflow-y: auto;
+            }
+
+            .notification-item {
+                padding: 14px 20px;
+                border-bottom: 1px solid #f0f0f0;
+                cursor: pointer;
+                transition: background 0.2s;
+                position: relative;
+            }
+
+            .notification-item:hover {
+                background: rgba(34, 197, 94, 0.05);
+            }
+
+            .notification-item.unread {
+                background: rgba(34, 197, 94, 0.06);
+                border-left: 3px solid #22c55e;
+            }
+
+            .notification-item.unread::before {
+                content: '';
+                position: absolute;
+                top: 18px;
+                right: 15px;
+                width: 8px;
+                height: 8px;
+                background: #22c55e;
+                border-radius: 50%;
+            }
+
+            .notification-item.approval {
+                border-left: 3px solid #f59e0b;
+                background: rgba(245, 158, 11, 0.05);
+            }
+
+            .notification-item .notif-title {
+                font-weight: 600;
+                font-size: 0.9rem;
+                color: #1a1a1a;
+                margin-bottom: 3px;
+            }
+
+            .notification-item .notif-message {
+                font-size: 0.82rem;
+                color: #555;
+                line-height: 1.4;
+                margin-bottom: 4px;
+            }
+
+            .notification-item .notif-time {
+                font-size: 0.75rem;
+                color: #aaa;
+            }
+
+            .notification-item .approve-btns {
+                display: flex;
+                gap: 8px;
+                margin-top: 10px;
+            }
+
+            .notification-footer {
+                padding: 12px 20px;
+                text-align: center;
+                border-top: 1px solid #f0f0f0;
+                background: #fafafa;
+            }
+
+            .notification-footer a {
+                color: #22c55e;
+                font-size: 0.85rem;
+                text-decoration: none;
+                font-weight: 500;
+            }
+
+            .notification-footer a:hover {
+                text-decoration: underline;
+            }
+
+            .no-notifications {
+                padding: 40px 20px;
+                text-align: center;
+                color: #aaa;
+            }
+
+            .no-notifications i {
+                font-size: 2.5rem;
+                margin-bottom: 10px;
+            }
+
             .equipment-item-details {
                 display: flex;
                 flex-wrap: wrap;
@@ -3438,18 +3603,44 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                     <i class="bi bi-person-add"></i>
                 </div> -->
 
-                    <div class="notification-bell" onclick="showSection('activity')">
-                        <i class="bi bi-journal-check"></i>
-                        <span class="request-badge" id="requestBadge">0</span>
-                    </div>
+                    <!-- Replace this entire block in your topbar -->
+<div style="position: relative;">
 
+    <!-- Notification Bell -->
+     <!-- Add this BEFORE the notification bell wrapper div -->
+<div class="notification-bell" onclick="showSection('activity')" style="position:relative;">
+    <i class="bi bi-journal-check fs-5" style="color: #166534;"></i>
+    <span class="request-badge" id="requestBadge">0</span>
+</div>
+    <div class="notification-bell" onclick="toggleNotifications()" style="position: relative; cursor: pointer;">
+        <i class="bi bi-bell fs-5" style="color: #166534;"></i>
+        <span class="notification-badge" id="notificationBadge" style="display:none;">0</span>
+    </div>
 
-                    <!-- Notification Bell -->
-                    <div class="notification-bell" onclick="openNotificationModal()">
-                        <i class="bi bi-bell"></i>
-                        <span class="notification-badge" id="notificationBadge">3</span>
-                    </div>
+    <!-- Notification Dropdown — INSIDE same relative parent as bell -->
+    <div class="notification-dropdown" id="notificationDropdown">
+        <div class="notification-header">
+            <h6 class="mb-0">Notifications</h6>
+            <div class="d-flex gap-2 align-items-center">
+                <span id="notificationNewCount" class="badge bg-success">0 new</span>
+                <button onclick="markAllRead()" class="btn btn-sm btn-outline-light py-0"
+                    style="font-size:0.75rem; color:white; border-color:rgba(255,255,255,0.5);">
+                    Mark all read
+                </button>
+            </div>
+        </div>
+        <div class="notification-list" id="notificationList">
+            <div class="text-center py-3 text-muted">
+                <div class="spinner-border spinner-border-sm"></div>
+                <span class="ms-2">Loading...</span>
+            </div>
+        </div>
+        <div class="notification-footer">
+            <a href="#" onclick="markAllRead(); return false;">Clear all</a>
+        </div>
+    </div>
 
+</div>
 
 
 
@@ -3528,7 +3719,7 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                             <li>
                                 <hr class="dropdown-divider">
                             </li>
-                            <li><a class="dropdown-item text-danger" href="#"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                           <li><a class="dropdown-item text-danger" href="../logout.php"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
                         </ul>
                     </div>
                 </div>
@@ -4194,43 +4385,65 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
 
                                     // Fetch equipment data from database
                                     $equipment_query = "SELECT 
-    e.id,
-    e.code,
-    e.name,
-    e.description,
-    e.qty,
-    e.added_datetime,
-    e.img_path,
-    (SELECT COALESCE(SUM(broken_qty), 0) FROM broken WHERE equipment_id = e.id) as broken_qty,
-    (SELECT COALESCE(SUM(repair_qty), 0) FROM repair WHERE equipment_id = e.id) as repair_qty
-FROM equipment e
-WHERE e.is_hod_checked = 1
-ORDER BY e.name ASC";
+            e.id,
+            e.code,
+            e.name,
+            e.description,
+            e.qty,
+            e.added_datetime,
+            e.img_path,
+            (SELECT COALESCE(SUM(broken_qty), 0) FROM broken WHERE equipment_id = e.id) as broken_qty,
+            (SELECT COALESCE(SUM(repair_qty), 0) FROM repair WHERE equipment_id = e.id) as repair_qty
+        FROM equipment e
+        WHERE e.is_hod_checked = 1
+        ORDER BY e.name ASC";
 
                                     $equipment_result = Database::search($equipment_query);
 
                                     if ($equipment_result && $equipment_result->num_rows > 0) {
+                                        // Get max booking count for dynamic percentage calculation
+                                        $max_bookings_query = "SELECT MAX(booking_count) as max_bookings FROM (
+                SELECT COUNT(*) as booking_count FROM booking GROUP BY equipment_id
+            ) as counts";
+                                        $max_bookings_result = Database::search($max_bookings_query);
+                                        $max_bookings = 0;
+                                        if ($max_bookings_result && $max_bookings_result->num_rows > 0) {
+                                            $max_row = $max_bookings_result->fetch_assoc();
+                                            $max_bookings = (int)$max_row['max_bookings'];
+                                        }
+
                                         while ($row = $equipment_result->fetch_assoc()) {
                                             $equipment_code = htmlspecialchars($row['code']);
                                             $name = htmlspecialchars($row['name']);
                                             $total_qty = (int)$row['qty'];
                                             $broken_qty = (int)$row['broken_qty'];
                                             $repair_qty = (int)$row['repair_qty'];
+                                            $equipment_id = (int)$row['id'];
 
                                             // Calculate available quantity
                                             $available_qty = $total_qty - ($broken_qty + $repair_qty);
 
-                                            // Calculate usage percentage (based on bookings)
+                                            // Ensure available quantity is not negative
+                                            $available_qty = max(0, $available_qty);
+
+                                            // Calculate usage percentage based on bookings
                                             $usage_query = "SELECT COUNT(*) as booking_count FROM booking WHERE equipment_id = ?";
-                                            $usage_result = Database::search($usage_query, "i", [$row['id']]);
+                                            $usage_result = Database::search($usage_query, "i", [$equipment_id]);
                                             $usage_count = 0;
                                             if ($usage_result && $usage_result->num_rows > 0) {
                                                 $usage_row = $usage_result->fetch_assoc();
-                                                $usage_count = $usage_row['booking_count'];
+                                                $usage_count = (int)$usage_row['booking_count'];
                                             }
 
-                                            // Simple usage percentage (this is just an example - adjust based on your logic)
-                                            $usage_percentage = min(100, round(($usage_count / 10) * 100)); // Assuming 10 bookings = 100%
+                                            // Dynamic usage percentage calculation
+                                            if ($max_bookings > 0) {
+                                                // Based on max bookings among all equipment
+                                                $usage_percentage = round(($usage_count / $max_bookings) * 100);
+                                            } else {
+                                                // Fallback to total quantity based calculation
+                                                $usage_percentage = $total_qty > 0 ? round(($usage_count / $total_qty) * 100) : 0;
+                                            }
+                                            $usage_percentage = min(100, max(0, $usage_percentage)); // Ensure between 0-100
 
                                             // Set image path
                                             $image_path = !empty($row['img_path'])
@@ -4247,55 +4460,77 @@ ORDER BY e.name ASC";
                                                 'broken' => $broken_qty,
                                                 'maintenance' => $repair_qty,
                                                 'usage' => $usage_percentage,
-                                                'id' => $row['id']
+                                                'id' => $equipment_id
                                             ];
 
-                                            // Determine badge color for available/total ratio
+                                            // Status badge for available/total ratio (for reference)
                                             $ratio = $total_qty > 0 ? $available_qty / $total_qty : 0;
-                                            $badgeColor = '#22c55e'; // green
-                                            if ($ratio < 0.3) $badgeColor = '#ef4444'; // red
-                                            else if ($ratio < 0.6) $badgeColor = '#f59e0b'; // orange
+                                            $statusColor = '#22c55e'; // green
+                                            $statusText = 'Good';
+                                            if ($ratio < 0.3) {
+                                                $statusColor = '#ef4444'; // red
+                                                $statusText = 'Critical';
+                                            } elseif ($ratio < 0.6) {
+                                                $statusColor = '#f59e0b'; // orange
+                                                $statusText = 'Low';
+                                            }
 
-                                            // Bar color based on usage
-                                            $barColor = '#22c55e';
-                                            if ($usage_percentage < 30) $barColor = '#ef4444';
-                                            else if ($usage_percentage < 60) $barColor = '#f59e0b';
+                                            // Bar color based on usage percentage
+                                            $barColor = '#22c55e'; // green
+                                            if ($usage_percentage < 30) {
+                                                $barColor = '#ef4444'; // red - low usage
+                                            } elseif ($usage_percentage < 60) {
+                                                $barColor = '#f59e0b'; // orange - medium usage
+                                            }
                                     ?>
                                             <tr data-equipment-id="<?php echo $equipment_code; ?>"
-                                                data-equipment-id-numeric="<?php echo $row['id']; ?>"
+                                                data-equipment-id-numeric="<?php echo $equipment_id; ?>"
                                                 data-maintenance="<?php echo $repair_qty; ?>"
-                                                data-broken="<?php echo $broken_qty; ?>">
+                                                data-broken="<?php echo $broken_qty; ?>"
+                                                data-available="<?php echo $available_qty; ?>"
+                                                data-total="<?php echo $total_qty; ?>"
+                                                data-status="<?php echo $statusText; ?>">
+
                                                 <td>
                                                     <img src="<?php echo $image_path; ?>"
-                                                        style="width:50px;height:50px;object-fit:contain;"
+                                                        style="width:50px;height:50px;object-fit:contain;border-radius:4px;"
                                                         onerror="this.src='https://cdn-icons-png.flaticon.com/512/2941/2941514.png'"
                                                         alt="<?php echo $name; ?>">
                                                 </td>
-                                                <td><strong><?php echo $name; ?></strong></td>
+
+                                                <td>
+                                                    <strong><?php echo $name; ?></strong>
+                                                    <div><small class="text-muted">Code: <?php echo $equipment_code; ?></small></div>
+                                                </td>
+
                                                 <td>
                                                     <?php if ($repair_qty > 0): ?>
-                                                        <span class="badge bg-warning"><?php echo $repair_qty; ?></span>
+                                                        <span class="badge bg-warning text-dark"><?php echo $repair_qty; ?></span>
                                                     <?php else: ?>
-                                                        <span class="text-muted">------</span>
+                                                        <span class="text-muted">—</span>
                                                     <?php endif; ?>
                                                 </td>
+
                                                 <td>
                                                     <?php if ($broken_qty > 0): ?>
                                                         <span class="badge bg-danger"><?php echo $broken_qty; ?></span>
                                                     <?php else: ?>
-                                                        <span class="text-muted">------</span>
+                                                        <span class="text-muted">—</span>
                                                     <?php endif; ?>
                                                 </td>
+
                                                 <td>
                                                     <div class="d-flex align-items-center gap-2">
                                                         <div style="width:100px;height:8px;background:#e9ecef;border-radius:4px;overflow:hidden;">
-                                                            <div style="width:<?php echo $usage_percentage; ?>%;height:8px;background:<?php echo $barColor; ?>;border-radius:4px;transition:width 0.6s ease;"></div>
+                                                            <div style="width:<?php echo $usage_percentage; ?>%;height:8px;background:<?php echo $barColor; ?>;border-radius:4px;transition:width 0.3s ease;"></div>
                                                         </div>
                                                         <span style="font-weight:600;color:<?php echo $barColor; ?>;min-width:45px;">
                                                             <?php echo $usage_percentage; ?>%
                                                         </span>
                                                     </div>
+                                                    <small class="text-muted">(<?php echo $usage_count; ?> bookings)</small>
                                                 </td>
+
                                                 <td>
                                                     <div class="action-buttons">
                                                         <button class="btn-view" onclick="viewEquipmentByCode('<?php echo $equipment_code; ?>')" title="View Details">
@@ -4315,7 +4550,12 @@ ORDER BY e.name ASC";
                                     } else {
                                         ?>
                                         <tr>
-                                            <td colspan="6" class="text-center py-4">No equipment found in database</td>
+                                            <td colspan="6" class="text-center py-5">
+                                                <div class="text-muted">
+                                                    <i class="bi bi-inbox" style="font-size: 2rem;"></i>
+                                                    <p class="mt-2">No equipment found in database</p>
+                                                </div>
+                                            </td>
                                         </tr>
                                     <?php
                                     }
@@ -4326,7 +4566,7 @@ ORDER BY e.name ASC";
                     </div>
                 </div>
 
-               
+
 
 
 
@@ -5790,41 +6030,41 @@ ORDER BY e.name ASC";
             }
 
 
-function viewEquipmentByCode(code) {
-    const contentDiv = document.getElementById('equipmentDetailsContent');
-    const modalEl = document.getElementById('equipmentDetailsModal');
+            function viewEquipmentByCode(code) {
+                const contentDiv = document.getElementById('equipmentDetailsContent');
+                const modalEl = document.getElementById('equipmentDetailsModal');
 
-    // Show loading
-    contentDiv.innerHTML = `
+                // Show loading
+                contentDiv.innerHTML = `
         <div class="text-center py-5">
             <div class="spinner-border text-success" role="status" style="width:2rem;height:2rem;"></div>
             <p class="mt-3 text-muted small fw-semibold">Loading equipment details...</p>
         </div>`;
 
-    // Clean up any existing modal instance and backdrop
-    const existing = bootstrap.Modal.getInstance(modalEl);
-    if (existing) existing.dispose();
-    document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
-    document.body.classList.remove('modal-open');
-    document.body.style.overflow = '';
-    document.body.style.paddingRight = '';
+                // Clean up any existing modal instance and backdrop
+                const existing = bootstrap.Modal.getInstance(modalEl);
+                if (existing) existing.dispose();
+                document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+                document.body.classList.remove('modal-open');
+                document.body.style.overflow = '';
+                document.body.style.paddingRight = '';
 
-    // Show modal FIRST, then fetch
-    const modal = new bootstrap.Modal(modalEl);
-    modal.show();
+                // Show modal FIRST, then fetch
+                const modal = new bootstrap.Modal(modalEl);
+                modal.show();
 
-    fetch(`../controllers/get_equipment_details.php?code=${encodeURIComponent(code)}`)
-        .then(response => response.json())
-        .then(data => {
-            if (!data.success) {
-                contentDiv.innerHTML = `<div class="alert alert-danger m-3">${data.message || 'Failed to load'}</div>`;
-                return;
-            }
+                fetch(`../controllers/get_equipment_details.php?code=${encodeURIComponent(code)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (!data.success) {
+                            contentDiv.innerHTML = `<div class="alert alert-danger m-3">${data.message || 'Failed to load'}</div>`;
+                            return;
+                        }
 
-            const eq = data.equipment;
-            const addedDate = eq.added_datetime ? new Date(eq.added_datetime).toLocaleDateString() : '—';
+                        const eq = data.equipment;
+                        const addedDate = eq.added_datetime ? new Date(eq.added_datetime).toLocaleDateString() : '—';
 
-            contentDiv.innerHTML = `
+                        contentDiv.innerHTML = `
                 <div class="row g-0">
                     <div class="col-md-4 text-center border-end p-4">
                         <img src="${eq.image_path || 'https://cdn-icons-png.flaticon.com/512/2941/2941514.png'}"
@@ -5855,12 +6095,12 @@ function viewEquipmentByCode(code) {
                         </table>
                     </div>
                 </div>`;
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            contentDiv.innerHTML = `<div class="alert alert-danger m-3">Network error. Please try again.</div>`;
-        });
-}
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        contentDiv.innerHTML = `<div class="alert alert-danger m-3">Network error. Please try again.</div>`;
+                    });
+            }
 
             function viewEquipment(equipment) {
                 const detailsContent = document.getElementById('equipmentDetailsContent');
@@ -6013,55 +6253,59 @@ function viewEquipmentByCode(code) {
             //     alert('Edit equipment: ' + code);
             // }
 
-    function removeEquipment(code) {
-    if (!confirm(`Are you sure you want to remove equipment "${code}"?\n\nThis action cannot be undone.`)) {
-        return;
-    }
+            function removeEquipment(code) {
+                if (!confirm(`Are you sure you want to remove equipment "${code}"?\n\nThis action cannot be undone.`)) {
+                    return;
+                }
 
-    // Find button by traversing the DOM — no event needed
-    const allBtns = document.querySelectorAll('.btn-remove');
-    let btn = null;
-    allBtns.forEach(b => {
-        if (b.getAttribute('onclick') && b.getAttribute('onclick').includes(code)) {
-            btn = b;
-        }
-    });
+                // Find button by traversing the DOM — no event needed
+                const allBtns = document.querySelectorAll('.btn-remove');
+                let btn = null;
+                allBtns.forEach(b => {
+                    if (b.getAttribute('onclick') && b.getAttribute('onclick').includes(code)) {
+                        btn = b;
+                    }
+                });
 
-    const originalHTML = btn ? btn.innerHTML : '<i class="bi bi-trash"></i>';
-    
-    if (btn) {
-        btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
-    }
+                const originalHTML = btn ? btn.innerHTML : '<i class="bi bi-trash"></i>';
 
-    fetch('../controllers/delete_equipment.php', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code: code })
-    })
-    .then(r => r.json())
-    .then(data => {
-        console.log('Delete response:', data);
-        if (data.success) {
-            showSuccess(`Equipment "${code}" removed successfully!`);
-            loadEquipmentWithUsage();
-        } else {
-            showError(data.message || 'Failed to remove equipment.');
-            if (btn) {
-                btn.disabled = false;
-                btn.innerHTML = originalHTML;
+                if (btn) {
+                    btn.disabled = true;
+                    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+                }
+
+                fetch('../controllers/delete_equipment.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            code: code
+                        })
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                        console.log('Delete response:', data);
+                        if (data.success) {
+                            showSuccess(`Equipment "${code}" removed successfully!`);
+                            loadEquipmentWithUsage();
+                        } else {
+                            showError(data.message || 'Failed to remove equipment.');
+                            if (btn) {
+                                btn.disabled = false;
+                                btn.innerHTML = originalHTML;
+                            }
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Delete error:', error);
+                        showError('Network error. Please try again.');
+                        if (btn) {
+                            btn.disabled = false;
+                            btn.innerHTML = originalHTML;
+                        }
+                    });
             }
-        }
-    })
-    .catch(error => {
-        console.error('Delete error:', error);
-        showError('Network error. Please try again.');
-        if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = originalHTML;
-        }
-    });
-}
             // ── Build table rows ─────────────────────────────────────────────
             // function renderRequestTable(rows) {
             //     const tbody = document.getElementById('requestListBody');
@@ -7632,7 +7876,7 @@ function viewEquipmentByCode(code) {
                     });
             }
 
-         
+
 
 
 
@@ -9155,17 +9399,345 @@ function viewEquipmentByCode(code) {
                 initCalendarListeners(); // Add this line
                 loadUserCounts();
                 setTimeout(() => addDayCellClickHandlers(), 100);
+                 loadNotifications();      
+    startNotificationPolling(); 
 
 
 
                 loadEquipmentWithUsage();
                 if (document.getElementById('analyticsSection')) setTimeout(initAnalyticsCharts, 500);
             });
+            
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            // ========== NOTIFICATION SYSTEM ==========
+let notificationsData = [];
+let notificationPollInterval = null;
+
+function toggleNotifications() {
+    const dropdown = document.getElementById('notificationDropdown');
+    const isShowing = dropdown.classList.contains('show');
+
+    // Close if already open
+    if (isShowing) {
+        dropdown.classList.remove('show');
+        return;
+    }
+
+    // Open and load
+    dropdown.classList.add('show');
+    loadNotifications();
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function(e) {
+    const bell     = e.target.closest('.notification-bell');
+    const dropdown = e.target.closest('.notification-dropdown');
+    if (!bell && !dropdown) {
+        document.getElementById('notificationDropdown').classList.remove('show');
+    }
+});
+
+function loadNotifications() {
+    fetch('../controllers/fetch_notifications.php')
+        .then(r => r.json())
+        .then(data => {
+            if (!data.success) return;
+
+            notificationsData = data.notifications;
+            renderNotifications(data.notifications);
+            updateNotificationBadge(data.unread_count);
+        })
+        .catch(err => {
+            console.error('Notification fetch error:', err);
+            document.getElementById('notificationList').innerHTML = `
+                <div class="no-notifications">
+                    <i class="bi bi-wifi-off d-block"></i>
+                    Failed to load notifications
+                </div>`;
+        });
+}
+
+function renderNotifications(notifications) {
+    const list    = document.getElementById('notificationList');
+    const newSpan = document.getElementById('notificationNewCount');
+
+    const unread = notifications.filter(n => n.status === 'unread').length;
+    newSpan.textContent = unread + ' new';
+
+    if (!notifications || notifications.length === 0) {
+        list.innerHTML = `
+            <div class="no-notifications">
+                <i class="bi bi-bell-slash d-block"></i>
+                <p class="mt-2">No notifications yet</p>
+            </div>`;
+        return;
+    }
+
+    let html = '';
+    notifications.forEach(n => {
+        const isUnread   = n.status === 'unread';
+        const isApproval = n.need_approval == 1;
+        const isHod      = <?php echo json_encode($_SESSION['user_role'] ?? ''); ?> === 'hod';
+
+        // Icon based on content
+        let icon = 'bi-info-circle-fill text-primary';
+        if (isApproval)                                               icon = 'bi-exclamation-circle-fill text-warning';
+        if (n.description.toLowerCase().includes('approved'))         icon = 'bi-check-circle-fill text-success';
+        if (n.description.toLowerCase().includes('rejected'))         icon = 'bi-x-circle-fill text-danger';
+
+        const timeAgo = getTimeAgo(n.created_datetime);
+
+        // Approve/Reject buttons — only for HOD on equipment approval notifications
+        let approvalBtns = '';
+        if (isApproval && isHod) {
+            approvalBtns = `
+                <div class="approve-btns" style="display:flex; gap:6px; margin-top:8px;">
+                    <button class="btn btn-sm btn-success py-1 px-2"
+                            onclick="approveEquipmentFromNotif(${n.id}, event)"
+                            style="font-size:0.78rem;">
+                        <i class="bi bi-check2 me-1"></i>Approve
+                    </button>
+                    <button class="btn btn-sm btn-danger py-1 px-2"
+                            onclick="rejectEquipmentFromNotif(${n.id}, event)"
+                            style="font-size:0.78rem;">
+                        <i class="bi bi-x me-1"></i>Reject
+                    </button>
+                </div>`;
+        }
+
+        // Mark as read button — shown on ALL unread notifications
+        const markReadBtn = (isUnread && !isApproval) ? `
+    <button class="btn btn-sm btn-outline-secondary py-0 px-2 mt-1"
+            onclick="markOneRead(${n.id}, this.closest('.notification-item'), event)"
+            style="font-size:0.72rem;">
+        <i class="bi bi-check me-1"></i>Mark read
+    </button>` : '';
+
+        html += `
+            <div class="notification-item ${isUnread ? 'unread' : ''} ${isApproval ? 'approval' : ''}"
+                 data-notif-id="${n.id}">
+                <div class="d-flex gap-2">
+                    <i class="bi ${icon} mt-1" style="font-size:1rem; flex-shrink:0;"></i>
+                    <div class="flex-grow-1">
+                        <div class="notif-message">${n.description}</div>
+                        <div class="notif-time"><i class="bi bi-clock me-1"></i>${timeAgo}</div>
+                        <div class="d-flex gap-2 flex-wrap align-items-center mt-1">
+                            ${markReadBtn}
+                        </div>
+                        ${approvalBtns}
+                    </div>
+                </div>
+            </div>`;
+    });
+
+    list.innerHTML = html;
+}
+
+function updateNotificationBadge(count) {
+    const badge = document.getElementById('notificationBadge');
+    if (count > 0) {
+        badge.textContent = count > 99 ? '99+' : count;
+        badge.style.display = 'inline-block';
+    } else {
+        badge.style.display = 'none';
+    }
+}
+
+function markOneRead(notifId, element, event) {
+    // Stop propagation if triggered by button click
+    if (event) event.stopPropagation();
+
+    // Already read — do nothing
+    if (!element.classList.contains('unread')) return;
+
+    element.classList.remove('unread', 'approval');
+
+    // Hide the mark read button
+    const markBtn = element.querySelector('.btn-outline-secondary');
+    if (markBtn) markBtn.remove();
+
+    const formData = new FormData();
+    formData.append('notification_id', notifId);
+
+    fetch('../controllers/mark_notification_read.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            const currentCount = parseInt(document.getElementById('notificationBadge').textContent) || 0;
+            updateNotificationBadge(Math.max(0, currentCount - 1));
+
+            // Update the "X new" counter
+            const remaining = document.querySelectorAll('.notification-item.unread').length;
+            document.getElementById('notificationNewCount').textContent = remaining + ' new';
+        }
+    });
+}
+
+function markAllRead() {
+    fetch('../controllers/mark_notification_read.php', {
+        method: 'POST',
+        body: new FormData() // empty = mark all
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            // Update UI
+            document.querySelectorAll('.notification-item').forEach(item => {
+                item.classList.remove('unread', 'approval');
+            });
+            updateNotificationBadge(0);
+            document.getElementById('notificationNewCount').textContent = '0 new';
+        }
+    });
+}
+
+// HOD: Approve equipment from notification
+function approveEquipmentFromNotif(notifId, event) {
+    event.stopPropagation();
+
+    if (!confirm('Approve this equipment?')) return;
+
+    const btn = event.target.closest('button');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+
+    // Get equipment_id from notification reference
+    fetch('../controllers/get_equipment_from_notif.php?notif_id=' + notifId)
+        .then(r => r.json())
+        .then(data => {
+            if (!data.success) {
+                alert('Error: ' + data.message);
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-check2 me-1"></i>Approve';
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('equipment_id', data.equipment_id);
+            formData.append('action', 'approve');
+
+            return fetch('../controllers/approve_equipment.php', {
+                method: 'POST',
+                body: formData
+            });
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                alert('Equipment approved!');
+                loadNotifications();
+                // Refresh equipment list if on equipment section
+                if (document.getElementById('equipmentSection').style.display === 'block') {
+                    loadEquipmentWithUsage();
+                }
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert('Network error');
+        });
+}
+
+// HOD: Reject equipment from notification
+function rejectEquipmentFromNotif(notifId, event) {
+    event.stopPropagation();
+
+    const reason = prompt('Reason for rejection (optional):');
+    if (reason === null) return; // cancelled
+
+    const btn = event.target.closest('button');
+    btn.disabled = true;
+
+    fetch('../controllers/get_equipment_from_notif.php?notif_id=' + notifId)
+        .then(r => r.json())
+        .then(data => {
+            if (!data.success) {
+                alert('Error: ' + data.message);
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('equipment_id', data.equipment_id);
+            formData.append('action', 'reject');
+            formData.append('reason', reason);
+
+            return fetch('../controllers/approve_equipment.php', {
+                method: 'POST',
+                body: formData
+            });
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                alert('Equipment rejected.');
+                loadNotifications();
+            } else {
+                alert('Error: ' + data.message);
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert('Network error');
+        });
+}
+
+// Helper: time ago
+function getTimeAgo(datetimeStr) {
+    if (!datetimeStr) return 'Unknown time';
+    const now  = new Date();
+    const past = new Date(datetimeStr.replace(' ', 'T'));
+    const diff = Math.floor((now - past) / 1000);
+
+    if (diff < 60)     return 'Just now';
+    if (diff < 3600)   return Math.floor(diff / 60) + ' min ago';
+    if (diff < 86400)  return Math.floor(diff / 3600) + ' hr ago';
+    if (diff < 604800) return Math.floor(diff / 86400) + ' day(s) ago';
+    return past.toLocaleDateString();
+}
+
+// Auto-refresh badge every 30 seconds (even when dropdown is closed)
+function startNotificationPolling() {
+    notificationPollInterval = setInterval(() => {
+        fetch('../controllers/fetch_notifications.php')
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) updateNotificationBadge(data.unread_count);
+            })
+            .catch(() => {}); // silently fail
+    }, 30000);
+}
+
+// ========== INIT ==========
+// document.addEventListener('DOMContentLoaded', function() {
+   
+// });
         </script>
 
         <!-- Add this before the closing </body> tag -->
         <!-- Notification Dropdown -->
-        <div class="notification-dropdown" id="notificationDropdown">
+        <!-- Notification Dropdown -->
+       
+        <!-- <div class="notification-dropdown" id="notificationDropdown">
             <div class="notification-header">
                 <h6>Notifications</h6>
                 <span>3 new</span>
@@ -9187,7 +9759,7 @@ function viewEquipmentByCode(code) {
                     <div class="time">2 hours ago</div>
                 </div>
             </div>
-        </div>
+        </div> -->
 
 
 
@@ -9217,7 +9789,7 @@ function viewEquipmentByCode(code) {
                     </div>
 
                     <!-- Email Format Section -->
-                    <div class="email-format-section">
+                    <!-- <div class="email-format-section">
                         <div class="email-format-header">
                             <h6><i class="bi bi-envelope-paper-fill me-2"></i>Email Format</h6>
                             <button class="edit-format-btn" onclick="toggleEmailFormatEdit()">
@@ -9262,7 +9834,7 @@ Thank you for your support and assistance.
 Yours sincerely,
 Head of Department, Microbiology Department</textarea>
                         </div>
-                    </div>
+                    </div> -->
 
                     <!-- Equipment Selection Section -->
                     <div class="equipment-selection-section">
@@ -9314,26 +9886,26 @@ Head of Department, Microbiology Department</textarea>
                 </div>
             </div>
         </div>
-        
 
 
-<!-- PUT THIS just before </body>, after all other modals -->
-<div class="modal fade" id="equipmentDetailsModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header bg-success text-white">
-                <h5 class="modal-title">
-                    <i class="bi bi-info-circle me-2"></i>Equipment Details
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body" id="equipmentDetailsContent"></div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+
+        <!-- PUT THIS just before </body>, after all other modals -->
+        <div class="modal fade" id="equipmentDetailsModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-success text-white">
+                        <h5 class="modal-title">
+                            <i class="bi bi-info-circle me-2"></i>Equipment Details
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body" id="equipmentDetailsContent"></div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
-</div>
 
     </body>
 

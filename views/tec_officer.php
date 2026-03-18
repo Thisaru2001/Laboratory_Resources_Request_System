@@ -40,20 +40,29 @@ $equipment_count_q = "SELECT COUNT(*) as cnt FROM equipment WHERE is_hod_checked
 $ec = Database::search($equipment_count_q);
 $equipment_count = ($ec && $ec->num_rows > 0) ? $ec->fetch_assoc()['cnt'] : 0;
 
-// Equipment utilization rate (average usage)
-$utilization_q = "SELECT AVG(
-                    CASE 
-                      WHEN total_qty > 0 
-                      THEN ((total_qty - COALESCE((SELECT SUM(book_qty) FROM book_equipment be 
-                                                    JOIN reservation r ON be.reservation_id = r.id 
-                                                    WHERE be.equipment_id = e.id 
-                                                    AND r.request_date <= CURDATE() 
-                                                    AND DATE_ADD(r.request_date, INTERVAL (r.continue_days - 1) DAY) >= CURDATE()), 0)) / total_qty) * 100
-                      ELSE 0
-                    END) as avg_util
-                  FROM equipment e";
-$util_result = Database::search($utilization_q);
-$utilization_rate = ($util_result && $util_result->num_rows > 0) ? round($util_result->fetch_assoc()['avg_util']) : 85;
+// Calculate Equipment Utilization Rate
+$utilization_query = "
+    SELECT 
+        (SELECT COALESCE(SUM(total_qty), 0) FROM equipment) as total_qty,
+        (SELECT COALESCE(SUM(broken_qty), 0) FROM broken) as broken_qty,
+        (SELECT COALESCE(SUM(repair_qty), 0) FROM repair) as repair_qty
+";
+
+$utilization_result = Database::search($utilization_query);
+$utilization_rate = 0;
+
+if ($utilization_result && $utilization_result->num_rows > 0) {
+    $row = $utilization_result->fetch_assoc();
+    $total_qty = (int)$row['total_qty'];
+    $broken_qty = (int)$row['broken_qty'];
+    $repair_qty = (int)$row['repair_qty'];
+
+    $available_qty = $total_qty - ($broken_qty + $repair_qty);
+
+    if ($total_qty > 0) {
+        $utilization_rate = round(($available_qty / $total_qty) * 100);
+    }
+}
 
 // Equipment in maintenance (from broken table)
 $maintenance_q = "SELECT COUNT(DISTINCT equipment_id) as cnt FROM broken";
@@ -1319,21 +1328,29 @@ if ($requests_result && $requests_result->num_rows > 0) {
                     <div class="stat-card">
                         <i class="bi bi-graph-up"></i>
                         <h3><?= $utilization_rate ?>%</h3>
-                        <p>Equipment Utilization Rate</p>
+                        <p>Utilization Rate</p>
                     </div>
-                    <div class="stat-card">
+                    <div class="stat-card"  onclick="viewPendingRequests()">
                         <i class="bi bi-tools"></i>
-                        <h3><?= $maintenance_count ?></h3>
-                        <p>Maintenance</p>
+                        <h3 class="text-warning"><?= $pending_count ?></h3>
+                         <!-- <button class="btn btn-sm btn-outline-primary p-1" onclick="viewPendingRequests()" style="line-height: 1;">
+                            <i class="bi bi-eye"></i>
+                        </button> -->
+                        <p> Request Pending</p>
+                    </div>
+                      <div class="stat-card">
+                        <i class="bi bi-flask"></i>
+                        <h3><?= $today_count ?></h3>
+                        <p> Today's Practicals</p>
                     </div>
                 </div>
 
                 <!-- Quick Stats -->
-                <div class="row mb-4 justify-content-center">
+                <!-- <div class="row mb-4 justify-content-center">
                     <div class="col-md-3 mb-3">
                         <div class="card p-3 text-center">
                             <h6 class="text-muted d-flex justify-content-center align-items-center gap-2">
-                                Request Pending
+
                                 <button class="btn btn-sm btn-outline-primary p-1" onclick="viewPendingRequests()" style="line-height: 1;">
                                     <i class="bi bi-eye"></i>
                                 </button>
@@ -1345,14 +1362,12 @@ if ($requests_result && $requests_result->num_rows > 0) {
                         <div class="card p-3 text-center">
                             <h6 class="text-muted d-flex justify-content-center align-items-center gap-2">
                                 Today's Practicals
-                                <button class="btn btn-sm btn-outline-info p-1" onclick="viewTodayPracticals()" style="line-height: 1;">
-                                    <i class="bi bi-eye"></i>
-                                </button>
+
                             </h6>
                             <h3 class="text-info"><?= $today_count ?></h3>
                         </div>
                     </div>
-                </div>
+                </div> -->
 
                 <!-- Calendar Section -->
                 <h3 class="mb-4 mt-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Equipment & Lab Schedule</h3>
@@ -1423,151 +1438,162 @@ if ($requests_result && $requests_result->num_rows > 0) {
                     <!-- Equipment Table -->
                     <div class="table-responsive mt-3">
                         <table class="user-table">
-                            <thead>
-                                <tr>
-                                    <th>Image</th>
-                                    <th>Equipment Name</th>
-                                    <th>Maintenance Pending</th>
-                                    <th>Broken</th>
-                                    <th>Usage %</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="equipmentTableBody">
-                                <?php
-                                // Define the equipment data array
-                                $equipmentDataTable = [];
+    <thead>
+        <tr>
+            <th>Image</th>
+            <th>Equipment Name</th>
+            <th>Maintenance qty</th>
+            <th>Broken qty</th>
+            <th>Usage %</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody id="equipmentTableBody">
+        <?php
+        // Define the equipment data array
+        $equipmentDataTable = [];
 
-                                // Fetch equipment data from database
-                                $equipment_query = "SELECT 
-    e.id,
-    e.code,
-    e.name,
-    e.description,
-    e.qty,
-    e.added_datetime,
-    e.img_path,
-    (SELECT COALESCE(SUM(broken_qty), 0) FROM broken WHERE equipment_id = e.id) as broken_qty,
-    (SELECT COALESCE(SUM(repair_qty), 0) FROM repair WHERE equipment_id = e.id) as repair_qty
-FROM equipment e
-WHERE e.is_hod_checked = 1
-ORDER BY e.name ASC";
+        // Fetch equipment data from database
+        $equipment_query = "SELECT 
+            e.id,
+            e.code,
+            e.name,
+            e.description,
+            e.qty,
+            e.added_datetime,
+            e.img_path,
+            (SELECT COALESCE(SUM(broken_qty), 0) FROM broken WHERE equipment_id = e.id) as broken_qty,
+            (SELECT COALESCE(SUM(repair_qty), 0) FROM repair WHERE equipment_id = e.id) as repair_qty
+        FROM equipment e
+        WHERE e.is_hod_checked = 1
+        ORDER BY e.name ASC";
 
-                                $equipment_result = Database::search($equipment_query);
+        $equipment_result = Database::search($equipment_query);
 
-                                if ($equipment_result && $equipment_result->num_rows > 0) {
-                                    while ($row = $equipment_result->fetch_assoc()) {
-                                        $equipment_code = htmlspecialchars($row['code']);
-                                        $name = htmlspecialchars($row['name']);
-                                        $total_qty = (int)$row['qty'];
-                                        $broken_qty = (int)$row['broken_qty'];
-                                        $repair_qty = (int)$row['repair_qty'];
+        if ($equipment_result && $equipment_result->num_rows > 0) {
+            while ($equipment_row = $equipment_result->fetch_assoc()) { // Changed variable name
+                $equipment_code = htmlspecialchars($equipment_row['code']);
+                $name = htmlspecialchars($equipment_row['name']);
+                $total_qty = (int)$equipment_row['qty'];
+                $broken_qty = (int)$equipment_row['broken_qty'];
+                $repair_qty = (int)$equipment_row['repair_qty'];
 
-                                        // Calculate available quantity
-                                        $available_qty = $total_qty - ($broken_qty + $repair_qty);
+                // Calculate available quantity
+                $available_qty = $total_qty - ($broken_qty + $repair_qty);
 
-                                        // Calculate usage percentage (based on bookings)
-                                        $usage_query = "SELECT COUNT(*) as booking_count FROM booking WHERE equipment_id = ?";
-                                        $usage_result = Database::search($usage_query, "i", [$row['id']]);
-                                        $usage_count = 0;
-                                        if ($usage_result && $usage_result->num_rows > 0) {
-                                            $usage_row = $usage_result->fetch_assoc();
-                                            $usage_count = $usage_row['booking_count'];
-                                        }
+                // Calculate usage percentage (based on bookings)
+                $usage_query = "SELECT COUNT(*) as booking_count FROM booking WHERE equipment_id = ?";
+                $usage_result = Database::search($usage_query, "i", [$equipment_row['id']]);
+                $usage_count = 0;
+                if ($usage_result && $usage_result->num_rows > 0) {
+                    $usage_row = $usage_result->fetch_assoc();
+                    $usage_count = $usage_row['booking_count'];
+                }
 
-                                        // Simple usage percentage (this is just an example - adjust based on your logic)
-                                        $usage_percentage = min(100, round(($usage_count / 10) * 100)); // Assuming 10 bookings = 100%
+                // FIXED: Calculate percentage based on total quantity or usage pattern
+                // Option 1: Percentage of times this equipment is used vs others
+                $total_bookings_query = "SELECT COUNT(*) as total FROM reservation";
+                $total_bookings_result = Database::search($total_bookings_query);
+                $total_bookings = 0;
 
-                                        // Set image path
-                                        $image_path = !empty($row['img_path'])
-                                            ? '/' . ltrim(str_replace('\\', '/', $row['img_path']), '/')
-                                            : 'https://cdn-icons-png.flaticon.com/512/2941/2941514.png';
+                if ($total_bookings_result && $total_bookings_result->num_rows > 0) {
+                    $total_bookings_row = $total_bookings_result->fetch_assoc(); // Different variable name
+                    $total_bookings = $total_bookings_row['total'];
+                }
 
-                                        // Add to data array for JavaScript
-                                        $equipmentDataTable[] = [
-                                            'code' => $equipment_code,
-                                            'name' => $name,
-                                            'image' => $image_path,
-                                            'total' => $total_qty,
-                                            'available' => $available_qty,
-                                            'broken' => $broken_qty,
-                                            'maintenance' => $repair_qty,
-                                            'usage' => $usage_percentage,
-                                            'id' => $row['id']
-                                        ];
+                // Calculate usage percentage based on ALL bookings
+                $usage_percentage = $total_bookings > 0 ? round(($usage_count / $total_bookings) * 100) : 0;
+                $usage_percentage = min(100, $usage_percentage); // Cap at 100%
 
-                                        // Determine badge color for available/total ratio
-                                        $ratio = $total_qty > 0 ? $available_qty / $total_qty : 0;
-                                        $badgeColor = '#22c55e'; // green
-                                        if ($ratio < 0.3) $badgeColor = '#ef4444'; // red
-                                        else if ($ratio < 0.6) $badgeColor = '#f59e0b'; // orange
+                // Set image path
+                $image_path = !empty($equipment_row['img_path'])
+                    ? '/' . ltrim(str_replace('\\', '/', $equipment_row['img_path']), '/')
+                    : 'https://cdn-icons-png.flaticon.com/512/2941/2941514.png';
 
-                                        // Bar color based on usage
-                                        $barColor = '#22c55e';
-                                        if ($usage_percentage < 30) $barColor = '#ef4444';
-                                        else if ($usage_percentage < 60) $barColor = '#f59e0b';
-                                ?>
-                                        <tr data-equipment-id="<?php echo $equipment_code; ?>"
-                                            data-equipment-id-numeric="<?php echo $row['id']; ?>"
-                                            data-maintenance="<?php echo $repair_qty; ?>"
-                                            data-broken="<?php echo $broken_qty; ?>">
-                                            <td>
-                                                <img src="<?php echo $image_path; ?>"
-                                                    style="width:50px;height:50px;object-fit:contain;"
-                                                    onerror="this.src='https://cdn-icons-png.flaticon.com/512/2941/2941514.png'"
-                                                    alt="<?php echo $name; ?>">
-                                            </td>
-                                            <td><strong><?php echo $name; ?></strong></td>
-                                            <td>
-                                                <?php if ($repair_qty > 0): ?>
-                                                    <span class="badge bg-warning"><?php echo $repair_qty; ?></span>
-                                                <?php else: ?>
-                                                    <span class="text-muted">------</span>
-                                                <?php endif; ?>
-                                            </td>
-                                            <td>
-                                                <?php if ($broken_qty > 0): ?>
-                                                    <span class="badge bg-danger"><?php echo $broken_qty; ?></span>
-                                                <?php else: ?>
-                                                    <span class="text-muted">------</span>
-                                                <?php endif; ?>
-                                            </td>
-                                            <td>
-                                                <div class="d-flex align-items-center gap-2">
-                                                    <div style="width:100px;height:8px;background:#e9ecef;border-radius:4px;overflow:hidden;">
-                                                        <div style="width:<?php echo $usage_percentage; ?>%;height:8px;background:<?php echo $barColor; ?>;border-radius:4px;transition:width 0.6s ease;"></div>
-                                                    </div>
-                                                    <span style="font-weight:600;color:<?php echo $barColor; ?>;min-width:45px;">
-                                                        <?php echo $usage_percentage; ?>%
-                                                    </span>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div class="action-buttons">
-                                                    <button class="btn-view" onclick="viewEquipmentByCode('<?php echo $equipment_code; ?>')" title="View Details">
-                                                        <i class="bi bi-eye"></i>
-                                                    </button>
-                                                    <button class="btn-edit" onclick="editEquipment('<?php echo $equipment_code; ?>')" title="Edit">
-                                                        <i class="bi bi-pencil-square"></i>
-                                                    </button>
-                                                    <button class="btn-remove" onclick="removeEquipment('<?php echo $equipment_code; ?>')" title="Remove">
-                                                        <i class="bi bi-trash"></i>
-                                                    </button>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    <?php
-                                    }
-                                } else {
-                                    ?>
-                                    <tr>
-                                        <td colspan="6" class="text-center py-4">No equipment found in database</td>
-                                    </tr>
-                                <?php
-                                }
-                                ?>
-                            </tbody>
-                        </table>
+                // Add to data array for JavaScript
+                $equipmentDataTable[] = [
+                    'code' => $equipment_code,
+                    'name' => $name,
+                    'image' => $image_path,
+                    'total' => $total_qty,
+                    'broken' => $broken_qty,
+                    'maintenance' => $repair_qty,
+                    'usage' => $usage_percentage,
+                    'id' => $equipment_row['id']
+                ];
+
+                // Determine badge color for available/total ratio
+                $ratio = $total_qty > 0 ? $available_qty / $total_qty : 0;
+                $badgeColor = '#22c55e'; // green
+                if ($ratio < 0.3) $badgeColor = '#ef4444'; // red
+                else if ($ratio < 0.6) $badgeColor = '#f59e0b'; // orange
+
+                // Bar color based on usage
+                $barColor = '#22c55e';
+                if ($usage_percentage < 30) $barColor = '#ef4444';
+                else if ($usage_percentage < 60) $barColor = '#f59e0b';
+        ?>
+                <tr data-equipment-id="<?php echo $equipment_code; ?>"
+                    data-equipment-id-numeric="<?php echo $equipment_row['id']; ?>"
+                    data-maintenance="<?php echo $repair_qty; ?>"
+                    data-broken="<?php echo $broken_qty; ?>">
+                    <td>
+                        <img src="<?php echo $image_path; ?>"
+                            style="width:50px;height:50px;object-fit:contain;"
+                            onerror="this.src='https://cdn-icons-png.flaticon.com/512/2941/2941514.png'"
+                            alt="<?php echo $name; ?>">
+                    </td>
+                    <td><strong><?php echo $name; ?></strong></td>
+                    <td>
+                        <?php if ($repair_qty > 0): ?>
+                            <span class="badge bg-warning"><?php echo $repair_qty; ?></span>
+                        <?php else: ?>
+                            <span class="text-muted">------</span>
+                        <?php endif; ?>
+                    </td>
+                    <td>
+                        <?php if ($broken_qty > 0): ?>
+                            <span class="badge bg-danger"><?php echo $broken_qty; ?></span>
+                        <?php else: ?>
+                            <span class="text-muted">------</span>
+                        <?php endif; ?>
+                    </td>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <div style="width:90px;height:8px;background:#e9ecef;border-radius:4px;overflow:hidden;">
+                                <div style="width:<?php echo $usage_percentage; ?>%;height:8px;background:<?php echo $barColor; ?>;border-radius:4px;transition:width 0.6s ease;"></div>
+                            </div>
+                            <span style="font-weight:600;color:<?php echo $barColor; ?>;min-width:45px;">
+                                <?php echo $usage_percentage; ?>%
+                            </span>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="action-buttons">
+                            <button class="btn-view" onclick="viewEquipmentByCode('<?php echo $equipment_code; ?>')" title="View Details">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                            <button class="btn-edit" onclick="editEquipment('<?php echo $equipment_code; ?>')" title="Edit">
+                                <i class="bi bi-pencil-square"></i>
+                            </button>
+                            <button class="btn-remove" onclick="removeEquipment('<?php echo $equipment_code; ?>')" title="Remove">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            <?php
+            }
+        } else {
+            ?>
+            <tr>
+                <td colspan="6" class="text-center py-4">No equipment found in database</td>
+            </tr>
+        <?php
+        }
+        ?>
+    </tbody>
+</table>
                     </div>
                 </div>
             </div>
@@ -2253,7 +2279,7 @@ ORDER BY e.name ASC";
 
             document.getElementById('equipmentModalTitle').innerHTML = '<i class="bi bi-pencil-square me-2"></i>Edit Equipment';
             document.getElementById('modalSaveButtonText').textContent = 'Update Equipment';
-document.getElementById('maintenanceSection').style.display = 'block';
+            document.getElementById('maintenanceSection').style.display = 'block';
             clearEquipmentErrors();
 
             const modal = new bootstrap.Modal(document.getElementById('addEquipmentModal'));
@@ -2720,7 +2746,7 @@ document.getElementById('maintenanceSection').style.display = 'block';
             document.getElementById('eqImagePreview').style.display = 'none';
             document.getElementById('eqImagePlaceholder').style.display = 'block';
             document.getElementById('currentImageInfo').style.display = 'none';
-document.getElementById('maintenanceSection').style.display = 'none';
+            document.getElementById('maintenanceSection').style.display = 'none';
             document.getElementById('eqQty').value = '1';
             document.getElementById('eqSimultaneousUsers').value = '1';
             document.getElementById('eqSterilization').value = 'NO';
@@ -2820,7 +2846,7 @@ document.getElementById('maintenanceSection').style.display = 'none';
             formData.append('reservation_required', reservation);
             formData.append('description', description);
             formData.append('broken_qty', document.getElementById('eqBrokenQty').value);
-formData.append('repair_qty', document.getElementById('eqMaintenanceQty').value);
+            formData.append('repair_qty', document.getElementById('eqMaintenanceQty').value);
             if (imageFile) formData.append('image', imageFile);
 
             const url = id ? '../controllers/save_update_eqdetails.php' : '../controllers/add_equipment.php';
@@ -3344,197 +3370,197 @@ formData.append('repair_qty', document.getElementById('eqMaintenanceQty').value)
             </div>
         </div> -->
 
-   <div class="modal fade" id="addEquipmentModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content" style="border-radius: 20px; border: none; overflow: hidden;">
+    <div class="modal fade" id="addEquipmentModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content" style="border-radius: 20px; border: none; overflow: hidden;">
 
-            <!-- Header - we'll change the title dynamically -->
-            <div class="modal-header py-3" style="background: linear-gradient(135deg, #22c55e, #16a34a);">
-                <h5 class="modal-title text-white fw-semibold" id="equipmentModalTitle">
-                    <i class="bi bi-plus-circle me-2"></i>Add New Equipment
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
+                <!-- Header - we'll change the title dynamically -->
+                <div class="modal-header py-3" style="background: linear-gradient(135deg, #22c55e, #16a34a);">
+                    <h5 class="modal-title text-white fw-semibold" id="equipmentModalTitle">
+                        <i class="bi bi-plus-circle me-2"></i>Add New Equipment
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
 
-            <!-- Body -->
-            <div class="modal-body p-4" style="background: #f8fafc;">
-                <form id="addEquipmentForm" enctype="multipart/form-data">
-                    <!-- Hidden field to store equipment ID for edit mode -->
-                    <input type="hidden" id="eqId" value="">
+                <!-- Body -->
+                <div class="modal-body p-4" style="background: #f8fafc;">
+                    <form id="addEquipmentForm" enctype="multipart/form-data">
+                        <!-- Hidden field to store equipment ID for edit mode -->
+                        <input type="hidden" id="eqId" value="">
 
-                    <div class="row g-3">
-                        <!-- Left Column -->
-                        <div class="col-md-6">
-                            <div class="card border-0 shadow-sm mb-3">
-                                <div class="card-body p-3">
-                                    <h6 class="fw-semibold mb-3" style="color: #22c55e;">
-                                        <i class="bi bi-info-circle me-1"></i>Basic Information
-                                    </h6>
+                        <div class="row g-3">
+                            <!-- Left Column -->
+                            <div class="col-md-6">
+                                <div class="card border-0 shadow-sm mb-3">
+                                    <div class="card-body p-3">
+                                        <h6 class="fw-semibold mb-3" style="color: #22c55e;">
+                                            <i class="bi bi-info-circle me-1"></i>Basic Information
+                                        </h6>
 
-                                    <div class="mb-3">
-                                        <label class="form-label fw-semibold">Equipment Code <span class="text-danger">*</span></label>
-                                        <input type="text" class="form-control" id="eqCode"
-                                            placeholder="e.g., MIC-001" required>
-                                        <div class="invalid-feedback" id="eqCodeError"></div>
+                                        <div class="mb-3">
+                                            <label class="form-label fw-semibold">Equipment Code <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control" id="eqCode"
+                                                placeholder="e.g., MIC-001" required>
+                                            <div class="invalid-feedback" id="eqCodeError"></div>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label class="form-label fw-semibold">Equipment Name <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control" id="eqName"
+                                                placeholder="e.g., Microscope" required>
+                                            <div class="invalid-feedback" id="eqNameError"></div>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label class="form-label fw-semibold">Total Quantity <span class="text-danger">*</span></label>
+                                            <input type="number" class="form-control" id="eqQty"
+                                                min="1" value="1" required oninput="recalcAvailable()">
+                                            <div class="invalid-feedback" id="eqQtyError"></div>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label class="form-label fw-semibold">Simultaneous Users</label>
+                                            <input type="number" class="form-control" id="eqSimultaneousUsers"
+                                                min="1" value="1">
+                                            <small class="text-muted">Number of users that can use this at once</small>
+                                        </div>
                                     </div>
+                                </div>
 
-                                    <div class="mb-3">
-                                        <label class="form-label fw-semibold">Equipment Name <span class="text-danger">*</span></label>
-                                        <input type="text" class="form-control" id="eqName"
-                                            placeholder="e.g., Microscope" required>
-                                        <div class="invalid-feedback" id="eqNameError"></div>
-                                    </div>
+                                <!-- NEW: Maintenance & Broken Section -->
+                                <div class="card border-0 shadow-sm" id="maintenanceSection" style="display:none;">
+                                    <div class="card-body p-3">
+                                        <h6 class="fw-semibold mb-3" style="color: #f59e0b;">
+                                            <i class="bi bi-exclamation-triangle me-1"></i>Status & Maintenance
+                                        </h6>
 
-                                    <div class="mb-3">
-                                        <label class="form-label fw-semibold">Total Quantity <span class="text-danger">*</span></label>
-                                        <input type="number" class="form-control" id="eqQty"
-                                            min="1" value="1" required oninput="recalcAvailable()">
-                                        <div class="invalid-feedback" id="eqQtyError"></div>
-                                    </div>
+                                        <div class="row g-3">
+                                            <!-- Maintenance Quantity -->
+                                            <div class="col-md-6">
+                                                <label class="form-label fw-semibold">
+                                                    <i class="bi bi-tools text-warning me-1"></i>Maintenance Qty
+                                                </label>
+                                                <div class="input-group">
+                                                    <input type="number" class="form-control" id="eqMaintenanceQty"
+                                                        min="0" value="0" placeholder="0" oninput="recalcAvailable()">
+                                                    <span class="input-group-text bg-light text-muted">units</span>
+                                                </div>
+                                                <small class="text-muted">Equipment currently in maintenance</small>
+                                            </div>
 
-                                    <div class="mb-3">
-                                        <label class="form-label fw-semibold">Simultaneous Users</label>
-                                        <input type="number" class="form-control" id="eqSimultaneousUsers"
-                                            min="1" value="1">
-                                        <small class="text-muted">Number of users that can use this at once</small>
+                                            <!-- Broken Quantity -->
+                                            <div class="col-md-6">
+                                                <label class="form-label fw-semibold">
+                                                    <i class="bi bi-bug text-danger me-1"></i>Broken Qty
+                                                </label>
+                                                <div class="input-group">
+                                                    <input type="number" class="form-control" id="eqBrokenQty"
+                                                        min="0" value="0" placeholder="0" oninput="recalcAvailable()">
+                                                    <span class="input-group-text bg-light text-muted">units</span>
+                                                </div>
+                                                <small class="text-muted">Equipment reported as broken</small>
+                                            </div>
+                                        </div>
+
+                                        <!-- Available Quantity (Auto-calculated) -->
+                                        <div class="mt-3 p-3 bg-light rounded-3">
+                                            <div class="d-flex justify-content-between align-items-center">
+                                                <span class="fw-semibold">
+                                                    <i class="bi bi-check-circle-fill text-success me-1"></i>Available Quantity:
+                                                </span>
+                                                <span class="fs-5 fw-bold text-success" id="availableQtyDisplay">1</span>
+                                            </div>
+                                            <small class="text-muted d-block mt-1">
+                                                Available = Total - Maintenance - Broken
+                                            </small>
+                                        </div>
+
+                                        <!-- Validation warning -->
+                                        <div id="qtyValidationWarning" class="alert alert-warning py-2 px-3 mt-3 small d-none">
+                                            <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                                            <span id="qtyWarningMessage">Maintenance + Broken cannot exceed Total Quantity</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- NEW: Maintenance & Broken Section -->
-                           <div class="card border-0 shadow-sm" id="maintenanceSection" style="display:none;">
-                                <div class="card-body p-3">
-                                    <h6 class="fw-semibold mb-3" style="color: #f59e0b;">
-                                        <i class="bi bi-exclamation-triangle me-1"></i>Status & Maintenance
-                                    </h6>
+                            <!-- Right Column -->
+                            <div class="col-md-6">
+                                <div class="card border-0 shadow-sm mb-3">
+                                    <div class="card-body p-3">
+                                        <h6 class="fw-semibold mb-3" style="color: #22c55e;">
+                                            <i class="bi bi-image me-1"></i>Equipment Image
+                                        </h6>
 
-                                    <div class="row g-3">
-                                        <!-- Maintenance Quantity -->
-                                        <div class="col-md-6">
-                                            <label class="form-label fw-semibold">
-                                                <i class="bi bi-tools text-warning me-1"></i>Maintenance Qty
-                                            </label>
-                                            <div class="input-group">
-                                                <input type="number" class="form-control" id="eqMaintenanceQty"
-                                                    min="0" value="0" placeholder="0" oninput="recalcAvailable()">
-                                                <span class="input-group-text bg-light text-muted">units</span>
-                                            </div>
-                                            <small class="text-muted">Equipment currently in maintenance</small>
-                                        </div>
-
-                                        <!-- Broken Quantity -->
-                                        <div class="col-md-6">
-                                            <label class="form-label fw-semibold">
-                                                <i class="bi bi-bug text-danger me-1"></i>Broken Qty
-                                            </label>
-                                            <div class="input-group">
-                                                <input type="number" class="form-control" id="eqBrokenQty"
-                                                    min="0" value="0" placeholder="0" oninput="recalcAvailable()">
-                                                <span class="input-group-text bg-light text-muted">units</span>
-                                            </div>
-                                            <small class="text-muted">Equipment reported as broken</small>
-                                        </div>
-                                    </div>
-
-                                    <!-- Available Quantity (Auto-calculated) -->
-                                    <div class="mt-3 p-3 bg-light rounded-3">
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <span class="fw-semibold">
-                                                <i class="bi bi-check-circle-fill text-success me-1"></i>Available Quantity:
-                                            </span>
-                                            <span class="fs-5 fw-bold text-success" id="availableQtyDisplay">1</span>
-                                        </div>
-                                        <small class="text-muted d-block mt-1">
-                                            Available = Total - Maintenance - Broken
-                                        </small>
-                                    </div>
-
-                                    <!-- Validation warning -->
-                                    <div id="qtyValidationWarning" class="alert alert-warning py-2 px-3 mt-3 small d-none">
-                                        <i class="bi bi-exclamation-triangle-fill me-1"></i>
-                                        <span id="qtyWarningMessage">Maintenance + Broken cannot exceed Total Quantity</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Right Column -->
-                        <div class="col-md-6">
-                            <div class="card border-0 shadow-sm mb-3">
-                                <div class="card-body p-3">
-                                    <h6 class="fw-semibold mb-3" style="color: #22c55e;">
-                                        <i class="bi bi-image me-1"></i>Equipment Image
-                                    </h6>
-
-                                    <div class="text-center mb-3">
-                                        <div class="image-preview-container"
-                                            style="width: 150px; height: 150px; margin: 0 auto; 
+                                        <div class="text-center mb-3">
+                                            <div class="image-preview-container"
+                                                style="width: 150px; height: 150px; margin: 0 auto; 
                                         border: 2px dashed #22c55e; border-radius: 10px; 
                                         display: flex; align-items: center; justify-content: center;
                                         overflow: hidden; background: #f8f9fa;">
-                                            <img id="eqImagePreview" src="#" alt="Preview"
-                                                style="max-width: 100%; max-height: 100%; display: none;">
-                                            <i id="eqImagePlaceholder" class="bi bi-image"
-                                                style="font-size: 3rem; color: #22c55e;"></i>
+                                                <img id="eqImagePreview" src="#" alt="Preview"
+                                                    style="max-width: 100%; max-height: 100%; display: none;">
+                                                <i id="eqImagePlaceholder" class="bi bi-image"
+                                                    style="font-size: 3rem; color: #22c55e;"></i>
+                                            </div>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <input type="file" class="form-control" id="eqImage"
+                                                accept="image/jpeg,image/png,image/gif,image/webp"
+                                                onchange="previewEquipmentImage(this)">
+                                            <small class="text-muted">Max size: 6MB (JPG, PNG, GIF, WEBP)</small>
+                                            <div id="currentImageInfo" class="mt-2 small text-muted" style="display: none;"></div>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label class="form-label fw-semibold">Sterilization Required</label>
+                                            <select class="form-select" id="eqSterilization">
+                                                <option value="NO">No</option>
+                                                <option value="YES">Yes</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label class="form-label fw-semibold">Reservation Required</label>
+                                            <select class="form-select" id="eqReservation">
+                                                <option value="YES">Yes</option>
+                                                <option value="NO">No</option>
+                                            </select>
                                         </div>
                                     </div>
+                                </div>
+                            </div>
 
-                                    <div class="mb-3">
-                                        <input type="file" class="form-control" id="eqImage"
-                                            accept="image/jpeg,image/png,image/gif,image/webp"
-                                            onchange="previewEquipmentImage(this)">
-                                        <small class="text-muted">Max size: 6MB (JPG, PNG, GIF, WEBP)</small>
-                                        <div id="currentImageInfo" class="mt-2 small text-muted" style="display: none;"></div>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label class="form-label fw-semibold">Sterilization Required</label>
-                                        <select class="form-select" id="eqSterilization">
-                                            <option value="NO">No</option>
-                                            <option value="YES">Yes</option>
-                                        </select>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label class="form-label fw-semibold">Reservation Required</label>
-                                        <select class="form-select" id="eqReservation">
-                                            <option value="YES">Yes</option>
-                                            <option value="NO">No</option>
-                                        </select>
+                            <!-- Full Width Row - Description -->
+                            <div class="col-12">
+                                <div class="card border-0 shadow-sm">
+                                    <div class="card-body p-3">
+                                        <h6 class="fw-semibold mb-3" style="color: #22c55e;">
+                                            <i class="bi bi-card-text me-1"></i>Description
+                                        </h6>
+                                        <textarea class="form-control" id="eqDescription" rows="3"
+                                            placeholder="Enter equipment description..."></textarea>
                                     </div>
                                 </div>
                             </div>
                         </div>
+                    </form>
+                </div>
 
-                        <!-- Full Width Row - Description -->
-                        <div class="col-12">
-                            <div class="card border-0 shadow-sm">
-                                <div class="card-body p-3">
-                                    <h6 class="fw-semibold mb-3" style="color: #22c55e;">
-                                        <i class="bi bi-card-text me-1"></i>Description
-                                    </h6>
-                                    <textarea class="form-control" id="eqDescription" rows="3"
-                                        placeholder="Enter equipment description..."></textarea>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </form>
-            </div>
-
-            <!-- Footer - change button text dynamically -->
-            <div class="modal-footer py-3 px-4 border-0" style="background: #f8fafc;">
-                <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">
-                    <i class="bi bi-x-circle me-1"></i>Cancel
-                </button>
-                <button type="button" class="btn btn-success px-4" onclick="saveEquipment()"
-                    style="background: linear-gradient(135deg, #22c55e, #16a34a); border: none;">
-                    <i class="bi bi-check-circle me-1"></i><span id="modalSaveButtonText">Save Equipment</span>
-                </button>
+                <!-- Footer - change button text dynamically -->
+                <div class="modal-footer py-3 px-4 border-0" style="background: #f8fafc;">
+                    <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-1"></i>Cancel
+                    </button>
+                    <button type="button" class="btn btn-success px-4" onclick="saveEquipment()"
+                        style="background: linear-gradient(135deg, #22c55e, #16a34a); border: none;">
+                        <i class="bi bi-check-circle me-1"></i><span id="modalSaveButtonText">Save Equipment</span>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
-</div>
 </body>
 
 </html>

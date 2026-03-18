@@ -1,38 +1,33 @@
 <?php
-declare(strict_types=1);
-
-// mark_notifications_read.php
 session_start();
+require_once '../config/database.php';
 header('Content-Type: application/json');
 
-require_once '../config/database.php';
-
-try {
-    if (isset($_POST['user_id'])) {
-        $student_id = intval($_POST['user_id']);
-        
-        if ($student_id > 0) {
-            // Update all unread notifications to read
-            $query = "UPDATE notification 
-                      SET status = 'read' 
-                      WHERE owner_of_notification = ? AND status = 'unread'";
-            
-            $success = Database::iud($query, "i", [$student_id]);
-            
-            if ($success) {
-                echo json_encode(['success' => true, 'message' => 'Notifications marked as read']);
-            } else {
-                echo json_encode(['success' => false, 'error' => Database::getLastError()]);
-            }
-        } else {
-            echo json_encode(['success' => false, 'error' => 'Invalid student ID']);
-        }
-    } else {
-        echo json_encode(['success' => false, 'error' => 'Student ID not provided']);
-    }
-} catch (Exception $e) {
-    echo json_encode(['success' => false, 'error' => $e->getMessage()]);
+if (!isset($_SESSION["user_id"])) {
+    echo json_encode(['success' => false, 'message' => 'Unauthorized']);
+    exit();
 }
 
+$user_id = $_SESSION["user_id"];
 
+// Mark single notification
+if (isset($_POST['notification_id']) && !empty($_POST['notification_id'])) {
+    $notif_id = intval($_POST['notification_id']);
+    
+    $result = Database::iud(
+        "UPDATE notification SET status = 'read' WHERE id = ? AND owner_of_notification = ?",
+        "ii", [$notif_id, $user_id]
+    );
+    
+    echo json_encode(['success' => (bool)$result]);
+    exit();
+}
+
+// Mark ALL as read
+$result = Database::iud(
+    "UPDATE notification SET status = 'read' WHERE owner_of_notification = ? AND status = 'unread'",
+    "i", [$user_id]
+);
+
+echo json_encode(['success' => (bool)$result]);
 ?>

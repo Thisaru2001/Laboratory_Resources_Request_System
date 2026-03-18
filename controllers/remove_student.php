@@ -24,7 +24,7 @@ if (!$student_id) {
 
 try {
     // Start transaction
-    Database::iud("START TRANSACTION");
+  
     
     // Delete or mark as rejected (choose one option below)
     
@@ -51,8 +51,7 @@ try {
     
     if ($affected > 0) {
         // Commit transaction
-        Database::iud("COMMIT");
-        
+      
         echo json_encode([
             'success' => true, 
             'message' => 'Student request removed successfully'
@@ -68,7 +67,7 @@ try {
     
 } catch (Exception $e) {
     // Rollback on error
-    Database::iud("ROLLBACK");
+  
     error_log("Error in remove_student: " . $e->getMessage());
     echo json_encode(['success' => false, 'message' => 'Server error occurred']);
 }
