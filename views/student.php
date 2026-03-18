@@ -1789,8 +1789,8 @@ $calendar_events_json = json_encode($calendar_events);
 
                                         // Remove button only for Pending status
                                         if ($row['status'] === 'pending') {
-                                            echo "<button class='btn btn-danger btn-sm rounded-pill px-3' onclick='removeReservation(\"" . htmlspecialchars($row['reservation_id']) . "\")' title='Remove Reservation' style='background: linear-gradient(135deg, #dc3545, #c82333); border: none; box-shadow: 0 4px 10px rgba(220,53,69,0.3);'>";
-                                            echo "<i class='bi bi-trash3-fill me-1'></i> Remove";
+                                            echo "<button class='btn btn-danger btn-sm' onclick='removeReservation(\"" . htmlspecialchars($row['reservation_id']) . "\")' title='Remove Reservation' style='padding: 2px 8px; font-size: 0.7rem; background: linear-gradient(135deg, #dc3545, #c82333); border: none;'>";
+                                            echo "<i class='bi bi-trash'></i>";
                                             echo "</button>";
                                         }
 
@@ -1943,37 +1943,47 @@ $calendar_events_json = json_encode($calendar_events);
 
     <script>
         // View reservation details
-       function viewReservation(reservationId) {
-    viewReservationDetails(reservationId);
-}
+        function viewReservation(reservationId) {
+            viewReservationDetails(reservationId);
+        }
 
         // Remove reservation (for pending only)
         function removeReservation(reservationId) {
-            if (confirm('Are you sure you want to remove this pending reservation?')) {
-                // Add your remove logic here
-                fetch('../controllers/remove_reservation.php', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            reservation_id: reservationId
+            // alert(reservationId);
+            ConfirmModal.show({
+                title: 'Remove Reservation',
+                heading: 'Remove this reservation?',
+                message: 'This will permanently remove your pending reservation.<br><span style="color:#dc2626;font-weight:600;">This action cannot be undone.</span>',
+                type: 'danger',
+                confirmText: 'Yes, Remove It',
+                confirmIcon: 'bi-trash3',
+                onConfirm: () => {
+                    ConfirmModal.setLoading('Removing...');
+                    fetch('../controllers/remove_reservation.php', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                reservation_id: reservationId
+                            })
                         })
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            alert('Reservation removed successfully');
-                            location.reload();
-                        } else {
-                            alert('Error: ' + data.message);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        alert('Error removing reservation');
-                    });
-            }
+                        .then(r => r.json())
+                        .then(data => {
+                            ConfirmModal.hide();
+                            if (data.success) {
+                                showToast('success', 'Reservation removed successfully!');
+                                setTimeout(() => location.reload(), 1500);
+                            } else {
+                                showToast('error', data.message || 'Failed to remove reservation.');
+                            }
+                        })
+                        .catch(() => {
+                            ConfirmModal.hide();
+                            showToast('error', 'Network error. Please try again.');
+                        });
+                }
+            });
         }
         // ============ GLOBAL VARIABLES ============
         let selectedEquipment = [];
@@ -2249,59 +2259,94 @@ $calendar_events_json = json_encode($calendar_events);
             document.getElementById('formWarning').style.display = 'none';
         }
 
-        function submitReservation() {
-            const locationId = document.getElementById('labLocation').value;
-            const requestDate = document.getElementById('requestDate').value;
+      function submitReservation() {
+    const locationId = document.getElementById('labLocation').value;
+    const requestDate = document.getElementById('requestDate').value;
 
-            if (!locationId) {
-                showWarning('Please select a lab location');
-                return;
-            }
+    // Validation with toast
+    if (!locationId) {
+        showToast('error', 'Please select a lab location.');
+        return;
+    }
 
-            if (!requestDate) {
-                showWarning('Please select a request date');
-                return;
-            }
+    if (!requestDate) {
+        showToast('error', 'Please select a request date.');
+        return;
+    }
 
-            if (selectedEquipment.length === 0) {
-                showWarning('Please add at least one equipment item');
-                return;
-            }
+    if (selectedEquipment.length === 0) {
+        showToast('error', 'Please add at least one equipment item');
+        return;
+    }
 
-            const formData = new FormData();
-            formData.append('location_id', locationId);
-            formData.append('request_date', requestDate);
-            formData.append('continue_days', document.getElementById('continueDays').value);
-            formData.append('comment', document.getElementById('requestComment').value);
-            formData.append('equipment', JSON.stringify(selectedEquipment));
+    // Show loading state
+    const submitBtn = document.getElementById('submitBtn');
+    const originalContent = submitBtn.innerHTML;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Submitting...';
 
-            const submitBtn = document.getElementById('submitBtn');
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Submitting...';
+    // Prepare form data
+    const formData = new FormData();
+    formData.append('location_id', locationId);
+    formData.append('request_date', requestDate);
+    formData.append('continue_days', document.getElementById('continueDays').value);
+    formData.append('comment', document.getElementById('requestComment').value);
+    formData.append('equipment', JSON.stringify(selectedEquipment));
 
-            const xhr = new XMLHttpRequest();
-            xhr.open('POST', 'submit_reservation.php', true);
-            xhr.onload = function() {
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = '<i class="bi bi-send me-1"></i>Submit Reservation';
+    // Send request
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', 'submit_reservation.php', true);
+    
+    xhr.onload = function() {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalContent;
 
-                if (xhr.status === 200) {
-                    try {
-                        const response = JSON.parse(xhr.responseText);
-                        if (response.success) {
-                            alert('Reservation submitted successfully!');
-                            resetForm();
-                            location.reload();
-                        } else {
-                            alert('Error: ' + response.message);
-                        }
-                    } catch (e) {
-                        alert('Server error occurred');
-                    }
+        if (xhr.status === 200) {
+            try {
+                const response = JSON.parse(xhr.responseText);
+                
+                if (response.success) {
+                    // Success toast
+                    showToast('success', '✅ Reservation submitted successfully!');
+                    
+                    // Reset form and reload after a short delay
+                    resetForm();
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1500); // Wait 1.5 seconds to show the success message
+                    
+                } else {
+                    // Error toast with server message
+                    showToast('error', '❌ ' + (response.message || 'Failed to submit reservation'));
                 }
-            };
-            xhr.send(formData);
+                
+            } catch (e) {
+                console.error('Parse error:', e);
+                showToast('error', '❌ Server error occurred. Please try again.');
+            }
+        } else {
+            // HTTP error toast
+            showToast('error', '❌ Server error (Status: ' + xhr.status + '). Please try again.');
         }
+    };
+
+    xhr.onerror = function() {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalContent;
+        showToast('error', '❌ Network error. Please check your connection.');
+    };
+
+    xhr.ontimeout = function() {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = originalContent;
+        showToast('error', '❌ Request timed out. Please try again.');
+    };
+
+    // Optional: Set timeout (30 seconds)
+    xhr.timeout = 30000;
+    
+    xhr.send(formData);
+}
 
         function showWarning(message) {
             document.getElementById('warningMessage').innerText = message;
@@ -2550,8 +2595,8 @@ $calendar_events_json = json_encode($calendar_events);
         }
 
         function viewBookingDetails(reservationId) {
-    viewReservationDetails(reservationId);
-}
+            viewReservationDetails(reservationId);
+        }
 
         // ============ CALENDAR NAVIGATION ============
         document.querySelector('.prev')?.addEventListener('click', () => {
@@ -2678,51 +2723,54 @@ $calendar_events_json = json_encode($calendar_events);
         }
 
 
-function viewReservationDetails(reservationId) {
-    const modalEl = document.getElementById('reservationDetailsModal');
-    const contentDiv = document.getElementById('reservationDetailsContent');
+        function viewReservationDetails(reservationId) {
+            const modalEl = document.getElementById('reservationDetailsModal');
+            const contentDiv = document.getElementById('reservationDetailsContent');
 
-    contentDiv.innerHTML = `
+            contentDiv.innerHTML = `
         <div class="text-center py-5">
             <div class="spinner-border text-success" role="status" style="width:2rem;height:2rem;"></div>
             <p class="mt-3 text-muted small fw-semibold">Loading reservation details...</p>
         </div>`;
 
-    const existing = bootstrap.Modal.getInstance(modalEl);
-    if (existing) existing.dispose();
-    document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
-    document.body.classList.remove('modal-open');
-    document.body.style.overflow = '';
-    document.body.style.paddingRight = '';
+            const existing = bootstrap.Modal.getInstance(modalEl);
+            if (existing) existing.dispose();
+            document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+            document.body.classList.remove('modal-open');
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
 
-    const modal = new bootstrap.Modal(modalEl);
-    modal.show();
+            const modal = new bootstrap.Modal(modalEl);
+            modal.show();
 
-    fetch(`../controllers/get_reservation_details.php?id=${encodeURIComponent(reservationId)}`)
-        .then(r => r.json())
-        .then(data => {
-            if (!data.success) {
-                contentDiv.innerHTML = `<div class="alert alert-danger m-3">${data.message || 'Failed to load'}</div>`;
-                return;
-            }
+            fetch(`../controllers/get_reservation_details.php?id=${encodeURIComponent(reservationId)}`)
+                .then(r => r.json())
+                .then(data => {
+                    if (!data.success) {
+                        contentDiv.innerHTML = `<div class="alert alert-danger m-3">${data.message || 'Failed to load'}</div>`;
+                        return;
+                    }
 
-            const res = data;
+                    const res = data;
 
-            // Status badge
-            let badgeColor = '#f59e0b';
-            let statusText = 'Pending';
-            if (res.status === 'Ready' || res.status === 'to_checked') {
-                badgeColor = '#22c55e'; statusText = 'Approved';
-            } else if (res.status === 'Rejected' || res.status === 'rejected') {
-                badgeColor = '#ef4444'; statusText = 'Rejected';
-            } else if (res.status === 'to_pending' || res.status === 'TO_Pending') {
-                badgeColor = '#3b82f6'; statusText = 'Under Review';
-            }
+                    // Status badge
+                    let badgeColor = '#f59e0b';
+                    let statusText = 'Pending';
+                    if (res.status === 'Ready' || res.status === 'to_checked') {
+                        badgeColor = '#22c55e';
+                        statusText = 'Approved';
+                    } else if (res.status === 'Rejected' || res.status === 'rejected') {
+                        badgeColor = '#ef4444';
+                        statusText = 'Rejected';
+                    } else if (res.status === 'to_pending' || res.status === 'TO_Pending') {
+                        badgeColor = '#3b82f6';
+                        statusText = 'Under Review';
+                    }
 
-            // Equipment list
-            let equipmentHtml = '<p class="text-muted fst-italic">No equipment found</p>';
-            if (res.equipment && res.equipment.length > 0) {
-                equipmentHtml = `
+                    // Equipment list
+                    let equipmentHtml = '<p class="text-muted fst-italic">No equipment found</p>';
+                    if (res.equipment && res.equipment.length > 0) {
+                        equipmentHtml = `
                     <table class="table table-sm table-bordered mt-2">
                         <thead style="background:linear-gradient(135deg,#22c55e,#16a34a);color:white;">
                             <tr><th>Equipment</th><th>Code</th><th class="text-center">Qty</th></tr>
@@ -2737,12 +2785,12 @@ function viewReservationDetails(reservationId) {
                             `).join('')}
                         </tbody>
                     </table>`;
-            }
+                    }
 
-            // Rejection reason
-            let rejectionHtml = '';
-            if ((res.status === 'rejected' || res.status === 'Rejected') && res.rejected_reason) {
-                rejectionHtml = `
+                    // Rejection reason
+                    let rejectionHtml = '';
+                    if ((res.status === 'rejected' || res.status === 'Rejected') && res.rejected_reason) {
+                        rejectionHtml = `
                     <div style="background:#fff0f0;border-left:4px solid #ef4444;
                                 padding:12px 16px;border-radius:8px;margin-top:12px;">
                         <strong style="color:#dc2626;">
@@ -2750,19 +2798,21 @@ function viewReservationDetails(reservationId) {
                         </strong>
                         <p class="mb-0 mt-1" style="color:#78350f;">${res.rejected_reason}</p>
                     </div>`;
-            }
+                    }
 
-            // Format date
-            let formattedDate = res.date || '—';
-            try {
-                if (res.date && res.date !== '—') {
-                    formattedDate = new Date(res.date).toLocaleDateString('en-US', {
-                        year: 'numeric', month: 'long', day: 'numeric'
-                    });
-                }
-            } catch(e) {}
+                    // Format date
+                    let formattedDate = res.date || '—';
+                    try {
+                        if (res.date && res.date !== '—') {
+                            formattedDate = new Date(res.date).toLocaleDateString('en-US', {
+                                year: 'numeric',
+                                month: 'long',
+                                day: 'numeric'
+                            });
+                        }
+                    } catch (e) {}
 
-            contentDiv.innerHTML = `
+                    contentDiv.innerHTML = `
                 <div class="p-2">
                     <!-- Header info -->
                     <div class="row g-3 mb-3">
@@ -2812,12 +2862,12 @@ function viewReservationDetails(reservationId) {
                         ${equipmentHtml}
                     </div>
                 </div>`;
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            contentDiv.innerHTML = `<div class="alert alert-danger m-3">Network error. Please try again.</div>`;
-        });
-}
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    contentDiv.innerHTML = `<div class="alert alert-danger m-3">Network error. Please try again.</div>`;
+                });
+        }
 
 
 
@@ -2877,46 +2927,46 @@ function viewReservationDetails(reservationId) {
             xhr.send();
         }
 
-   
 
 
 
-function viewEquipmentDetails(code) {
-   // alert("ok");
-    const contentDiv = document.getElementById('equipmentDetailsContent');
-    const modalEl = document.getElementById('equipmentDetailsModal');
 
-    // Show loading
-    contentDiv.innerHTML = `
+        function viewEquipmentDetails(code) {
+            // alert("ok");
+            const contentDiv = document.getElementById('equipmentDetailsContent');
+            const modalEl = document.getElementById('equipmentDetailsModal');
+
+            // Show loading
+            contentDiv.innerHTML = `
         <div class="text-center py-5">
             <div class="spinner-border text-success" role="status" style="width:2rem;height:2rem;"></div>
             <p class="mt-3 text-muted small fw-semibold">Loading equipment details...</p>
         </div>`;
 
-    // Clean up any existing modal instance and backdrop
-    const existing = bootstrap.Modal.getInstance(modalEl);
-    if (existing) existing.dispose();
-    document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
-    document.body.classList.remove('modal-open');
-    document.body.style.overflow = '';
-    document.body.style.paddingRight = '';
+            // Clean up any existing modal instance and backdrop
+            const existing = bootstrap.Modal.getInstance(modalEl);
+            if (existing) existing.dispose();
+            document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+            document.body.classList.remove('modal-open');
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
 
-    // Show modal FIRST, then fetch
-    const modal = new bootstrap.Modal(modalEl);
-    modal.show();
+            // Show modal FIRST, then fetch
+            const modal = new bootstrap.Modal(modalEl);
+            modal.show();
 
-    fetch(`../controllers/get_equipment_details.php?code=${encodeURIComponent(code)}`)
-        .then(response => response.json())
-        .then(data => {
-            if (!data.success) {
-                contentDiv.innerHTML = `<div class="alert alert-danger m-3">${data.message || 'Failed to load'}</div>`;
-                return;
-            }
+            fetch(`../controllers/get_equipment_details.php?code=${encodeURIComponent(code)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.success) {
+                        contentDiv.innerHTML = `<div class="alert alert-danger m-3">${data.message || 'Failed to load'}</div>`;
+                        return;
+                    }
 
-            const eq = data.equipment;
-            const addedDate = eq.added_datetime ? new Date(eq.added_datetime).toLocaleDateString() : '—';
+                    const eq = data.equipment;
+                    const addedDate = eq.added_datetime ? new Date(eq.added_datetime).toLocaleDateString() : '—';
 
-            contentDiv.innerHTML = `
+                    contentDiv.innerHTML = `
                 <div class="row g-0">
                     <div class="col-md-4 text-center border-end p-4">
                         <img src="${eq.image_path || 'https://cdn-icons-png.flaticon.com/512/2941/2941514.png'}"
@@ -2947,12 +2997,12 @@ function viewEquipmentDetails(code) {
                         </table>
                     </div>
                 </div>`;
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            contentDiv.innerHTML = `<div class="alert alert-danger m-3">Network error. Please try again.</div>`;
-        });
-}
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    contentDiv.innerHTML = `<div class="alert alert-danger m-3">Network error. Please try again.</div>`;
+                });
+        }
 
 
 
@@ -3098,49 +3148,228 @@ function viewEquipmentDetails(code) {
             };
             xhr.send();
         }
+
+
+
+        // =============================================
+        // REUSABLE CONFIRM MODAL
+        // =============================================
+        const ConfirmModal = {
+            _callback: null,
+
+            show({
+                title = 'Are you sure?',
+                heading = 'Are you sure?',
+                message = 'This action cannot be undone.',
+                type = 'danger', // danger | warning | success | info
+                confirmText = 'Confirm',
+                confirmIcon = 'bi-check-circle',
+                onConfirm = null
+            }) {
+                const colors = {
+                    danger: {
+                        header: 'linear-gradient(135deg,#dc2626,#b91c1c)',
+                        circle: '#fee2e2',
+                        icon: '#dc2626'
+                    },
+                    warning: {
+                        header: 'linear-gradient(135deg,#f59e0b,#d97706)',
+                        circle: '#fef3c7',
+                        icon: '#f59e0b'
+                    },
+                    success: {
+                        header: 'linear-gradient(135deg,#22c55e,#16a34a)',
+                        circle: '#dcfce7',
+                        icon: '#22c55e'
+                    },
+                    info: {
+                        header: 'linear-gradient(135deg,#3b82f6,#2563eb)',
+                        circle: '#dbeafe',
+                        icon: '#3b82f6'
+                    },
+                };
+
+                const c = colors[type] || colors.danger;
+
+                // Set header
+                document.getElementById('confirmModalHeader').style.background = c.header;
+                document.getElementById('confirmModalTitleText').textContent = title;
+
+                // Set icon circle
+                document.getElementById('confirmModalIconCircle').style.background = c.circle;
+                document.getElementById('confirmModalBodyIcon').style.color = c.icon;
+                document.getElementById('confirmModalBodyIcon').className = `bi ${confirmIcon}`;
+
+                // Set text
+                document.getElementById('confirmModalHeading').textContent = heading;
+                document.getElementById('confirmModalMessage').innerHTML = message;
+
+                // Set confirm button
+                const btn = document.getElementById('confirmModalBtn');
+                btn.style.background = c.header;
+                btn.innerHTML = `<i class="bi ${confirmIcon} me-2"></i>${confirmText}`;
+                btn.disabled = false;
+
+                this._callback = onConfirm;
+
+                const modal = new bootstrap.Modal(document.getElementById('confirmModal'));
+                modal.show();
+            },
+
+            setLoading(text = 'Processing...') {
+                const btn = document.getElementById('confirmModalBtn');
+                btn.disabled = true;
+                btn.innerHTML = `<span class="spinner-border spinner-border-sm me-2"></span>${text}`;
+            },
+
+            hide() {
+                const modal = bootstrap.Modal.getInstance(document.getElementById('confirmModal'));
+                if (modal) modal.hide();
+            }
+        };
+
+        // Confirm button click
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('confirmModalBtn').addEventListener('click', function() {
+                if (typeof ConfirmModal._callback === 'function') {
+                    ConfirmModal._callback();
+                }
+            });
+        });
+
+        // =============================================
+        // REUSABLE TOAST
+        // =============================================
+        function showToast(type, message) {
+            const colors = {
+                success: {
+                    color: '#22c55e',
+                    icon: 'bi-check-circle-fill'
+                },
+                error: {
+                    color: '#dc2626',
+                    icon: 'bi-x-circle-fill'
+                },
+                warning: {
+                    color: '#f59e0b',
+                    icon: 'bi-exclamation-triangle-fill'
+                },
+                info: {
+                    color: '#3b82f6',
+                    icon: 'bi-info-circle-fill'
+                },
+            };
+
+            const c = colors[type] || colors.info;
+            const toast = document.getElementById('appToast');
+
+            document.getElementById('appToastIcon').className = `bi ${c.icon}`;
+            document.getElementById('appToastIcon').style.color = c.color;
+            document.getElementById('appToastMsg').textContent = message;
+
+            toast.style.borderLeft = `5px solid ${c.color}`;
+            toast.style.display = 'flex';
+            toast.style.opacity = '1';
+            toast.style.transform = 'translateX(0)';
+            toast.style.transition = 'all 0.3s ease';
+
+            clearTimeout(toast._timeout);
+            toast._timeout = setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(100px)';
+                setTimeout(() => toast.style.display = 'none', 300);
+            }, 3000);
+        }
     </script>
 
 
 
 
-<!-- PUT THIS just before </body>, after all other modals -->
-<div class="modal fade" id="equipmentDetailsModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header bg-success text-white">
-                <h5 class="modal-title">
-                    <i class="bi bi-info-circle me-2"></i>Equipment Details
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body" id="equipmentDetailsContent"></div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+    <!-- PUT THIS just before </body>, after all other modals -->
+    <div class="modal fade" id="equipmentDetailsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-info-circle me-2"></i>Equipment Details
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="equipmentDetailsContent"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<!-- Reservation Details Modal -->
-<div class="modal fade" id="reservationDetailsModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header text-white"
-                 style="background:linear-gradient(135deg,#22c55e,#16a34a);">
-                <h5 class="modal-title">
-                    <i class="bi bi-calendar-check me-2"></i>Reservation Details
-                </h5>
-                <button type="button" class="btn-close btn-close-white"
+    <!-- Reservation Details Modal -->
+    <div class="modal fade" id="reservationDetailsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header text-white"
+                    style="background:linear-gradient(135deg,#22c55e,#16a34a);">
+                    <h5 class="modal-title">
+                        <i class="bi bi-calendar-check me-2"></i>Reservation Details
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white"
                         data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body" id="reservationDetailsContent"></div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary"
+                </div>
+                <div class="modal-body" id="reservationDetailsContent"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary"
                         data-bs-dismiss="modal">Close</button>
+                </div>
             </div>
         </div>
     </div>
-</div>
+
+
+    <!-- Reusable Confirm Modal -->
+    <div class="modal fade" id="confirmModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border-radius:24px;border:none;box-shadow:0 20px 50px rgba(0,0,0,0.3);overflow:hidden;">
+                <div class="modal-header" id="confirmModalHeader" style="border:none;padding:20px 25px;">
+                    <h5 class="modal-title text-white fw-bold" id="confirmModalTitle">
+                        <i id="confirmModalIcon" class="me-2"></i>
+                        <span id="confirmModalTitleText"></span>
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center p-4">
+                    <div id="confirmModalIconCircle"
+                        style="width:70px;height:70px;border-radius:50%;
+                            display:flex;align-items:center;justify-content:center;margin:0 auto 20px;">
+                        <i id="confirmModalBodyIcon" style="font-size:2rem;"></i>
+                    </div>
+                    <h5 id="confirmModalHeading" style="color:#111827;font-weight:700;margin-bottom:10px;"></h5>
+                    <p id="confirmModalMessage" style="color:#6b7280;font-size:0.95rem;margin-bottom:0;"></p>
+                </div>
+                <div class="modal-footer" style="border:none;padding:10px 25px 25px;justify-content:center;gap:12px;">
+                    <button type="button" data-bs-dismiss="modal"
+                        style="background:#f3f4f6;color:#374151;border:none;
+                               padding:10px 30px;border-radius:50px;font-weight:600;cursor:pointer;">
+                        <i class="bi bi-x-circle me-2"></i>Cancel
+                    </button>
+                    <button type="button" id="confirmModalBtn"
+                        style="color:white;border:none;padding:10px 30px;
+                               border-radius:50px;font-weight:600;cursor:pointer;">
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="appToast"
+        style="position:fixed;top:20px;right:20px;z-index:99999;
+            background:white;border-radius:16px;
+            box-shadow:0 10px 30px rgba(0,0,0,0.15);
+            padding:16px 20px;display:none;align-items:center;
+            gap:12px;min-width:280px;max-width:380px;">
+        <i id="appToastIcon" style="font-size:1.4rem;"></i>
+        <span id="appToastMsg" style="color:#111827;font-weight:500;font-size:0.95rem;"></span>
+    </div>
 </body>
 
 </html>

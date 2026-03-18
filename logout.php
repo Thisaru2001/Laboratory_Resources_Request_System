@@ -1,10 +1,9 @@
 <?php
 session_start();
+require_once __DIR__ . '/config/database.php';
 
-// Destroy all session data
+// Destroy session only — KEEP display cookies for auto-fill
 $_SESSION = array();
-
-// Destroy the session cookie
 if (ini_get("session.use_cookies")) {
     $params = session_get_cookie_params();
     setcookie(session_name(), '', time() - 42000,
@@ -12,15 +11,30 @@ if (ini_get("session.use_cookies")) {
         $params["secure"], $params["httponly"]
     );
 }
-
-// Destroy the session
 session_destroy();
 
-// Clear remember me cookies if they exist
-setcookie("university_id", "", time() - 3600, "/");
-setcookie("token_hash", "", time() - 3600, "/");
+// Only clear these — NOT display_uid and display_pwd
+setcookie("remember_uid",   "", time() - 3600, "/");
+setcookie("remember_token", "", time() - 3600, "/");
+setcookie("university_id",  "", time() - 3600, "/");
+setcookie("saved_password", "", time() - 3600, "/");
 
-// Redirect to login page
 header("Location: index.php");
 exit();
 ?>
+```
+
+**What happens now:**
+
+| Scenario | Result |
+|----------|--------|
+| Login with Remember Me | Saves encrypted credentials in cookie |
+| Logout | Session destroyed, **cookies kept** |
+| Come back (any time within 30 days) | **Form pre-fills ID + password** |
+| User must click Sign In | ✅ Always manual |
+| Hacker sees cookie | `display_pwd = aGVsbG8=...` — encrypted, useless |
+
+The cookie now shows:
+```
+display_uid = BS/2023/001
+display_pwd = [AES-256 encrypted string]  ← safe

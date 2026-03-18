@@ -2,6 +2,7 @@
 session_start();
 require_once '../config/database.php';
 
+
 // Check if user is logged in and is a technical officer
 if (!isset($_SESSION["user_id"]) || !isset($_SESSION["user_role"]) || $_SESSION["user_role"] !== 'technical_officer') {
     header("Location: ../index.php");
@@ -193,7 +194,7 @@ if ($requests_result && $requests_result->num_rows > 0) {
         $timestamp = strtotime($row['created_datetime']);
 
         $requests[] = [
-             
+
             'id' => $row['reservation_id'],
             'dateTime' => $dateTime,
             'timestamp' => $timestamp,
@@ -1395,15 +1396,26 @@ if ($requests_result && $requests_result->num_rows > 0) {
                 <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Equipment Management</h3>
 
                 <div class="card p-4">
-                    <!-- Search and Add Row -->
-                    <div class="search-add-row">
-                        <div class="search-container">
-                            <input type="text" id="equipmentSearch" class="search-input" placeholder="Search by code, name or location...">
-                            <button class="search-btn" onclick="searchEquipment()">
-                                <i class="bi bi-search"></i> Search
-                            </button>
+                    <!-- Search and Filter Row -->
+                    <div class="search-add-row" style="display: flex; justify-content: space-between; align-items: center; gap: 15px; flex-wrap: wrap;">
+                        <div class="search-container" style="display: flex; gap: 10px; flex: 2; min-width: 300px;">
+                            <input type="text" id="equipmentSearch" class="search-input"
+                                placeholder="Search by name or code..."
+                                onkeyup="searchEquipment()"
+                                style="flex: 1;">
                         </div>
-                        <button class="add-btn" onclick="addEquipment()">
+
+                        <!-- FILTER DROPDOWN - SINGLE ONLY -->
+                        <div style="display: flex; gap: 10px; align-items: center; flex: 1; min-width: 200px;">
+                            <select id="statusFilterequipment" class="filter-select" onchange="searchEquipmentStatus()"
+                                style="width: 100%; padding: 10px; border-radius: 8px; border: 2px solid #e0e0e0; background: white;">
+                                <option value="all">All Equipment</option>
+                                <option value="maintenance">Maintenance Pending</option>
+                                <option value="broken">Broken</option>
+                            </select>
+                        </div>
+
+                        <button class="add-btn" onclick="addEquipment()" style="white-space: nowrap;">
                             <i class="bi bi-plus-circle"></i> Add Equipment
                         </button>
                     </div>
@@ -1414,48 +1426,146 @@ if ($requests_result && $requests_result->num_rows > 0) {
                             <thead>
                                 <tr>
                                     <th>Image</th>
-                                    <th>Equipment Code</th>
-                                    <th>Name</th>
-                                    <th>Active (Available/Total)</th>
+                                    <th>Equipment Name</th>
                                     <th>Maintenance Pending</th>
+                                    <th>Broken</th>
                                     <th>Usage %</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="equipmentTableBody">
-                                <?php foreach ($equipmentDataTable as $item):
-                                    $ratio = $item['available'] / $item['total'];
-                                    $badgeColor = '#22c55e';
-                                    if ($ratio < 0.3) $badgeColor = '#ef4444';
-                                    else if ($ratio < 0.6) $badgeColor = '#f59e0b';
+                                <?php
+                                // Define the equipment data array
+                                $equipmentDataTable = [];
+
+                                // Fetch equipment data from database
+                                $equipment_query = "SELECT 
+    e.id,
+    e.code,
+    e.name,
+    e.description,
+    e.qty,
+    e.added_datetime,
+    e.img_path,
+    (SELECT COALESCE(SUM(broken_qty), 0) FROM broken WHERE equipment_id = e.id) as broken_qty,
+    (SELECT COALESCE(SUM(repair_qty), 0) FROM repair WHERE equipment_id = e.id) as repair_qty
+FROM equipment e
+WHERE e.is_hod_checked = 1
+ORDER BY e.name ASC";
+
+                                $equipment_result = Database::search($equipment_query);
+
+                                if ($equipment_result && $equipment_result->num_rows > 0) {
+                                    while ($row = $equipment_result->fetch_assoc()) {
+                                        $equipment_code = htmlspecialchars($row['code']);
+                                        $name = htmlspecialchars($row['name']);
+                                        $total_qty = (int)$row['qty'];
+                                        $broken_qty = (int)$row['broken_qty'];
+                                        $repair_qty = (int)$row['repair_qty'];
+
+                                        // Calculate available quantity
+                                        $available_qty = $total_qty - ($broken_qty + $repair_qty);
+
+                                        // Calculate usage percentage (based on bookings)
+                                        $usage_query = "SELECT COUNT(*) as booking_count FROM booking WHERE equipment_id = ?";
+                                        $usage_result = Database::search($usage_query, "i", [$row['id']]);
+                                        $usage_count = 0;
+                                        if ($usage_result && $usage_result->num_rows > 0) {
+                                            $usage_row = $usage_result->fetch_assoc();
+                                            $usage_count = $usage_row['booking_count'];
+                                        }
+
+                                        // Simple usage percentage (this is just an example - adjust based on your logic)
+                                        $usage_percentage = min(100, round(($usage_count / 10) * 100)); // Assuming 10 bookings = 100%
+
+                                        // Set image path
+                                        $image_path = !empty($row['img_path'])
+                                            ? '/' . ltrim(str_replace('\\', '/', $row['img_path']), '/')
+                                            : 'https://cdn-icons-png.flaticon.com/512/2941/2941514.png';
+
+                                        // Add to data array for JavaScript
+                                        $equipmentDataTable[] = [
+                                            'code' => $equipment_code,
+                                            'name' => $name,
+                                            'image' => $image_path,
+                                            'total' => $total_qty,
+                                            'available' => $available_qty,
+                                            'broken' => $broken_qty,
+                                            'maintenance' => $repair_qty,
+                                            'usage' => $usage_percentage,
+                                            'id' => $row['id']
+                                        ];
+
+                                        // Determine badge color for available/total ratio
+                                        $ratio = $total_qty > 0 ? $available_qty / $total_qty : 0;
+                                        $badgeColor = '#22c55e'; // green
+                                        if ($ratio < 0.3) $badgeColor = '#ef4444'; // red
+                                        else if ($ratio < 0.6) $badgeColor = '#f59e0b'; // orange
+
+                                        // Bar color based on usage
+                                        $barColor = '#22c55e';
+                                        if ($usage_percentage < 30) $barColor = '#ef4444';
+                                        else if ($usage_percentage < 60) $barColor = '#f59e0b';
                                 ?>
+                                        <tr data-equipment-id="<?php echo $equipment_code; ?>"
+                                            data-equipment-id-numeric="<?php echo $row['id']; ?>"
+                                            data-maintenance="<?php echo $repair_qty; ?>"
+                                            data-broken="<?php echo $broken_qty; ?>">
+                                            <td>
+                                                <img src="<?php echo $image_path; ?>"
+                                                    style="width:50px;height:50px;object-fit:contain;"
+                                                    onerror="this.src='https://cdn-icons-png.flaticon.com/512/2941/2941514.png'"
+                                                    alt="<?php echo $name; ?>">
+                                            </td>
+                                            <td><strong><?php echo $name; ?></strong></td>
+                                            <td>
+                                                <?php if ($repair_qty > 0): ?>
+                                                    <span class="badge bg-warning"><?php echo $repair_qty; ?></span>
+                                                <?php else: ?>
+                                                    <span class="text-muted">------</span>
+                                                <?php endif; ?>
+                                            </td>
+                                            <td>
+                                                <?php if ($broken_qty > 0): ?>
+                                                    <span class="badge bg-danger"><?php echo $broken_qty; ?></span>
+                                                <?php else: ?>
+                                                    <span class="text-muted">------</span>
+                                                <?php endif; ?>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <div style="width:100px;height:8px;background:#e9ecef;border-radius:4px;overflow:hidden;">
+                                                        <div style="width:<?php echo $usage_percentage; ?>%;height:8px;background:<?php echo $barColor; ?>;border-radius:4px;transition:width 0.6s ease;"></div>
+                                                    </div>
+                                                    <span style="font-weight:600;color:<?php echo $barColor; ?>;min-width:45px;">
+                                                        <?php echo $usage_percentage; ?>%
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="action-buttons">
+                                                    <button class="btn-view" onclick="viewEquipmentByCode('<?php echo $equipment_code; ?>')" title="View Details">
+                                                        <i class="bi bi-eye"></i>
+                                                    </button>
+                                                    <button class="btn-edit" onclick="editEquipment('<?php echo $equipment_code; ?>')" title="Edit">
+                                                        <i class="bi bi-pencil-square"></i>
+                                                    </button>
+                                                    <button class="btn-remove" onclick="removeEquipment('<?php echo $equipment_code; ?>')" title="Remove">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    <?php
+                                    }
+                                } else {
+                                    ?>
                                     <tr>
-                                        <td><img src="<?= $item['image'] ?>" style="width: 50px; height: 50px; object-fit: contain;"></td>
-                                        <td><?= htmlspecialchars($item['code']) ?></td>
-                                        <td><?= htmlspecialchars($item['name']) ?></td>
-                                        <td><span class="badge" style="background: <?= $badgeColor ?>; color: white;"><?= $item['available'] ?>/<?= $item['total'] ?></span></td>
-                                        <td><span class="badge bg-warning"><?= $item['maintenance'] ?></span></td>
-                                        <td>
-                                            <div class="progress-bar" style="width: 100px; display: inline-block; margin-right: 10px;">
-                                                <div class="progress-fill" style="width: <?= $item['usage'] ?>%"></div>
-                                            </div>
-                                            <?= $item['usage'] ?>%
-                                        </td>
-                                        <td>
-                                            <div class="action-buttons">
-                                                <button class="btn-view" onclick='viewEquipment(<?= json_encode($item, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP) ?>)' title="View Details">
-                                                    <i class="bi bi-eye"></i>
-                                                </button>
-                                                <button class="btn-edit" onclick="editEquipment('<?= $item['code'] ?>')" title="Edit">
-                                                    <i class="bi bi-pencil-square"></i>
-                                                </button>
-                                                <button class="btn-remove" onclick="removeEquipment('<?= $item['code'] ?>')" title="Remove">
-                                                    <i class="bi bi-trash"></i>
-                                                </button>
-                                            </div>
-                                        </td>
+                                        <td colspan="6" class="text-center py-4">No equipment found in database</td>
                                     </tr>
-                                <?php endforeach; ?>
+                                <?php
+                                }
+                                ?>
                             </tbody>
                         </table>
                     </div>
@@ -1463,7 +1573,7 @@ if ($requests_result && $requests_result->num_rows > 0) {
             </div>
 
             <!-- Equipment Details Modal -->
-            <div class="modal fade" id="equipmentDetailsModal" tabindex="-1" aria-hidden="true">
+            <!-- <div class="modal fade" id="equipmentDetailsModal" tabindex="-1" aria-hidden="true">
                 <div class="modal-dialog modal-lg modal-dialog-centered">
                     <div class="modal-content">
                         <div class="modal-header bg-success text-white">
@@ -1474,14 +1584,14 @@ if ($requests_result && $requests_result->num_rows > 0) {
                             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                         </div>
                         <div class="modal-body" id="equipmentDetailsContent">
-                            <!-- Content will be populated by JavaScript -->
+                          
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                         </div>
                     </div>
                 </div>
-            </div>
+            </div> -->
 
             <!-- Requests Section - Simplified for Technical Officer -->
             <div id="activitySection" style="display: none;">
@@ -1569,251 +1679,251 @@ if ($requests_result && $requests_result->num_rows > 0) {
                 </div>
             </div>
 
-        
+
 
         </div> <!-- End content-area -->
     </div> <!-- End main-content -->
 
     <!-- Request Details Modal -->
-<div class="modal fade" id="requestDetailsModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-xl modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header bg-success text-white">
-                <h5 class="modal-title">
-                    <i class="bi bi-info-circle me-2"></i>
-                    Reservation Details
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body" id="requestDetailsContent" style="max-height: 70vh; overflow-y: auto;">
-                <!-- Content will be populated by JavaScript -->
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-success" onclick="submitCheckedEquipment()" id="submitModalBtn">
-                    <i class="bi bi-check-circle me-2"></i>Submit Checked
-                </button>
-                <button type="button" class="btn btn-danger" onclick="rejectRequestFromModal()" id="rejectModalBtn" style="display:none;">
-                    <i class="bi bi-x-circle me-2"></i>Reject
-                </button>
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    <i class="bi bi-x-lg me-2"></i>Cancel
-                </button>
+    <div class="modal fade" id="requestDetailsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Reservation Details
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="requestDetailsContent" style="max-height: 70vh; overflow-y: auto;">
+                    <!-- Content will be populated by JavaScript -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success" onclick="submitCheckedEquipment()" id="submitModalBtn">
+                        <i class="bi bi-check-circle me-2"></i>Submit Checked
+                    </button>
+                    <button type="button" class="btn btn-danger" onclick="rejectRequestFromModal()" id="rejectModalBtn" style="display:none;">
+                        <i class="bi bi-x-circle me-2"></i>Reject
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-lg me-2"></i>Cancel
+                    </button>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
+        let allEquipmentData = [];
 
 
-
-
-// ========== SECTION PERSISTENCE ==========
-// Store current section before reload
-function saveCurrentSection() {
-    if (document.getElementById('activitySection').style.display === 'block') {
-        sessionStorage.setItem('lastSection', 'activity');
-    } else if (document.getElementById('equipmentSection').style.display === 'block') {
-        sessionStorage.setItem('lastSection', 'equipment');
-    } else {
-        sessionStorage.setItem('lastSection', 'dashboard');
-    }
-}
-
-// Restore last section on page load
-function restoreLastSection() {
-    const lastSection = sessionStorage.getItem('lastSection');
-    if (lastSection) {
-        showSection(lastSection);
-    } else {
-        showSection('dashboard');
-    }
-}
-
-function rejectRequestFromModal() {
-    if (!currentRequestId) return;
-    
-    // Save current section before reload
-    saveCurrentSection();
-    
-    const reason = prompt('Please enter rejection reason:');
-    if (!reason) return;
-    
-    if (confirm(`Are you sure you want to reject this request?`)) {
-        const formData = new FormData();
-        formData.append('reservation_id', currentRequestId);
-        formData.append('action', 'reject');
-        formData.append('reason', reason);
-        
-        fetch('../controllers/handle_to_approval.php', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                alert('Request rejected successfully!');
-                
-                // Hide modal
-                const modal = bootstrap.Modal.getInstance(document.getElementById('requestDetailsModal'));
-                if (modal) modal.hide();
-                
-                // Reload and restore section
-                location.reload();
+        // ========== SECTION PERSISTENCE ==========
+        // Store current section before reload
+        function saveCurrentSection() {
+            if (document.getElementById('activitySection').style.display === 'block') {
+                sessionStorage.setItem('lastSection', 'activity');
+            } else if (document.getElementById('equipmentSection').style.display === 'block') {
+                sessionStorage.setItem('lastSection', 'equipment');
             } else {
-                alert('Error: ' + data.message);
+                sessionStorage.setItem('lastSection', 'dashboard');
             }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Error rejecting request');
-        });
-    }
-}
+        }
 
-// Submit checked equipment
-// Submit checked equipment
-// Submit checked equipment
-function submitCheckedEquipment() {
-    if (!currentRequestId) {
-        alert('No reservation selected');
-        return;
-    }
-    
-    // Save current section before reload
-    saveCurrentSection();
-    
-    // Get ALL checkboxes
-    const allCheckboxes = document.querySelectorAll('#requestDetailsContent input[type="checkbox"]');
-    const checkedBoxes = document.querySelectorAll('#requestDetailsContent input[type="checkbox"]:checked');
-    
-    // Check if ALL checkboxes are checked
-    if (allCheckboxes.length === 0) {
-        alert('No equipment found to check');
-        return;
-    }
-    
-    if (checkedBoxes.length !== allCheckboxes.length) {
-        alert(`Please check ALL equipment items (${checkedBoxes.length}/${allCheckboxes.length} checked)`);
-        return;
-    }
-    
-    // Prepare data
-    const checkedEquipment = [];
-    checkedBoxes.forEach(checkbox => {
-        checkedEquipment.push({
-            book_equipment_id: checkbox.value,
-            equipment_id: checkbox.dataset.equipmentId,
-            quantity: checkbox.dataset.quantity
-        });
-    });
-    
-    // Show loading state
-    const submitBtn = document.getElementById('submitModalBtn');
-    const originalText = submitBtn.innerHTML;
-    submitBtn.disabled = true;
-    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Submitting...';
-    
-    // Send to server
-    fetch('../controllers/submit_checked_equipment.php', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            reservation_id: currentRequestId,
-            checked_equipment: checkedEquipment
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = originalText;
-        
-        if (data.success) {
-            alert('Equipment checked successfully!');
-            
-            // Hide modal
-            const modal = bootstrap.Modal.getInstance(document.getElementById('requestDetailsModal'));
-            if (modal) modal.hide();
-            
-            // FIND AND REMOVE THE ROW FROM THE TABLE
-            const tableBody = document.getElementById('requestListBody');
-            if (tableBody) {
-                // Find all rows
-                const rows = tableBody.getElementsByTagName('tr');
-                
-                // Loop through rows to find the one with matching ID
-                for (let i = 0; i < rows.length; i++) {
-                    const firstCell = rows[i].getElementsByTagName('td')[0];
-                    if (firstCell && firstCell.textContent === currentRequestId) {
-                        // Add fade-out animation
-                        rows[i].style.transition = 'opacity 0.3s';
-                        rows[i].style.opacity = '0';
-                        
-                        // Remove after animation
-                        setTimeout(() => {
-                            rows[i].remove();
-                            
-                            // Update pending count in sidebar
-                            updatePendingCount();
-                            
-                            // Check if table is empty
-                            if (tableBody.getElementsByTagName('tr').length === 0) {
-                                const emptyRow = document.createElement('tr');
-                                emptyRow.innerHTML = '<td colspan="6" class="text-center">No requests found</td>';
-                                tableBody.appendChild(emptyRow);
+        // Restore last section on page load
+        function restoreLastSection() {
+            const lastSection = sessionStorage.getItem('lastSection');
+            if (lastSection) {
+                showSection(lastSection);
+            } else {
+                showSection('dashboard');
+            }
+        }
+
+        function rejectRequestFromModal() {
+            if (!currentRequestId) return;
+
+            // Save current section before reload
+            saveCurrentSection();
+
+            const reason = prompt('Please enter rejection reason:');
+            if (!reason) return;
+
+            if (confirm(`Are you sure you want to reject this request?`)) {
+                const formData = new FormData();
+                formData.append('reservation_id', currentRequestId);
+                formData.append('action', 'reject');
+                formData.append('reason', reason);
+
+                fetch('../controllers/handle_to_approval.php', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('Request rejected successfully!');
+
+                            // Hide modal
+                            const modal = bootstrap.Modal.getInstance(document.getElementById('requestDetailsModal'));
+                            if (modal) modal.hide();
+
+                            // Reload and restore section
+                            location.reload();
+                        } else {
+                            alert('Error: ' + data.message);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Error rejecting request');
+                    });
+            }
+        }
+
+        // Submit checked equipment
+        // Submit checked equipment
+        // Submit checked equipment
+        function submitCheckedEquipment() {
+            if (!currentRequestId) {
+                alert('No reservation selected');
+                return;
+            }
+
+            // Save current section before reload
+            saveCurrentSection();
+
+            // Get ALL checkboxes
+            const allCheckboxes = document.querySelectorAll('#requestDetailsContent input[type="checkbox"]');
+            const checkedBoxes = document.querySelectorAll('#requestDetailsContent input[type="checkbox"]:checked');
+
+            // Check if ALL checkboxes are checked
+            if (allCheckboxes.length === 0) {
+                alert('No equipment found to check');
+                return;
+            }
+
+            if (checkedBoxes.length !== allCheckboxes.length) {
+                alert(`Please check ALL equipment items (${checkedBoxes.length}/${allCheckboxes.length} checked)`);
+                return;
+            }
+
+            // Prepare data
+            const checkedEquipment = [];
+            checkedBoxes.forEach(checkbox => {
+                checkedEquipment.push({
+                    book_equipment_id: checkbox.value,
+                    equipment_id: checkbox.dataset.equipmentId,
+                    quantity: checkbox.dataset.quantity
+                });
+            });
+
+            // Show loading state
+            const submitBtn = document.getElementById('submitModalBtn');
+            const originalText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Submitting...';
+
+            // Send to server
+            fetch('../controllers/submit_checked_equipment.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        reservation_id: currentRequestId,
+                        checked_equipment: checkedEquipment
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+
+                    if (data.success) {
+                        alert('Equipment checked successfully!');
+
+                        // Hide modal
+                        const modal = bootstrap.Modal.getInstance(document.getElementById('requestDetailsModal'));
+                        if (modal) modal.hide();
+
+                        // FIND AND REMOVE THE ROW FROM THE TABLE
+                        const tableBody = document.getElementById('requestListBody');
+                        if (tableBody) {
+                            // Find all rows
+                            const rows = tableBody.getElementsByTagName('tr');
+
+                            // Loop through rows to find the one with matching ID
+                            for (let i = 0; i < rows.length; i++) {
+                                const firstCell = rows[i].getElementsByTagName('td')[0];
+                                if (firstCell && firstCell.textContent === currentRequestId) {
+                                    // Add fade-out animation
+                                    rows[i].style.transition = 'opacity 0.3s';
+                                    rows[i].style.opacity = '0';
+
+                                    // Remove after animation
+                                    setTimeout(() => {
+                                        rows[i].remove();
+
+                                        // Update pending count in sidebar
+                                        updatePendingCount();
+
+                                        // Check if table is empty
+                                        if (tableBody.getElementsByTagName('tr').length === 0) {
+                                            const emptyRow = document.createElement('tr');
+                                            emptyRow.innerHTML = '<td colspan="6" class="text-center">No requests found</td>';
+                                            tableBody.appendChild(emptyRow);
+                                        }
+                                    }, 300);
+                                    break;
+                                }
                             }
-                        }, 300);
-                        break;
+                        }
+
+                        // Update the requests array (remove the processed request)
+                        const index = requests.findIndex(req => req.id === currentRequestId);
+                        if (index !== -1) {
+                            requests.splice(index, 1);
+                        }
+
+                        // Refresh the display
+                        filterRequestsByStatus();
+
+                    } else {
+                        alert('Error: ' + (data.message || 'Failed to submit'));
                     }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                    alert('Network error. Please try again.');
+                });
+        }
+
+        // Update pending count in sidebar
+        function updatePendingCount() {
+            const pendingCount = requests.filter(req => req.status === 'pending').length;
+            const badge = document.querySelector('.sidebar a[onclick="showSection(\'activity\')"] .badge');
+            if (badge) {
+                if (pendingCount > 0) {
+                    badge.textContent = pendingCount;
+                    badge.style.display = 'inline-block';
+                } else {
+                    badge.style.display = 'none';
                 }
             }
-            
-            // Update the requests array (remove the processed request)
-            const index = requests.findIndex(req => req.id === currentRequestId);
-            if (index !== -1) {
-                requests.splice(index, 1);
-            }
-            
-            // Refresh the display
-            filterRequestsByStatus();
-            
-        } else {
-            alert('Error: ' + (data.message || 'Failed to submit'));
         }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        submitBtn.disabled = false;
-        submitBtn.innerHTML = originalText;
-        alert('Network error. Please try again.');
-    });
-}
 
-// Update pending count in sidebar
-function updatePendingCount() {
-    const pendingCount = requests.filter(req => req.status === 'pending').length;
-    const badge = document.querySelector('.sidebar a[onclick="showSection(\'activity\')"] .badge');
-    if (badge) {
-        if (pendingCount > 0) {
-            badge.textContent = pendingCount;
-            badge.style.display = 'inline-block';
-        } else {
-            badge.style.display = 'none';
-        }
-    }
-}
-function viewRequest(reservationId) {
-    //alert(reservationId);
-    // Show loading in modal
-    const modalElement = document.getElementById('requestDetailsModal');
-    const detailsContent = document.getElementById('requestDetailsContent');
-    
-    detailsContent.innerHTML = `
+        function viewRequest(reservationId) {
+            //alert(reservationId);
+            // Show loading in modal
+            const modalElement = document.getElementById('requestDetailsModal');
+            const detailsContent = document.getElementById('requestDetailsContent');
+
+            detailsContent.innerHTML = `
         <div class="text-center py-5">
             <div class="spinner-border text-success" role="status">
                 <span class="visually-hidden">Loading...</span>
@@ -1821,113 +1931,112 @@ function viewRequest(reservationId) {
             <p class="mt-3 text-muted">Loading reservation details...</p>
         </div>
     `;
-    
-    // Show modal
-  const existing = bootstrap.Modal.getInstance(modalElement);
-if (existing) existing.dispose();
-const modal = new bootstrap.Modal(modalElement);
-modal.show();
-    
-    // Fetch reservation details
-    fetch(`../controllers/get_reservation_details_for_to.php?id=${reservationId}`)
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                displayReservationDetails(data.reservation, data.equipment);
-                currentRequestId = reservationId;
-            } else {
-                detailsContent.innerHTML = `
+
+            // Show modal
+            const existing = bootstrap.Modal.getInstance(modalElement);
+            if (existing) existing.dispose();
+            const modal = new bootstrap.Modal(modalElement);
+            modal.show();
+
+            // Fetch reservation details
+            fetch(`../controllers/get_reservation_details_for_to.php?id=${reservationId}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        displayReservationDetails(data.reservation, data.equipment);
+                        currentRequestId = reservationId;
+                    } else {
+                        detailsContent.innerHTML = `
                     <div class="alert alert-danger m-3">
                         <i class="bi bi-exclamation-triangle me-2"></i>
                         ${data.message || 'Failed to load reservation details'}
                     </div>
                 `;
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            detailsContent.innerHTML = `
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    detailsContent.innerHTML = `
                 <div class="alert alert-danger m-3">
                     <i class="bi bi-exclamation-triangle me-2"></i>
                     Network error. Please try again.
                 </div>
             `;
-        });
-}
+                });
+        }
 
 
-// Add this function
-function rejectRequest(id) {
-    // Save current section before reload
-    saveCurrentSection();
-    
-    currentRequestId = id;
-    const reason = prompt('Please enter rejection reason:');
-    if (!reason) return;
-    
-    if (confirm(`Reject request ${id}?`)) {
-        const formData = new FormData();
-        formData.append('reservation_id', id);
-        formData.append('action', 'reject');
-        formData.append('reason', reason);
-        
-        fetch('../controllers/handle_to_approval.php', {
-            method: 'POST', 
-            body: formData
-        })
-        .then(r => r.json())
-        .then(data => {
-            if (data.success) { 
-                alert('Rejected!'); 
-                
-                // FIND AND REMOVE THE ROW FROM THE TABLE
-                const tableBody = document.getElementById('requestListBody');
-                if (tableBody) {
-                    const rows = tableBody.getElementsByTagName('tr');
-                    
-                    for (let i = 0; i < rows.length; i++) {
-                        const firstCell = rows[i].getElementsByTagName('td')[0];
-                        if (firstCell && firstCell.textContent === id) {
-                            rows[i].style.transition = 'opacity 0.3s';
-                            rows[i].style.opacity = '0';
-                            
-                            setTimeout(() => {
-                                rows[i].remove();
-                                updatePendingCount();
-                                
-                                if (tableBody.getElementsByTagName('tr').length === 0) {
-                                    const emptyRow = document.createElement('tr');
-                                    emptyRow.innerHTML = '<td colspan="6" class="text-center">No requests found</td>';
-                                    tableBody.appendChild(emptyRow);
+        // Add this function
+        function rejectRequest(id) {
+            // Save current section before reload
+            saveCurrentSection();
+
+            currentRequestId = id;
+            const reason = prompt('Please enter rejection reason:');
+            if (!reason) return;
+
+            if (confirm(`Reject request ${id}?`)) {
+                const formData = new FormData();
+                formData.append('reservation_id', id);
+                formData.append('action', 'reject');
+                formData.append('reason', reason);
+
+                fetch('../controllers/handle_to_approval.php', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert('Rejected!');
+
+                            // FIND AND REMOVE THE ROW FROM THE TABLE
+                            const tableBody = document.getElementById('requestListBody');
+                            if (tableBody) {
+                                const rows = tableBody.getElementsByTagName('tr');
+
+                                for (let i = 0; i < rows.length; i++) {
+                                    const firstCell = rows[i].getElementsByTagName('td')[0];
+                                    if (firstCell && firstCell.textContent === id) {
+                                        rows[i].style.transition = 'opacity 0.3s';
+                                        rows[i].style.opacity = '0';
+
+                                        setTimeout(() => {
+                                            rows[i].remove();
+                                            updatePendingCount();
+
+                                            if (tableBody.getElementsByTagName('tr').length === 0) {
+                                                const emptyRow = document.createElement('tr');
+                                                emptyRow.innerHTML = '<td colspan="6" class="text-center">No requests found</td>';
+                                                tableBody.appendChild(emptyRow);
+                                            }
+                                        }, 300);
+                                        break;
+                                    }
                                 }
-                            }, 300);
-                            break;
-                        }
-                    }
-                }
-                
-                // Update requests array
-                const index = requests.findIndex(req => req.id === id);
-                if (index !== -1) {
-                    requests.splice(index, 1);
-                }
-                
-                filterRequestsByStatus();
-            }
-            else alert('Error: ' + data.message);
-        });
-    }
-}
+                            }
 
-// Display reservation details in modal
-function displayReservationDetails(reservation, equipment) {
-    const detailsContent = document.getElementById('requestDetailsContent');
-    
-    // Build equipment table HTML
-    let equipmentHtml = '';
-    if (equipment.length > 0) {
-        equipment.forEach(item => {
-            equipmentHtml += `
+                            // Update requests array
+                            const index = requests.findIndex(req => req.id === id);
+                            if (index !== -1) {
+                                requests.splice(index, 1);
+                            }
+
+                            filterRequestsByStatus();
+                        } else alert('Error: ' + data.message);
+                    });
+            }
+        }
+
+        // Display reservation details in modal
+        function displayReservationDetails(reservation, equipment) {
+            const detailsContent = document.getElementById('requestDetailsContent');
+
+            // Build equipment table HTML
+            let equipmentHtml = '';
+            if (equipment.length > 0) {
+                equipment.forEach(item => {
+                    equipmentHtml += `
                 <tr>
                     <td class="text-center">${item.no}</td>
                     <td>${item.name}</td>
@@ -1943,16 +2052,16 @@ function displayReservationDetails(reservation, equipment) {
                     </td>
                 </tr>
             `;
-        });
-    } else {
-        equipmentHtml = `
+                });
+            } else {
+                equipmentHtml = `
             <tr>
                 <td colspan="4" class="text-center text-muted">No equipment found</td>
             </tr>
         `;
-    }
-    
-    detailsContent.innerHTML = `
+            }
+
+            detailsContent.innerHTML = `
         <div class="container-fluid">
             <!-- Reservation Info Card -->
             <div class="card mb-4 border-success">
@@ -2021,14 +2130,14 @@ function displayReservationDetails(reservation, equipment) {
             </div>
         </div>
     `;
-    
-    // Show/hide reject button
-    const rejectBtn = document.getElementById('rejectModalBtn');
-    if (rejectBtn) {
-        // You can check status here if needed
-        rejectBtn.style.display = 'inline-block';
-    }
-}
+
+            // Show/hide reject button
+            const rejectBtn = document.getElementById('rejectModalBtn');
+            if (rejectBtn) {
+                // You can check status here if needed
+                rejectBtn.style.display = 'inline-block';
+            }
+        }
 
 
 
@@ -2092,14 +2201,248 @@ function displayReservationDetails(reservation, equipment) {
 
         // ========== EQUIPMENT MANAGEMENT FUNCTIONS ==========
         function searchEquipment() {
-            const searchTerm = document.getElementById('equipmentSearch').value.toLowerCase();
-            const filtered = equipmentDataTable.filter(item =>
-                item.code.toLowerCase().includes(searchTerm) ||
-                item.name.toLowerCase().includes(searchTerm) ||
-                item.location.toLowerCase().includes(searchTerm)
-            );
-            displayEquipmentTable(filtered);
+            filterAndDisplayEquipment();
         }
+
+        // function displayEquipmentTable(equipment) {
+        //     const tableBody = document.getElementById('equipmentTableBody');
+        //     if (!tableBody) return;
+
+        //     tableBody.innerHTML = '';
+
+        //     equipment.forEach(item => {
+        //         const row = document.createElement('tr');
+
+        //         const ratio = item.available / item.total;
+        //         let badgeColor = '#22c55e';
+        //         if (ratio < 0.3) badgeColor = '#ef4444';
+        //         else if (ratio < 0.6) badgeColor = '#f59e0b';
+
+        //         row.innerHTML = `
+        //     <td><img src="${item.image}" style="width: 50px; height: 50px; object-fit: contain;"></td>
+        //     <td>${item.code}</td>
+        //     <td>${item.name}</td>
+        //     <td><span class="badge" style="background: ${badgeColor}; color: white;">${item.available}/${item.total}</span></td>
+        //     <td><span class="badge bg-warning">${item.maintenance}</span></td>
+        //     <td>
+        //         <div class="progress-bar" style="width: 100px; display: inline-block; margin-right: 10px;">
+        //             <div class="progress-fill" style="width: ${item.usage}%"></div>
+        //         </div>
+        //         ${item.usage}%
+        //     </td>
+        //     <td>
+        //         <div class="action-buttons">
+        //             <button class="btn-view" onclick='viewEquipment(${JSON.stringify(item)})' title="View Details">
+        //                 <i class="bi bi-eye"></i>
+        //             </button>
+        //             <button class="btn-edit" onclick="editEquipment('${item.code}')" title="Edit">
+        //                 <i class="bi bi-pencil-square"></i>
+        //             </button>
+        //             <button class="btn-remove" onclick="removeEquipment('${item.code}')" title="Remove">
+        //                 <i class="bi bi-trash"></i>
+        //             </button>
+        //         </div>
+        //     </td>
+        // `;
+        //         tableBody.appendChild(row);
+        //     });
+        // }
+
+        function editEquipment(code) {
+            isEditMode = true;
+
+            document.getElementById('equipmentModalTitle').innerHTML = '<i class="bi bi-pencil-square me-2"></i>Edit Equipment';
+            document.getElementById('modalSaveButtonText').textContent = 'Update Equipment';
+document.getElementById('maintenanceSection').style.display = 'block';
+            clearEquipmentErrors();
+
+            const modal = new bootstrap.Modal(document.getElementById('addEquipmentModal'));
+            modal.show();
+
+            document.getElementById('eqCode').value = 'Loading...';
+            document.getElementById('eqName').value = 'Loading...';
+            document.getElementById('eqCode').disabled = true;
+            document.getElementById('eqName').disabled = true;
+
+            fetch(`../controllers/tech_get_equi.php?code=${encodeURIComponent(code)}`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('eqCode').disabled = false;
+                    document.getElementById('eqName').disabled = false;
+
+                    if (data.success) {
+                        currentEquipmentId = data.equipment.id;
+                        document.getElementById('eqId').value = data.equipment.id;
+
+                        document.getElementById('eqCode').value = data.equipment.code || '';
+                        document.getElementById('eqName').value = data.equipment.name || '';
+                        document.getElementById('eqQty').value = data.equipment.total_qty || 1;
+                        document.getElementById('eqSimultaneousUsers').value = data.equipment.simultaneous_users || 1;
+                        document.getElementById('eqSterilization').value = data.equipment.sterilization_required || 'NO';
+                        document.getElementById('eqReservation').value = data.equipment.reservation_required || 'YES';
+                        document.getElementById('eqDescription').value = data.equipment.description || '';
+                        document.getElementById('eqMaintenanceQty').value = data.equipment.repair_qty || 0;
+                        document.getElementById('eqBrokenQty').value = data.equipment.broken_qty || 0;
+                        recalcAvailable();
+
+                        if (data.equipment.image_path) {
+                            const imagePath = data.equipment.image_path;
+                            document.getElementById('eqImagePreview').src = imagePath;
+                            document.getElementById('eqImagePreview').style.display = 'block';
+                            document.getElementById('eqImagePlaceholder').style.display = 'none';
+                            document.getElementById('currentImageInfo').innerHTML = 'Current image: <img src="' + imagePath + '" style="height: 30px; width: 30px; object-fit: cover; border-radius: 4px;">';
+                            document.getElementById('currentImageInfo').style.display = 'block';
+                        }
+                    } else {
+                        alert('Error loading equipment details: ' + (data.message || 'Unknown error'));
+                        modal.hide();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('eqCode').disabled = false;
+                    document.getElementById('eqName').disabled = false;
+                    alert('Network error. Please try again.');
+                    modal.hide();
+                });
+        }
+
+        function viewEquipmentByCode(code) {
+            const contentDiv = document.getElementById('equipmentDetailsContent');
+            const modalEl = document.getElementById('equipmentDetailsModal');
+
+            // Show loading
+            contentDiv.innerHTML = `
+        <div class="text-center py-5">
+            <div class="spinner-border text-success" role="status" style="width:2rem;height:2rem;"></div>
+            <p class="mt-3 text-muted small fw-semibold">Loading equipment details...</p>
+        </div>`;
+
+            // Clean up any existing modal instance and backdrop
+            const existing = bootstrap.Modal.getInstance(modalEl);
+            if (existing) existing.dispose();
+            document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+            document.body.classList.remove('modal-open');
+            document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
+
+            // Show modal FIRST, then fetch
+            const modal = new bootstrap.Modal(modalEl);
+            modal.show();
+
+            fetch(`../controllers/get_equipment_details.php?code=${encodeURIComponent(code)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (!data.success) {
+                        contentDiv.innerHTML = `<div class="alert alert-danger m-3">${data.message || 'Failed to load'}</div>`;
+                        return;
+                    }
+
+                    const eq = data.equipment;
+                    const addedDate = eq.added_datetime ? new Date(eq.added_datetime).toLocaleDateString() : '—';
+
+                    contentDiv.innerHTML = `
+                <div class="row g-0">
+                    <div class="col-md-4 text-center border-end p-4">
+                        <img src="${eq.image_path || 'https://cdn-icons-png.flaticon.com/512/2941/2941514.png'}"
+                             style="width:140px;height:140px;object-fit:contain;"
+                             class="img-fluid rounded border p-2 bg-light mb-3"
+                             onerror="this.src='https://cdn-icons-png.flaticon.com/512/2941/2941514.png'">
+                        <h5 class="fw-bold mb-1" style="color:#166534;">${eq.name || 'Unknown'}</h5>
+                        <span class="badge bg-secondary"><i class="bi bi-upc-scan me-1"></i>${eq.code || 'N/A'}</span>
+                        <div class="mt-3">
+                            <span class="badge bg-info text-dark">
+                                <i class="bi bi-box-seam me-1"></i>Total Qty: ${eq.total_qty || 0}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-md-8 p-3">
+                        <table class="table table-sm table-borderless">
+                            <tr><th class="text-muted fw-normal" style="width:160px">Date Added</th><td>${addedDate}</td></tr>
+                            <tr><th class="text-muted fw-normal">Simultaneous Users</th><td>${eq.simultaneous_users || 1}</td></tr>
+                            <tr>
+                                <th class="text-muted fw-normal">Sterilization Required</th>
+                                <td><span class="badge ${eq.sterilization_required === 'YES' ? 'bg-warning' : 'bg-secondary'}">${eq.sterilization_required || 'NO'}</span></td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted fw-normal">Reservation Required</th>
+                                <td><span class="badge ${eq.reservation_required === 'YES' ? 'bg-success' : 'bg-secondary'}">${eq.reservation_required || 'YES'}</span></td>
+                            </tr>
+                            ${eq.description ? `<tr><th class="text-muted fw-normal">Description</th><td><small>${eq.description}</small></td></tr>` : ''}
+                        </table>
+                    </div>
+                </div>`;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    contentDiv.innerHTML = `<div class="alert alert-danger m-3">Network error. Please try again.</div>`;
+                });
+        }
+
+        function recalcAvailable() {
+            const total = parseInt(document.getElementById('eqQty').value) || 0;
+            const maintenance = parseInt(document.getElementById('eqMaintenanceQty').value) || 0;
+            const broken = parseInt(document.getElementById('eqBrokenQty').value) || 0;
+            const available = Math.max(0, total - maintenance - broken);
+
+            document.getElementById('availableQtyDisplay').textContent = available;
+
+            const warning = document.getElementById('qtyValidationWarning');
+            if (maintenance + broken > total) {
+                warning.classList.remove('d-none');
+                document.getElementById('qtyWarningMessage').textContent =
+                    `Maintenance (${maintenance}) + Broken (${broken}) = ${maintenance + broken} exceeds Total (${total})`;
+            } else {
+                warning.classList.add('d-none');
+            }
+        }
+
+        function loadEquipmentWithUsage() {
+            const tableBody = document.getElementById('equipmentTableBody');
+            if (!tableBody) return;
+
+            tableBody.innerHTML = `
+        <tr>
+            <td colspan="6" class="text-center py-4">
+                <div class="spinner-border text-success me-2" role="status"
+                     style="width:1.5rem;height:1.5rem;"></div>
+                <span style="color:#166534;font-weight:600;">
+                    Loading equipment data...
+                </span>
+            </td>
+        </tr>`;
+
+            fetch('../controllers/get_equipment_usage.php')
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Equipment data received:', data);
+
+                    if (data.success) {
+                        allEquipmentData = data.equipment;
+                        filterAndDisplayEquipment();
+
+                        const filterSelect = document.getElementById('statusFilterequipment');
+                        if (filterSelect) filterSelect.value = 'all';
+                    } else {
+                        tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center py-4 text-danger">
+                            ❌ ${data.message || 'Failed to load equipment data'}
+                        </td>
+                    </tr>`;
+                    }
+                })
+                .catch(error => {
+                    console.error('Equipment load error:', error);
+                    tableBody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="text-center py-4 text-danger">
+                        ❌ Connection error
+                    </td>
+                </tr>`;
+                });
+        }
+
 
         function displayEquipmentTable(equipment) {
             const tableBody = document.getElementById('equipmentTableBody');
@@ -2107,35 +2450,64 @@ function displayReservationDetails(reservation, equipment) {
 
             tableBody.innerHTML = '';
 
-            equipment.forEach(item => {
-                const row = document.createElement('tr');
+            if (!equipment || equipment.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="6" class="text-center py-4">No equipment found</td></tr>';
+                return;
+            }
 
-                const ratio = item.available / item.total;
-                let badgeColor = '#22c55e';
-                if (ratio < 0.3) badgeColor = '#ef4444';
-                else if (ratio < 0.6) badgeColor = '#f59e0b';
+            equipment.sort((a, b) => b.usage - a.usage);
+
+            equipment.forEach(item => {
+                const code = item.code || 'N/A';
+                const name = item.name || 'Unknown';
+                const image = item.image || 'https://cdn-icons-png.flaticon.com/512/2941/2941514.png';
+                const maintenance = item.maintenance || 0;
+                const broken = item.broken || 0;
+                const usage = Math.round(parseFloat(item.usage) || 0);
+
+                let barColor = '#22c55e';
+                if (usage < 30) barColor = '#ef4444';
+                else if (usage < 60) barColor = '#f59e0b';
+
+                const row = document.createElement('tr');
+                row.setAttribute('data-equipment-id', code);
+                row.setAttribute('data-equipment-id-numeric', item.id || '');
 
                 row.innerHTML = `
-            <td><img src="${item.image}" style="width: 50px; height: 50px; object-fit: contain;"></td>
-            <td>${item.code}</td>
-            <td>${item.name}</td>
-            <td><span class="badge" style="background: ${badgeColor}; color: white;">${item.available}/${item.total}</span></td>
-            <td><span class="badge bg-warning">${item.maintenance}</span></td>
             <td>
-                <div class="progress-bar" style="width: 100px; display: inline-block; margin-right: 10px;">
-                    <div class="progress-fill" style="width: ${item.usage}%"></div>
+                <img src="${image}"
+                     style="width:50px;height:50px;object-fit:contain;"
+                     onerror="this.src='https://cdn-icons-png.flaticon.com/512/2941/2941514.png'"
+                     alt="${name}">
+            </td>
+            <td><strong>${name}</strong></td>
+            <td>
+                ${maintenance > 0 
+                    ? `<span class="badge bg-warning">${maintenance}</span>` 
+                    : '<span class="text-muted">------</span>'}
+            </td>
+            <td>
+                ${broken > 0 
+                    ? `<span class="badge bg-danger">${broken}</span>` 
+                    : '<span class="text-muted">------</span>'}
+            </td>
+            <td>
+                <div class="d-flex align-items-center gap-2">
+                    <div style="width:100px;height:8px;background:#e9ecef;border-radius:4px;overflow:hidden;">
+                        <div style="width:${usage}%;height:8px;background:${barColor};border-radius:4px;"></div>
+                    </div>
+                    <span style="font-weight:600;color:${barColor};min-width:45px;">${usage}%</span>
                 </div>
-                ${item.usage}%
             </td>
             <td>
                 <div class="action-buttons">
-                    <button class="btn-view" onclick='viewEquipment(${JSON.stringify(item)})' title="View Details">
+                    <button class="btn-view" onclick="viewEquipmentByCode('${code}')" title="View Details">
                         <i class="bi bi-eye"></i>
                     </button>
-                    <button class="btn-edit" onclick="editEquipment('${item.code}')" title="Edit">
+                    <button class="btn-edit" onclick="editEquipment('${code}')" title="Edit">
                         <i class="bi bi-pencil-square"></i>
                     </button>
-                    <button class="btn-remove" onclick="removeEquipment('${item.code}')" title="Remove">
+                    <button class="btn-remove" onclick="removeEquipment('${code}')" title="Remove">
                         <i class="bi bi-trash"></i>
                     </button>
                 </div>
@@ -2143,6 +2515,122 @@ function displayReservationDetails(reservation, equipment) {
         `;
                 tableBody.appendChild(row);
             });
+        }
+
+        function updateEquipmentCount(searchTerm) {
+            // This function is now handled by searchEquipmentStatus
+            // Keep it for backward compatibility
+            const equipmentTable = document.getElementById('equipmentTableBody');
+            if (!equipmentTable) return;
+
+            const visibleEquipment = Array.from(equipmentTable.getElementsByTagName('tr'))
+                .filter(row => row.style.display !== 'none').length;
+            const totalEquipment = allEquipmentData.length;
+
+            document.getElementById('equipmentCount').textContent =
+                (visibleEquipment > 0 || searchTerm === '') ?
+                '(' + totalEquipment + ')' : '(0)';
+        }
+
+        function removeEquipment(code) {
+            if (!confirm(`Are you sure you want to remove equipment "${code}"?\n\nThis action cannot be undone.`)) {
+                return;
+            }
+
+            // Find button by traversing the DOM — no event needed
+            const allBtns = document.querySelectorAll('.btn-remove');
+            let btn = null;
+            allBtns.forEach(b => {
+                if (b.getAttribute('onclick') && b.getAttribute('onclick').includes(code)) {
+                    btn = b;
+                }
+            });
+
+            const originalHTML = btn ? btn.innerHTML : '<i class="bi bi-trash"></i>';
+
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+            }
+
+            fetch('../controllers/delete_equipment.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        code: code
+                    })
+                })
+                .then(r => r.json())
+                .then(data => {
+                    console.log('Delete response:', data);
+                    if (data.success) {
+                        showSuccess(`Equipment "${code}" removed successfully!`);
+                        loadEquipmentWithUsage();
+                    } else {
+                        showError(data.message || 'Failed to remove equipment.');
+                        if (btn) {
+                            btn.disabled = false;
+                            btn.innerHTML = originalHTML;
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Delete error:', error);
+                    showError('Network error. Please try again.');
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.innerHTML = originalHTML;
+                    }
+                });
+        }
+
+        function filterAndDisplayEquipment() {
+            const filterValue = document.getElementById('statusFilterequipment').value;
+            const searchTerm = document.getElementById('equipmentSearch').value.toLowerCase().trim();
+
+            if (!allEquipmentData || allEquipmentData.length === 0) {
+                return;
+            }
+
+            let filteredData = [...allEquipmentData];
+
+            // Apply status filter
+            if (filterValue === 'maintenance') {
+                filteredData = filteredData.filter(item => item.maintenance > 0);
+            } else if (filterValue === 'broken') {
+                filteredData = filteredData.filter(item => item.broken > 0);
+            }
+
+            // Apply search filter
+            if (searchTerm !== '') {
+                filteredData = filteredData.filter(item => {
+                    const nameMatch = item.name && item.name.toLowerCase().includes(searchTerm);
+                    const codeMatch = item.code && item.code.toLowerCase().includes(searchTerm);
+                    return nameMatch || codeMatch;
+                });
+            }
+
+            displayEquipmentTable(filteredData);
+        }
+
+        function showError(message) {
+            // Check if message div exists
+            let msgDiv = document.getElementById('messageDiv');
+
+            if (!msgDiv) {
+                // Create message div if it doesn't exist
+                msgDiv = document.createElement('div');
+                msgDiv.id = 'messageDiv';
+                msgDiv.className = 'position-fixed top-0 end-0 m-3 p-3 rounded shadow';
+                msgDiv.style.zIndex = '9999';
+                document.body.appendChild(msgDiv);
+            }
+
+            msgDiv.className = 'position-fixed top-0 end-0 m-3 p-3 rounded shadow bg-danger text-white';
+            msgDiv.innerHTML = `<i class="bi bi-exclamation-triangle-fill me-2"></i>${message}`;
+            msgDiv.style.display = 'block';
         }
 
         function viewEquipment(equipment) {
@@ -2201,19 +2689,180 @@ function displayReservationDetails(reservation, equipment) {
             new bootstrap.Modal(eqModal).show();
         }
 
+        function showSuccess(message) {
+            // Check if message div exists
+            let msgDiv = document.getElementById('messageDiv');
+
+            if (!msgDiv) {
+                // Create message div if it doesn't exist
+                msgDiv = document.createElement('div');
+                msgDiv.id = 'messageDiv';
+                msgDiv.className = 'position-fixed top-0 end-0 m-3 p-3 rounded shadow';
+                msgDiv.style.zIndex = '9999';
+                document.body.appendChild(msgDiv);
+            }
+
+            msgDiv.className = 'position-fixed top-0 end-0 m-3 p-3 rounded shadow bg-success text-white';
+            msgDiv.innerHTML = `<i class="bi bi-check-circle-fill me-2"></i>${message}`;
+
+            setTimeout(() => {
+                msgDiv.style.display = 'none';
+            }, 3000);
+        }
+
         function addEquipment() {
-            alert('Add Equipment functionality would open a form modal');
+            isEditMode = false;
+            currentEquipmentId = null;
+
+            document.getElementById('addEquipmentForm').reset();
+            document.getElementById('eqId').value = '';
+
+            document.getElementById('eqImagePreview').style.display = 'none';
+            document.getElementById('eqImagePlaceholder').style.display = 'block';
+            document.getElementById('currentImageInfo').style.display = 'none';
+document.getElementById('maintenanceSection').style.display = 'none';
+            document.getElementById('eqQty').value = '1';
+            document.getElementById('eqSimultaneousUsers').value = '1';
+            document.getElementById('eqSterilization').value = 'NO';
+            document.getElementById('eqReservation').value = 'YES';
+
+            document.getElementById('equipmentModalTitle').innerHTML = '<i class="bi bi-plus-circle me-2"></i>Add New Equipment';
+            document.getElementById('modalSaveButtonText').textContent = 'Save Equipment';
+
+            clearEquipmentErrors();
+
+            const modal = new bootstrap.Modal(document.getElementById('addEquipmentModal'));
+            modal.show();
         }
 
-        function editEquipment(code) {
-            alert('Edit equipment: ' + code);
+        // Clear form errors
+        function clearEquipmentErrors() {
+            const errorFields = ['eqCode', 'eqName', 'eqQty'];
+            errorFields.forEach(field => {
+                const element = document.getElementById(field);
+                if (element) element.classList.remove('is-invalid');
+                const errorElement = document.getElementById(field + 'Error');
+                if (errorElement) errorElement.textContent = '';
+            });
         }
 
-        function removeEquipment(code) {
-            if (confirm(`Are you sure you want to remove equipment ${code}?`)) {
-                alert('Equipment removed successfully! (Note: This would update the database)');
+        // Preview image
+        function previewEquipmentImage(input) {
+            const preview = document.getElementById('eqImagePreview');
+            const placeholder = document.getElementById('eqImagePlaceholder');
+
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                    placeholder.style.display = 'none';
+                }
+                reader.readAsDataURL(input.files[0]);
             }
         }
+
+        // Save equipment (add or update)
+        function saveEquipment() {
+            const id = document.getElementById('eqId').value;
+            const code = document.getElementById('eqCode').value.trim();
+            const name = document.getElementById('eqName').value.trim();
+            const qty = document.getElementById('eqQty').value;
+            const simultaneous_users = document.getElementById('eqSimultaneousUsers').value || 1;
+            const sterilization = document.getElementById('eqSterilization').value;
+            const reservation = document.getElementById('eqReservation').value;
+            const description = document.getElementById('eqDescription').value.trim();
+            const imageFile = document.getElementById('eqImage').files[0];
+
+            // Validate
+            let isValid = true;
+
+            if (!code) {
+                document.getElementById('eqCode').classList.add('is-invalid');
+                document.getElementById('eqCodeError').textContent = 'Equipment code is required';
+                isValid = false;
+            } else {
+                document.getElementById('eqCode').classList.remove('is-invalid');
+            }
+
+            if (!name) {
+                document.getElementById('eqName').classList.add('is-invalid');
+                document.getElementById('eqNameError').textContent = 'Equipment name is required';
+                isValid = false;
+            } else {
+                document.getElementById('eqName').classList.remove('is-invalid');
+            }
+
+            if (!qty || qty < 1) {
+                document.getElementById('eqQty').classList.add('is-invalid');
+                document.getElementById('eqQtyError').textContent = 'Quantity must be at least 1';
+                isValid = false;
+            } else {
+                document.getElementById('eqQty').classList.remove('is-invalid');
+            }
+
+            if (!isValid) return;
+
+            const saveBtn = document.querySelector('#addEquipmentModal .btn-success');
+            const originalText = saveBtn.innerHTML;
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
+
+            const formData = new FormData();
+
+            if (id) formData.append('id', id);
+
+            formData.append('code', code);
+            formData.append('name', name);
+            formData.append('qty', qty);
+            formData.append('simultaneous_users', simultaneous_users);
+            formData.append('sterilization_required', sterilization);
+            formData.append('reservation_required', reservation);
+            formData.append('description', description);
+            formData.append('broken_qty', document.getElementById('eqBrokenQty').value);
+formData.append('repair_qty', document.getElementById('eqMaintenanceQty').value);
+            if (imageFile) formData.append('image', imageFile);
+
+            const url = id ? '../controllers/save_update_eqdetails.php' : '../controllers/add_equipment.php';
+
+            fetch(url, {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    saveBtn.disabled = false;
+                    saveBtn.innerHTML = originalText;
+
+                    if (data.success) {
+                        bootstrap.Modal.getInstance(document.getElementById('addEquipmentModal')).hide();
+                        showSuccess(id ? 'Equipment updated successfully!' : 'Equipment added successfully!');
+                        loadEquipmentWithUsage();
+                    } else {
+                        alert('Error: ' + (data.message || 'Operation failed'));
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    saveBtn.disabled = false;
+                    saveBtn.innerHTML = originalText;
+                    alert('Network error. Please try again.');
+                });
+        }
+
+        function searchEquipmentStatus() {
+            filterAndDisplayEquipment();
+        }
+
+        // function editEquipment(code) {
+        //     alert('Edit equipment: ' + code);
+        // }
+
+        // function removeEquipment(code) {
+        //     if (confirm(`Are you sure you want to remove equipment ${code}?`)) {
+        //         alert('Equipment removed successfully! (Note: This would update the database)');
+        //     }
+        // }
 
         // ========== REQUEST FILTER FUNCTIONS ==========
 
@@ -2262,16 +2911,16 @@ function displayReservationDetails(reservation, equipment) {
 
         // Display request table with simplified columns
         // Display request table with simplified columns
-       function displayRequestTable(requestsList) {
-    const tableBody = document.getElementById('requestListBody');
-    if (!tableBody) return;
-    tableBody.innerHTML = '';
-    requestsList.sort((a, b) => b.timestamp - a.timestamp);
-    requestsList.forEach((item, idx) => {
-        const row = document.createElement('tr');
-        let statusClass = item.status === 'pending' ? 'bg-warning' : item.status === 'approved' ? 'bg-success' : 'bg-danger';
-        let statusText = item.status === 'pending' ? 'Pending' : item.status === 'approved' ? 'Checked' : 'Rejected';
-        row.innerHTML = `
+        function displayRequestTable(requestsList) {
+            const tableBody = document.getElementById('requestListBody');
+            if (!tableBody) return;
+            tableBody.innerHTML = '';
+            requestsList.sort((a, b) => b.timestamp - a.timestamp);
+            requestsList.forEach((item, idx) => {
+                const row = document.createElement('tr');
+                let statusClass = item.status === 'pending' ? 'bg-warning' : item.status === 'approved' ? 'bg-success' : 'bg-danger';
+                let statusText = item.status === 'pending' ? 'Pending' : item.status === 'approved' ? 'Checked' : 'Rejected';
+                row.innerHTML = `
             <td>${item.id}</td>
             <td>${item.dateTime}</td>
             <td>${item.studentId}</td>
@@ -2285,16 +2934,16 @@ function displayReservationDetails(reservation, equipment) {
                 </div>
             </td>
         `;
-        tableBody.appendChild(row);
-    });
-    if (requestsList.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="6" class="text-center">No requests found</td></tr>`;
-    }
-}
+                tableBody.appendChild(row);
+            });
+            if (requestsList.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="6" class="text-center">No requests found</td></tr>`;
+            }
+        }
 
         // View request details
-       
-       
+
+
 
         // ========== CALENDAR FUNCTIONS ==========
         function initCalendar() {
@@ -2367,6 +3016,52 @@ function displayReservationDetails(reservation, equipment) {
                     }
                 });
             });
+        }
+
+        function showSection(section) {
+            console.log('Showing section:', section);
+            const sections = ['dashboard', 'userManagement', 'equipment', 'history', 'activity', 'analytics'];
+            sections.forEach(s => {
+                const el = document.getElementById(s + 'Section');
+                if (el) el.style.display = 'none';
+            });
+
+            const sectionElement = document.getElementById(section + 'Section');
+            if (sectionElement) {
+                sectionElement.style.display = 'block';
+                console.log('Section displayed:', section);
+            } else {
+                console.error('Section not found:', section + 'Section');
+            }
+
+            document.querySelectorAll('.sidebar a').forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('onclick')?.includes(section)) {
+                    link.classList.add('active');
+                }
+            });
+
+            if (section === 'equipment') {
+                loadEquipmentWithUsage();
+            }
+            if (section === 'dashboard' || section === 'analytics') {
+                setTimeout(() => {
+                    if (typeof initCharts === 'function') initCharts();
+                    if (typeof initAnalyticsCharts === 'function') initAnalyticsCharts();
+                    if (typeof initCalendar === 'function') initCalendar();
+                    if (typeof initCalendarListeners === 'function') initCalendarListeners();
+                }, 100);
+            }
+            if (section === 'history') {
+                const searchInput = document.getElementById('reservationSearch');
+                if (searchInput) searchInput.value = '';
+                const statusFilter = document.getElementById('statusFilter');
+                if (statusFilter) statusFilter.value = 'all';
+                if (typeof loadReservations === 'function') loadReservations();
+            }
+            if (section === 'activity') {
+                if (typeof initRequestSection === 'function') initRequestSection();
+            }
         }
 
         function updateEventDisplay(day) {
@@ -2468,31 +3163,378 @@ function displayReservationDetails(reservation, equipment) {
         }
 
         // ========== INITIALIZATION ==========
-document.addEventListener('DOMContentLoaded', function() {
-    initCalendar();
-    
-    // Check if this is a fresh login (you can set a flag in your PHP session)
-    const isFreshLogin = <?php echo isset($_SESSION['fresh_login']) ? 'true' : 'false'; ?>;
-    
-    if (isFreshLogin) {
-        // Clear saved section on fresh login
-        sessionStorage.removeItem('lastSection');
-        <?php unset($_SESSION['fresh_login']); // Clear the flag ?>
-    }
-    
-    const lastSection = sessionStorage.getItem('lastSection');
-    
-    if (!lastSection) {
-        showSection('dashboard');
-    } else {
-        showSection(lastSection);
-    }
-    
-    if (document.getElementById('requestListBody')) {
-        filterRequestsByStatus();
-    }
-});
+        document.addEventListener('DOMContentLoaded', function() {
+            initCalendar();
+
+            // Check if this is a fresh login (you can set a flag in your PHP session)
+            const isFreshLogin = <?php echo isset($_SESSION['fresh_login']) ? 'true' : 'false'; ?>;
+
+            if (isFreshLogin) {
+                // Clear saved section on fresh login
+                sessionStorage.removeItem('lastSection');
+                <?php unset($_SESSION['fresh_login']); // Clear the flag 
+                ?>
+            }
+
+            const lastSection = sessionStorage.getItem('lastSection');
+
+            if (!lastSection) {
+                showSection('dashboard');
+            } else {
+                showSection(lastSection);
+            }
+
+            if (document.getElementById('requestListBody')) {
+                filterRequestsByStatus();
+            }
+        });
     </script>
+
+    <div class="modal fade" id="equipmentDetailsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-info-circle me-2"></i>Equipment Details
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="equipmentDetailsContent"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Equipment Modal (same as before, but add this hidden input inside the form) -->
+    <!-- <div class="modal fade" id="addEquipmentModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content" style="border-radius: 20px; border: none; overflow: hidden;">
+
+                 
+                    <div class="modal-header py-3" style="background: linear-gradient(135deg, #22c55e, #16a34a);">
+                        <h5 class="modal-title text-white fw-semibold" id="equipmentModalTitle">
+                            <i class="bi bi-plus-circle me-2"></i>Add New Equipment
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+
+                
+                    <div class="modal-body p-4" style="background: #f8fafc;">
+                        <form id="addEquipmentForm" enctype="multipart/form-data">
+                           
+                            <input type="hidden" id="eqId" value="">
+
+                            <div class="row g-3">
+                              
+                                <div class="col-md-6">
+                                    <div class="card border-0 shadow-sm mb-3">
+                                        <div class="card-body p-3">
+                                            <h6 class="fw-semibold mb-3" style="color: #22c55e;">
+                                                <i class="bi bi-info-circle me-1"></i>Basic Information
+                                            </h6>
+
+                                            <div class="mb-3">
+                                                <label class="form-label fw-semibold">Equipment Code <span class="text-danger">*</span></label>
+                                                <input type="text" class="form-control" id="eqCode"
+                                                    placeholder="e.g., MIC-001" required>
+                                                <div class="invalid-feedback" id="eqCodeError"></div>
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <label class="form-label fw-semibold">Equipment Name <span class="text-danger">*</span></label>
+                                                <input type="text" class="form-control" id="eqName"
+                                                    placeholder="e.g., Microscope" required>
+                                                <div class="invalid-feedback" id="eqNameError"></div>
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <label class="form-label fw-semibold">Total Quantity <span class="text-danger">*</span></label>
+                                                <input type="number" class="form-control" id="eqQty"
+                                                    min="1" value="1" required>
+                                                <div class="invalid-feedback" id="eqQtyError"></div>
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <label class="form-label fw-semibold">Simultaneous Users</label>
+                                                <input type="number" class="form-control" id="eqSimultaneousUsers"
+                                                    min="1" value="1">
+                                                <small class="text-muted">Number of users that can use this at once</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                             
+                                <div class="col-md-6">
+                                    <div class="card border-0 shadow-sm mb-3">
+                                        <div class="card-body p-3">
+                                            <h6 class="fw-semibold mb-3" style="color: #22c55e;">
+                                                <i class="bi bi-image me-1"></i>Equipment Image
+                                            </h6>
+
+                                            <div class="text-center mb-3">
+                                                <div class="image-preview-container"
+                                                    style="width: 150px; height: 150px; margin: 0 auto; 
+                                                    border: 2px dashed #22c55e; border-radius: 10px; 
+                                                    display: flex; align-items: center; justify-content: center;
+                                                    overflow: hidden; background: #f8f9fa;">
+                                                    <img id="eqImagePreview" src="#" alt="Preview"
+                                                        style="max-width: 100%; max-height: 100%; display: none;">
+                                                    <i id="eqImagePlaceholder" class="bi bi-image"
+                                                        style="font-size: 3rem; color: #22c55e;"></i>
+                                                </div>
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <input type="file" class="form-control" id="eqImage"
+                                                    accept="image/jpeg,image/png,image/gif,image/webp"
+                                                    onchange="previewEquipmentImage(this)">
+                                                <small class="text-muted">Max size: 6MB (JPG, PNG, GIF, WEBP)</small>
+                                                <div id="currentImageInfo" class="mt-2 small text-muted" style="display: none;"></div>
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <label class="form-label fw-semibold">Sterilization Required</label>
+                                                <select class="form-select" id="eqSterilization">
+                                                    <option value="NO">No</option>
+                                                    <option value="YES">Yes</option>
+                                                </select>
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <label class="form-label fw-semibold">Reservation Required</label>
+                                                <select class="form-select" id="eqReservation">
+                                                    <option value="YES">Yes</option>
+                                                    <option value="NO">No</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                              
+                                <div class="col-12">
+                                    <div class="card border-0 shadow-sm">
+                                        <div class="card-body p-3">
+                                            <h6 class="fw-semibold mb-3" style="color: #22c55e;">
+                                                <i class="bi bi-card-text me-1"></i>Description
+                                            </h6>
+                                            <textarea class="form-control" id="eqDescription" rows="3"
+                                                placeholder="Enter equipment description..."></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                   
+                    <div class="modal-footer py-3 px-4 border-0" style="background: #f8fafc;">
+                        <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">
+                            <i class="bi bi-x-circle me-1"></i>Cancel
+                        </button>
+                        <button type="button" class="btn btn-success px-4" onclick="saveEquipment()"
+                            style="background: linear-gradient(135deg, #22c55e, #16a34a); border: none;">
+                            <i class="bi bi-check-circle me-1"></i><span id="modalSaveButtonText">Save Equipment</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div> -->
+
+   <div class="modal fade" id="addEquipmentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 20px; border: none; overflow: hidden;">
+
+            <!-- Header - we'll change the title dynamically -->
+            <div class="modal-header py-3" style="background: linear-gradient(135deg, #22c55e, #16a34a);">
+                <h5 class="modal-title text-white fw-semibold" id="equipmentModalTitle">
+                    <i class="bi bi-plus-circle me-2"></i>Add New Equipment
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+
+            <!-- Body -->
+            <div class="modal-body p-4" style="background: #f8fafc;">
+                <form id="addEquipmentForm" enctype="multipart/form-data">
+                    <!-- Hidden field to store equipment ID for edit mode -->
+                    <input type="hidden" id="eqId" value="">
+
+                    <div class="row g-3">
+                        <!-- Left Column -->
+                        <div class="col-md-6">
+                            <div class="card border-0 shadow-sm mb-3">
+                                <div class="card-body p-3">
+                                    <h6 class="fw-semibold mb-3" style="color: #22c55e;">
+                                        <i class="bi bi-info-circle me-1"></i>Basic Information
+                                    </h6>
+
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">Equipment Code <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="eqCode"
+                                            placeholder="e.g., MIC-001" required>
+                                        <div class="invalid-feedback" id="eqCodeError"></div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">Equipment Name <span class="text-danger">*</span></label>
+                                        <input type="text" class="form-control" id="eqName"
+                                            placeholder="e.g., Microscope" required>
+                                        <div class="invalid-feedback" id="eqNameError"></div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">Total Quantity <span class="text-danger">*</span></label>
+                                        <input type="number" class="form-control" id="eqQty"
+                                            min="1" value="1" required oninput="recalcAvailable()">
+                                        <div class="invalid-feedback" id="eqQtyError"></div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">Simultaneous Users</label>
+                                        <input type="number" class="form-control" id="eqSimultaneousUsers"
+                                            min="1" value="1">
+                                        <small class="text-muted">Number of users that can use this at once</small>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- NEW: Maintenance & Broken Section -->
+                           <div class="card border-0 shadow-sm" id="maintenanceSection" style="display:none;">
+                                <div class="card-body p-3">
+                                    <h6 class="fw-semibold mb-3" style="color: #f59e0b;">
+                                        <i class="bi bi-exclamation-triangle me-1"></i>Status & Maintenance
+                                    </h6>
+
+                                    <div class="row g-3">
+                                        <!-- Maintenance Quantity -->
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold">
+                                                <i class="bi bi-tools text-warning me-1"></i>Maintenance Qty
+                                            </label>
+                                            <div class="input-group">
+                                                <input type="number" class="form-control" id="eqMaintenanceQty"
+                                                    min="0" value="0" placeholder="0" oninput="recalcAvailable()">
+                                                <span class="input-group-text bg-light text-muted">units</span>
+                                            </div>
+                                            <small class="text-muted">Equipment currently in maintenance</small>
+                                        </div>
+
+                                        <!-- Broken Quantity -->
+                                        <div class="col-md-6">
+                                            <label class="form-label fw-semibold">
+                                                <i class="bi bi-bug text-danger me-1"></i>Broken Qty
+                                            </label>
+                                            <div class="input-group">
+                                                <input type="number" class="form-control" id="eqBrokenQty"
+                                                    min="0" value="0" placeholder="0" oninput="recalcAvailable()">
+                                                <span class="input-group-text bg-light text-muted">units</span>
+                                            </div>
+                                            <small class="text-muted">Equipment reported as broken</small>
+                                        </div>
+                                    </div>
+
+                                    <!-- Available Quantity (Auto-calculated) -->
+                                    <div class="mt-3 p-3 bg-light rounded-3">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="fw-semibold">
+                                                <i class="bi bi-check-circle-fill text-success me-1"></i>Available Quantity:
+                                            </span>
+                                            <span class="fs-5 fw-bold text-success" id="availableQtyDisplay">1</span>
+                                        </div>
+                                        <small class="text-muted d-block mt-1">
+                                            Available = Total - Maintenance - Broken
+                                        </small>
+                                    </div>
+
+                                    <!-- Validation warning -->
+                                    <div id="qtyValidationWarning" class="alert alert-warning py-2 px-3 mt-3 small d-none">
+                                        <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                                        <span id="qtyWarningMessage">Maintenance + Broken cannot exceed Total Quantity</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Column -->
+                        <div class="col-md-6">
+                            <div class="card border-0 shadow-sm mb-3">
+                                <div class="card-body p-3">
+                                    <h6 class="fw-semibold mb-3" style="color: #22c55e;">
+                                        <i class="bi bi-image me-1"></i>Equipment Image
+                                    </h6>
+
+                                    <div class="text-center mb-3">
+                                        <div class="image-preview-container"
+                                            style="width: 150px; height: 150px; margin: 0 auto; 
+                                        border: 2px dashed #22c55e; border-radius: 10px; 
+                                        display: flex; align-items: center; justify-content: center;
+                                        overflow: hidden; background: #f8f9fa;">
+                                            <img id="eqImagePreview" src="#" alt="Preview"
+                                                style="max-width: 100%; max-height: 100%; display: none;">
+                                            <i id="eqImagePlaceholder" class="bi bi-image"
+                                                style="font-size: 3rem; color: #22c55e;"></i>
+                                        </div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <input type="file" class="form-control" id="eqImage"
+                                            accept="image/jpeg,image/png,image/gif,image/webp"
+                                            onchange="previewEquipmentImage(this)">
+                                        <small class="text-muted">Max size: 6MB (JPG, PNG, GIF, WEBP)</small>
+                                        <div id="currentImageInfo" class="mt-2 small text-muted" style="display: none;"></div>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">Sterilization Required</label>
+                                        <select class="form-select" id="eqSterilization">
+                                            <option value="NO">No</option>
+                                            <option value="YES">Yes</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="mb-3">
+                                        <label class="form-label fw-semibold">Reservation Required</label>
+                                        <select class="form-select" id="eqReservation">
+                                            <option value="YES">Yes</option>
+                                            <option value="NO">No</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Full Width Row - Description -->
+                        <div class="col-12">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-body p-3">
+                                    <h6 class="fw-semibold mb-3" style="color: #22c55e;">
+                                        <i class="bi bi-card-text me-1"></i>Description
+                                    </h6>
+                                    <textarea class="form-control" id="eqDescription" rows="3"
+                                        placeholder="Enter equipment description..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Footer - change button text dynamically -->
+            <div class="modal-footer py-3 px-4 border-0" style="background: #f8fafc;">
+                <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-1"></i>Cancel
+                </button>
+                <button type="button" class="btn btn-success px-4" onclick="saveEquipment()"
+                    style="background: linear-gradient(135deg, #22c55e, #16a34a); border: none;">
+                    <i class="bi bi-check-circle me-1"></i><span id="modalSaveButtonText">Save Equipment</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 </body>
 
 </html>

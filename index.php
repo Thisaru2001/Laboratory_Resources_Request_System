@@ -284,10 +284,23 @@ if (!checkDatabaseConnection()) {
 }
 
 require_once __DIR__ . '/config/database.php';
-
+//$university_id  = isset($_COOKIE["university_id"])  ? $_COOKIE["university_id"]  : '';
+//$saved_password = isset($_COOKIE["saved_password"]) ? $_COOKIE["saved_password"] : '';
+//$code=isset($_COOKIE["code"]) ? $_COOKIE["code"] : '';
 // Get cookies if they exist - FIXED: removed password cookie (not used in your system)
-$university_id  = $_COOKIE["university_id"]  ?? '';
-$saved_password = $_COOKIE["saved_password"] ?? '';
+// Auto-login from remember me token
+function decryptData($data) {
+    $key     = 'MicroLab_2026_Key_32chars_xyzABCD';
+    $decoded = base64_decode($data);
+    $parts   = explode('::', $decoded, 2);
+    if (count($parts) !== 2) return '';
+    return openssl_decrypt($parts[1], 'AES-256-CBC', $key, 0, $parts[0]);
+}
+
+// Just pre-fill — no redirect
+$university_id  = isset($_COOKIE["display_uid"]) ? $_COOKIE["display_uid"] : '';
+$saved_password = isset($_COOKIE["display_pwd"]) ? decryptData($_COOKIE["display_pwd"]) : '';
+// $saved_password = $_COOKIE["saved_password"] ?? '';
 // $password = $_COOKIE["password"] ?? ''; // REMOVED - this cookie doesn't exist in your system
 ?>
 <!DOCTYPE html>
@@ -939,6 +952,10 @@ $saved_password = $_COOKIE["saved_password"] ?? '';
             padding: 15px 20px;
             border: none;
         }
+
+
+        /* Add this to your existing <style> block */
+
 
         .modal-header .modal-title {
             font-weight: 600;
@@ -1761,7 +1778,14 @@ $saved_password = $_COOKIE["saved_password"] ?? '';
             request.open("POST", "controllers/change_password.php", true);
             request.send(form);
         }
+
+
+
+
+  
     </script>
+
+
 
 </body>
 

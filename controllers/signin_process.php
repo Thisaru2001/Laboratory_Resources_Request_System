@@ -5,12 +5,19 @@ include "../config/database.php";
 $university_id = $_POST["university_id"] ?? '';
 $password = $_POST["password"] ?? '';
 $remember_me = $_POST["remember_me"] ?? '';
- 
+
 $university_id = strtoupper(trim($university_id));
-error_log("Processed University ID: " . $university_id);
+// error_log("Processed University ID: " . $university_id);
 // Generate the same token as in signup
 $token = $university_id . $password;
-  
+// Add at top:
+function encryptData($data) {
+    $key = 'MicroLab_2026_Key_32chars_xyzABCD';
+    $iv  = openssl_random_pseudo_bytes(16);
+    $enc = openssl_encrypt($data, 'AES-256-CBC', $key, 0, $iv);
+    return base64_encode($iv . '::' . $enc);
+}
+
 if (empty($university_id)) {
     echo "Please Enter Your University ID.";
     exit;
@@ -49,7 +56,7 @@ if (file_exists($attempts_file)) {
     $attempts = 0;
     $first_attempt = time();
 }
- 
+
 $result = Database::search(
     "SELECT u.*, r.role 
      FROM `lab_user` u
@@ -74,16 +81,16 @@ if ($count == 1) {
 
     // Check if account is deactivated
     if (isset($user['status']) && $user['status'] == 0) {
-      echo "Your account is not activated. Please contact the supervisor.";
+        echo "Your account is not activated. Please contact the supervisor.";
         exit;
     }
 
     // First verify password
     if (password_verify($password, $user['password_user'])) {
-       
+
         // Then verify the token
         if (password_verify($token, $user['remember_token'])) {
-            
+
             // Clear login attempts on successful login
             if (file_exists($attempts_file)) {
                 unlink($attempts_file);
@@ -91,7 +98,7 @@ if ($count == 1) {
 
             // Get user role from database
             $user_role = $user['role'] ?? 'student';
- 
+
             // Store user data in session
             $_SESSION["user"] = $user;
             $_SESSION["user_id"] = $user['id'];
@@ -125,31 +132,16 @@ if ($count == 1) {
 
             session_regenerate_id(true);
 
-            // Handle "Remember Me" functionality
-        if ($remember_me == "true" || $remember_me == "1") {
-    $expiry = time() + (60 * 60 * 24 * 30);
-
-    setcookie("university_id", $university_id, [
-        'expires' => $expiry,
-        'path' => '/',
-        'secure' => isset($_SERVER['HTTPS']),
-        'httponly' => false,  // ← must be false so JS can read it
-        'samesite' => 'Strict'
-    ]);
-
-    // ADD THIS - store plain password for auto-fill
-    setcookie("saved_password", $password, [
-        'expires' => $expiry,
-        'path' => '/',
-        'secure' => isset($_SERVER['HTTPS']),
-        'httponly' => false,  // ← must be false so JS can read it
-        'samesite' => 'Strict'
-    ]);
+       // Handle "Remember Me" functionality
+// Replace entire Remember Me section:
+if ($remember_me == "true" || $remember_me == "1") {
+    $encrypted_pwd = encryptData($password);
+    setcookie("display_uid", $university_id, time() + (60 * 60 * 24 * 30), "/");
+    setcookie("display_pwd", $encrypted_pwd, time() + (60 * 60 * 24 * 30), "/");
 } else {
-    setcookie("university_id", "", time() - 3600, "/");
-    setcookie("saved_password", "", time() - 3600, "/");
-    setcookie("token_hash", "", time() - 3600, "/");
-}
+    setcookie("display_uid", "", time() - 3600, "/");
+    setcookie("display_pwd", "", time() - 3600, "/");
+}          
 
             // Log user session
             try {
@@ -161,13 +153,12 @@ if ($count == 1) {
 
             // IMPORTANT: Return success with redirect path
             // Make sure there's NO whitespace before or after
-            
+
             echo "success|$redirect";
             error_log("About to redirect to: " . $redirect);
-error_log("Session user_id: " . ($_SESSION["user_id"] ?? 'not set'));
-error_log("Session user_role: " . ($_SESSION["user_role"] ?? 'not set'));
+            error_log("Session user_id: " . ($_SESSION["user_id"] ?? 'not set'));
+            error_log("Session user_role: " . ($_SESSION["user_role"] ?? 'not set'));
             exit();
-            
         } else {
             // Token verification failed
             $attempts++;
@@ -226,4 +217,3 @@ foreach (glob($temp_dir . '/login_attempts_*') as $file) {
         unlink($file);
     }
 }
-?>
