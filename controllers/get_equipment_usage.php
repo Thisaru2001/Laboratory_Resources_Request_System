@@ -1,135 +1,92 @@
 <?php
-// ============================================================
-//  EXACT PATH : LRRS\controllers\get_equipment_usage.php
-// ============================================================
-
 header('Content-Type: application/json');
-
 require_once '../config/database.php';
 
-define('PYTHON_EXE', '/usr/bin/python3');
-
 try {
-
-    // ── STEP 1: Get equipment from DB ──────────────────────
+    // Get all equipment with maintenance, broken, and usage statistics
     $query = "
-        SELECT
-            e.equipment_id,
-            e.equipment_code,
-            e.name,
-            e.qty,
-            e.image_path,
-            e.description,
-            COALESCE(SUM(em.qty), 0) AS maintenance_pending
-        FROM equipment e
-        LEFT JOIN equipment_maintenance em
-            ON e.equipment_id = em.equipment_id
-            AND em.status_of_maintenance_id IN (
-                SELECT status_of_maintenance_id
-                FROM status_of_maintenance
-                WHERE status = 'In Progress'
-            )
-        GROUP BY
-            e.equipment_id, e.equipment_code, e.name,
-            e.qty, e.image_path, e.description
-        ORDER BY e.equipment_id
+       SELECT 
+    e.id,
+    e.code,
+    e.name,
+    e.total_qty as qty,
+    e.image_path,
+    e.description,
+    e.added_datatime as added_datetime,
+    e.is_hod_checked,
+    -- Calculate maintenance pending
+    COALESCE(r.repair_qty, 0) as maintenance_pending,
+    -- Calculate broken quantity
+    COALESCE(b.broken_qty, 0) as broken_qty,
+    -- Count total bookings
+    COUNT(DISTINCT be.id) as total_bookings
+FROM equipment e
+LEFT JOIN (
+    SELECT equipment_id, SUM(repair_qty) as repair_qty
+    FROM repair 
+    GROUP BY equipment_id
+) r ON e.id = r.equipment_id
+LEFT JOIN (
+    SELECT equipment_id, SUM(broken_qty) as broken_qty
+    FROM broken 
+    GROUP BY equipment_id
+) b ON e.id = b.equipment_id
+LEFT JOIN book_equipment be ON e.id = be.equipment_id
+WHERE e.is_hod_checked = 1
+GROUP BY e.id, e.code, e.name, e.total_qty, e.image_path, e.description, 
+         e.added_datatime, e.is_hod_checked, r.repair_qty, b.broken_qty
+ORDER BY e.id
     ";
 
     $result = Database::search($query);
+    
     if (!$result) {
-        echo json_encode(['success' => false, 'message' => 'Database query failed']);
-        exit;
+        throw new Exception('Database query failed');
     }
+
+    // Get total reservations for usage percentage calculation
+    $total_res_query = "SELECT COUNT(*) as total FROM reservation WHERE request_date >= DATE_SUB(NOW(), INTERVAL 6 MONTH)";
+    $total_res_result = Database::search($total_res_query);
+    $total_reservations = $total_res_result ? $total_res_result->fetch_assoc()['total'] : 1;
+    $total_reservations = max(1, $total_reservations); // Avoid division by zero
 
     $equipment_list = [];
+    
     while ($row = $result->fetch_assoc()) {
-        $equipment_list[] = $row;
-    }
-
-    // ── STEP 2: Paths ──────────────────────────────────────
-    $ai_folder     = realpath(__DIR__ . DIRECTORY_SEPARATOR . '..' . DIRECTORY_SEPARATOR . 'ai');
-    $python_script = $ai_folder . DIRECTORY_SEPARATOR . 'equipment_analyzer.py';
-    $json_output   = $ai_folder . DIRECTORY_SEPARATOR . 'equipment_usage_report.json';
-
-    // ── STEP 3: Auto-run Python if JSON missing or > 1 hour old ──
-    $json_missing = !file_exists($json_output);
-    $json_old     = file_exists($json_output) && (time() - filemtime($json_output)) > 3600;
-
-    $python_ran = false;
-    $run_output = [];
-    $run_error  = '';
-
-    if (($json_missing || $json_old) && $ai_folder && file_exists($python_script)) {
-
-        // Use hardcoded full path — avoids Apache PATH issues on Windows
-        $python_exe = PYTHON_EXE;
-
-        // If hardcoded path doesn't exist, fallback to 'python'
-        if (!file_exists($python_exe)) {
-            $python_exe = 'python';
-        }
-
-        $cmd = '"' . $python_exe . '" "' . $python_script . '" 2>&1';
-        exec($cmd, $run_output, $return_code);
-        $python_ran = ($return_code === 0);
-        $run_error  = implode("\n", $run_output);
-    }
-
-    // ── STEP 4: Read JSON output from Python ──────────────
-    $usage_map = [];
-
-    if (file_exists($json_output)) {
-        $json_raw  = file_get_contents($json_output);
-        $json_data = json_decode($json_raw, true);
-
-        if ($json_data && isset($json_data['equipment_usage'])) {
-            foreach ($json_data['equipment_usage'] as $item) {
-                $key             = strtolower(trim($item['equipment_name']));
-                $usage_map[$key] = floatval($item['usage_percent']);
-            }
-        }
-    }
-
-    // ── STEP 5: Merge usage % into equipment list ──────────
-    $final = [];
-    foreach ($equipment_list as $eq) {
-
-        $name_key = strtolower(trim($eq['name'] ?? ''));
-        $usage    = $usage_map[$name_key] ?? 0.0;
-
-        if (!empty($eq['image_path'])) {
-            $image = '../' . ltrim(str_replace('\\', '/', $eq['image_path']), '/');
-        } else {
-            $image = 'https://cdn-icons-png.flaticon.com/512/2941/2941514.png';
-        }
-
-        $final[] = [
-            'id'          => (int)($eq['equipment_id'] ?? 0),
-            'code'        => $eq['equipment_code'] ?? 'N/A',
-            'name'        => $eq['name'] ?? 'Unknown',
-            'qty'         => (int)($eq['qty'] ?? 0),
-            'image'       => $image,
-            'description' => $eq['description'] ?? '',
-            'maintenance' => (int)($eq['maintenance_pending'] ?? 0),
-            'usage'       => $usage,
+        // Calculate usage percentage based on bookings vs total reservations
+        $usage_percentage = round(($row['total_bookings'] / $total_reservations) * 100);
+        
+        // Format image path
+        $image = !empty($row['image_path']) 
+            ? '../' . ltrim(str_replace('\\', '/', $row['image_path']), '/')
+            : 'https://cdn-icons-png.flaticon.com/512/2941/2941514.png';
+        
+        $equipment_list[] = [
+            'id' => (int)$row['id'],
+            'code' => $row['code'] ?? 'N/A',
+            'name' => $row['name'] ?? 'Unknown',
+            'qty' => (int)$row['qty'],
+            'image' => $image,
+            'description' => $row['description'] ?? '',
+            'added_datetime' => $row['added_datetime'],
+            'maintenance' => (int)($row['maintenance_pending'] ?? 0),
+            'broken' => (int)($row['broken_qty'] ?? 0),
+            'usage' => $usage_percentage,
+            'total_bookings' => (int)$row['total_bookings']
         ];
     }
 
     echo json_encode([
-        'success'      => true,
-        'count'        => count($final),
-        'equipment'    => $final,
-        'analyzed_at'  => date('Y-m-d H:i:s'),
-        // ── debug fields (remove these after confirming it works) ──
-        'python_ran'   => $python_ran,
-        'python_exe'   => PYTHON_EXE,
-        'json_exists'  => file_exists($json_output),
-        'json_age_sec' => file_exists($json_output) ? (time() - filemtime($json_output)) : null,
-        'triggered'    => ($json_missing || $json_old),
-        'run_error'    => $run_error,
+        'success' => true,
+        'count' => count($equipment_list),
+        'equipment' => $equipment_list,
+        'analyzed_at' => date('Y-m-d H:i:s')
     ]);
 
 } catch (Exception $e) {
-    echo json_encode(['success' => false, 'message' => $e->getMessage()]);
+    echo json_encode([
+        'success' => false,
+        'message' => $e->getMessage()
+    ]);
 }
 ?>

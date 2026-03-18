@@ -121,35 +121,35 @@ if ($count == 1) {
                     $redirect = "views/student.php";
             }
 
-            error_log("Redirect URL: " . $redirect);
+            // error_log("Redirect URL: " . $redirect);
 
             session_regenerate_id(true);
 
             // Handle "Remember Me" functionality
-            if ($remember_me == "true" || $remember_me == "1") {
-                $expiry = time() + (60 * 60 * 24 * 30);
+        if ($remember_me == "true" || $remember_me == "1") {
+    $expiry = time() + (60 * 60 * 24 * 30);
 
-                setcookie("university_id", $university_id, [
-                    'expires' => $expiry,
-                    'path' => '/',
-                    'domain' => '',
-                    'secure' => isset($_SERVER['HTTPS']),
-                    'httponly' => true,
-                    'samesite' => 'Strict'
-                ]);
+    setcookie("university_id", $university_id, [
+        'expires' => $expiry,
+        'path' => '/',
+        'secure' => isset($_SERVER['HTTPS']),
+        'httponly' => false,  // ← must be false so JS can read it
+        'samesite' => 'Strict'
+    ]);
 
-                setcookie("token_hash", password_hash($token, PASSWORD_DEFAULT), [
-                    'expires' => $expiry,
-                    'path' => '/',
-                    'domain' => '',
-                    'secure' => isset($_SERVER['HTTPS']),
-                    'httponly' => true,
-                    'samesite' => 'Strict'
-                ]);
-            } else {
-                setcookie("university_id", "", time() - 3600, "/", "", true, true);
-                setcookie("token_hash", "", time() - 3600, "/", "", true, true);
-            }
+    // ADD THIS - store plain password for auto-fill
+    setcookie("saved_password", $password, [
+        'expires' => $expiry,
+        'path' => '/',
+        'secure' => isset($_SERVER['HTTPS']),
+        'httponly' => false,  // ← must be false so JS can read it
+        'samesite' => 'Strict'
+    ]);
+} else {
+    setcookie("university_id", "", time() - 3600, "/");
+    setcookie("saved_password", "", time() - 3600, "/");
+    setcookie("token_hash", "", time() - 3600, "/");
+}
 
             // Log user session
             try {

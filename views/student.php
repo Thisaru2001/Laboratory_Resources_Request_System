@@ -879,11 +879,17 @@ $calendar_events_json = json_encode($calendar_events);
         }
 
         .day-cell.event::after {
-            content: '•';
+            content: '●';
+            /* Changed from • to ● for a bolder dot */
             position: absolute;
-            bottom: 2px;
-            font-size: 1.2rem;
+            bottom: -2px;
+            /* Adjusted position */
+            font-size: 2rem;
+            /* Increased from 1.2rem to 2rem */
             color: #ffd700;
+            text-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
+            /* Added glow effect */
+            line-height: 1;
         }
 
         .goto-section {
@@ -1379,7 +1385,7 @@ $calendar_events_json = json_encode($calendar_events);
                 <div class="notification-dropdown" id="notificationDropdown">
                     <div class="notification-header">
                         <h6>Notifications</h6>
-                        <span><?php echo $notif_count; ?> new</span>
+                        <!-- <span><?php echo $notif_count; ?> new</span> -->
                     </div>
                     <div class="notification-list" id="notificationList">
                         <?php
@@ -1388,7 +1394,7 @@ $calendar_events_json = json_encode($calendar_events);
                         FROM notification 
                         WHERE owner_of_notification = ? 
                         ORDER BY created_datetime DESC 
-                        LIMIT 20";
+                        LIMIT 5";
 
                         $notif_list_result = Database::search($notif_query, "i", [$student_id]);
 
@@ -1437,25 +1443,68 @@ $calendar_events_json = json_encode($calendar_events);
                     $profile_image = $user_data['img_path'] ?? '';
 
                     if (!empty($profile_image)) {
-                        // Clean the path
+                        // Clean the path - replace backslashes with forward slashes
                         $clean_path = str_replace('\\', '/', $profile_image);
                         $clean_path = ltrim($clean_path, '/');
 
-                        // Full system path with LRRS
-                        $full_path = $_SERVER['DOCUMENT_ROOT'] . '/LRRS/' . $clean_path;
-                        $full_path = str_replace('/', DIRECTORY_SEPARATOR, $full_path);
+                        // Get the base URL dynamically
+                        $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https://' : 'http://';
+                        $host = $_SERVER['HTTP_HOST'];
+                        $base_url = $protocol . $host;
+
+                        // For file system check
+                        $full_path = $_SERVER['DOCUMENT_ROOT'] . '/' . $clean_path;
+
+                        // Debug (remove in production)
+                        error_log("=== PROFILE IMAGE DEBUG ===");
+                        error_log("Original path from DB: " . $profile_image);
+                        error_log("Clean path: " . $clean_path);
+                        error_log("Document Root: " . $_SERVER['DOCUMENT_ROOT']);
+                        error_log("Full system path: " . $full_path);
+                        error_log("File exists: " . (file_exists($full_path) ? 'YES' : 'NO'));
 
                         if (file_exists($full_path)) {
-                            // Web path needs LRRS prefix
-                            $profile_image = '/LRRS/' . $clean_path;
+                            // File exists - construct the full URL
+                            $profile_image = $base_url . '/' . $clean_path;
+                            // error_log("Using URL: " . $profile_image);
                         } else {
-                            $profile_image = 'https://ui-avatars.com/api/?name=' . urlencode($full_name) . '&background=22c55e&color=fff&size=100';
+                            // Try alternative paths
+                            $alt_paths = [
+                                'assets/profile_images/' . basename($clean_path),
+                                'uploads/profile_images/' . basename($clean_path),
+                                'images/profile/' . basename($clean_path),
+                                '../' . $clean_path,
+                                $clean_path
+                            ];
+
+                            $found = false;
+                            foreach ($alt_paths as $alt_path) {
+                                $full_alt_path = $_SERVER['DOCUMENT_ROOT'] . '/' . ltrim($alt_path, '/');
+                                error_log("Trying alternative: " . $full_alt_path);
+
+                                if (file_exists($full_alt_path)) {
+                                    $profile_image = $base_url . '/' . ltrim($alt_path, '/');
+                                    error_log("Found at: " . $profile_image);
+                                    $found = true;
+                                    break;
+                                }
+                            }
+
+                            if (!$found) {
+                                error_log("No image found, using avatar");
+                                $profile_image = 'https://ui-avatars.com/api/?name=' . urlencode($full_name) . '&background=22c55e&color=fff&size=100';
+                            }
                         }
                     } else {
+                        error_log("No image path in database, using avatar");
                         $profile_image = 'https://ui-avatars.com/api/?name=' . urlencode($full_name) . '&background=22c55e&color=fff&size=100';
                     }
+
+                    // Final debug
+                    error_log("Final profile image URL: " . $profile_image);
                     ?>
-                    <img src="<?php echo $profile_image; ?>" class="profile-img dropdown-toggle" data-bs-toggle="dropdown">
+                    <img src="<?php echo htmlspecialchars($profile_image); ?>" class="profile-img dropdown-toggle" data-bs-toggle="dropdown">
+                    <!-- <img src="<?php echo htmlspecialchars($profile_image); ?>" class="profile-img dropdown-toggle" data-bs-toggle="dropdown"> -->
                     <ul class="dropdown-menu dropdown-menu-end" style="border-radius: 16px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
                         <li><a class="dropdown-item" href="profile.php"><i class="bi bi-person me-2"></i>Profile</a></li>
                         <li><a class="dropdown-item" href="settings.php"><i class="bi bi-gear me-2"></i>Settings</a></li>
@@ -1806,19 +1855,20 @@ $calendar_events_json = json_encode($calendar_events);
                             <input type="text" id="equipmentSearch1" class="search-input" placeholder="Search by equipment name...">
 
                         </div>
+                        <div class="filter-section">
+                            <select class="filter-select" id="labFilter" onchange="filterEquipmentTable()">
+                                <option value="all">All Labs</option>
+                                <?php
+                                $labs_for_filter = Database::search("SELECT id, location FROM location ORDER BY location");
+                                while ($lab = $labs_for_filter->fetch_assoc()) {
+                                    echo "<option value='" . $lab['id'] . "'>" . htmlspecialchars($lab['location']) . "</option>";
+                                }
+                                ?>
+                            </select>
+                        </div>
                     </div>
 
-                    <div class="filter-section">
-                        <select class="filter-select" id="labFilter" onchange="filterEquipmentTable()">
-                            <option value="all">All Labs</option>
-                            <?php
-                            $labs_for_filter = Database::search("SELECT id, location FROM location ORDER BY location");
-                            while ($lab = $labs_for_filter->fetch_assoc()) {
-                                echo "<option value='" . $lab['id'] . "'>" . htmlspecialchars($lab['location']) . "</option>";
-                            }
-                            ?>
-                        </select>
-                    </div>
+
 
                     <div class="table-responsive">
                         <table class="equipment-table">
@@ -1873,7 +1923,7 @@ $calendar_events_json = json_encode($calendar_events);
     </div>
 
     <!-- Modals (unchanged) -->
-    <div class="modal fade" id="equipmentDetailsModal" tabindex="-1">
+    <!-- <div class="modal fade" id="equipmentDetailsModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header bg-success text-white">
@@ -1886,17 +1936,16 @@ $calendar_events_json = json_encode($calendar_events);
                 </div>
             </div>
         </div>
-    </div>
+    </div> -->
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
         // View reservation details
-        function viewReservation(reservationId) {
-            // Your existing view function
-            viewRequest(reservationId);
-        }
+       function viewReservation(reservationId) {
+    viewReservationDetails(reservationId);
+}
 
         // Remove reservation (for pending only)
         function removeReservation(reservationId) {
@@ -2501,8 +2550,8 @@ $calendar_events_json = json_encode($calendar_events);
         }
 
         function viewBookingDetails(reservationId) {
-            alert('Viewing details for: ' + reservationId);
-        }
+    viewReservationDetails(reservationId);
+}
 
         // ============ CALENDAR NAVIGATION ============
         document.querySelector('.prev')?.addEventListener('click', () => {
@@ -2629,6 +2678,149 @@ $calendar_events_json = json_encode($calendar_events);
         }
 
 
+function viewReservationDetails(reservationId) {
+    const modalEl = document.getElementById('reservationDetailsModal');
+    const contentDiv = document.getElementById('reservationDetailsContent');
+
+    contentDiv.innerHTML = `
+        <div class="text-center py-5">
+            <div class="spinner-border text-success" role="status" style="width:2rem;height:2rem;"></div>
+            <p class="mt-3 text-muted small fw-semibold">Loading reservation details...</p>
+        </div>`;
+
+    const existing = bootstrap.Modal.getInstance(modalEl);
+    if (existing) existing.dispose();
+    document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+    document.body.classList.remove('modal-open');
+    document.body.style.overflow = '';
+    document.body.style.paddingRight = '';
+
+    const modal = new bootstrap.Modal(modalEl);
+    modal.show();
+
+    fetch(`../controllers/get_reservation_details.php?id=${encodeURIComponent(reservationId)}`)
+        .then(r => r.json())
+        .then(data => {
+            if (!data.success) {
+                contentDiv.innerHTML = `<div class="alert alert-danger m-3">${data.message || 'Failed to load'}</div>`;
+                return;
+            }
+
+            const res = data;
+
+            // Status badge
+            let badgeColor = '#f59e0b';
+            let statusText = 'Pending';
+            if (res.status === 'Ready' || res.status === 'to_checked') {
+                badgeColor = '#22c55e'; statusText = 'Approved';
+            } else if (res.status === 'Rejected' || res.status === 'rejected') {
+                badgeColor = '#ef4444'; statusText = 'Rejected';
+            } else if (res.status === 'to_pending' || res.status === 'TO_Pending') {
+                badgeColor = '#3b82f6'; statusText = 'Under Review';
+            }
+
+            // Equipment list
+            let equipmentHtml = '<p class="text-muted fst-italic">No equipment found</p>';
+            if (res.equipment && res.equipment.length > 0) {
+                equipmentHtml = `
+                    <table class="table table-sm table-bordered mt-2">
+                        <thead style="background:linear-gradient(135deg,#22c55e,#16a34a);color:white;">
+                            <tr><th>Equipment</th><th>Code</th><th class="text-center">Qty</th></tr>
+                        </thead>
+                        <tbody>
+                            ${res.equipment.map(eq => `
+                                <tr>
+                                    <td>${eq.name}</td>
+                                    <td><small class="text-muted">${eq.code}</small></td>
+                                    <td class="text-center"><span class="badge bg-success">${eq.booked_qty}</span></td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>`;
+            }
+
+            // Rejection reason
+            let rejectionHtml = '';
+            if ((res.status === 'rejected' || res.status === 'Rejected') && res.rejected_reason) {
+                rejectionHtml = `
+                    <div style="background:#fff0f0;border-left:4px solid #ef4444;
+                                padding:12px 16px;border-radius:8px;margin-top:12px;">
+                        <strong style="color:#dc2626;">
+                            <i class="bi bi-exclamation-triangle me-2"></i>Rejection Reason:
+                        </strong>
+                        <p class="mb-0 mt-1" style="color:#78350f;">${res.rejected_reason}</p>
+                    </div>`;
+            }
+
+            // Format date
+            let formattedDate = res.date || '—';
+            try {
+                if (res.date && res.date !== '—') {
+                    formattedDate = new Date(res.date).toLocaleDateString('en-US', {
+                        year: 'numeric', month: 'long', day: 'numeric'
+                    });
+                }
+            } catch(e) {}
+
+            contentDiv.innerHTML = `
+                <div class="p-2">
+                    <!-- Header info -->
+                    <div class="row g-3 mb-3">
+                        <div class="col-6">
+                            <small class="text-muted d-block">Reservation ID</small>
+                            <strong style="color:#166534;font-size:1.1rem;">${res.id || reservationId}</strong>
+                        </div>
+                        <div class="col-6 text-end">
+                            <small class="text-muted d-block">Status</small>
+                            <span style="background:${badgeColor};color:white;padding:4px 14px;
+                                         border-radius:20px;font-weight:600;font-size:0.85rem;">
+                                ${statusText}
+                            </span>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <!-- Details -->
+                    <table class="table table-sm table-borderless mb-0">
+                        <tr>
+                            <td style="color:#166534;font-weight:600;width:140px;">Lab Location</td>
+                            <td><i class="bi bi-geo-alt-fill text-danger me-1"></i>${res.lab_location || '—'}</td>
+                        </tr>
+                        <tr>
+                            <td style="color:#166534;font-weight:600;">Request Date</td>
+                            <td><i class="bi bi-calendar3 me-1"></i>${formattedDate}</td>
+                        </tr>
+                        <tr>
+                            <td style="color:#166534;font-weight:600;">Supervisor</td>
+                            <td>${res.supervisor_id || '—'}</td>
+                        </tr>
+                        ${res.comment ? `
+                        <tr>
+                            <td style="color:#166534;font-weight:600;">Comment</td>
+                            <td><em class="text-muted">"${res.comment}"</em></td>
+                        </tr>` : ''}
+                    </table>
+
+                    ${rejectionHtml}
+
+                    <!-- Equipment -->
+                    <div class="mt-3">
+                        <strong style="color:#166534;">
+                            <i class="bi bi-tools me-1"></i>Equipment Requested
+                        </strong>
+                        ${equipmentHtml}
+                    </div>
+                </div>`;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            contentDiv.innerHTML = `<div class="alert alert-danger m-3">Network error. Please try again.</div>`;
+        });
+}
+
+
+
         function searchEquipmentTable() {
             const searchTerm = document.getElementById('equipmentSearch').value.trim();
             const labId = document.getElementById('labFilter').value;
@@ -2685,17 +2877,119 @@ $calendar_events_json = json_encode($calendar_events);
             xhr.send();
         }
 
-        function viewEquipmentDetails(id) {
-            const xhr = new XMLHttpRequest();
-            xhr.open('GET', 'get_equipment_details.php?id=' + id, true);
-            xhr.onload = function() {
-                if (xhr.status === 200) {
-                    document.getElementById('equipmentDetailsContent').innerHTML = xhr.responseText;
-                    new bootstrap.Modal(document.getElementById('equipmentDetailsModal')).show();
-                }
-            };
-            xhr.send();
-        }
+   
+
+
+
+function viewEquipmentDetails(code) {
+   // alert("ok");
+    const contentDiv = document.getElementById('equipmentDetailsContent');
+    const modalEl = document.getElementById('equipmentDetailsModal');
+
+    // Show loading
+    contentDiv.innerHTML = `
+        <div class="text-center py-5">
+            <div class="spinner-border text-success" role="status" style="width:2rem;height:2rem;"></div>
+            <p class="mt-3 text-muted small fw-semibold">Loading equipment details...</p>
+        </div>`;
+
+    // Clean up any existing modal instance and backdrop
+    const existing = bootstrap.Modal.getInstance(modalEl);
+    if (existing) existing.dispose();
+    document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+    document.body.classList.remove('modal-open');
+    document.body.style.overflow = '';
+    document.body.style.paddingRight = '';
+
+    // Show modal FIRST, then fetch
+    const modal = new bootstrap.Modal(modalEl);
+    modal.show();
+
+    fetch(`../controllers/get_equipment_details.php?code=${encodeURIComponent(code)}`)
+        .then(response => response.json())
+        .then(data => {
+            if (!data.success) {
+                contentDiv.innerHTML = `<div class="alert alert-danger m-3">${data.message || 'Failed to load'}</div>`;
+                return;
+            }
+
+            const eq = data.equipment;
+            const addedDate = eq.added_datetime ? new Date(eq.added_datetime).toLocaleDateString() : '—';
+
+            contentDiv.innerHTML = `
+                <div class="row g-0">
+                    <div class="col-md-4 text-center border-end p-4">
+                        <img src="${eq.image_path || 'https://cdn-icons-png.flaticon.com/512/2941/2941514.png'}"
+                             style="width:140px;height:140px;object-fit:contain;"
+                             class="img-fluid rounded border p-2 bg-light mb-3"
+                             onerror="this.src='https://cdn-icons-png.flaticon.com/512/2941/2941514.png'">
+                        <h5 class="fw-bold mb-1" style="color:#166534;">${eq.name || 'Unknown'}</h5>
+                        <span class="badge bg-secondary"><i class="bi bi-upc-scan me-1"></i>${eq.code || 'N/A'}</span>
+                        <div class="mt-3">
+                            <span class="badge bg-info text-dark">
+                                <i class="bi bi-box-seam me-1"></i>Total Qty: ${eq.total_qty || 0}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-md-8 p-3">
+                        <table class="table table-sm table-borderless">
+                            <tr><th class="text-muted fw-normal" style="width:160px">Date Added</th><td>${addedDate}</td></tr>
+                            <tr><th class="text-muted fw-normal">Simultaneous Users</th><td>${eq.simultaneous_users || 1}</td></tr>
+                            <tr>
+                                <th class="text-muted fw-normal">Sterilization Required</th>
+                                <td><span class="badge ${eq.sterilization_required === 'YES' ? 'bg-warning' : 'bg-secondary'}">${eq.sterilization_required || 'NO'}</span></td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted fw-normal">Reservation Required</th>
+                                <td><span class="badge ${eq.reservation_required === 'YES' ? 'bg-success' : 'bg-secondary'}">${eq.reservation_required || 'YES'}</span></td>
+                            </tr>
+                            ${eq.description ? `<tr><th class="text-muted fw-normal">Description</th><td><small>${eq.description}</small></td></tr>` : ''}
+                        </table>
+                    </div>
+                </div>`;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            contentDiv.innerHTML = `<div class="alert alert-danger m-3">Network error. Please try again.</div>`;
+        });
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
         // Close notifications when clicking outside
         document.addEventListener('click', function(event) {
@@ -2805,6 +3099,48 @@ $calendar_events_json = json_encode($calendar_events);
             xhr.send();
         }
     </script>
+
+
+
+
+<!-- PUT THIS just before </body>, after all other modals -->
+<div class="modal fade" id="equipmentDetailsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-info-circle me-2"></i>Equipment Details
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="equipmentDetailsContent"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reservation Details Modal -->
+<div class="modal fade" id="reservationDetailsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header text-white"
+                 style="background:linear-gradient(135deg,#22c55e,#16a34a);">
+                <h5 class="modal-title">
+                    <i class="bi bi-calendar-check me-2"></i>Reservation Details
+                </h5>
+                <button type="button" class="btn-close btn-close-white"
+                        data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="reservationDetailsContent"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary"
+                        data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 </body>
 
 </html>

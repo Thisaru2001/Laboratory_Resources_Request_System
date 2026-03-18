@@ -1,9 +1,293 @@
 <?php
 session_start();
-include "./config/database.php";
+
+
+
+
+// Function to check internet connection
+function checkInternetConnection()
+{
+    $connected = @fsockopen("www.google.com", 80, $errno, $errstr, 5);
+    if ($connected) {
+        fclose($connected);
+        return true;
+    }
+    return false;
+}
+
+// Function to check database connection
+function checkDatabaseConnection()
+{
+    try {
+        require_once __DIR__ . '/config/database.php';
+        // Try a simple query to verify connection
+        $test_query = "SELECT 1";
+        $result = Database::search($test_query);
+        return true;
+    } catch (Exception $e) {
+        return false;
+    }
+}
+
+// Check internet connection first
+if (!checkInternetConnection()) {
+?>
+    <!DOCTYPE html>
+    <html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Connection Error - MicroLab</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+        <style>
+            body {
+                background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-family: 'Inter', sans-serif;
+                margin: 0;
+                padding: 20px;
+            }
+
+            .error-card {
+                background: white;
+                border-radius: 24px;
+                padding: 40px;
+                max-width: 500px;
+                width: 100%;
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+                text-align: center;
+                animation: slideIn 0.5s ease;
+            }
+
+            @keyframes slideIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(-20px);
+                }
+
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            .icon {
+                font-size: 4rem;
+                color: #ef4444;
+                margin-bottom: 20px;
+            }
+
+            h2 {
+                color: #166534;
+                font-weight: 700;
+                margin-bottom: 15px;
+            }
+
+            p {
+                color: #4b5563;
+                margin-bottom: 25px;
+                line-height: 1.6;
+            }
+
+            .btn-retry {
+                background: linear-gradient(135deg, #22c55e, #16a34a);
+                color: white;
+                border: none;
+                padding: 12px 30px;
+                border-radius: 50px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s;
+                text-decoration: none;
+                display: inline-block;
+            }
+
+            .btn-retry:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 10px 20px rgba(34, 197, 94, 0.3);
+            }
+
+            .details {
+                background: #f8fafc;
+                border-radius: 16px;
+                padding: 15px;
+                margin-top: 20px;
+                text-align: left;
+                font-size: 0.9rem;
+                color: #64748b;
+            }
+
+            .details i {
+                color: #22c55e;
+                margin-right: 8px;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="error-card">
+            <div class="icon">🌐</div>
+            <h2>No Internet Connection</h2>
+            <p>Unable to connect to the internet. Please check your network connection and try again.</p>
+            <a href="<?php echo $_SERVER['PHP_SELF']; ?>" class="btn-retry">
+                <i class="bi bi-arrow-repeat me-2"></i>Retry Connection
+            </a>
+            <div class="details">
+                <p><i class="bi bi-info-circle"></i> This application requires an active internet connection to access the database.</p>
+                <p class="mb-0"><i class="bi bi-lightbulb"></i> Tips: Check your Wi-Fi/Ethernet connection, disable VPN if active, or contact your network administrator.</p>
+            </div>
+        </div>
+    </body>
+
+    </html>
+<?php
+    exit();
+}
+
+// Then check database connection
+if (!checkDatabaseConnection()) {
+?>
+    <!DOCTYPE html>
+    <html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Database Error - MicroLab</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+        <style>
+            body {
+                background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-family: 'Inter', sans-serif;
+                margin: 0;
+                padding: 20px;
+            }
+
+            .error-card {
+                background: white;
+                border-radius: 24px;
+                padding: 40px;
+                max-width: 600px;
+                width: 100%;
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+                text-align: center;
+                animation: slideIn 0.5s ease;
+            }
+
+            @keyframes slideIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(-20px);
+                }
+
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            .icon {
+                font-size: 4rem;
+                color: #ef4444;
+                margin-bottom: 20px;
+            }
+
+            h2 {
+                color: #166534;
+                font-weight: 700;
+                margin-bottom: 15px;
+            }
+
+            p {
+                color: #4b5563;
+                margin-bottom: 25px;
+                line-height: 1.6;
+            }
+
+            .btn-retry {
+                background: linear-gradient(135deg, #22c55e, #16a34a);
+                color: white;
+                border: none;
+                padding: 12px 30px;
+                border-radius: 50px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s;
+                text-decoration: none;
+                display: inline-block;
+            }
+
+            .btn-retry:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 10px 20px rgba(34, 197, 94, 0.3);
+            }
+
+            .details {
+                background: #f8fafc;
+                border-radius: 16px;
+                padding: 15px;
+                margin-top: 20px;
+                text-align: left;
+                font-size: 0.9rem;
+                color: #64748b;
+            }
+
+            .details i {
+                color: #22c55e;
+                margin-right: 8px;
+            }
+
+            .host-info {
+                background: #fff3cd;
+                border-left: 4px solid #ffc107;
+                padding: 10px;
+                border-radius: 8px;
+                margin-top: 15px;
+                font-size: 0.85rem;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="error-card">
+            <div class="icon">🗄️</div>
+            <h2>Database Connection Failed</h2>
+            <p>Unable to connect to the database server. This could be due to:</p>
+            <div class="details">
+                <p><i class="bi bi-wifi-off"></i> Internet connection issues</p>
+                <p><i class="bi bi-server"></i> Database server is down or unreachable</p>
+                <p><i class="bi bi-shield-lock"></i> Firewall or security group blocking connection</p>
+                <p><i class="bi bi-database"></i> Database credentials are incorrect</p>
+                <div class="host-info">
+                    <strong>Host:</strong> database-1.csnikggyo5mr.us-east-1.rds.amazonaws.com<br>
+                    <strong>Region:</strong> us-east-1<br>
+                    <strong>Error:</strong> Hostname could not be resolved
+                </div>
+            </div>
+            <a href="<?php echo $_SERVER['PHP_SELF']; ?>" class="btn-retry mt-3">
+                <i class="bi bi-arrow-repeat me-2"></i>Retry Connection
+            </a>
+        </div>
+    </body>
+
+    </html>
+<?php
+    exit();
+}
+
+require_once __DIR__ . '/config/database.php';
 
 // Get cookies if they exist - FIXED: removed password cookie (not used in your system)
-$university_id = $_COOKIE["university_id"] ?? '';
+$university_id  = $_COOKIE["university_id"]  ?? '';
+$saved_password = $_COOKIE["saved_password"] ?? '';
 // $password = $_COOKIE["password"] ?? ''; // REMOVED - this cookie doesn't exist in your system
 ?>
 <!DOCTYPE html>
@@ -1007,6 +1291,7 @@ $university_id = $_COOKIE["university_id"] ?? '';
                                 id="password"
                                 class="form-control"
                                 placeholder="Enter your password"
+                                value="<?= htmlspecialchars($saved_password) ?>"
                                 required>
                             <button class="btn btn-outline-secondary" onclick="showPassword('password','togglePassword')" type="button" id="togglePassword" style="border: 2px solid #e5e7eb; border-left: none;">
                                 <i class="bi bi-eye"></i>
@@ -1015,7 +1300,8 @@ $university_id = $_COOKIE["university_id"] ?? '';
                     </div>
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="remember_me" <?= $university_id ? 'checked' : '' ?>>
+                           <input class="form-check-input" type="checkbox" id="remember_me" 
+       <?= ($university_id && $saved_password) ? 'checked' : '' ?>>
                             <label class="form-check-label" for="remember_me">
                                 Remember Me
                             </label>
@@ -1041,7 +1327,7 @@ $university_id = $_COOKIE["university_id"] ?? '';
                 </form>
 
                 <div class="text-center mt-3">
-                    <small class="text-muted" style="font-size: 0.7rem;">© 2026 Microbiology Lab</small>
+                    <small class="text-muted" style="font-size: 0.7rem;">© 2026 Microbiology Lab </br>Version 1.0</small>
                 </div>
             </div>
         </div>
@@ -1050,122 +1336,122 @@ $university_id = $_COOKIE["university_id"] ?? '';
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-      function signin() {
-    // Get form elements
-    var university_id = document.getElementById("university_id");
-    var password = document.getElementById("password");
-    var remember_me = document.getElementById("remember_me");
-    var signinBtn = document.getElementById("signinBtn");
-    var loginText = document.getElementById("loginText");
-    var msgDiv = document.getElementById("msgdiv1");
-    var msgElement = document.getElementById("msg1");
+        function signin() {
+            // Get form elements
+            var university_id = document.getElementById("university_id");
+            var password = document.getElementById("password");
+            var remember_me = document.getElementById("remember_me");
+            var signinBtn = document.getElementById("signinBtn");
+            var loginText = document.getElementById("loginText");
+            var msgDiv = document.getElementById("msgdiv1");
+            var msgElement = document.getElementById("msg1");
 
-    // Clear previous messages
-    if (msgElement) msgElement.innerHTML = "";
-    if (msgDiv) msgDiv.className = "d-none";
+            // Clear previous messages
+            if (msgElement) msgElement.innerHTML = "";
+            if (msgDiv) msgDiv.className = "d-none";
 
-    // Client-side validation
-    if (!university_id.value.trim()) {
-        showMessage("Please enter your University ID", "error");
-        university_id.focus();
-        return;
-    }
+            // Client-side validation
+            if (!university_id.value.trim()) {
+                showMessage("Please enter your University ID", "error");
+                university_id.focus();
+                return;
+            }
 
-    if (!password.value) {
-        showMessage("Please enter your Password", "error");
-        password.focus();
-        return;
-    }
+            if (!password.value) {
+                showMessage("Please enter your Password", "error");
+                password.focus();
+                return;
+            }
 
-    // Optional: Basic password length check
-    if (password.value.length < 6) {
-        showMessage("Password must be at least 6 characters", "error");
-        return;
-    }
+            // Optional: Basic password length check
+            if (password.value.length < 6) {
+                showMessage("Password must be at least 6 characters", "error");
+                return;
+            }
 
-    // Disable button to prevent double submission
-    if (signinBtn) {
-        signinBtn.disabled = true;
-        if (loginText) {
-            loginText.innerHTML = 'Signing in...';
-        }
-        signinBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Signing in...';
-    }
-
-    // Prepare form data
-    var form = new FormData();
-    form.append("university_id", university_id.value.trim().toUpperCase());
-    form.append("password", password.value);
-    form.append("remember_me", remember_me.checked ? "true" : "false");
-
-    var request = new XMLHttpRequest();
-
-    // Set timeout (10 seconds)
-    request.timeout = 10000;
-
-    request.onreadystatechange = function() {
-        if (request.readyState == 4) {
-
+            // Disable button to prevent double submission
             if (signinBtn) {
-                signinBtn.disabled = false;
+                signinBtn.disabled = true;
                 if (loginText) {
-                    loginText.innerHTML = 'Sign In';
+                    loginText.innerHTML = 'Signing in...';
                 }
-                signinBtn.innerHTML = '<i class="bi bi-box-arrow-in-right me-2"></i><span id="loginText">Sign In</span>';
+                signinBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Signing in...';
             }
 
-            if (request.status == 200) {
-                var response = request.responseText.trim();
+            // Prepare form data
+            var form = new FormData();
+            form.append("university_id", university_id.value.trim().toUpperCase());
+            form.append("password", password.value);
+            form.append("remember_me", remember_me.checked ? "true" : "false");
 
-                // Handle response
-                if (response.startsWith("success")) {
-                    var redirect = response.split("|")[1];  // FIXED: Define redirect first
-                    console.log("Redirecting to:", redirect);
-                    window.location.href = redirect;
-                } else {
-                    showMessage(response, "error");
-                    trackFailedAttempts();
-                    password.value = "";
-                    password.focus();
+            var request = new XMLHttpRequest();
+
+            // Set timeout (10 seconds)
+            request.timeout = 10000;
+
+            request.onreadystatechange = function() {
+                if (request.readyState == 4) {
+
+                    if (signinBtn) {
+                        signinBtn.disabled = false;
+                        if (loginText) {
+                            loginText.innerHTML = 'Sign In';
+                        }
+                        signinBtn.innerHTML = '<i class="bi bi-box-arrow-in-right me-2"></i><span id="loginText">Sign In</span>';
+                    }
+
+                    if (request.status == 200) {
+                        var response = request.responseText.trim();
+
+                        // Handle response
+                        if (response.startsWith("success")) {
+                            var redirect = response.split("|")[1]; // FIXED: Define redirect first
+                            console.log("Redirecting to:", redirect);
+                            window.location.href = redirect;
+                        } else {
+                            showMessage(response, "error");
+                            trackFailedAttempts();
+                            password.value = "";
+                            password.focus();
+                        }
+                    } else if (request.status == 0) {
+                        showMessage("Network error. Please check your connection.", "error");
+                    } else if (request.status == 429) {
+                        showMessage("Too many attempts. Please try again later.", "error");
+                    } else {
+                        showMessage("Server error. Please try again later.", "error");
+                    }
                 }
-            } else if (request.status == 0) {
+            };
+
+            // Handle timeout
+            request.ontimeout = function() {
+                if (signinBtn) {
+                    signinBtn.disabled = false;
+                    if (loginText) {
+                        loginText.innerHTML = 'Sign In';
+                    }
+                    signinBtn.innerHTML = '<i class="bi bi-box-arrow-in-right me-2"></i><span id="loginText">Sign In</span>';
+                }
+                showMessage("Request timeout. Please try again.", "error");
+            };
+
+            // Handle network errors
+            request.onerror = function() {
+                if (signinBtn) {
+                    signinBtn.disabled = false;
+                    if (loginText) {
+                        loginText.innerHTML = 'Sign In';
+                    }
+                    signinBtn.innerHTML = '<i class="bi bi-box-arrow-in-right me-2"></i><span id="loginText">Sign In</span>';
+                }
                 showMessage("Network error. Please check your connection.", "error");
-            } else if (request.status == 429) {
-                showMessage("Too many attempts. Please try again later.", "error");
-            } else {
-                showMessage("Server error. Please try again later.", "error");
-            }
-        }
-    };
+            };
 
-    // Handle timeout
-    request.ontimeout = function() {
-        if (signinBtn) {
-            signinBtn.disabled = false;
-            if (loginText) {
-                loginText.innerHTML = 'Sign In';
-            }
-            signinBtn.innerHTML = '<i class="bi bi-box-arrow-in-right me-2"></i><span id="loginText">Sign In</span>';
+            request.open("POST", "controllers/signin_process.php", true);
+            request.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+            request.send(form);
         }
-        showMessage("Request timeout. Please try again.", "error");
-    };
-
-    // Handle network errors
-    request.onerror = function() {
-        if (signinBtn) {
-            signinBtn.disabled = false;
-            if (loginText) {
-                loginText.innerHTML = 'Sign In';
-            }
-            signinBtn.innerHTML = '<i class="bi bi-box-arrow-in-right me-2"></i><span id="loginText">Sign In</span>';
-        }
-        showMessage("Network error. Please check your connection.", "error");
-    };
-
-    request.open("POST", "controllers/signin_process.php", true);
-    request.setRequestHeader("X-Requested-With", "XMLHttpRequest");
-    request.send(form);
-}
 
         // Enhanced message display function
         function showMessage(message, type) {
@@ -1272,7 +1558,7 @@ $university_id = $_COOKIE["university_id"] ?? '';
 
 
         // Password visibility toggle for main login
-        function showPassword(textfields,buttonid) {
+        function showPassword(textfields, buttonid) {
             var textfield = document.getElementById(textfields);
             var button = document.getElementById(buttonid);
 
@@ -1350,7 +1636,7 @@ $university_id = $_COOKIE["university_id"] ?? '';
 
             if (!code || code.length !== 6) {
                 alert('Please enter a valid 6-digit verification code');
-                 verifycodebutton.disabled = false;
+                verifycodebutton.disabled = false;
                 return;
             }
 
@@ -1369,27 +1655,27 @@ $university_id = $_COOKIE["university_id"] ?? '';
                             if (response.success) {
                                 // Close step 1 modal
                                 var step1Modal = bootstrap.Modal.getInstance(document.getElementById('forgotStep1Modal'));
-                                  verifycodebutton.disabled = false;
+                                verifycodebutton.disabled = false;
                                 step1Modal.hide();
 
                                 // Open step 2 modal
                                 setTimeout(function() {
                                     var step2Modal = new bootstrap.Modal(document.getElementById('forgotStep2Modal'));
-                                      verifycodebutton.disabled = false;
+                                    verifycodebutton.disabled = false;
                                     step2Modal.show();
                                     document.getElementById('verificationCode').value = '';
                                 }, 500);
                             } else {
                                 alert(response.message);
-                                  verifycodebutton.disabled = false;
+                                verifycodebutton.disabled = false;
                             }
                         } catch (e) {
                             alert('Server error');
-                              verifycodebutton.disabled = false;
+                            verifycodebutton.disabled = false;
                         }
                     } else {
                         alert('Network error');
-                          verifycodebutton.disabled = false;
+                        verifycodebutton.disabled = false;
                     }
                 }
             };
@@ -1400,27 +1686,27 @@ $university_id = $_COOKIE["university_id"] ?? '';
 
         // Change password function
         function changePassword() {
-       var Confirm_Change = document.getElementById("Confirm_Change");
-Confirm_Change.disabled = true;
+            var Confirm_Change = document.getElementById("Confirm_Change");
+            Confirm_Change.disabled = true;
             var newPassword = document.getElementById('newPassword').value;
             var confirmPassword = document.getElementById('confirmPassword').value;
             var university_id = sessionStorage.getItem('reset_university_id');
 
             if (!newPassword || !confirmPassword) {
                 alert('Please fill in both password fields');
-                  Confirm_Change.disabled = false;
+                Confirm_Change.disabled = false;
                 return;
             }
 
             if (newPassword.length < 6) {
                 alert('Password must be at least 6 characters');
-                  Confirm_Change.disabled = false;
+                Confirm_Change.disabled = false;
                 return;
             }
 
             if (newPassword !== confirmPassword) {
                 alert('Passwords do not match');
-                  Confirm_Change.disabled = false;
+                Confirm_Change.disabled = false;
                 return;
             }
 
@@ -1445,7 +1731,7 @@ Confirm_Change.disabled = true;
                                 // Show success message
                                 setTimeout(function() {
                                     showMessage("Password changed successfully! Please login with your new password.", "success");
-                                  Confirm_Change.disabled = false;
+                                    Confirm_Change.disabled = false;
 
                                     // Clear fields
                                     document.getElementById('newPassword').value = '';
@@ -1459,15 +1745,15 @@ Confirm_Change.disabled = true;
                                 }, 500);
                             } else {
                                 alert(response.message);
-                                  Confirm_Change.disabled = false;
+                                Confirm_Change.disabled = false;
                             }
                         } catch (e) {
                             alert('Server error');
-                              Confirm_Change.disabled = false;
+                            Confirm_Change.disabled = false;
                         }
                     } else {
                         alert('Network error');
-                          Confirm_Change.disabled = false;
+                        Confirm_Change.disabled = false;
                     }
                 }
             };

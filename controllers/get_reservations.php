@@ -18,8 +18,8 @@ $query = "
         CASE 
             WHEN rr.id IS NOT NULL THEN 'rejected'
             WHEN r.technical_officer_id IS NOT NULL THEN 'ready'
-            WHEN r.supervisor_id IS NOT NULL THEN 'to_pending'
-            ELSE 'pending'
+            WHEN r.supervisor_id IS NOT NULL THEN 'TO_Pending'
+            ELSE 'Pending'
         END as status,
         rr.reason as reject_reason
     FROM reservation r
@@ -45,8 +45,8 @@ while ($row = $result->fetch_assoc()) {
         $display_status = 'Rejected';
     } elseif ($row['status'] === 'ready') {
         $display_status = 'Ready';
-    } elseif ($row['status'] === 'to_pending') {
-        $display_status = 'To Pending';
+    } elseif ($row['status'] === 'TO_Pending') {
+        $display_status = 'TO_Pending';
     }
 
     // Format student name

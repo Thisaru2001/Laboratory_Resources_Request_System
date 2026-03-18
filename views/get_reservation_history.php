@@ -26,27 +26,28 @@ switch ($filter) {
 
 // FIXED: Use ANY_VALUE() or include all non-aggregated columns in GROUP BY
 $query = "SELECT r.id, 
-                 r.reservation_id, 
-                 r.created_datetime, 
-                 l.location, 
-                 r.request_date, 
-                 r.continue_days,
-                 CASE 
-                     WHEN rr.id IS NOT NULL THEN 'rejected'
-                     WHEN r.supervisor_id IS NOT NULL AND r.technical_officer_id IS NOT NULL THEN 'approved'
-                     ELSE 'pending'
-                 END as status,
-                 GROUP_CONCAT(CONCAT(e.name, ' (x', be.book_qty, ')') SEPARATOR '<br>') as equipment_list
-          FROM reservation r
-          JOIN location l ON r.location_id = l.id
-          JOIN book_equipment be ON r.id = be.reservation_id
-          JOIN equipment e ON be.equipment_id = e.id
-          LEFT JOIN reject_reason rr ON r.id = rr.reservation_id
-          WHERE r.student_id = ? $date_condition
-          GROUP BY r.id, r.reservation_id, r.created_datetime, l.location, 
-                   r.request_date, r.continue_days, r.supervisor_id, 
-                   r.technical_officer_id, rr.id
-          ORDER BY r.created_datetime DESC";
+       r.reservation_id, 
+       r.created_datetime, 
+       l.location, 
+       r.request_date, 
+       r.continue_days,
+       CASE 
+           WHEN rr.id IS NOT NULL THEN 'rejected'
+           WHEN r.supervisor_id IS NOT NULL AND r.technical_officer_id IS NOT NULL THEN 'approved'
+           ELSE 'pending'
+       END as status,
+       GROUP_CONCAT(CONCAT(e.name, ' (x', be.book_qty, ')') SEPARATOR '<br>') as equipment_list
+FROM reservation r
+JOIN location l ON r.location_id = l.id
+JOIN book_equipment be ON r.id = be.reservation_id
+JOIN equipment e ON be.equipment_id = e.id
+LEFT JOIN reject_reason rr ON r.id = rr.reservation_id
+WHERE r.student_id = ? 
+  AND r.request_date < CURDATE()  -- Only past reservations (before today)
+GROUP BY r.id, r.reservation_id, r.created_datetime, l.location, 
+         r.request_date, r.continue_days, r.supervisor_id, 
+         r.technical_officer_id, rr.id
+ORDER BY r.created_datetime DESC";
 
 $result = Database::search($query, "i", [$student_id]);
 
@@ -60,11 +61,11 @@ while ($row = $result->fetch_assoc()) {
     $status_badge = '';
     
     if ($row['status'] === 'approved') {
-        $status_badge = '<span class="badge bg-success">Approved</span>';
+        $status_badge = '<span class="badge bg-success">Completed</span>';
     } elseif ($row['status'] === 'rejected') {
         $status_badge = '<span class="badge bg-danger">Rejected</span>';
     } else {
-        $status_badge = '<span class="badge bg-warning">Pending</span>';
+        $status_badge = '<span class="badge bg-warning">Contact HODs</span>';
     }
     
     // Format date with duration
@@ -77,11 +78,11 @@ while ($row = $result->fetch_assoc()) {
     
     echo '<tr>';
     echo '<td data-label="Reservation ID"><strong>' . htmlspecialchars($row['reservation_id']) . '</strong></td>';
-    echo '<td data-label="Date & Time">' . $date_time . '<br><small class="text-muted">Booking: ' . $date_range . ' (' . $row['continue_days'] . ' day(s))</small></td>';
-    echo '<td data-label="Location">' . htmlspecialchars($row['location']) . '<br><small class="text-muted">' . $row['equipment_list'] . '</small></td>';
+   echo '<td data-label="Date & Time">' . $date_time . '<br><small>(' . $row['continue_days'] . ' day(s))</small></td>';
+    echo '<td data-label="Location">' . htmlspecialchars($row['location']) . '</td>';
     echo '<td data-label="Status">' . $status_badge . '</td>';
     echo '<td data-label="Action">';
-    echo '<button class="btn-view" onclick="viewReservationDetails(\'' . $row['reservation_id'] . '\')" title="View Details">';
+    echo '<button class="btn-view" onclick="viewReservationDetails(\'' . $row['id'] . '\')" title="View Details">';
     echo '<i class="bi bi-eye"></i> View';
     echo '</button>';
     echo '</td>';

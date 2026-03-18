@@ -1,5 +1,287 @@
 <?php
 session_start();
+
+// Function to check internet connection
+function checkInternetConnection()
+{
+    $connected = @fsockopen("www.google.com", 80, $errno, $errstr, 5);
+    if ($connected) {
+        fclose($connected);
+        return true;
+    }
+    return false;
+}
+
+// Function to check database connection
+function checkDatabaseConnection()
+{
+    try {
+        require_once '../config/database.php';
+        // Try a simple query to verify connection
+        $test_query = "SELECT 1";
+        $result = Database::search($test_query);
+        return true;
+    } catch (Exception $e) {
+        return false;
+    }
+}
+
+// Check internet connection first
+if (!checkInternetConnection()) {
+?>
+    <!DOCTYPE html>
+    <html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Connection Error - MicroLab</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+        <style>
+            body {
+                background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-family: 'Inter', sans-serif;
+                margin: 0;
+                padding: 20px;
+            }
+
+            .error-card {
+                background: white;
+                border-radius: 24px;
+                padding: 40px;
+                max-width: 500px;
+                width: 100%;
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+                text-align: center;
+                animation: slideIn 0.5s ease;
+            }
+
+            @keyframes slideIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(-20px);
+                }
+
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            .icon {
+                font-size: 4rem;
+                color: #ef4444;
+                margin-bottom: 20px;
+            }
+
+            h2 {
+                color: #166534;
+                font-weight: 700;
+                margin-bottom: 15px;
+            }
+
+            p {
+                color: #4b5563;
+                margin-bottom: 25px;
+                line-height: 1.6;
+            }
+
+            .btn-retry {
+                background: linear-gradient(135deg, #22c55e, #16a34a);
+                color: white;
+                border: none;
+                padding: 12px 30px;
+                border-radius: 50px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s;
+                text-decoration: none;
+                display: inline-block;
+            }
+
+            .btn-retry:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 10px 20px rgba(34, 197, 94, 0.3);
+            }
+
+            .details {
+                background: #f8fafc;
+                border-radius: 16px;
+                padding: 15px;
+                margin-top: 20px;
+                text-align: left;
+                font-size: 0.9rem;
+                color: #64748b;
+            }
+
+            .details i {
+                color: #22c55e;
+                margin-right: 8px;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="error-card">
+            <div class="icon">🌐</div>
+            <h2>No Internet Connection</h2>
+            <p>Unable to connect to the internet. Please check your network connection and try again.</p>
+            <a href="<?php echo $_SERVER['PHP_SELF']; ?>" class="btn-retry">
+                <i class="bi bi-arrow-repeat me-2"></i>Retry Connection
+            </a>
+            <div class="details">
+                <p><i class="bi bi-info-circle"></i> This application requires an active internet connection to access the database.</p>
+                <p class="mb-0"><i class="bi bi-lightbulb"></i> Tips: Check your Wi-Fi/Ethernet connection, disable VPN if active, or contact your network administrator.</p>
+            </div>
+        </div>
+    </body>
+
+    </html>
+<?php
+    exit();
+}
+
+// Then check database connection
+if (!checkDatabaseConnection()) {
+?>
+    <!DOCTYPE html>
+    <html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Database Error - MicroLab</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+        <style>
+            body {
+                background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-family: 'Inter', sans-serif;
+                margin: 0;
+                padding: 20px;
+            }
+
+            .error-card {
+                background: white;
+                border-radius: 24px;
+                padding: 40px;
+                max-width: 600px;
+                width: 100%;
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+                text-align: center;
+                animation: slideIn 0.5s ease;
+            }
+
+            @keyframes slideIn {
+                from {
+                    opacity: 0;
+                    transform: translateY(-20px);
+                }
+
+                to {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            .icon {
+                font-size: 4rem;
+                color: #ef4444;
+                margin-bottom: 20px;
+            }
+
+            h2 {
+                color: #166534;
+                font-weight: 700;
+                margin-bottom: 15px;
+            }
+
+            p {
+                color: #4b5563;
+                margin-bottom: 25px;
+                line-height: 1.6;
+            }
+
+            .btn-retry {
+                background: linear-gradient(135deg, #22c55e, #16a34a);
+                color: white;
+                border: none;
+                padding: 12px 30px;
+                border-radius: 50px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s;
+                text-decoration: none;
+                display: inline-block;
+            }
+
+            .btn-retry:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 10px 20px rgba(34, 197, 94, 0.3);
+            }
+
+            .details {
+                background: #f8fafc;
+                border-radius: 16px;
+                padding: 15px;
+                margin-top: 20px;
+                text-align: left;
+                font-size: 0.9rem;
+                color: #64748b;
+            }
+
+            .details i {
+                color: #22c55e;
+                margin-right: 8px;
+            }
+
+            .host-info {
+                background: #fff3cd;
+                border-left: 4px solid #ffc107;
+                padding: 10px;
+                border-radius: 8px;
+                margin-top: 15px;
+                font-size: 0.85rem;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="error-card">
+            <div class="icon">🗄️</div>
+            <h2>Database Connection Failed</h2>
+            <p>Unable to connect to the database server. This could be due to:</p>
+            <div class="details">
+                <p><i class="bi bi-wifi-off"></i> Internet connection issues</p>
+                <p><i class="bi bi-server"></i> Database server is down or unreachable</p>
+                <p><i class="bi bi-shield-lock"></i> Firewall or security group blocking connection</p>
+                <p><i class="bi bi-database"></i> Database credentials are incorrect</p>
+                <div class="host-info">
+                    <strong>Host:</strong> database-1.csnikggyo5mr.us-east-1.rds.amazonaws.com<br>
+                    <strong>Region:</strong> us-east-1<br>
+                    <strong>Error:</strong> Hostname could not be resolved
+                </div>
+            </div>
+            <a href="<?php echo $_SERVER['PHP_SELF']; ?>" class="btn-retry mt-3">
+                <i class="bi bi-arrow-repeat me-2"></i>Retry Connection
+            </a>
+        </div>
+    </body>
+
+    </html>
+<?php
+    exit();
+}
+
+
+
 require_once '../config/database.php';
 
 if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user_role"] === 'hod') {
@@ -13,7 +295,7 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
 
-        <title>Microbiology Lab System - Admin Dashboard</title>
+        <title>Admin Dashboard</title>
         <!-- Bootstrap & Icons -->
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
         <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
@@ -217,6 +499,7 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                 color: #22c55e;
             }
 
+            /* Request Badge - only visible when count > 0 */
             .request-badge {
                 position: absolute;
                 top: -8px;
@@ -224,14 +507,34 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                 background: #dd1818;
                 color: white;
                 border-radius: 50%;
-                width: 20px;
+                min-width: 20px;
                 height: 20px;
-                display: flex;
+                display: none;
+                /* Hidden by default */
                 align-items: center;
                 justify-content: center;
                 font-size: 0.7rem;
                 font-weight: 600;
+                padding: 0 5px;
+                box-shadow: 0 2px 5px rgba(220, 53, 69, 0.3);
                 animation: pulse 2s infinite;
+            }
+
+            .request-badge.visible {
+                display: flex;
+                /* Show when visible class is added */
+            }
+
+            @keyframes pulse {
+
+                0%,
+                100% {
+                    transform: scale(1);
+                }
+
+                50% {
+                    transform: scale(1.1);
+                }
             }
 
             .notification-badge {
@@ -1755,6 +2058,17 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                 transform: scale(1.01);
             }
 
+
+           .modal {
+    z-index: 9000 !important;
+}
+.modal-backdrop {
+    z-index: 8999 !important;
+}
+.modal-content {
+    z-index: 9001 !important;
+}
+
             /* Form Elements */
             .form-control,
             .form-select {
@@ -2312,6 +2626,41 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                 transition: all 0.3s;
             }
 
+            .stat-card {
+                cursor: pointer;
+                transition: all 0.3s ease;
+                position: relative;
+                overflow: hidden;
+            }
+
+            .stat-card:hover {
+                transform: translateY(-5px) scale(1.02);
+                box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+            }
+
+            .stat-card:active {
+                transform: translateY(-2px) scale(1.01);
+            }
+
+            /* Highlight effect for scrolled sections */
+            @keyframes highlight-pulse {
+                0% {
+                    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
+                }
+
+                70% {
+                    box-shadow: 0 0 0 10px rgba(34, 197, 94, 0);
+                }
+
+                100% {
+                    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
+                }
+            }
+
+            .table-highlight {
+                animation: highlight-pulse 1.5s ease;
+            }
+
             .maintenance-modal-header .close-btn:hover {
                 background: rgba(255, 255, 255, 0.3);
                 transform: rotate(90deg);
@@ -2727,6 +3076,99 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                 text-align: center;
             }
 
+            /* Add to your existing CSS */
+            .analytics-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+                gap: 20px;
+                margin-bottom: 30px;
+            }
+
+            /* For larger screens, ensure 6 cards show properly */
+            @media (min-width: 1200px) {
+                .analytics-grid {
+                    grid-template-columns: repeat(6, 1fr);
+                }
+            }
+
+            /* For medium screens, adjust to 3 cards per row */
+            @media (max-width: 1199px) and (min-width: 768px) {
+                .analytics-grid {
+                    grid-template-columns: repeat(3, 1fr);
+                }
+            }
+
+            /* For mobile, 1 card per row */
+            @media (max-width: 767px) {
+                .analytics-grid {
+                    grid-template-columns: 1fr;
+                }
+            }
+
+            /* Center the second row cards */
+            .justify-content-center {
+                display: flex;
+                justify-content: center;
+                gap: 20px;
+            }
+
+            /* Ensure stat cards in second row match the style */
+            .stat-card {
+                background: linear-gradient(135deg, #22c55e, #16a34a);
+                border-radius: 20px;
+                padding: 25px;
+                color: white;
+                position: relative;
+                overflow: hidden;
+                transition: all 0.3s;
+                height: 100%;
+                min-width: 200px;
+            }
+
+            .stat-card:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 15px 30px rgba(34, 197, 94, 0.4);
+            }
+
+            .stat-card::before {
+                content: '';
+                position: absolute;
+                top: -50%;
+                right: -50%;
+                width: 200%;
+                height: 200%;
+                background: rgba(255, 255, 255, 0.1);
+                transform: rotate(45deg);
+                transition: all 0.3s;
+            }
+
+            .stat-card:hover::before {
+                transform: rotate(45deg) translate(10%, 10%);
+            }
+
+            .stat-card i {
+                font-size: 2.5rem;
+                margin-bottom: 15px;
+            }
+
+            .stat-card h3 {
+                font-size: 2rem;
+                font-weight: 700;
+                margin-bottom: 5px;
+            }
+
+            .stat-card p {
+                margin: 0;
+                opacity: 0.9;
+                font-size: 0.95rem;
+            }
+
+            /* Ensure cards in second row are the same size */
+            .row .col-md-3 {
+                flex: 0 0 auto;
+                width: 250px;
+            }
+
             .equipment-select-footer {
                 padding: 15px 20px;
                 border-top: 1px solid #e0e0e0;
@@ -2784,6 +3226,7 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
             }
 
             /* Request Count Badges */
+            /* Request Count Badges - Updated to hide when empty */
             .request-count-badge {
                 display: inline-flex;
                 align-items: center;
@@ -2799,6 +3242,18 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                 margin-left: 8px;
                 animation: pulse 2s infinite;
                 box-shadow: 0 2px 5px rgba(220, 53, 69, 0.3);
+            }
+
+            /* Hide badge when it contains 0 */
+            .request-count-badge:empty,
+            .request-count-badge[data-count="0"],
+            .request-count-badge:contains("0") {
+                display: none !important;
+            }
+
+            /* JavaScript will handle this via class, but this is a fallback */
+            .request-count-badge.zero-count {
+                display: none !important;
             }
 
             .request-tab.active .request-count-badge {
@@ -2947,9 +3402,9 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
             <a onclick="showSection('equipment')"><i class="bi bi-tools"></i> Equipment Manage</a>
             <a onclick="showSection('history')"><i class="bi bi-clock-history"></i> Rservation Details</a>
             <a onclick="showSection('activity')"><i class="bi bi-activity"></i> Requests</a>
-            <a onclick="showSection('analytics')"><i class="bi bi-graph-up"></i> Analytics</a>
+            <a onclick="showSection('analytics')"><i class="bi bi-download"></i> Download</a>
             <!-- <a onclick="showSection('reports')"><i class="bi bi-file-text"></i> Reports</a> -->
-            <a href="logout.php"><i class="bi bi-box-arrow-right"></i> Logout</a>
+            <a href="../logout.php"><i class="bi bi-box-arrow-right"></i> Logout</a>
 
             <div class="sidebar-footer">
                 <i class="bi bi-building"></i><br>
@@ -2967,7 +3422,10 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                     <button class="btn d-lg-none text-dark" onclick="toggleSidebar()">
                         <i class="bi bi-list fs-3"></i>
                     </button>
-                    <h5 class="fw-bold mb-0" style="background: linear-gradient(135deg, #22c55e, #16a34a); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Admin Dashboard</h5>
+
+                    <h5 class="fw-bold mb-0" style="background: linear-gradient(135deg, #22c55e, #16a34a); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                        Welcome, <span id="userName"><?php echo htmlspecialchars($_SESSION["user_first_name"]); ?></span>
+                    </h5>
                 </div>
                 <div class="d-flex align-items-center gap-3">
                     <!-- equipment management -->
@@ -2980,10 +3438,9 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                     <i class="bi bi-person-add"></i>
                 </div> -->
 
-                    <!-- request badge -->
                     <div class="notification-bell" onclick="showSection('activity')">
                         <i class="bi bi-journal-check"></i>
-                        <span class="request-badge" id="requestBadge">4</span>
+                        <span class="request-badge" id="requestBadge">0</span>
                     </div>
 
 
@@ -3009,6 +3466,7 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                     </span>
                     <div class="dropdown">
                         <?php
+
                         // Get user data from session
                         $first_name = $_SESSION['user']['first_name'] ?? $_SESSION['user_first_name'] ?? 'User';
                         $last_name = $_SESSION['user']['last_name'] ?? $_SESSION['user_last_name'] ?? '';
@@ -3022,14 +3480,36 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                             $clean_path = str_replace('\\', '/', $profile_image);
                             $clean_path = ltrim($clean_path, '/');
 
-                            // For web path, use relative path from document root
-                            $image_url = '/LRRS/' . $clean_path;
+                            // Remove any 'LRRS/' prefix if it exists (just in case)
+                            $clean_path = preg_replace('/^LRRS\//', '', $clean_path);
 
-                            // Check if file exists (optional - remove in production for performance)
-                            $full_path = $_SERVER['DOCUMENT_ROOT'] . '/LRRS/' . $clean_path;
+                            // For web path on server - NO /LRRS/ prefix, just use the clean path
+                            $image_url = '/' . $clean_path;
+
+                            // Full system path for file checking (document root + clean path)
+                            $full_path = $_SERVER['DOCUMENT_ROOT'] . '/' . $clean_path;
+
+                            // Debug (remove in production)
+                            // error_log("Profile image path check:");
+                            // error_log("Clean path: " . $clean_path);
+                            // error_log("Full path: " . $full_path);
+                            // error_log("File exists: " . (file_exists($full_path) ? 'YES' : 'NO'));
+
+                            // Check if file exists
                             if (!file_exists($full_path)) {
-                                // Fallback to avatar if image doesn't exist
-                                $image_url = "https://ui-avatars.com/api/?name=" . urlencode($full_name) . "&background=22c55e&color=fff&size=100";
+                                // Try alternative path - maybe it's stored without 'assets/' prefix
+                                $filename = basename($clean_path);
+                                $alt_path = 'assets/profile_images/' . $filename;
+                                $full_alt_path = $_SERVER['DOCUMENT_ROOT'] . '/' . $alt_path;
+
+                                if (file_exists($full_alt_path)) {
+                                    $image_url = '/' . $alt_path;
+                                    error_log("Found at alternative path: " . $image_url);
+                                } else {
+                                    // Fallback to avatar if image doesn't exist
+                                    $image_url = "https://ui-avatars.com/api/?name=" . urlencode($full_name) . "&background=22c55e&color=fff&size=100";
+                                    error_log("Image not found, using avatar");
+                                }
                             }
                         } else {
                             // No profile image, use avatar
@@ -3048,7 +3528,7 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                             <li>
                                 <hr class="dropdown-divider">
                             </li>
-                            <li><a class="dropdown-item text-danger" href="logout.php"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                            <li><a class="dropdown-item text-danger" href="#"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
                         </ul>
                     </div>
                 </div>
@@ -3061,16 +3541,17 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                 <div id="dashboardSection">
                     <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Dashboard Overview</h3>
 
-                    <div class="analytics-grid">
+                    <!-- Analytics Cards - All 6 in one row -->
+                    <div class="analytics-grid justify-content-center" style="grid-template-columns: repeat(6, 1fr);">
                         <?php
                         // Define the function for role counts - FIXED column names
                         function getCountByRole(string $role): int
                         {
                             $query = "SELECT COUNT(lab_user.id) as count 
-                  FROM lab_user 
-                  INNER JOIN lab_user_has_role ON lab_user.id = lab_user_has_role.lab_user_id 
-                  INNER JOIN role ON lab_user_has_role.role_id = role.id 
-                  WHERE role.role = ?";
+              FROM lab_user 
+              INNER JOIN lab_user_has_role ON lab_user.id = lab_user_has_role.lab_user_id 
+              INNER JOIN role ON lab_user_has_role.role_id = role.id 
+              WHERE role.role = ?";
 
                             $types = "s";
                             $params = [$role];
@@ -3085,18 +3566,18 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                             return 0;
                         }
 
-                        // Get user counts by role - FIXED role names to match your database
-                        $student_count = getCountByRole('student');      // lowercase 'student' from your role table
-                        $supervisor_count = getCountByRole('supervisor'); // lowercase 'supervisor'
-                        $technical_count = getCountByRole('technical_officer'); // from your role table
+                        // Get user counts by role
+                        $student_count = getCountByRole('student');
+                        $supervisor_count = getCountByRole('supervisor');
+                        $technical_count = getCountByRole('technical_officer');
 
-                        // Calculate Equipment Utilization Rate - FIXED queries
+                        // Calculate Equipment Utilization Rate
                         $utilization_query = "
-        SELECT 
-            (SELECT COALESCE(SUM(total_qty), 0) FROM equipment) as total_qty,
-            (SELECT COALESCE(SUM(broken_qty), 0) FROM broken) as broken_qty,
-            (SELECT COALESCE(SUM(repair_qty), 0) FROM repair) as repair_qty
-    ";
+    SELECT 
+        (SELECT COALESCE(SUM(total_qty), 0) FROM equipment) as total_qty,
+        (SELECT COALESCE(SUM(broken_qty), 0) FROM broken) as broken_qty,
+        (SELECT COALESCE(SUM(repair_qty), 0) FROM repair) as repair_qty
+";
 
                         $utilization_result = Database::search($utilization_query);
                         $utilization_rate = 0;
@@ -3114,7 +3595,17 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                             }
                         }
 
-                        // Get maintenance/repair count from repair table
+                        // Get today's practicals count
+                        $today = date('Y-m-d');
+                        $today_query = "SELECT COUNT(*) as today_count FROM reservation WHERE DATE(request_date) = ?";
+                        $today_result = Database::search($today_query, "s", [$today]);
+                        $today_count = 0;
+                        if ($today_result && $today_result->num_rows > 0) {
+                            $row = $today_result->fetch_assoc();
+                            $today_count = $row['today_count'];
+                        }
+
+                        // Get maintenance/repair count
                         $repair_query = "SELECT COUNT(*) as repair_count FROM repair";
                         $repair_result = Database::search($repair_query);
                         $repair_count = 0;
@@ -3124,119 +3615,50 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                         }
                         ?>
 
-                        <div class="stat-card">
+                        <!-- Card 1: Students -->
+                        <div class="stat-card" onclick="showUserManagementAndScroll('student')" style="cursor: pointer;">
                             <i class="bi bi-mortarboard-fill"></i>
                             <h3><?php echo $student_count; ?></h3>
                             <p>Students</p>
                         </div>
 
-                        <div class="stat-card">
+                        <!-- Card 2: Supervisors -->
+                        <div class="stat-card" onclick="showUserManagementAndScroll('supervisor')" style="cursor: pointer;">
                             <i class="bi bi-person-badge-fill"></i>
                             <h3><?php echo $supervisor_count; ?></h3>
                             <p>Supervisors</p>
                         </div>
 
-                        <div class="stat-card">
+                        <!-- Card 3: Technical Officers -->
+                        <div class="stat-card" onclick="showUserManagementAndScroll('technical')" style="cursor: pointer;">
                             <i class="bi bi-person-gear"></i>
                             <h3><?php echo $technical_count; ?></h3>
                             <p>Technical Officers</p>
                         </div>
 
-                        <div class="stat-card">
+                        <!-- Card 4: Equipment Utilization -->
+                        <div class="stat-card" onclick="showSection('equipment')" style="cursor: pointer;">
                             <i class="bi bi-graph-up"></i>
                             <h3><?php echo $utilization_rate; ?>%</h3>
                             <p>Equipment Utilization</p>
                         </div>
+
+                        <!-- Card 5: Today's Practicals -->
+                        <!-- <div class="stat-card" onclick="showSection('history')" style="cursor: pointer;">
+                            <i class="bi bi-calendar-check"></i>
+                            <h3><?php echo $today_count; ?></h3>
+                            <p>Today's Practicals</p>
+                        </div> -->
+
+                        <!-- Card 6: Maintenance -->
+                        <!-- <div class="stat-card" onclick="viewMaintenanceItems()" style="cursor: pointer;">
+                            <i class="bi bi-tools"></i>
+                            <h3><?php echo $repair_count; ?></h3>
+                            <p>Maintenance</p>
+                        </div> -->
                     </div>
 
-                    <!-- Quick Stats -->
-                    <div class="row mb-4 justify-content-center">
-                        <div class="col-md-3 mb-3">
-                            <?php
-                            // Count reservations where technical_officer_id is NULL (pending TO approval)
-                            $pending_query = "SELECT COUNT(*) as pending_count 
-                      FROM reservation 
-                      WHERE technical_officer_id IS NULL";
 
-                            $pending_result = Database::search($pending_query);
-                            $pending_count = 0;
-
-                            if ($pending_result && $pending_result->num_rows > 0) {
-                                $row = $pending_result->fetch_assoc();
-                                $pending_count = $row['pending_count'];
-                            }
-                            ?>
-
-                            <div class="card p-3 text-center">
-                                <h6 class="text-muted">TO Pending
-                                    <button class="btn btn-sm btn-outline-primary p-1" onclick="viewPendingRequests()" style="line-height: 1;">
-                                        <i class="bi bi-eye"></i>
-                                    </button>
-                                </h6>
-                                <h3 class="text-warning"><?php echo $pending_count; ?></h3>
-                            </div>
-                        </div>
-                        <div class="col-md-3 mb-3">
-                            <?php
-                            // Get today's date in the same format as your database
-                            $today = date('Y-m-d'); // Format: 2024-01-15
-
-                            // Count reservations for today
-                            $today_query = "SELECT COUNT(*) as today_count FROM reservation WHERE DATE(request_date) = ?";
-                            $types = "s";
-                            $params = [$today];
-
-                            $today_result = Database::search($today_query, $types, $params);
-                            $today_count = 0;
-
-                            if ($today_result && $today_result->num_rows > 0) {
-                                $row = $today_result->fetch_assoc();
-                                $today_count = $row['today_count'];
-                            }
-                            ?>
-
-                            <div class="card p-3 text-center">
-                                <h6 class="text-muted">Today's Practicals
-                                    <button class="btn btn-sm btn-outline-primary p-1" onclick="viewPendingRequests()" style="line-height: 1;">
-                                        <i class="bi bi-eye"></i>
-                                    </button>
-                                </h6>
-                                <h3 class="text-info"><?php echo $today_count; ?></h3>
-                            </div>
-                        </div>
-                        <!-- <div class="col-md-3 mb-3">
-                        <div class="card p-3 text-center">
-                            <h6 class="text-muted">Total Equipment</h6>
-                            <h3 class="text-success">3</h3>
-                        </div>
-                    </div> -->
-                        <div class="col-md-3 mb-3">
-                            <div class="card p-3 text-center">
-                                <?php
-                                // Count repair records from repair table
-                                $repair_query = "SELECT COUNT(*) as repair_count FROM repair";
-
-                                $repair_result = Database::search($repair_query);
-                                $repair_count = 0;
-
-                                if ($repair_result && $repair_result->num_rows > 0) {
-                                    $row = $repair_result->fetch_assoc();
-                                    $repair_count = $row['repair_count'];
-                                }
-                                ?>
-
-                                <h6 class="text-muted">Maintenance
-                                    <button class="btn btn-sm btn-outline-primary p-1" onclick="viewPendingRequests()" style="line-height: 1;">
-                                        <i class="bi bi-eye"></i>
-                                    </button>
-                                </h6>
-
-                                <h3 class="text-danger"><?php echo $repair_count; ?></h3>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Most Used Equipment -->
                     <div class="row">
 
 
@@ -3248,7 +3670,7 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                                 </div>
                                 <small class="text-muted mb-2 d-block" style="font-size:0.8rem;">
 
-                                    Monthly completed reservations &nbsp; <span style="color:#3b82f6;font-size:0.75rem;">- -</span>Average · scroll →
+                                    Monthly completed Practicals &nbsp; <span style="color:#3b82f6;font-size:0.75rem;">- -</span>Average · scroll →
 
                                 </small>
                                 <div class="chart-container" id="usageChartScroll"
@@ -3396,10 +3818,8 @@ if (isset($_SESSION["user"]) && isset($_SESSION["user_role"]) && $_SESSION["user
                                 </thead>
                                 <tbody id="studentTableBody">
                                     <?php
-                                    // Query to get ALL approved students (both active and inactive)
-                                    // Query to get ALL approved students
-                                  // Query to get ALL approved students
-$query = "SELECT 
+
+                                    $query = "SELECT 
             lu.id as user_id,          
             lu.first_name,
             lu.last_name,
@@ -3420,13 +3840,14 @@ $query = "SELECT
 
                                     if ($result && $result->num_rows > 0) {
                                         while ($row = $result->fetch_assoc()) {
+
                                             $user_id = $row['user_id'];
                                             $full_name = $row['first_name'] . ' ' . $row['last_name'];
 
                                             // Fix image path
-                                            // Fix image path
+                                            // Fix image path - REMOVED /LRRS/ prefix
                                             $profile_image = !empty($row['img_path'])
-                                                ? '/LRRS/' . ltrim(str_replace('\\', '/', $row['img_path']), '/')  // FIXED: full web path
+                                                ? '/' . ltrim(str_replace('\\', '/', $row['img_path']), '/')  // Just add leading slash
                                                 : 'https://ui-avatars.com/api/?name=' . urlencode($full_name) . '&background=22c55e&color=fff&size=50';
                                             // Format mobile number
                                             $mobile = $row['mobile'];
@@ -3438,7 +3859,10 @@ $query = "SELECT
                                             $status = ($row['status'] == 1) ? 'active' : 'inactive';
 
                                             // Output the row with dynamic status
-                                            echo '<tr data-user-id="' . htmlspecialchars($row['university_id']) . '" data-status="' . $status . '">';
+                                            // Replace your existing echo '<tr ...>' line with this:
+                                            echo '<tr data-user-id="' . htmlspecialchars($row['university_id']) . '" 
+          
+         data-status="' . $status . '">';
                                             echo '<td>';
                                             echo '<img src="' . htmlspecialchars($profile_image) . '" 
                                    style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid #22c55e;">';
@@ -3511,8 +3935,8 @@ $query = "SELECT
                                 </thead>
                                 <tbody id="supervisorTableBody">
                                     <?php
-                                    // Query to get ALL approved supervisors (both active and inactive)
-                                  $sup_query = "SELECT 
+
+                                    $sup_query = "SELECT 
                 lu.id,
                 lu.first_name,
                 lu.last_name,
@@ -3535,22 +3959,23 @@ $query = "SELECT
                                         while ($row = $sup_result->fetch_assoc()) {
                                             $full_name = $row['first_name'] . ' ' . $row['last_name'];
 
-                                            // Fix image path
                                             $profile_image = !empty($row['img_path'])
-                                                ? '/LRRS/' . ltrim(str_replace('\\', '/', $row['img_path']), '/')  // FIXED: full web path
+                                                ? '/' . ltrim(str_replace('\\', '/', $row['img_path']), '/')
                                                 : 'https://ui-avatars.com/api/?name=' . urlencode($full_name) . '&background=22c55e&color=fff&size=50';
 
-                                            // Format mobile number
+
                                             $mobile = $row['mobile'];
                                             if (strlen($mobile) == 10) {
                                                 $mobile = substr($mobile, 0, 3) . '-' . substr($mobile, 3, 3) . '-' . substr($mobile, 6, 4);
                                             }
 
-                                            // Set status based on database value
-                                           $status = ($row['status'] == 1) ? 'active' : 'inactive';
 
-                                            // Output the row with dynamic status
-                                            echo '<tr data-user-id="' . htmlspecialchars($row['university_id']) . '" data-status="' . $status . '">';
+                                            $status = ($row['status'] == 1) ? 'active' : 'inactive';
+
+
+                                            echo '<tr data-user-id="' . htmlspecialchars($row['university_id']) . '" 
+          
+         data-status="' . $status . '">';
                                             echo '<td>';
                                             echo '<img src="' . htmlspecialchars($profile_image) . '" 
                                    style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid #22c55e;">';
@@ -3565,14 +3990,14 @@ $query = "SELECT
                                             echo '<i class="bi bi-pencil-square"></i> Edit';
                                             echo '</button>';
 
-                                            // Show appropriate button based on status_user
+
                                             if ($row['status'] == 1) {
-                                                // ACTIVE user - show RED Deactivate button
+
                                                 echo '<button class="btn-deactivate" onclick="toggleUserStatus(\'' . htmlspecialchars($row['university_id']) . '\')">';
                                                 echo '<i class="bi bi-person-x"></i> Deactivate';
                                                 echo '</button>';
                                             } else {
-                                                // INACTIVE user - show GREEN Activate button
+
                                                 echo '<button class="btn-activate" onclick="toggleUserStatus(\'' . htmlspecialchars($row['university_id']) . '\')">';
                                                 echo '<i class="bi bi-person-check"></i> Activate';
                                                 echo '</button>';
@@ -3628,7 +4053,7 @@ $query = "SELECT
                                 <tbody id="techOfficerTableBody">
                                     <?php
                                     // Query to get ALL approved technical officers (both active and inactive)
-                                   $tech_query = "SELECT 
+                                    $tech_query = "SELECT 
                 lu.id,
                 lu.first_name,
                 lu.last_name,
@@ -3666,7 +4091,10 @@ $query = "SELECT
                                             $status = ($row['status'] == 1) ? 'active' : 'inactive';
 
                                             // Output the row with dynamic status
-                                            echo '<tr data-user-id="' . htmlspecialchars($row['university_id']) . '" data-status="' . $status . '">';
+                                            // Replace your existing echo '<tr ...>' line with this:
+                                            echo '<tr data-user-id="' . htmlspecialchars($row['university_id']) . '" 
+          
+         data-status="' . $status . '">';
                                             echo '<td>';
                                             echo '<img src="' . htmlspecialchars($profile_image) . '" 
                                    style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid #22c55e;">';
@@ -3717,55 +4145,188 @@ $query = "SELECT
 
 
                 <!-- Equipment Management Section -->
+                <!-- Equipment Management Section -->
                 <div id="equipmentSection" style="display: none;">
                     <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Equipment Management</h3>
 
+                    <div class="card p-4">
+                        <!-- Search and Filter Row -->
+                        <div class="search-add-row" style="display: flex; justify-content: space-between; align-items: center; gap: 15px; flex-wrap: wrap;">
+                            <div class="search-container" style="display: flex; gap: 10px; flex: 2; min-width: 300px;">
+                                <input type="text" id="equipmentSearch" class="search-input"
+                                    placeholder="Search by name or code..."
+                                    onkeyup="searchEquipment()"
+                                    style="flex: 1;">
+                            </div>
 
-                    <div class="search-add-row" style="margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
-                        <div class="search-container" style="flex: 1; max-width: 500px;">
-                            <input type="text"
-                                id="equipmentSearch"
-                                class="search-input"
-                                placeholder="Search by code, name or location..."
-                                oninput="searchEquipment()">
+                            <!-- FILTER DROPDOWN - SINGLE ONLY -->
+                            <div style="display: flex; gap: 10px; align-items: center; flex: 1; min-width: 200px;">
+                                <select id="statusFilterequipment" class="filter-select" onchange="searchEquipmentStatus()"
+                                    style="width: 100%; padding: 10px; border-radius: 8px; border: 2px solid #e0e0e0; background: white;">
+                                    <option value="all">All Equipment</option>
+                                    <option value="maintenance">Maintenance Pending</option>
+                                    <option value="broken">Broken</option>
+                                </select>
+                            </div>
+
+                            <button class="add-btn" onclick="addEquipment()" style="white-space: nowrap;">
+                                <i class="bi bi-plus-circle"></i> Add Equipment
+                            </button>
                         </div>
-                        <button class="add-btn" onclick="sendToMaintenance()" style="margin-right: 4px; background: linear-gradient(135deg, #f59e0b, #d97706);">
-                            <i class="bi bi-tools"></i> Send to Maintenance
-                        </button>
-                        <button class="add-btn" onclick="addEquipment()" style="background: linear-gradient(135deg, #22c55e, #16a34a);">
-                            <i class="bi bi-plus-circle"></i> Add Equipment
-                        </button>
-                    </div>
 
-
-                    <div id="equipmentTableCard" class="card p-4">
-                        <h4 class="table-heading mt-0">
-                            <i class="bi bi-tools"></i> Equipment List
-                            <span class="table-count" id="equipmentCount">(6)</span>
-                        </h4>
-                        <div class="table-responsive">
+                        <!-- Equipment Table -->
+                        <div class="table-responsive mt-3">
                             <table class="user-table">
                                 <thead>
                                     <tr>
                                         <th>Image</th>
-                                        <th>Equipment Code</th>
-                                        <th>Name</th>
-
+                                        <th>Equipment Name</th>
                                         <th>Maintenance Pending</th>
+                                        <th>Broken</th>
                                         <th>Usage %</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody id="equipmentTableBody">
-                                    <!-- Data will be populated by JavaScript -->
+                                    <?php
+                                    // Define the equipment data array
+                                    $equipmentDataTable = [];
+
+                                    // Fetch equipment data from database
+                                    $equipment_query = "SELECT 
+    e.id,
+    e.code,
+    e.name,
+    e.description,
+    e.qty,
+    e.added_datetime,
+    e.img_path,
+    (SELECT COALESCE(SUM(broken_qty), 0) FROM broken WHERE equipment_id = e.id) as broken_qty,
+    (SELECT COALESCE(SUM(repair_qty), 0) FROM repair WHERE equipment_id = e.id) as repair_qty
+FROM equipment e
+WHERE e.is_hod_checked = 1
+ORDER BY e.name ASC";
+
+                                    $equipment_result = Database::search($equipment_query);
+
+                                    if ($equipment_result && $equipment_result->num_rows > 0) {
+                                        while ($row = $equipment_result->fetch_assoc()) {
+                                            $equipment_code = htmlspecialchars($row['code']);
+                                            $name = htmlspecialchars($row['name']);
+                                            $total_qty = (int)$row['qty'];
+                                            $broken_qty = (int)$row['broken_qty'];
+                                            $repair_qty = (int)$row['repair_qty'];
+
+                                            // Calculate available quantity
+                                            $available_qty = $total_qty - ($broken_qty + $repair_qty);
+
+                                            // Calculate usage percentage (based on bookings)
+                                            $usage_query = "SELECT COUNT(*) as booking_count FROM booking WHERE equipment_id = ?";
+                                            $usage_result = Database::search($usage_query, "i", [$row['id']]);
+                                            $usage_count = 0;
+                                            if ($usage_result && $usage_result->num_rows > 0) {
+                                                $usage_row = $usage_result->fetch_assoc();
+                                                $usage_count = $usage_row['booking_count'];
+                                            }
+
+                                            // Simple usage percentage (this is just an example - adjust based on your logic)
+                                            $usage_percentage = min(100, round(($usage_count / 10) * 100)); // Assuming 10 bookings = 100%
+
+                                            // Set image path
+                                            $image_path = !empty($row['img_path'])
+                                                ? '/' . ltrim(str_replace('\\', '/', $row['img_path']), '/')
+                                                : 'https://cdn-icons-png.flaticon.com/512/2941/2941514.png';
+
+                                            // Add to data array for JavaScript
+                                            $equipmentDataTable[] = [
+                                                'code' => $equipment_code,
+                                                'name' => $name,
+                                                'image' => $image_path,
+                                                'total' => $total_qty,
+                                                'available' => $available_qty,
+                                                'broken' => $broken_qty,
+                                                'maintenance' => $repair_qty,
+                                                'usage' => $usage_percentage,
+                                                'id' => $row['id']
+                                            ];
+
+                                            // Determine badge color for available/total ratio
+                                            $ratio = $total_qty > 0 ? $available_qty / $total_qty : 0;
+                                            $badgeColor = '#22c55e'; // green
+                                            if ($ratio < 0.3) $badgeColor = '#ef4444'; // red
+                                            else if ($ratio < 0.6) $badgeColor = '#f59e0b'; // orange
+
+                                            // Bar color based on usage
+                                            $barColor = '#22c55e';
+                                            if ($usage_percentage < 30) $barColor = '#ef4444';
+                                            else if ($usage_percentage < 60) $barColor = '#f59e0b';
+                                    ?>
+                                            <tr data-equipment-id="<?php echo $equipment_code; ?>"
+                                                data-equipment-id-numeric="<?php echo $row['id']; ?>"
+                                                data-maintenance="<?php echo $repair_qty; ?>"
+                                                data-broken="<?php echo $broken_qty; ?>">
+                                                <td>
+                                                    <img src="<?php echo $image_path; ?>"
+                                                        style="width:50px;height:50px;object-fit:contain;"
+                                                        onerror="this.src='https://cdn-icons-png.flaticon.com/512/2941/2941514.png'"
+                                                        alt="<?php echo $name; ?>">
+                                                </td>
+                                                <td><strong><?php echo $name; ?></strong></td>
+                                                <td>
+                                                    <?php if ($repair_qty > 0): ?>
+                                                        <span class="badge bg-warning"><?php echo $repair_qty; ?></span>
+                                                    <?php else: ?>
+                                                        <span class="text-muted">------</span>
+                                                    <?php endif; ?>
+                                                </td>
+                                                <td>
+                                                    <?php if ($broken_qty > 0): ?>
+                                                        <span class="badge bg-danger"><?php echo $broken_qty; ?></span>
+                                                    <?php else: ?>
+                                                        <span class="text-muted">------</span>
+                                                    <?php endif; ?>
+                                                </td>
+                                                <td>
+                                                    <div class="d-flex align-items-center gap-2">
+                                                        <div style="width:100px;height:8px;background:#e9ecef;border-radius:4px;overflow:hidden;">
+                                                            <div style="width:<?php echo $usage_percentage; ?>%;height:8px;background:<?php echo $barColor; ?>;border-radius:4px;transition:width 0.6s ease;"></div>
+                                                        </div>
+                                                        <span style="font-weight:600;color:<?php echo $barColor; ?>;min-width:45px;">
+                                                            <?php echo $usage_percentage; ?>%
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="action-buttons">
+                                                        <button class="btn-view" onclick="viewEquipmentByCode('<?php echo $equipment_code; ?>')" title="View Details">
+                                                            <i class="bi bi-eye"></i>
+                                                        </button>
+                                                        <button class="btn-edit" onclick="editEquipment('<?php echo $equipment_code; ?>')" title="Edit">
+                                                            <i class="bi bi-pencil-square"></i>
+                                                        </button>
+                                                        <button class="btn-remove" onclick="removeEquipment('<?php echo $equipment_code; ?>')" title="Remove">
+                                                            <i class="bi bi-trash"></i>
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        <?php
+                                        }
+                                    } else {
+                                        ?>
+                                        <tr>
+                                            <td colspan="6" class="text-center py-4">No equipment found in database</td>
+                                        </tr>
+                                    <?php
+                                    }
+                                    ?>
                                 </tbody>
-
-
                             </table>
                         </div>
                     </div>
                 </div>
 
+               
 
 
 
@@ -3809,32 +4370,28 @@ $query = "SELECT
                     <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Reservation Details</h3>
 
                     <!-- Search and Filter Row (Outside card) -->
-                    <div class="search-add-row" style="margin-bottom: 20px;">
-                        <div class="search-container">
+                    <div class="search-add-row" style="margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                        <div class="search-container" style="display: flex; gap: 5px; flex: 1;">
                             <input type="text"
                                 id="reservationSearch"
                                 class="search-input"
-                                placeholder="Search by ID, student or lab..."
-                                oninput="searchReservations()"> <!-- Real-time search -->
-                            <!-- <button class="search-btn" onclick="searchReservations()">
-                                <i class="bi bi-search"></i> Search
-                            </button> -->
+                                placeholder="Search by Reservation ID..."
+                                oninput="searchReservations()"
+                                style="flex: 1; margin: 0;">
                         </div>
-                        <div class="filter-section" style="margin-bottom: 0;">
-                            <select class="filter-select" id="statusFilter" onchange="searchReservations()" style="min-width: 150px;">
+
+                        <div class="filter-section" style="margin-bottom: 0; min-width: 150px;">
+                            <select class="filter-select" id="statusFilter" onchange="searchReservations()" style="width: 100%; margin: 0;">
                                 <option value="all">All Status</option>
                                 <option value="ready">Ready</option>
                                 <option value="pending">Pending</option>
                                 <option value="rejected">Rejected</option>
                             </select>
                         </div>
-                        <!-- Add Button -->
-                        <button class="add-btn" style="background: linear-gradient(135deg, #f87171, #ef4444);">
-                            <i class="bi bi-plus-circle"></i> Block Reservation
-                        </button>
-                        <!-- <button class="add-btn" onclick="addReservation()" style="background: linear-gradient(135deg, #22c55e, #16a34a);">
-                            <i class="bi bi-plus-circle"></i> Add Reservation
-                        </button> -->
+
+
+
+
                     </div>
 
                     <!-- Reservation Table Card -->
@@ -3887,7 +4444,7 @@ $query = "SELECT
                         </div>
 
                         <!-- Time filter -->
-                        <div class="filter-section" style="margin-bottom:20px;">
+                        <!-- <div class="filter-section" style="margin-bottom:20px;">
                             <select class="filter-select" id="timeRangeFilter"
                                 onchange="filterRequestsByTime()" style="min-width:200px;">
                                 <option value="all">All Time</option>
@@ -3895,14 +4452,15 @@ $query = "SELECT
                                 <option value="weekly">Weekly</option>
                                 <option value="monthly">Monthly</option>
                             </select>
-                        </div>
+                        </div> -->
 
+                        <!-- Table -->
                         <!-- Table -->
                         <div class="table-responsive mt-3">
                             <table class="user-table">
                                 <thead>
                                     <tr id="reqTableHead">
-                                        <!-- injected by JS -->
+                                        <!-- This will be dynamically populated by JavaScript -->
                                     </tr>
                                 </thead>
                                 <tbody id="requestListBody">
@@ -4002,50 +4560,50 @@ $query = "SELECT
 
                 <!-- Analytics Section -->
                 <div id="analyticsSection" style="display: none;">
-                    <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Analytics Dashboard</h3>
+                    <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Download</h3>
 
-                    <!-- Summary Statistics Cards -->
-                    <div class="analytics-grid">
-                        <!-- Students Card -->
+
+                    <!-- <div class="analytics-grid">
+                     
                         <div class="stat-card">
                             <i class="bi bi-mortarboard-fill"></i>
                             <h3>56</h3>
                             <p>Students</p>
                         </div>
 
-                        <!-- Supervisors/Lecturers Card -->
+                    
                         <div class="stat-card">
                             <i class="bi bi-person-badge-fill"></i>
                             <h3>5</h3>
                             <p>Supervisors/Lecturers</p>
                         </div>
 
-                        <!-- Technical Officers Card -->
+                       
                         <div class="stat-card">
                             <i class="bi bi-person-gear"></i>
                             <h3>3</h3>
                             <p>Technical Officers</p>
                         </div>
 
-                        <!-- Active Equipment Card -->
+                       
                         <div class="stat-card">
                             <i class="bi bi-tools"></i>
-                            <h3>85%</h3>
+                           <h3><?php echo $utilization_rate; ?>%</h3>
                             <p>Equipment Utilization Rate</p>
                         </div>
 
-                        <!-- Maintenance Card -->
+                       
                         <div class="stat-card">
                             <i class="bi bi-gear-wide-connected"></i>
                             <h3>3</h3>
                             <p>Maintenance</p>
                         </div>
-                    </div>
+                    </div> -->
 
                     <!-- First Row: Rejected Requests Report & Equipment Usage Chart -->
-                    <div class="row">
-                        <!-- Rejected Requests Report -->
-                        <div class="col-md-6 mb-4">
+                    <!-- <div class="row"> -->
+                    <!-- Rejected Requests Report -->
+                    <!-- <div class="col-md-6 mb-4">
                             <div class="card p-4">
                                 <div class="d-flex justify-content-between align-items-center mb-3">
                                     <h5 class="fw-bold" style="color: #166534;">
@@ -4104,7 +4662,7 @@ $query = "SELECT
                             </div>
                         </div>
 
-                        <!-- Equipment Usage Report with Search -->
+
                         <div class="col-md-6 mb-4">
                             <div class="card p-4">
                                 <div class="d-flex justify-content-between align-items-center mb-3">
@@ -4117,7 +4675,7 @@ $query = "SELECT
                                     </button>
                                 </div>
 
-                                <!-- Search Input for Equipment Name (Real-time) -->
+
                                 <div class="mb-3">
                                     <input type="text"
                                         id="equipmentUsageSearch"
@@ -4126,7 +4684,7 @@ $query = "SELECT
                                         oninput="filterEquipmentUsage()">
                                 </div>
 
-                                <!-- Equipment Usage Table -->
+
                                 <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
                                     <table class="table table-hover">
                                         <thead class="sticky-top bg-white">
@@ -4136,14 +4694,14 @@ $query = "SELECT
                                             </tr>
                                         </thead>
                                         <tbody id="equipmentUsageTableBody">
-                                            <!-- Data will be populated by JavaScript -->
+
                                         </tbody>
                                     </table>
                                 </div>
 
                             </div>
                         </div>
-                    </div>
+                    </div> -->
 
                     <!-- Second Row: Download Inventory Button -->
                     <div class="row">
@@ -4152,7 +4710,7 @@ $query = "SELECT
                                 <div class="d-flex justify-content-between align-items-center">
                                     <h5 class="fw-bold mb-0" style="color: #166534;">
                                         <i class="bi bi-download me-2"></i>
-                                        Full Equipment Inventory
+                                        Full Equipment Inventory(.xls)
                                     </h5>
                                     <button class="btn-generate" onclick="downloadInventory()">
                                         <i class="bi bi-file-earmark-spreadsheet me-2"></i>Download Full Inventory List
@@ -4209,7 +4767,7 @@ $query = "SELECT
             </div>
         </div>
 
-        <div class="modal fade" id="equipmentDetailsModal" tabindex="-1" aria-hidden="true">
+        <!-- <div class="modal fade" id="equipmentDetailsModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-lg modal-dialog-centered">
                 <div class="modal-content">
                     <div class="modal-header bg-success text-white">
@@ -4227,47 +4785,521 @@ $query = "SELECT
                     </div>
                 </div>
             </div>
+        </div> -->
+
+
+
+
+
+        <!-- Edit User Modal -->
+        <div class="modal fade" id="editUserModal" tabindex="-1" aria-labelledby="editUserModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content" style="border-radius: 20px; border: none; overflow: hidden; box-shadow: 0 20px 40px -10px rgba(0,0,0,0.2);">
+
+                    <!-- Header -->
+                    <div class="modal-header py-3" style="background: linear-gradient(135deg, #059669, #10b981);">
+                        <h5 class="modal-title text-white fw-semibold">
+                            <i class="bi bi-pencil-square me-2"></i>Edit User Details
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
+
+                    <div class="modal-body p-4" style="background: #f8fafc;">
+                        <!-- Loading Spinner -->
+                        <div id="editUserLoading" class="text-center py-4" style="display: none;">
+                            <div class="spinner-border text-success" role="status"></div>
+                            <p class="mt-2 text-muted small">Loading user data...</p>
+                        </div>
+
+                        <!-- Edit User Form -->
+                        <div id="editUserForm" style="display: none;">
+                            <!-- Hidden Inputs -->
+                            <input type="hidden" id="editUserId">
+                            <input type="hidden" id="editUserOriginalEmail">
+                            <input type="hidden" id="editUserOriginalRole">
+
+                            <!-- Status and University ID Row (Top Section) -->
+                            <div class="row mb-4">
+                                <div class="col-12">
+                                    <div class="d-flex justify-content-between align-items-center p-3 bg-white rounded-3 shadow-sm">
+                                        <!-- Status Badge on Left -->
+                                        <div>
+                                            <span class="text-muted small me-2">Status:</span>
+                                            <span id="editUserStatusDisplay">
+                                                <span class="badge bg-success">Active</span>
+                                            </span>
+                                        </div>
+                                        <!-- University ID on Right (Increased Font) -->
+                                        <div class="d-flex align-items-center">
+                                            <span class="text-muted small me-2">University ID:</span>
+                                            <span id="editUserUniversityIdDisplay" class="fw-bold" style="font-size: 1.3rem; color: #059669;">---</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Profile Summary Card (with name and email) -->
+                            <div class="card border-0 shadow-sm mb-4">
+                                <div class="card-body p-3">
+                                    <div class="d-flex align-items-center gap-3">
+                                        <!-- Current Profile Image -->
+                                        <div class="position-relative">
+                                            <img id="editCurrentImage" src="" alt="Profile"
+                                                style="width: 70px; height: 70px; border-radius: 50%; object-fit: cover; border: 3px solid #10b981;">
+                                            <span id="editUserStatus" class="position-absolute bottom-0 end-0">
+                                                <span class="badge bg-success p-2 rounded-circle" style="width: 12px; height: 12px;"></span>
+                                            </span>
+                                        </div>
+                                        <!-- User Name and Email -->
+                                        <div class="flex-grow-1">
+                                            <h5 id="editUserFullName" class="fw-bold mb-1" style="color: #0f172a;">Loading...</h5>
+                                            <div class="d-flex align-items-center text-muted small">
+                                                <i class="bi bi-envelope me-1"></i>
+                                                <span id="editUserEmailDisplay">---</span>
+                                            </div>
+                                        </div>
+                                        <!-- Role Badge -->
+                                        <div>
+                                            <span class="badge bg-opacity-10 p-3 rounded-pill" id="editUserRoleBadge" style="background: rgba(5, 150, 105, 0.1); color: #059669; font-size: 0.85rem;">
+                                                <i class="bi bi-tag-fill me-1"></i>
+                                                <span id="editUserRoleDisplay">Student</span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Form Grid -->
+                            <div class="row g-3">
+                                <!-- Left Column - Personal Info -->
+                                <div class="col-md-6">
+                                    <div class="card border-0 shadow-sm h-100">
+                                        <div class="card-body p-3">
+                                            <h6 class="fw-semibold mb-3" style="color: #059669; font-size: 0.9rem;">
+                                                <i class="bi bi-person-circle me-1"></i>Personal Info
+                                            </h6>
+                                            <div class="mb-3">
+                                                <label class="form-label small fw-semibold text-muted mb-1">First Name</label>
+                                                <div class="input-group input-group-sm">
+                                                    <span class="input-group-text bg-light border-0"><i class="bi bi-person text-success small"></i></span>
+                                                    <input type="text" class="form-control form-control-sm bg-light border-0" id="editFirstName" placeholder="First name">
+                                                </div>
+                                                <div class="invalid-feedback small" id="editFirstNameError"></div>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label small fw-semibold text-muted mb-1">Last Name</label>
+                                                <div class="input-group input-group-sm">
+                                                    <span class="input-group-text bg-light border-0"><i class="bi bi-person text-success small"></i></span>
+                                                    <input type="text" class="form-control form-control-sm bg-light border-0" id="editLastName" placeholder="Last name">
+                                                </div>
+                                                <div class="invalid-feedback small" id="editLastNameError"></div>
+                                            </div>
+                                            <div class="mb-2">
+                                                <label class="form-label small fw-semibold text-muted mb-1">University ID</label>
+                                                <div class="input-group input-group-sm">
+                                                    <span class="input-group-text bg-light border-0"><i class="bi bi-card-text text-success small"></i></span>
+                                                    <input type="text" class="form-control form-control-sm bg-light border-0" id="editUniversityId" readonly>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Right Column - Contact Info -->
+                                <div class="col-md-6">
+                                    <div class="card border-0 shadow-sm h-100">
+                                        <div class="card-body p-3">
+                                            <h6 class="fw-semibold mb-3" style="color: #059669; font-size: 0.9rem;">
+                                                <i class="bi bi-envelope me-1"></i>Contact Info
+                                            </h6>
+                                            <div class="mb-3">
+                                                <label class="form-label small fw-semibold text-muted mb-1">Email</label>
+                                                <div class="input-group input-group-sm">
+                                                    <span class="input-group-text bg-light border-0"><i class="bi bi-envelope text-success small"></i></span>
+                                                    <input type="email" class="form-control form-control-sm bg-light border-0" id="editEmail" placeholder="email@example.com">
+                                                </div>
+                                                <div class="invalid-feedback small" id="editEmailError"></div>
+                                            </div>
+                                            <div class="mb-2">
+                                                <label class="form-label small fw-semibold text-muted mb-1">Mobile</label>
+                                                <div class="input-group input-group-sm">
+                                                    <span class="input-group-text bg-light border-0"><i class="bi bi-phone text-success small"></i></span>
+                                                    <input type="text" class="form-control form-control-sm bg-light border-0" id="editMobile" maxlength="10" placeholder="07XXXXXXXX" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+                                                </div>
+                                                <div class="invalid-feedback small" id="editMobileError"></div>
+                                                <small class="text-muted d-block mt-1 small">10 digits only</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Role and Supervisor Row (Combined) -->
+                                <div class="col-12">
+                                    <div class="card border-0 shadow-sm">
+                                        <div class="card-body p-3">
+                                            <div class="row g-3">
+                                                <!-- Role Selection (Left side - 5 columns) -->
+                                                <div class="col-md-5">
+                                                    <h6 class="fw-semibold mb-2" style="color: #059669; font-size: 0.9rem;">
+                                                        <i class="bi bi-shield-lock me-1"></i>Role
+                                                    </h6>
+                                                    <select class="form-select form-select-sm bg-light border-0" id="editRole" onchange="handleRoleChange()">
+                                                        <option value="student">🎓 Student</option>
+                                                        <option value="supervisor">👥 Supervisor</option>
+                                                        <option value="technical_officer">🔧 Technical Officer</option>
+                                                        <option value="hod">📋 HOD</option>
+                                                    </select>
+                                                    <div class="invalid-feedback small" id="editRoleError"></div>
+                                                </div>
+
+                                                <!-- Supervisor Selection (Right side - 7 columns) - This will be shown/hidden -->
+                                                <div class="col-md-7" id="supervisorSection" style="display: none;">
+                                                    <h6 class="fw-semibold mb-2" style="color: #059669; font-size: 0.9rem;">
+                                                        <i class="bi bi-person-badge me-1"></i>Supervisor
+                                                    </h6>
+                                                    <div class="d-flex gap-2">
+                                                        <select class="form-select form-select-sm bg-light border-0 flex-grow-1" id="editSupervisorId">
+                                                            <option value="">Select supervisor...</option>
+                                                        </select>
+                                                        <button class="btn btn-outline-success btn-sm" onclick="loadSupervisors()" type="button" style="white-space: nowrap;">
+                                                            <i class="bi bi-arrow-repeat"></i>
+                                                        </button>
+                                                    </div>
+                                                    <div class="invalid-feedback small" id="editSupervisorIdError"></div>
+                                                    <div id="currentSupervisor" class="mt-2 small text-muted"></div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Role Change Warning (Full width) -->
+                                            <div id="roleChangeWarning" class="alert alert-warning py-2 px-3 mb-0 small mt-3 d-none">
+                                                <i class="bi bi-exclamation-triangle-fill me-1"></i>
+                                                <span id="roleChangeWarningText"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Profile Image Upload -->
+                                <div class="col-12">
+                                    <div class="card border-0 shadow-sm">
+                                        <div class="card-body p-3">
+                                            <h6 class="fw-semibold mb-2" style="color: #059669; font-size: 0.9rem;">
+                                                <i class="bi bi-image me-1"></i>Update Profile Picture
+                                            </h6>
+                                            <div class="d-flex align-items-center gap-3">
+                                                <div class="position-relative">
+                                                    <img id="editProfileImagePreview" src="" alt="Preview"
+                                                        style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid #10b981; display: none;">
+                                                    <div id="editProfileImagePlaceholder" class="bg-light rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                                        <i class="bi bi-person-fill text-secondary" style="font-size: 1.5rem;"></i>
+                                                    </div>
+                                                </div>
+                                                <div class="flex-grow-1">
+                                                    <input type="file" class="form-control form-control-sm bg-light border-0" id="editProfileImage"
+                                                        accept="image/jpeg,image/png,image/gif,image/webp" onchange="previewEditImage(this)">
+                                                    <div class="invalid-feedback small" id="editImageError"></div>
+                                                    <div class="d-flex justify-content-between align-items-center mt-1">
+                                                        <small class="text-muted">Max 6MB</small>
+                                                        <button type="button" class="btn btn-sm btn-outline-danger py-0 px-2"
+                                                            onclick="clearEditImage()" style="display: none; font-size: 0.75rem;" id="clearEditImageBtn">
+                                                            <i class="bi bi-x"></i>Clear
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="modal-footer py-2 px-4 border-0" style="background: #f8fafc;">
+                        <button type="button" class="btn btn-light btn-sm px-3" data-bs-dismiss="modal">
+                            <i class="bi bi-x-circle me-1"></i>Cancel
+                        </button>
+                        <button type="button" class="btn btn-success btn-sm px-4" id="saveUserChanges" onclick="saveUserChanges()" style="background: linear-gradient(135deg, #059669, #10b981); border: none;">
+                            <i class="bi bi-check-circle me-1"></i>Save
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
 
+        <!-- Add Equipment Modal (same as before, but add this hidden input inside the form) -->
+        <div class="modal fade" id="addEquipmentModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content" style="border-radius: 20px; border: none; overflow: hidden;">
 
+                    <!-- Header - we'll change the title dynamically -->
+                    <div class="modal-header py-3" style="background: linear-gradient(135deg, #22c55e, #16a34a);">
+                        <h5 class="modal-title text-white fw-semibold" id="equipmentModalTitle">
+                            <i class="bi bi-plus-circle me-2"></i>Add New Equipment
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                    </div>
 
+                    <!-- Body -->
+                    <div class="modal-body p-4" style="background: #f8fafc;">
+                        <form id="addEquipmentForm" enctype="multipart/form-data">
+                            <!-- Hidden field to store equipment ID for edit mode -->
+                            <input type="hidden" id="eqId" value="">
 
+                            <div class="row g-3">
+                                <!-- Left Column -->
+                                <div class="col-md-6">
+                                    <div class="card border-0 shadow-sm mb-3">
+                                        <div class="card-body p-3">
+                                            <h6 class="fw-semibold mb-3" style="color: #22c55e;">
+                                                <i class="bi bi-info-circle me-1"></i>Basic Information
+                                            </h6>
+
+                                            <div class="mb-3">
+                                                <label class="form-label fw-semibold">Equipment Code <span class="text-danger">*</span></label>
+                                                <input type="text" class="form-control" id="eqCode"
+                                                    placeholder="e.g., MIC-001" required>
+                                                <div class="invalid-feedback" id="eqCodeError"></div>
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <label class="form-label fw-semibold">Equipment Name <span class="text-danger">*</span></label>
+                                                <input type="text" class="form-control" id="eqName"
+                                                    placeholder="e.g., Microscope" required>
+                                                <div class="invalid-feedback" id="eqNameError"></div>
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <label class="form-label fw-semibold">Total Quantity <span class="text-danger">*</span></label>
+                                                <input type="number" class="form-control" id="eqQty"
+                                                    min="1" value="1" required>
+                                                <div class="invalid-feedback" id="eqQtyError"></div>
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <label class="form-label fw-semibold">Simultaneous Users</label>
+                                                <input type="number" class="form-control" id="eqSimultaneousUsers"
+                                                    min="1" value="1">
+                                                <small class="text-muted">Number of users that can use this at once</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Right Column -->
+                                <div class="col-md-6">
+                                    <div class="card border-0 shadow-sm mb-3">
+                                        <div class="card-body p-3">
+                                            <h6 class="fw-semibold mb-3" style="color: #22c55e;">
+                                                <i class="bi bi-image me-1"></i>Equipment Image
+                                            </h6>
+
+                                            <div class="text-center mb-3">
+                                                <div class="image-preview-container"
+                                                    style="width: 150px; height: 150px; margin: 0 auto; 
+                                                    border: 2px dashed #22c55e; border-radius: 10px; 
+                                                    display: flex; align-items: center; justify-content: center;
+                                                    overflow: hidden; background: #f8f9fa;">
+                                                    <img id="eqImagePreview" src="#" alt="Preview"
+                                                        style="max-width: 100%; max-height: 100%; display: none;">
+                                                    <i id="eqImagePlaceholder" class="bi bi-image"
+                                                        style="font-size: 3rem; color: #22c55e;"></i>
+                                                </div>
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <input type="file" class="form-control" id="eqImage"
+                                                    accept="image/jpeg,image/png,image/gif,image/webp"
+                                                    onchange="previewEquipmentImage(this)">
+                                                <small class="text-muted">Max size: 6MB (JPG, PNG, GIF, WEBP)</small>
+                                                <div id="currentImageInfo" class="mt-2 small text-muted" style="display: none;"></div>
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <label class="form-label fw-semibold">Sterilization Required</label>
+                                                <select class="form-select" id="eqSterilization">
+                                                    <option value="NO">No</option>
+                                                    <option value="YES">Yes</option>
+                                                </select>
+                                            </div>
+
+                                            <div class="mb-3">
+                                                <label class="form-label fw-semibold">Reservation Required</label>
+                                                <select class="form-select" id="eqReservation">
+                                                    <option value="YES">Yes</option>
+                                                    <option value="NO">No</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Full Width Row - Description -->
+                                <div class="col-12">
+                                    <div class="card border-0 shadow-sm">
+                                        <div class="card-body p-3">
+                                            <h6 class="fw-semibold mb-3" style="color: #22c55e;">
+                                                <i class="bi bi-card-text me-1"></i>Description
+                                            </h6>
+                                            <textarea class="form-control" id="eqDescription" rows="3"
+                                                placeholder="Enter equipment description..."></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Footer - change button text dynamically -->
+                    <div class="modal-footer py-3 px-4 border-0" style="background: #f8fafc;">
+                        <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">
+                            <i class="bi bi-x-circle me-1"></i>Cancel
+                        </button>
+                        <button type="button" class="btn btn-success px-4" onclick="saveEquipment()"
+                            style="background: linear-gradient(135deg, #22c55e, #16a34a); border: none;">
+                            <i class="bi bi-check-circle me-1"></i><span id="modalSaveButtonText">Save Equipment</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
         <!-- Scripts -->
         <!-- Bootstrap JS -->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
         <script>
+            var equipmentDataTable = <?php echo json_encode($equipmentDataTable, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>;
+            let equipmentUsageData = [];
+            // Preview image before upload
+            function previewEditImage(input) {
+                const preview = document.getElementById('editProfileImagePreview');
+                const placeholder = document.getElementById('editProfileImagePlaceholder');
+                const clearBtn = document.getElementById('clearEditImageBtn');
+
+                if (input.files && input.files[0]) {
+                    const reader = new FileReader();
+
+                    reader.onload = function(e) {
+                        preview.src = e.target.result;
+                        preview.style.display = 'block';
+                        placeholder.style.display = 'none';
+                        clearBtn.style.display = 'inline-block';
+                    }
+
+                    reader.readAsDataURL(input.files[0]);
+                }
+            }
+
+            // Clear selected image
+            function clearEditImage() {
+                const input = document.getElementById('editProfileImage');
+                const preview = document.getElementById('editProfileImagePreview');
+                const placeholder = document.getElementById('editProfileImagePlaceholder');
+                const clearBtn = document.getElementById('clearEditImageBtn');
+
+                input.value = '';
+                preview.style.display = 'none';
+                placeholder.style.display = 'flex';
+                clearBtn.style.display = 'none';
+            }
+
+            // Handle role change
+            // Handle role change
+            function handleRoleChange() {
+                const role = document.getElementById('editRole').value;
+                const originalRole = document.getElementById('editUserOriginalRole').value;
+                const supervisorSection = document.getElementById('supervisorSection');
+                const warningDiv = document.getElementById('roleChangeWarning');
+                const warningText = document.getElementById('roleChangeWarningText');
+                const roleDisplay = document.getElementById('editUserRoleDisplay');
+
+                // Update role badge
+                if (roleDisplay) {
+                    let roleText = role.charAt(0).toUpperCase() + role.slice(1).replace('_', ' ');
+                    roleDisplay.textContent = roleText;
+                }
+
+                // Show/hide supervisor section based on role
+                if (role === 'student') {
+                    supervisorSection.style.display = 'block';
+                    supervisorSection.classList.add('fade-in');
+                } else {
+                    supervisorSection.style.display = 'none';
+                    document.getElementById('editSupervisorId').value = '';
+                    document.getElementById('currentSupervisor').innerHTML = '';
+                }
+
+                // Show warning if role is changing
+                if (role !== originalRole && originalRole) {
+                    warningDiv.classList.remove('d-none');
+                    warningText.textContent = `Changing role from "${originalRole}" to "${role}" will update user permissions and may affect their system access.`;
+                } else {
+                    warningDiv.classList.add('d-none');
+                }
+            }
+
+            // Add fade animation
+            document.head.insertAdjacentHTML('beforeend', `
+    <style>
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .card {
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px -10px rgba(0,0,0,0.1) !important;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: #10b981;
+            box-shadow: 0 0 0 0.25rem rgba(16, 185, 129, 0.25);
+        }
+    </style>
+`);
+
+
+
+
+
+
+
+
+
+
             // ── 1. ADD this new function ─────────────────────────────────
-            // Fetches equipment + AI usage % from PHP controller
+            // Global variable to store all equipment data
+            let allEquipmentData = [];
+
             function loadEquipmentWithUsage() {
                 const tableBody = document.getElementById('equipmentTableBody');
                 if (!tableBody) return;
 
-                // Show loading spinner while Python runs
                 tableBody.innerHTML = `
         <tr>
             <td colspan="6" class="text-center py-4">
                 <div class="spinner-border text-success me-2" role="status"
                      style="width:1.5rem;height:1.5rem;"></div>
                 <span style="color:#166534;font-weight:600;">
-                    🤖 AI analysing equipment usage...
+                    Loading equipment data...
                 </span>
             </td>
         </tr>`;
 
-                // hod.php is in LRRS/views/
-                // controller is in LRRS/controllers/
                 fetch('../controllers/get_equipment_usage.php')
                     .then(response => response.json())
                     .then(data => {
-                        if (data.success) {
-                            displayEquipmentTable(data.equipment);
+                        console.log('Equipment data received:', data);
 
-                            // Update count + show last analyzed time as tooltip
-                            const countEl = document.getElementById('equipmentCount');
-                            if (countEl) {
-                                countEl.textContent = `(${data.count})`;
-                                countEl.title = `AI analyzed at: ${data.analyzed_at}`;
-                            }
+                        if (data.success) {
+                            allEquipmentData = data.equipment;
+                            filterAndDisplayEquipment();
+
+                            const filterSelect = document.getElementById('statusFilterequipment');
+                            if (filterSelect) filterSelect.value = 'all';
                         } else {
                             tableBody.innerHTML = `
                     <tr>
@@ -4282,152 +5314,792 @@ $query = "SELECT
                         tableBody.innerHTML = `
                 <tr>
                     <td colspan="6" class="text-center py-4 text-danger">
-                        ❌ Connection error — check PHP server is running.
+                        ❌ Connection error
                     </td>
                 </tr>`;
                     });
             }
 
+            function filterAndDisplayEquipment() {
+                const filterValue = document.getElementById('statusFilterequipment').value;
+                const searchTerm = document.getElementById('equipmentSearch').value.toLowerCase().trim();
+
+                if (!allEquipmentData || allEquipmentData.length === 0) {
+                    return;
+                }
+
+                let filteredData = [...allEquipmentData];
+
+                // Apply status filter
+                if (filterValue === 'maintenance') {
+                    filteredData = filteredData.filter(item => item.maintenance > 0);
+                } else if (filterValue === 'broken') {
+                    filteredData = filteredData.filter(item => item.broken > 0);
+                }
+
+                // Apply search filter
+                if (searchTerm !== '') {
+                    filteredData = filteredData.filter(item => {
+                        const nameMatch = item.name && item.name.toLowerCase().includes(searchTerm);
+                        const codeMatch = item.code && item.code.toLowerCase().includes(searchTerm);
+                        return nameMatch || codeMatch;
+                    });
+                }
+
+                displayEquipmentTable(filteredData);
+            }
+
+            // Function to filter equipment by status
+            // Called by dropdown
+            function searchEquipmentStatus() {
+                filterAndDisplayEquipment();
+            }
+            // Optional: Add a function to show filter status
+            function updateFilterStatus(filter, visible, total) {
+                const filterSelect = document.getElementById('statusFilterequipment');
+                const filterText = filterSelect.options[filterSelect.selectedIndex].text;
+
+                // You could add a small status indicator near the table
+                let statusDiv = document.getElementById('filterStatus');
+                if (!statusDiv) {
+                    statusDiv = document.createElement('div');
+                    statusDiv.id = 'filterStatus';
+                    statusDiv.style.marginTop = '10px';
+                    statusDiv.style.fontSize = '0.9rem';
+                    statusDiv.style.color = '#666';
+
+                    // Insert after the filter dropdown or before the table
+                    const tableContainer = document.querySelector('.table-responsive');
+                    tableContainer.parentNode.insertBefore(statusDiv, tableContainer);
+                }
+
+                if (filter === 'all' && visible === total) {
+                    statusDiv.innerHTML = `📊 Showing all <strong>${total}</strong> equipment items`;
+                } else {
+                    statusDiv.innerHTML = `🔍 <strong>${filterText}</strong>: Showing <strong>${visible}</strong> of <strong>${total}</strong> items`;
+                }
+            }
+
+            // Update your existing searchEquipment function to work with the filter
+            // Update your existing searchEquipment function
+            function searchEquipment() {
+                filterAndDisplayEquipment();
+            }
+
+
+
+
 
 
             // ========== REQUEST SECTION FUNCTIONS ==========
-            // ========== REQUEST SECTION FUNCTIONS (DB-connected) ==========
+            // ========== REQUEST SECTION FUNCTIONS (for user approvals) ==========
 
             let currentRequestType = 'technical';
-            let currentRequestId = null; // integer PK of selected reservation
+            let currentUserId = null; // ID of the user being approved/rejected
             let allRequests = []; // raw data from server
 
-            // ── Called from showSection('activity') ─────────────────────────
+            // Called from showSection('activity')
             function initRequestSection() {
                 currentRequestType = 'technical';
                 // Ensure correct tab is highlighted
                 const tabs = document.querySelectorAll('.request-tab');
                 tabs.forEach(t => t.classList.remove('active'));
                 if (tabs[0]) tabs[0].classList.add('active');
-                // Reset filter
-                const filter = document.getElementById('timeRangeFilter');
-                if (filter) filter.value = 'all';
-                // Load badges for both tabs immediately
-                fetchBothBadgeCounts();
-                // Load table
+
+                // Load requests
                 loadRequests('technical');
             }
 
-            // ── Fetch data from PHP ──────────────────────────────────────────
+            // Fetch data from PHP
             function loadRequests(type) {
                 const tableBody = document.getElementById('requestListBody');
                 if (!tableBody) return;
 
-                // Set column headers
+                // Set column headers with Image column
                 const head = document.getElementById('reqTableHead');
                 if (head) {
-                    const idLabel = (type === 'technical') ? 'Technical Officer ID' : 'Supervisor ID';
                     head.innerHTML = `
-            <th>Reservation ID</th>
-            <th>${idLabel}</th>
-            <th>Date &amp; Time</th>
-            <th>Status</th>
-            <th>Action</th>`;
+            <th>Image</th>
+            <th>University ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Joined Date</th>
+            <th>Action</th>
+        `;
                 }
 
                 tableBody.innerHTML = `
         <tr>
-            <td colspan="5" class="text-center py-4">
+            <td colspan="6" class="text-center py-4">
                 <div class="spinner-border spinner-border-sm text-success me-2"></div>
-                Loading...
+                Loading requests...
             </td>
-        </tr>`;
+        </tr>
+    `;
 
                 fetch(`../controllers/get_requests.php?type=${type}`)
                     .then(r => r.json())
                     .then(res => {
-                        allRequests = res.success ? res.data : [];
-                        // Update THIS tab's badge
-                        const badgeId = (type === 'technical') ? 'technicalRequestCount' : 'supervisorRequestCount';
-                        const badgeEl = document.getElementById(badgeId);
-                        if (badgeEl) badgeEl.textContent = allRequests.length;
-                        filterRequestsByTime();
+                        console.log('Requests received:', res); // For debugging
+
+                        if (res.success) {
+                            allRequests = res.data || [];
+
+                            // Update the tab badge
+                            const badgeId = (type === 'technical') ? 'technicalRequestCount' : 'supervisorRequestCount';
+                            const badgeEl = document.getElementById(badgeId);
+                            if (badgeEl) {
+                                badgeEl.textContent = allRequests.length;
+
+                                // Add or remove zero-count class based on count
+                                if (allRequests.length === 0) {
+                                    badgeEl.classList.add('zero-count');
+                                } else {
+                                    badgeEl.classList.remove('zero-count');
+                                }
+                            }
+
+                            // Render the table
+                            renderRequestTable(allRequests);
+
+                            // Also update the main notification badge
+                            fetchBothBadgeCounts();
+                        } else {
+                            tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center py-4 text-danger">
+                            ❌ ${res.message || 'Failed to load requests'}
+                        </td>
+                    </tr>
+                `;
+                        }
                     })
-                    .catch(() => {
-                        tableBody.innerHTML =
-                            `<tr><td colspan="5" class="text-center py-4 text-danger">
-                    ❌ Failed to load requests. Check server connection.
-                 </td></tr>`;
+                    .catch(error => {
+                        console.error('Error loading requests:', error);
+                        tableBody.innerHTML = `
+                <tr>
+                    <td colspan="6" class="text-center py-4 text-danger">
+                        ❌ Failed to load requests. Check server connection.
+                    </td>
+                </tr>
+            `;
                     });
             }
 
-            // ── Tab switch ───────────────────────────────────────────────────
+            // Tab switch
             function switchRequestType(type) {
                 currentRequestType = type;
                 const tabs = document.querySelectorAll('.request-tab');
                 tabs.forEach(t => t.classList.remove('active'));
                 tabs[type === 'technical' ? 0 : 1].classList.add('active');
-                document.getElementById('timeRangeFilter').value = 'all';
                 loadRequests(type);
             }
 
-            // ── Time filter ──────────────────────────────────────────────────
-            function filterRequestsByTime() {
-                const range = document.getElementById('timeRangeFilter')?.value || 'all';
-                const now = new Date();
-
-                const filtered = allRequests.filter(item => {
-                    const d = new Date(item.date);
-                    if (range === 'daily') return d.toDateString() === now.toDateString();
-                    if (range === 'weekly') {
-                        const c = new Date();
-                        c.setDate(now.getDate() - 7);
-                        return d >= c;
-                    }
-                    if (range === 'monthly') {
-                        const c = new Date();
-                        c.setDate(now.getDate() - 30);
-                        return d >= c;
-                    }
-                    return true;
-                });
-
-                renderRequestTable(filtered);
-            }
-
-            // ── Build table rows ─────────────────────────────────────────────
+            // Render table rows
             function renderRequestTable(rows) {
                 const tbody = document.getElementById('requestListBody');
                 if (!tbody) return;
+
                 tbody.innerHTML = '';
 
                 if (rows.length === 0) {
-                    tbody.innerHTML =
-                        `<tr><td colspan="5" class="text-center py-4 text-muted">
-                No pending requests found
-             </td></tr>`;
+                    tbody.innerHTML = `
+            <tr>
+                <td colspan="6" class="text-center py-4 text-muted">
+                    No pending requests found
+                </td>
+            </tr>
+        `;
                     return;
                 }
 
                 rows.forEach(item => {
-                    // Green check-mark status pill
-                    const statusPill = `
-            <span style="display:inline-flex; align-items:center; gap:5px;
-                         background:#dcfce7; color:#166534; padding:4px 12px;
-                         border-radius:20px; font-size:0.82rem; font-weight:600;">
-                <i class="bi bi-check-circle-fill" style="color:#22c55e;"></i>
-                Pending
-            </span>`;
-
                     const tr = document.createElement('tr');
+                    tr.setAttribute('data-user-id', item.id);
+
+                    // Format date
+                    const joinDate = item.join_datetime ? new Date(item.join_datetime).toLocaleDateString() : '—';
+
+                    // Determine image source
+                    const imageSrc = item.image || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(item.full_name || 'User') + '&background=22c55e&color=fff&size=50';
+
                     tr.innerHTML = `
-            <td>${item.display_id}</td>
-            <td><strong style="color:#166534;">${item.officer_id}</strong></td>
-            <td>${item.date}</td>
-            <td>${statusPill}</td>
             <td>
-                <button class="btn-view" onclick="openReqDetail(${item.id})">
-                    <i class="bi bi-eye"></i> View
-                </button>
-            </td>`;
+                <img src="${imageSrc}"
+                     style="width:40px; height:40px; border-radius:50%; object-fit:cover; border:2px solid #22c55e;"
+                     onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(item.full_name || 'User')}&background=22c55e&color=fff&size=40'"
+                     alt="${item.full_name}">
+            </td>
+            <td><strong>${item.university_id || '—'}</strong></td>
+            <td>${item.full_name || '—'}</td>
+            <td>${item.email || '—'}</td>
+            <td>${joinDate}</td>
+            <td>
+                <div class="action-buttons">
+                    <button class="btn-view" onclick="openRequestDetail(${item.id})" title="View Details">
+                        <i class="bi bi-eye"></i> View
+                    </button>
+                </div>
+            </td>
+        `;
                     tbody.appendChild(tr);
                 });
             }
+
+            // Open detail modal for user approval
+            // Open detail modal for user approval with image
+            function openRequestDetail(userId) {
+                const item = allRequests.find(r => r.id === userId);
+                if (!item) return;
+
+                currentUserId = userId;
+
+                // Determine image source
+                const imageSrc = item.image || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(item.full_name || 'User') + '&background=22c55e&color=fff&size=100';
+
+                document.getElementById('reqModalContent').innerHTML = `
+        <div style="text-align: center; margin-bottom: 20px;">
+            <img src="${imageSrc}"
+                 style="width:100px; height:100px; border-radius:50%; object-fit:cover; border:3px solid #22c55e; margin-bottom:10px;"
+                 onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(item.full_name || 'User')}&background=22c55e&color=fff&size=100'"
+                 alt="${item.full_name}">
+        </div>
+        <table style="width:100%; border-collapse:collapse;">
+            <tr>
+                <td style="color:#166534; font-weight:600; padding:9px 0; width:120px;">
+                    University ID:
+                </td>
+                <td style="padding:9px 0;">
+                    <strong>${item.university_id || '—'}</strong>
+                </td>
+            </tr>
+            <tr>
+                <td style="color:#166534; font-weight:600; padding:9px 0; border-top:1px solid #f0f0f0;">
+                    Name:
+                </td>
+                <td style="padding:9px 0; border-top:1px solid #f0f0f0;">
+                    ${item.full_name || '—'}
+                </td>
+            </tr>
+            <tr>
+                <td style="color:#166534; font-weight:600; padding:9px 0; border-top:1px solid #f0f0f0;">
+                    Email:
+                </td>
+                <td style="padding:9px 0; border-top:1px solid #f0f0f0;">
+                    ${item.email || '—'}
+                </td>
+            </tr>
+            <tr>
+                <td style="color:#166534; font-weight:600; padding:9px 0; border-top:1px solid #f0f0f0;">
+                    Mobile:
+                </td>
+                <td style="padding:9px 0; border-top:1px solid #f0f0f0;">
+                    ${item.mobile || '—'}
+                </td>
+            </tr>
+            <tr>
+                <td style="color:#166534; font-weight:600; padding:9px 0; border-top:1px solid #f0f0f0;">
+                    Request Type:
+                </td>
+                <td style="padding:9px 0; border-top:1px solid #f0f0f0;">
+                    <span class="badge bg-info">${currentRequestType === 'technical' ? 'Technical Officer' : 'Supervisor'}</span>
+                </td>
+            </tr>
+            <tr>
+                <td style="color:#166534; font-weight:600; padding:9px 0; border-top:1px solid #f0f0f0;">
+                    Requested On:
+                </td>
+                <td style="padding:9px 0; border-top:1px solid #f0f0f0;">
+                    ${item.join_datetime ? new Date(item.join_datetime).toLocaleString() : '—'}
+                </td>
+            </tr>
+        </table>
+    `;
+
+                document.getElementById('reqDetailModal').style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeReqModal() {
+                document.getElementById('reqDetailModal').style.display = 'none';
+                document.body.style.overflow = '';
+            }
+
+            // Close on backdrop click
+            document.getElementById('reqDetailModal')?.addEventListener('click', function(e) {
+                if (e.target === this) closeReqModal();
+            });
+
+            // Reject sub-modal
+            function openRejectBox() {
+                document.getElementById('reqRejectText').value = '';
+                document.getElementById('reqRejectModal').style.display = 'flex';
+            }
+
+            function closeRejectBox() {
+                document.getElementById('reqRejectModal').style.display = 'none';
+            }
+
+            // Submit approve / reject for user account requests
+            function submitReqAction(action) {
+                if (!currentUserId) return;
+
+                const reason = action === 'reject' ?
+                    (document.getElementById('reqRejectText')?.value.trim() || '') :
+                    '';
+
+                if (action === 'reject' && !reason) {
+                    alert('Please enter a rejection reason.');
+                    return;
+                }
+
+                // Disable buttons
+                ['reqApproveBtn', 'reqRejectBtn'].forEach(id => {
+                    const btn = document.getElementById(id);
+                    if (btn) btn.disabled = true;
+                });
+
+                const fd = new FormData();
+                fd.append('user_id', currentUserId);
+                fd.append('action', action);
+                if (reason) fd.append('reason', reason);
+
+                fetch('../controllers/process_user_action.php', {
+                        method: 'POST',
+                        body: fd
+                    })
+                    .then(r => r.json())
+                    .then(res => {
+                        if (res.success) {
+                            closeRejectBox();
+                            closeReqModal();
+                            showSuccess(`User request ${action === 'approve' ? 'approved' : 'rejected'} successfully!`);
+
+                            // Refresh the current tab
+                            loadRequests(currentRequestType);
+
+                            // Update counts
+                            fetchBothBadgeCounts();
+                        } else {
+                            showError(res.message || 'Action failed.');
+                        }
+                    })
+                    .catch(() => showError('Network error. Please try again.'))
+                    .finally(() => {
+                        ['reqApproveBtn', 'reqRejectBtn'].forEach(id => {
+                            const btn = document.getElementById(id);
+                            if (btn) btn.disabled = false;
+                        });
+                    });
+            }
+
+
+
+
+
+
+            function viewMaintenanceItems() {
+                showSection('equipment');
+                setTimeout(function() {
+                    const filterSelect = document.getElementById('statusFilterequipment');
+                    if (filterSelect) {
+                        filterSelect.value = 'maintenance';
+                        filterAndDisplayEquipment();
+                    }
+                    const searchInput = document.getElementById('equipmentSearch');
+                    if (searchInput) searchInput.value = '';
+                }, 300);
+            }
+
+
+
+
+
+
+            function displayEquipmentTable(equipment) {
+                const tableBody = document.getElementById('equipmentTableBody');
+                if (!tableBody) return;
+
+                tableBody.innerHTML = '';
+
+                if (!equipment || equipment.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="6" class="text-center py-4">No equipment found</td></tr>';
+                    return;
+                }
+
+                equipment.sort((a, b) => b.usage - a.usage);
+
+                equipment.forEach(item => {
+                    const code = item.code || 'N/A';
+                    const name = item.name || 'Unknown';
+                    const image = item.image || 'https://cdn-icons-png.flaticon.com/512/2941/2941514.png';
+                    const maintenance = item.maintenance || 0;
+                    const broken = item.broken || 0;
+                    const usage = Math.round(parseFloat(item.usage) || 0);
+
+                    let barColor = '#22c55e';
+                    if (usage < 30) barColor = '#ef4444';
+                    else if (usage < 60) barColor = '#f59e0b';
+
+                    const row = document.createElement('tr');
+                    row.setAttribute('data-equipment-id', code);
+                    row.setAttribute('data-equipment-id-numeric', item.id || '');
+
+                    row.innerHTML = `
+            <td>
+                <img src="${image}"
+                     style="width:50px;height:50px;object-fit:contain;"
+                     onerror="this.src='https://cdn-icons-png.flaticon.com/512/2941/2941514.png'"
+                     alt="${name}">
+            </td>
+            <td><strong>${name}</strong></td>
+            <td>
+                ${maintenance > 0 
+                    ? `<span class="badge bg-warning">${maintenance}</span>` 
+                    : '<span class="text-muted">------</span>'}
+            </td>
+            <td>
+                ${broken > 0 
+                    ? `<span class="badge bg-danger">${broken}</span>` 
+                    : '<span class="text-muted">------</span>'}
+            </td>
+            <td>
+                <div class="d-flex align-items-center gap-2">
+                    <div style="width:100px;height:8px;background:#e9ecef;border-radius:4px;overflow:hidden;">
+                        <div style="width:${usage}%;height:8px;background:${barColor};border-radius:4px;"></div>
+                    </div>
+                    <span style="font-weight:600;color:${barColor};min-width:45px;">${usage}%</span>
+                </div>
+            </td>
+            <td>
+                <div class="action-buttons">
+                    <button class="btn-view" onclick="viewEquipmentByCode('${code}')" title="View Details">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                    <button class="btn-edit" onclick="editEquipment('${code}')" title="Edit">
+                        <i class="bi bi-pencil-square"></i>
+                    </button>
+                    <button class="btn-remove" onclick="removeEquipment('${code}')" title="Remove">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
+            </td>
+        `;
+                    tableBody.appendChild(row);
+                });
+            }
+
+
+function viewEquipmentByCode(code) {
+    const contentDiv = document.getElementById('equipmentDetailsContent');
+    const modalEl = document.getElementById('equipmentDetailsModal');
+
+    // Show loading
+    contentDiv.innerHTML = `
+        <div class="text-center py-5">
+            <div class="spinner-border text-success" role="status" style="width:2rem;height:2rem;"></div>
+            <p class="mt-3 text-muted small fw-semibold">Loading equipment details...</p>
+        </div>`;
+
+    // Clean up any existing modal instance and backdrop
+    const existing = bootstrap.Modal.getInstance(modalEl);
+    if (existing) existing.dispose();
+    document.querySelectorAll('.modal-backdrop').forEach(el => el.remove());
+    document.body.classList.remove('modal-open');
+    document.body.style.overflow = '';
+    document.body.style.paddingRight = '';
+
+    // Show modal FIRST, then fetch
+    const modal = new bootstrap.Modal(modalEl);
+    modal.show();
+
+    fetch(`../controllers/get_equipment_details.php?code=${encodeURIComponent(code)}`)
+        .then(response => response.json())
+        .then(data => {
+            if (!data.success) {
+                contentDiv.innerHTML = `<div class="alert alert-danger m-3">${data.message || 'Failed to load'}</div>`;
+                return;
+            }
+
+            const eq = data.equipment;
+            const addedDate = eq.added_datetime ? new Date(eq.added_datetime).toLocaleDateString() : '—';
+
+            contentDiv.innerHTML = `
+                <div class="row g-0">
+                    <div class="col-md-4 text-center border-end p-4">
+                        <img src="${eq.image_path || 'https://cdn-icons-png.flaticon.com/512/2941/2941514.png'}"
+                             style="width:140px;height:140px;object-fit:contain;"
+                             class="img-fluid rounded border p-2 bg-light mb-3"
+                             onerror="this.src='https://cdn-icons-png.flaticon.com/512/2941/2941514.png'">
+                        <h5 class="fw-bold mb-1" style="color:#166534;">${eq.name || 'Unknown'}</h5>
+                        <span class="badge bg-secondary"><i class="bi bi-upc-scan me-1"></i>${eq.code || 'N/A'}</span>
+                        <div class="mt-3">
+                            <span class="badge bg-info text-dark">
+                                <i class="bi bi-box-seam me-1"></i>Total Qty: ${eq.total_qty || 0}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="col-md-8 p-3">
+                        <table class="table table-sm table-borderless">
+                            <tr><th class="text-muted fw-normal" style="width:160px">Date Added</th><td>${addedDate}</td></tr>
+                            <tr><th class="text-muted fw-normal">Simultaneous Users</th><td>${eq.simultaneous_users || 1}</td></tr>
+                            <tr>
+                                <th class="text-muted fw-normal">Sterilization Required</th>
+                                <td><span class="badge ${eq.sterilization_required === 'YES' ? 'bg-warning' : 'bg-secondary'}">${eq.sterilization_required || 'NO'}</span></td>
+                            </tr>
+                            <tr>
+                                <th class="text-muted fw-normal">Reservation Required</th>
+                                <td><span class="badge ${eq.reservation_required === 'YES' ? 'bg-success' : 'bg-secondary'}">${eq.reservation_required || 'YES'}</span></td>
+                            </tr>
+                            ${eq.description ? `<tr><th class="text-muted fw-normal">Description</th><td><small>${eq.description}</small></td></tr>` : ''}
+                        </table>
+                    </div>
+                </div>`;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            contentDiv.innerHTML = `<div class="alert alert-danger m-3">Network error. Please try again.</div>`;
+        });
+}
+
+            function viewEquipment(equipment) {
+                const detailsContent = document.getElementById('equipmentDetailsContent');
+
+                const today = new Date();
+                const nextDate = new Date(equipment.nextMaintenance);
+                const isOverdue = nextDate < today;
+
+                detailsContent.innerHTML = `
+        <div class="row">
+            <div class="col-md-4 text-center">
+                <img src="${equipment.image}" style="width: 150px; height: 150px; object-fit: contain;" class="mb-3">
+                <h4>${equipment.name}</h4>
+                <p class="text-muted">${equipment.code}</p>
+                <span class="badge ${equipment.available > 0 ? 'bg-success' : 'bg-danger'}" style="font-size: 1rem;">
+                    ${equipment.available > 0 ? 'Available' : 'Unavailable'}
+                </span>
+            </div>
+            <div class="col-md-8">
+                <table class="table table-borderless">
+                    <tr><th style="width: 150px;">Location:</th><td>${equipment.location}</td></tr>
+                    <tr><th>Manufacturer:</th><td>${equipment.manufacturer}</td></tr>
+                    <tr><th>Model:</th><td>${equipment.model}</td></tr>
+                    <tr><th>Purchase Date:</th><td>${equipment.purchaseDate}</td></tr>
+                    <tr><th>Last Maintenance:</th><td>${equipment.lastMaintenance}</td></tr>
+                    <tr>
+                        <th>Next Maintenance:</th>
+                        <td>
+                            ${equipment.nextMaintenance}
+                            ${isOverdue ? '<span class="badge bg-danger ms-2">⚠️ Overdue</span>' : ''}
+                        </td>
+                    </tr>
+                    <tr><th>Availability:</th><td><span class="badge" style="background: #22c55e;">${equipment.available}/${equipment.total} units</span></td></tr>
+                    <tr><th>Broken:</th><td><span class="badge bg-warning">${equipment.broken_qty}</span></td></tr>
+                    <tr><th>In Repair:</th><td><span class="badge bg-info">${equipment.repair_qty}</span></td></tr>
+                    <tr><th>Maintenance:</th><td><span class="badge bg-warning">${equipment.maintenance} pending</span></td></tr>
+                    <tr>
+                        <th>Usage Rate:</th>
+                        <td>
+                            <div class="progress-bar" style="width: 200px;">
+                                <div class="progress-fill" style="width: ${equipment.usage}%"></div>
+                            </div>
+                            ${equipment.usage}%
+                        </td>
+                    </tr>
+                    <tr><th>Description:</th><td>${equipment.description}</td></tr>
+                </table>
+            </div>
+        </div>
+    `;
+
+                const eqModal = document.getElementById('equipmentDetailsModal');
+                const eqExisting = bootstrap.Modal.getInstance(eqModal);
+                if (eqExisting) eqExisting.dispose();
+                new bootstrap.Modal(eqModal).show();
+            }
+
+            // Save new equipment
+            function saveNewEquipment() {
+                // Get form values
+                const code = document.getElementById('eqCode').value.trim();
+                const name = document.getElementById('eqName').value.trim();
+                const qty = document.getElementById('eqQty').value;
+                const simultaneous_users = document.getElementById('eqSimultaneousUsers').value || 1;
+                const sterilization = document.getElementById('eqSterilization').value;
+                const reservation = document.getElementById('eqReservation').value;
+                const description = document.getElementById('eqDescription').value.trim();
+                const imageFile = document.getElementById('eqImage').files[0];
+
+                // Validate
+                let isValid = true;
+
+                if (!code) {
+                    document.getElementById('eqCode').classList.add('is-invalid');
+                    document.getElementById('eqCodeError').textContent = 'Equipment code is required';
+                    isValid = false;
+                } else {
+                    document.getElementById('eqCode').classList.remove('is-invalid');
+                }
+
+                if (!name) {
+                    document.getElementById('eqName').classList.add('is-invalid');
+                    document.getElementById('eqNameError').textContent = 'Equipment name is required';
+                    isValid = false;
+                } else {
+                    document.getElementById('eqName').classList.remove('is-invalid');
+                }
+
+                if (!qty || qty < 1) {
+                    document.getElementById('eqQty').classList.add('is-invalid');
+                    document.getElementById('eqQtyError').textContent = 'Quantity must be at least 1';
+                    isValid = false;
+                } else {
+                    document.getElementById('eqQty').classList.remove('is-invalid');
+                }
+
+                if (!isValid) return;
+
+                // Show loading state
+                const saveBtn = document.querySelector('#addEquipmentModal .btn-success');
+                const originalText = saveBtn.innerHTML;
+                saveBtn.disabled = true;
+                saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
+
+                // Create FormData
+                const formData = new FormData();
+                formData.append('code', code);
+                formData.append('name', name);
+                formData.append('qty', qty);
+                formData.append('simultaneous_users', simultaneous_users);
+                formData.append('sterilization_required', sterilization);
+                formData.append('reservation_required', reservation);
+                formData.append('description', description);
+                if (imageFile) {
+                    formData.append('image', imageFile);
+                }
+
+                // Send AJAX request
+                fetch('../controllers/add_equipment.php', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        saveBtn.disabled = false;
+                        saveBtn.innerHTML = originalText;
+
+                        if (data.success) {
+                            // Close modal
+                            bootstrap.Modal.getInstance(document.getElementById('addEquipmentModal')).hide();
+
+                            // Show success message
+                            showSuccess('Equipment added successfully!');
+
+                            // Reload equipment data
+                            loadEquipmentWithUsage();
+                        } else {
+                            alert('Error: ' + (data.message || 'Failed to add equipment'));
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        saveBtn.disabled = false;
+                        saveBtn.innerHTML = originalText;
+                        alert('Network error. Please try again.');
+                    });
+            }
+
+            // function editEquipment(code) {
+            //     alert('Edit equipment: ' + code);
+            // }
+
+    function removeEquipment(code) {
+    if (!confirm(`Are you sure you want to remove equipment "${code}"?\n\nThis action cannot be undone.`)) {
+        return;
+    }
+
+    // Find button by traversing the DOM — no event needed
+    const allBtns = document.querySelectorAll('.btn-remove');
+    let btn = null;
+    allBtns.forEach(b => {
+        if (b.getAttribute('onclick') && b.getAttribute('onclick').includes(code)) {
+            btn = b;
+        }
+    });
+
+    const originalHTML = btn ? btn.innerHTML : '<i class="bi bi-trash"></i>';
+    
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+    }
+
+    fetch('../controllers/delete_equipment.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code: code })
+    })
+    .then(r => r.json())
+    .then(data => {
+        console.log('Delete response:', data);
+        if (data.success) {
+            showSuccess(`Equipment "${code}" removed successfully!`);
+            loadEquipmentWithUsage();
+        } else {
+            showError(data.message || 'Failed to remove equipment.');
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = originalHTML;
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Delete error:', error);
+        showError('Network error. Please try again.');
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = originalHTML;
+        }
+    });
+}
+            // ── Build table rows ─────────────────────────────────────────────
+            // function renderRequestTable(rows) {
+            //     const tbody = document.getElementById('requestListBody');
+            //     if (!tbody) return;
+            //     tbody.innerHTML = '';
+
+            //     if (rows.length === 0) {
+            //         tbody.innerHTML =
+            //             `<tr><td colspan="5" class="text-center py-4 text-muted">
+            //     No pending requests found
+            //  </td></tr>`;
+            //         return;
+            //     }
+
+            //     rows.forEach(item => {
+
+            //         const statusPill = `
+            // <span style="display:inline-flex; align-items:center; gap:5px;
+            //              background:#dcfce7; color:#166534; padding:4px 12px;
+            //              border-radius:20px; font-size:0.82rem; font-weight:600;">
+            //     <i class="bi bi-check-circle-fill" style="color:#22c55e;"></i>
+            //     Pending
+            // </span>`;
+
+            //         const tr = document.createElement('tr');
+            //         tr.innerHTML = `
+            // <td>${item.display_id}</td>
+            // <td><strong style="color:#166534;">${item.officer_id}</strong></td>
+            // <td>${item.date}</td>
+            // <td>${statusPill}</td>
+            // <td>
+            //     <button class="btn-view" onclick="openReqDetail(${item.id})">
+            //         <i class="bi bi-eye"></i> View
+            //     </button>
+            // </td>`;
+            //         tbody.appendChild(tr);
+            //     });
+            // }
 
             // ── Open detail modal ────────────────────────────────────────────
             function openReqDetail(id) {
@@ -4518,10 +6190,10 @@ $query = "SELECT
                 document.body.style.overflow = 'hidden';
             }
 
-            function closeReqModal() {
-                document.getElementById('reqDetailModal').style.display = 'none';
-                document.body.style.overflow = '';
-            }
+            // function closeReqModal() {
+            //     document.getElementById('reqDetailModal').style.display = 'none';
+            //     document.body.style.overflow = '';
+            // }
 
             // Close on backdrop click
             document.getElementById('reqDetailModal').addEventListener('click', function(e) {
@@ -4529,78 +6201,115 @@ $query = "SELECT
             });
 
             // ── Reject sub-modal ─────────────────────────────────────────────
-            function openRejectBox() {
-                document.getElementById('reqRejectText').value = '';
-                document.getElementById('reqRejectModal').style.display = 'flex';
-            }
+            // function openRejectBox() {
+            //     document.getElementById('reqRejectText').value = '';
+            //     document.getElementById('reqRejectModal').style.display = 'flex';
+            // }
 
-            function closeRejectBox() {
-                document.getElementById('reqRejectModal').style.display = 'none';
-            }
+            // function closeRejectBox() {
+            //     document.getElementById('reqRejectModal').style.display = 'none';
+            // }
 
             // ── Submit approve / reject ──────────────────────────────────────
-            function submitReqAction(action) {
-                if (!currentRequestId) return;
+            // function submitReqAction(action) {
+            //     if (!currentRequestId) return;
 
-                const reason = action === 'reject' ?
-                    (document.getElementById('reqRejectText')?.value.trim() || '') :
-                    '';
+            //     const reason = action === 'reject' ?
+            //         (document.getElementById('reqRejectText')?.value.trim() || '') :
+            //         '';
 
-                if (action === 'reject' && !reason) {
-                    alert('Please enter a rejection reason.');
-                    return;
-                }
+            //     if (action === 'reject' && !reason) {
+            //         alert('Please enter a rejection reason.');
+            //         return;
+            //     }
 
-                // Disable buttons
-                ['reqApproveBtn', 'reqRejectBtn'].forEach(id => {
-                    const btn = document.getElementById(id);
-                    if (btn) btn.disabled = true;
-                });
 
-                const fd = new FormData();
-                fd.append('reservation_id', currentRequestId);
-                fd.append('action', action);
-                if (reason) fd.append('reason', reason);
+            //     ['reqApproveBtn', 'reqRejectBtn'].forEach(id => {
+            //         const btn = document.getElementById(id);
+            //         if (btn) btn.disabled = true;
+            //     });
 
-                fetch('../controllers/process_request_action.php', {
-                        method: 'POST',
-                        body: fd
-                    })
-                    .then(r => r.json())
-                    .then(res => {
-                        if (res.success) {
-                            closeRejectBox();
-                            closeReqModal();
-                            showSuccess(`Request ${action === 'approve' ? 'approved ✓' : 'rejected'} successfully!`);
-                            // Refresh table + both badges
-                            loadRequests(currentRequestType);
-                            fetchBothBadgeCounts();
-                        } else {
-                            showError(res.message || 'Action failed.');
-                        }
-                    })
-                    .catch(() => showError('Network error. Please try again.'))
-                    .finally(() => {
-                        ['reqApproveBtn', 'reqRejectBtn'].forEach(id => {
-                            const btn = document.getElementById(id);
-                            if (btn) btn.disabled = false;
-                        });
-                    });
-            }
+            //     const fd = new FormData();
+            //     fd.append('reservation_id', currentRequestId);
+            //     fd.append('action', action);
+            //     if (reason) fd.append('reason', reason);
+
+            //     fetch('../controllers/process_request_action.php', {
+            //             method: 'POST',
+            //             body: fd
+            //         })
+            //         .then(r => r.json())
+            //         .then(res => {
+            //             if (res.success) {
+            //                 closeRejectBox();
+            //                 closeReqModal();
+            //                 showSuccess(`Request ${action === 'approve' ? 'approved ✓' : 'rejected'} successfully!`);
+
+            //                 loadRequests(currentRequestType);
+            //                 fetchBothBadgeCounts();
+            //             } else {
+            //                 showError(res.message || 'Action failed.');
+            //             }
+            //         })
+            //         .catch(() => showError('Network error. Please try again.'))
+            //         .finally(() => {
+            //             ['reqApproveBtn', 'reqRejectBtn'].forEach(id => {
+            //                 const btn = document.getElementById(id);
+            //                 if (btn) btn.disabled = false;
+            //             });
+            //         });
+            // }
 
             // ── Refresh both tab badge counts ───────────────────────────────
             function fetchBothBadgeCounts() {
                 Promise.all([
-                    fetch('../controllers/get_requests.php?type=technical').then(r => r.json()),
-                    fetch('../controllers/get_requests.php?type=supervisor').then(r => r.json())
+                    fetch('../controllers/get_count.php?type=technical').then(r => r.json()),
+                    fetch('../controllers/get_count.php?type=supervisor').then(r => r.json())
                 ]).then(([tech, sup]) => {
                     const tCount = tech.success ? tech.count : 0;
                     const sCount = sup.success ? sup.count : 0;
-                    document.getElementById('technicalRequestCount').textContent = tCount;
-                    document.getElementById('supervisorRequestCount').textContent = sCount;
+
+                    // Update tab counts with zero-count class
+                    const techBadge = document.getElementById('technicalRequestCount');
+                    const supBadge = document.getElementById('supervisorRequestCount');
+
+                    if (techBadge) {
+                        techBadge.textContent = tCount;
+                        if (tCount === 0) {
+                            techBadge.classList.add('zero-count');
+                        } else {
+                            techBadge.classList.remove('zero-count');
+                        }
+                    }
+
+                    if (supBadge) {
+                        supBadge.textContent = sCount;
+                        if (sCount === 0) {
+                            supBadge.classList.add('zero-count');
+                        } else {
+                            supBadge.classList.remove('zero-count');
+                        }
+                    }
+
+                    // Calculate total pending requests
+                    const totalCount = tCount + sCount;
+
+                    // Update the main notification badge
                     const badge = document.getElementById('requestBadge');
-                    if (badge) badge.textContent = tCount + sCount;
-                }).catch(() => {});
+                    if (badge) {
+                        if (totalCount > 0) {
+                            badge.textContent = totalCount;
+                            badge.classList.add('visible');
+                        } else {
+                            badge.textContent = '0';
+                            badge.classList.remove('visible');
+                        }
+                    }
+
+                    console.log('Request counts updated - Technical:', tCount, 'Supervisor:', sCount, 'Total:', totalCount);
+                }).catch(error => {
+                    console.error('Error fetching counts:', error);
+                });
             }
 
             // Keep old name working (called from DOMContentLoaded)
@@ -4608,18 +6317,21 @@ $query = "SELECT
                 fetchBothBadgeCounts();
             }
 
+            // Call this function periodically to keep counts updated (every 30 seconds)
+            setInterval(fetchBothBadgeCounts, 30000);
+
 
 
 
 
             // ========== EQUIPMENT SEARCH FUNCTIONS ==========
-            function searchEquipment() {
-                const searchTerm = document.getElementById('equipmentSearch').value.toLowerCase().trim();
-                const equipmentVisible = filterEquipmentTable('equipmentTableBody', searchTerm);
-                toggleEquipmentVisibility('equipmentTableCard', equipmentVisible, searchTerm);
-                updateEquipmentCount(searchTerm);
-            }
+            // ========== EQUIPMENT SEARCH FUNCTIONS ==========
+            // function searchEquipment() {
+            //     // Call the combined filter function
+            //     searchEquipmentStatus();
+            // }
 
+            // Keep these helper functions for backward compatibility
             function filterEquipmentTable(tableId, searchTerm) {
                 const table = document.getElementById(tableId);
                 if (!table) return 0;
@@ -4643,111 +6355,208 @@ $query = "SELECT
             }
 
             function updateEquipmentCount(searchTerm) {
+                // This function is now handled by searchEquipmentStatus
+                // Keep it for backward compatibility
                 const equipmentTable = document.getElementById('equipmentTableBody');
                 if (!equipmentTable) return;
 
                 const visibleEquipment = Array.from(equipmentTable.getElementsByTagName('tr'))
                     .filter(row => row.style.display !== 'none').length;
-                const totalEquipment = equipmentTable.children.length;
+                const totalEquipment = allEquipmentData.length;
 
                 document.getElementById('equipmentCount').textContent =
                     (visibleEquipment > 0 || searchTerm === '') ?
-                    '(' + visibleEquipment + '/' + totalEquipment + ')' : '(0)';
+                    '(' + totalEquipment + ')' : '(0)';
             }
 
             // ========== USER MANAGEMENT FUNCTIONS ==========
             // ========== USER ACTIVATE/DEACTIVATE FUNCTION WITH AJAX ==========
-            function toggleUserStatus(userId) {
-                const userRow = document.querySelector(`tr[data-user-id="${userId}"]`);
-                if (!userRow) return;
+            // ========== USER ACTIVATE/DEACTIVATE FUNCTION WITH AJAX ==========
+            function toggleUserStatus(universityId, dbId) {
+                console.log('toggleUserStatus called with:', {
+                    universityId,
+                    dbId
+                });
 
-                const currentStatus = userRow.getAttribute('data-status');
-                const actionCell = userRow.querySelector('.action-buttons');
-                const button = actionCell.querySelector(currentStatus === 'active' ? '.btn-deactivate' : '.btn-activate');
+                // Find the row by university ID
+                const userRow = document.querySelector(`tr[data-user-id="${universityId}"]`);
 
-                // Determine new status
-                const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
-                const action = currentStatus === 'active' ? 'deactivate' : 'activate';
-
-                // Confirm action
-                if (!confirm(`Are you sure you want to ${action} user ${userId}?`)) {
+                if (!userRow) {
+                    console.error('User row not found for ID:', universityId);
+                    alert('Error: User row not found');
                     return;
                 }
 
-                // Show loading state
-                const originalButtonHtml = button.innerHTML;
-                button.disabled = true;
-                button.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Processing...';
+                const currentStatus = userRow.getAttribute('data-status');
+                const action = currentStatus === 'active' ? 'deactivate' : 'activate';
+                const actionText = action === 'activate' ? 'activate' : 'deactivate';
 
-                // Create FormData
+                if (!confirm(`Are you sure you want to ${actionText} this user?`)) {
+                    return;
+                }
+
+                // Get the button that was clicked
+                const button = event.currentTarget;
+                const originalText = button.innerHTML;
+
+                // Show loading state
+                button.disabled = true;
+                button.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Processing...';
+
+                // Create FormData with database ID
                 const formData = new FormData();
-                formData.append('user_id', userId);
+                formData.append('user_id', dbId);
                 formData.append('action', action);
 
+                console.log('Sending request with:', {
+                    dbId,
+                    action
+                });
+
                 // Send AJAX request
-                const xhr = new XMLHttpRequest();
-                xhr.open('POST', '../controllers/activate_process.php', true);
-                xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+                fetch('../controllers/activate_process.php', {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Response data:', data);
+                        button.disabled = false;
 
-                xhr.onload = function() {
-                    button.disabled = false;
+                        if (data.success) {
+                            // Update UI
+                            const newStatus = action === 'activate' ? 'active' : 'inactive';
+                            userRow.setAttribute('data-status', newStatus);
 
-                    if (xhr.status === 200) {
-                        try {
-                            const response = JSON.parse(xhr.responseText);
-
-                            if (response.success) {
-                                // Update UI on success
-                                userRow.setAttribute('data-status', newStatus);
-
-                                if (newStatus === 'active') {
-                                    button.className = 'btn-deactivate';
-                                    button.innerHTML = '<i class="bi bi-person-x"></i> Deactivate';
-                                    showSuccess(`User ${userId} has been activated successfully!`);
-                                    loadUserCounts();
-                                } else {
-                                    button.className = 'btn-activate';
-                                    button.innerHTML = '<i class="bi bi-person-check"></i> Activate';
-                                    showSuccess(`User ${userId} has been deactivated successfully!`);
-                                    loadUserCounts();
-                                }
-
-                                // Update counts if function exists
-                                if (typeof updateUserCounts === 'function') {
-                                    updateUserCounts();
-                                }
-
+                            // Update button appearance
+                            if (action === 'activate') {
+                                button.className = 'btn-deactivate';
+                                button.innerHTML = '<i class="bi bi-person-x"></i> Deactivate';
+                                showSuccess('User activated successfully!');
                             } else {
-                                button.innerHTML = originalButtonHtml;
-                                showError(response.message || `Failed to ${action} user.`);
+                                button.className = 'btn-activate';
+                                button.innerHTML = '<i class="bi bi-person-check"></i> Activate';
+                                showSuccess('User deactivated successfully!');
                             }
-                        } catch (e) {
-                            console.error('Parse error:', e);
-                            button.innerHTML = originalButtonHtml;
-                            showError('Server error occurred.');
+                        } else {
+                            button.innerHTML = originalText;
+                            alert('Error: ' + (data.message || 'Unknown error'));
                         }
-                    } else {
-                        button.innerHTML = originalButtonHtml;
-                        showError('Connection error. Please try again.');
+                    })
+                    .catch(error => {
+                        console.error('Error in fetch:', error);
+                        button.disabled = false;
+                        button.innerHTML = originalText;
+                        alert('Network error. Please try again.');
+                    });
+            }
+            // Function to clear validation errors
+            // Function to clear validation errors
+            // Function to clear validation errors
+            function clearEditValidationErrors() {
+                // Clear all error messages and remove invalid class
+                const errorFields = ['FirstName', 'LastName', 'Email', 'Mobile', 'Role', 'Image', 'SupervisorId'];
+
+                errorFields.forEach(field => {
+                    const errorDiv = document.getElementById(`edit${field}Error`);
+                    const inputField = document.getElementById(`edit${field}`);
+
+                    if (errorDiv) {
+                        errorDiv.textContent = '';
+                        errorDiv.style.display = 'none';
                     }
-                };
-
-                xhr.onerror = function() {
-                    button.disabled = false;
-                    button.innerHTML = originalButtonHtml;
-                    showError('Network error. Please check your connection.');
-                };
-
-                xhr.ontimeout = function() {
-                    button.disabled = false;
-                    button.innerHTML = originalButtonHtml;
-                    showError('Request timed out. Please try again.');
-                };
-
-                xhr.timeout = 30000;
-                xhr.send(formData);
+                    if (inputField) {
+                        inputField.classList.remove('is-invalid');
+                    }
+                });
             }
 
+            // Function to update user row in table
+            function updateUserRowInTable(userId, userData) {
+                console.log('Updating row for user:', userId, userData);
+
+                // Try to find the row by university ID first
+                let rows = document.querySelectorAll(`tr[data-user-id="${userId}"]`);
+
+                // If not found, try to find by database ID if userData contains it
+                if (rows.length === 0 && userData.id) {
+                    rows = document.querySelectorAll(`tr[data-db-id="${userData.id}"]`);
+                    console.log('Trying to find by database ID:', userData.id, 'Found:', rows.length);
+                }
+
+                // If still not found, try to find by university ID from userData
+                if (rows.length === 0 && userData.university_id) {
+                    rows = document.querySelectorAll(`tr[data-user-id="${userData.university_id}"]`);
+                    console.log('Trying to find by university_id from userData:', userData.university_id, 'Found:', rows.length);
+                }
+
+                if (rows.length === 0) {
+                    console.error('No rows found for user:', userId);
+                    return;
+                }
+
+                rows.forEach(row => {
+                    // Update name (cell index 2)
+                    const nameCell = row.cells[2];
+                    if (nameCell) {
+                        nameCell.innerHTML = `<strong>${userData.first_name} ${userData.last_name}</strong>`;
+                    }
+
+                    // Update mobile (cell index 3)
+                    const mobileCell = row.cells[3];
+                    if (mobileCell) {
+                        let mobile = userData.mobile;
+                        if (mobile && mobile.length === 10) {
+                            mobile = mobile.substr(0, 3) + '-' + mobile.substr(3, 3) + '-' + mobile.substr(6, 4);
+                        }
+                        mobileCell.textContent = mobile;
+                    }
+
+                    // Update email (cell index 4)
+                    const emailCell = row.cells[4];
+                    if (emailCell) {
+                        emailCell.textContent = userData.email;
+                    }
+
+                    // Update image (cell index 0)
+                    const imageCell = row.cells[0];
+                    if (imageCell) {
+                        const img = imageCell.querySelector('img');
+                        if (img) {
+                            img.src = userData.image_url;
+                        }
+                    }
+
+                    // Update status button
+                    const actionCell = row.querySelector('.action-buttons');
+                    if (actionCell) {
+                        // Find the status button (it might be either activate or deactivate)
+                        const deactivateBtn = actionCell.querySelector('.btn-deactivate');
+                        const activateBtn = actionCell.querySelector('.btn-activate');
+
+                        if (userData.status == 1) {
+                            // User is active - show deactivate button
+                            if (deactivateBtn) {
+                                deactivateBtn.style.display = 'inline-block';
+                            }
+                            if (activateBtn) {
+                                activateBtn.style.display = 'none';
+                            }
+                        } else {
+                            // User is inactive - show activate button
+                            if (deactivateBtn) {
+                                deactivateBtn.style.display = 'none';
+                            }
+                            if (activateBtn) {
+                                activateBtn.style.display = 'inline-block';
+                            }
+                        }
+                    }
+
+                    // Update data-status attribute
+                    row.setAttribute('data-status', userData.status == 1 ? 'active' : 'inactive');
+                });
+            }
             // Helper function to show success messages
             function showSuccess(message) {
                 // Check if message div exists
@@ -4798,6 +6607,55 @@ $query = "SELECT
 
 
 
+
+            // Function to show user management and scroll to specific section
+            function showUserManagementAndScroll(userType) {
+                // First show the user management section
+                showSection('userManagement');
+
+                // Small delay to ensure section is visible before scrolling
+                setTimeout(function() {
+                    let targetElement;
+
+                    // Determine which card to scroll to based on user type
+                    switch (userType) {
+                        case 'student':
+                            targetElement = document.getElementById('studentTableCard');
+                            break;
+                        case 'supervisor':
+                            targetElement = document.getElementById('supervisorTableCard');
+                            break;
+                        case 'technical':
+                            targetElement = document.getElementById('techOfficerTableCard');
+                            break;
+                        default:
+                            return;
+                    }
+
+                    // Scroll to the target element with smooth behavior
+                    if (targetElement) {
+                        // Get the position of the element
+                        const elementPosition = targetElement.getBoundingClientRect().top + window.pageYOffset;
+
+                        // Scroll with offset to position it nicely (not at the very top)
+                        window.scrollTo({
+                            top: elementPosition - 100, // Offset from the top
+                            behavior: 'smooth'
+                        });
+
+                        // Optional: Add a highlight effect
+                        targetElement.style.transition = 'box-shadow 0.5s ease, transform 0.3s ease';
+                        targetElement.style.boxShadow = '0 0 0 4px rgba(34, 197, 94, 0.5), 0 20px 40px rgba(0, 0, 0, 0.1)';
+                        targetElement.style.transform = 'scale(1.01)';
+
+                        // Remove the highlight after 2 seconds
+                        setTimeout(function() {
+                            targetElement.style.boxShadow = '';
+                            targetElement.style.transform = '';
+                        }, 2000);
+                    }
+                }, 100);
+            }
 
 
 
@@ -4906,14 +6764,339 @@ $query = "SELECT
                 xhr.send();
             }
 
-            function addNewUser() {
-                alert('Add User modal would open here');
+            // Global variable to store current editing user ID
+            let currentEditUserId = null;
+            let allSupervisors = [];
+
+            // Function to load supervisors
+            function loadSupervisors() {
+                fetch('../controllers/get_supervisors.php')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            allSupervisors = data.supervisors;
+                            const select = document.getElementById('editSupervisorId');
+                            select.innerHTML = '<option value="">Select Supervisor</option>';
+
+                            data.supervisors.forEach(sup => {
+                                const option = document.createElement('option');
+                                option.value = sup.id;
+                                option.textContent = `${sup.first_name} ${sup.last_name} (${sup.university_id})`;
+                                select.appendChild(option);
+                            });
+                        }
+                    })
+                    .catch(error => console.error('Error loading supervisors:', error));
             }
 
+            // Function to edit user
+            // Function to edit user
             function editUser(userId) {
-                alert('Edit user: ' + userId);
+                console.log('========== EDIT USER CALLED ==========');
+                console.log('Raw userId parameter:', userId);
+                console.log('Type of userId:', typeof userId);
+
+                currentEditUserId = userId;
+
+                // Show modal
+                const modal = new bootstrap.Modal(document.getElementById('editUserModal'));
+                modal.show();
+
+                // Show loading, hide form
+                document.getElementById('editUserLoading').style.display = 'block';
+                document.getElementById('editUserForm').style.display = 'none';
+
+                // Clear any previous validation errors
+                if (typeof clearEditValidationErrors === 'function') {
+                    clearEditValidationErrors();
+                }
+
+                // Load supervisors for dropdown
+                loadSupervisors();
+
+                // Try to find the row to get the database ID
+                const userRow = document.querySelector(`tr[data-user-id="${userId}"]`);
+                let apiUrl = '';
+
+                if (userRow && userRow.dataset.dbId) {
+                    // If we have a database ID stored, use it
+                    apiUrl = `../controllers/get_user_details.php?user_id=${encodeURIComponent(userRow.dataset.dbId)}`;
+                    console.log('Using database ID from row:', userRow.dataset.dbId);
+                } else {
+                    // Fall back to university_id
+                    apiUrl = `../controllers/get_user_details.php?university_id=${encodeURIComponent(userId)}`;
+                    console.log('Using university_id:', userId);
+                }
+
+                console.log('API URL:', apiUrl);
+
+                // Fetch user details
+                fetch(apiUrl)
+                    .then(response => {
+                        console.log('Response status:', response.status);
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('User data response:', data);
+                        document.getElementById('editUserLoading').style.display = 'none';
+
+                        if (data.success) {
+                            // Store the database ID in the hidden field
+                            document.getElementById('editUserId').value = data.user.id || '';
+
+                            // Store original values for comparison
+                            document.getElementById('editUserOriginalRole').value = data.user.role_name || '';
+                            document.getElementById('editUserOriginalEmail').value = data.user.email || '';
+
+                            // Populate form with user data
+                            document.getElementById('editFirstName').value = data.user.first_name || '';
+                            document.getElementById('editLastName').value = data.user.last_name || '';
+                            document.getElementById('editUniversityId').value = data.user.university_id || '';
+                            document.getElementById('editEmail').value = data.user.email || '';
+                            document.getElementById('editMobile').value = data.user.mobile || '';
+                            document.getElementById('editRole').value = data.user.role_name || '';
+
+                            // Update profile summary
+                            document.getElementById('editUserFullName').textContent =
+                                (data.user.first_name + ' ' + data.user.last_name).trim() || 'Loading...';
+                            document.getElementById('editUserUniversityIdDisplay').textContent =
+                                data.user.university_id || '---';
+                            document.getElementById('editUserEmailDisplay').textContent =
+                                data.user.email || '---';
+
+                            // Set status display
+                            const statusDisplay = document.getElementById('editUserStatusDisplay');
+                            if (data.user.status == 1) {
+                                statusDisplay.innerHTML = '<span class="badge bg-success">Active</span>';
+                            } else {
+                                statusDisplay.innerHTML = '<span class="badge bg-secondary">Inactive</span>';
+                            }
+
+                            // Update role display
+                            const roleDisplay = document.getElementById('editUserRoleDisplay');
+                            if (roleDisplay) {
+                                let roleText = data.user.role_name ?
+                                    data.user.role_name.charAt(0).toUpperCase() + data.user.role_name.slice(1).replace('_', ' ') :
+                                    'Student';
+                                roleDisplay.textContent = roleText;
+                            }
+
+                            // Show/hide supervisor section based on role (FIXED: using correct ID)
+                            const supervisorSection = document.getElementById('supervisorSection');
+                            if (data.user.role_name === 'student') {
+                                supervisorSection.style.display = 'block';
+
+                                // Set current supervisor if exists
+                                if (data.user.supervisor) {
+                                    document.getElementById('editSupervisorId').value = data.user.supervisor.supervisor_id_or_hod_id || '';
+                                    document.getElementById('currentSupervisor').innerHTML =
+                                        `<i class="bi bi-info-circle me-1"></i>Current supervisor: ${data.user.supervisor.first_name || ''} ${data.user.supervisor.last_name || ''}`;
+                                } else {
+                                    document.getElementById('currentSupervisor').innerHTML = '';
+                                    document.getElementById('editSupervisorId').value = '';
+                                }
+                            } else {
+                                supervisorSection.style.display = 'none';
+                                document.getElementById('editSupervisorId').value = '';
+                                document.getElementById('currentSupervisor').innerHTML = '';
+                            }
+
+                            // Set status badge and status indicator
+                            const status = data.user.status == 1 ? 'active' : 'inactive';
+                            const statusColor = data.user.status == 1 ? 'bg-success' : 'bg-secondary';
+
+                            // Update status badge in profile
+                            const statusIndicator = document.querySelector('#editUserStatus .badge');
+                            if (statusIndicator) {
+                                statusIndicator.className = `badge ${statusColor} p-2 rounded-circle`;
+                            }
+
+                            // Set current image with error handling
+                            const currentImage = document.getElementById('editCurrentImage');
+                            if (currentImage) {
+                                currentImage.onerror = function() {
+                                    // If image fails to load, use avatar
+                                    this.onerror = null;
+                                    this.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(data.user.first_name + ' ' + data.user.last_name) + '&background=22c55e&color=fff&size=100';
+                                };
+                                currentImage.src = data.user.image_url || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(data.user.first_name + ' ' + data.user.last_name) + '&background=22c55e&color=fff&size=100';
+                            }
+
+                            // Show form
+                            document.getElementById('editUserForm').style.display = 'block';
+
+                            console.log('Form populated successfully');
+                        } else {
+                            alert('Error loading user data: ' + (data.message || 'Unknown error'));
+                            modal.hide();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error in fetch:', error);
+                        document.getElementById('editUserLoading').style.display = 'none';
+                        alert('Error loading user data. Check console for details (F12).');
+                        modal.hide();
+                    });
             }
 
+
+
+            // Function to save user changes
+            // Function to save user changes
+            // Function to save user changes
+            function saveUserChanges() {
+                // Get form data
+                const userId = document.getElementById('editUserId').value;
+                const universityId = document.getElementById('editUniversityId').value;
+
+                if (!userId) {
+                    alert('Error: User ID not found');
+                    return;
+                }
+
+                // Get the button and show loading
+                const btn = document.getElementById('saveUserChanges');
+                const originalContent = btn.innerHTML;
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Saving...';
+
+                // Create FormData
+                const formData = new FormData();
+                formData.append('user_id', userId);
+                formData.append('first_name', document.getElementById('editFirstName').value.trim());
+                formData.append('last_name', document.getElementById('editLastName').value.trim());
+                formData.append('email', document.getElementById('editEmail').value.trim());
+                formData.append('mobile', document.getElementById('editMobile').value.trim());
+                formData.append('role', document.getElementById('editRole').value);
+                formData.append('original_email', document.getElementById('editUserOriginalEmail').value);
+                formData.append('original_role', document.getElementById('editUserOriginalRole').value);
+
+                // Add supervisor if exists
+                const supervisorId = document.getElementById('editSupervisorId')?.value;
+                if (supervisorId) {
+                    formData.append('supervisor_id', supervisorId);
+                }
+
+                // Add profile image if selected
+                const imageFile = document.getElementById('editProfileImage').files[0];
+                if (imageFile) {
+                    formData.append('profile_image', imageFile);
+                }
+
+                // Send AJAX request like signup
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', '../controllers/update_user.php', true);
+                xhr.timeout = 30000;
+
+                xhr.onload = function() {
+                    // Reset button
+                    btn.disabled = false;
+                    btn.innerHTML = originalContent;
+
+                    if (xhr.status === 200) {
+                        try {
+                            const response = JSON.parse(xhr.responseText);
+
+                            if (response.success) {
+                                // Show success message
+                                showSuccess('User updated successfully!');
+
+                                // Update the user row in table
+                                const lookupId = universityId || response.user.university_id;
+                                updateUserRowInTable(lookupId, response.user);
+
+                                // Close modal
+                                const modal = bootstrap.Modal.getInstance(document.getElementById('editUserModal'));
+                                if (modal) {
+                                    modal.hide();
+                                }
+
+                                // Reset image preview
+                                document.getElementById('editProfileImage').value = '';
+                                document.getElementById('editProfileImagePreview').style.display = 'none';
+                                document.getElementById('editProfileImagePlaceholder').style.display = 'flex';
+                                document.getElementById('clearEditImageBtn').style.display = 'none';
+
+                                // Reload counts if function exists
+                                if (typeof loadUserCounts === 'function') {
+                                    loadUserCounts();
+                                }
+                            } else {
+                                if (response.errors) {
+                                    // Display field errors
+                                    for (let field in response.errors) {
+                                        const errorDiv = document.getElementById(`edit${field.charAt(0).toUpperCase() + field.slice(1)}Error`);
+                                        const inputField = document.getElementById(`edit${field.charAt(0).toUpperCase() + field.slice(1)}`);
+
+                                        if (errorDiv) {
+                                            errorDiv.textContent = response.errors[field];
+                                            errorDiv.style.display = 'block';
+                                        }
+                                        if (inputField) {
+                                            inputField.classList.add('is-invalid');
+                                        }
+                                    }
+                                } else {
+                                    alert('Error: ' + (response.message || 'Update failed'));
+                                }
+                            }
+                        } catch (e) {
+                            console.error('Parse error:', e);
+                            alert('Server error occurred. Please try again.');
+                        }
+                    } else {
+                        alert('Connection error. Please try again.');
+                    }
+                };
+
+                xhr.onerror = function() {
+                    btn.disabled = false;
+                    btn.innerHTML = originalContent;
+                    alert('Network error. Please check your connection.');
+                };
+
+                xhr.ontimeout = function() {
+                    btn.disabled = false;
+                    btn.innerHTML = originalContent;
+                    alert('Request timed out. Please try again.');
+                };
+
+                xhr.send(formData);
+            }
+
+            // Add event listener for role change
+            document.addEventListener('DOMContentLoaded', function() {
+                const roleSelect = document.getElementById('editRole');
+                if (roleSelect) {
+                    roleSelect.addEventListener('change', function() {
+                        const supervisorSection = document.getElementById('supervisorSection');
+                        if (this.value === 'student') {
+                            supervisorSection.style.display = 'block';
+                        } else {
+                            supervisorSection.style.display = 'none';
+                        }
+                    });
+                }
+
+                // Mobile input validation
+                const mobileInput = document.getElementById('editMobile');
+                if (mobileInput) {
+                    mobileInput.addEventListener('input', function(e) {
+                        // Only allow numbers
+                        this.value = this.value.replace(/[^0-9]/g, '');
+
+                        // Limit to 10 digits
+                        if (this.value.length > 10) {
+                            this.value = this.value.slice(0, 10);
+                        }
+                    });
+                }
+            });
+
+            // ========== SIDEBAR & NAVIGATION ==========
             // ========== SIDEBAR & NAVIGATION ==========
             function toggleSidebar() {
                 document.getElementById("sidebar").classList.toggle("active");
@@ -4924,272 +7107,153 @@ $query = "SELECT
                 document.getElementById("notificationDropdown").classList.toggle("show");
             }
 
-            document.addEventListener('click', function(event) {
-                const bell = document.querySelector('.notification-bell:last-child');
-                const dropdown = document.getElementById('notificationDropdown');
-                if (bell && dropdown && !bell.contains(event.target) && !dropdown.contains(event.target)) {
-                    dropdown.classList.remove('show');
-                }
-            });
-
             function showSection(section) {
+                console.log('Showing section:', section);
                 const sections = ['dashboard', 'userManagement', 'equipment', 'history', 'activity', 'analytics'];
-                sections.forEach(s => document.getElementById(s + 'Section').style.display = 'none');
+                sections.forEach(s => {
+                    const el = document.getElementById(s + 'Section');
+                    if (el) el.style.display = 'none';
+                });
 
                 const sectionElement = document.getElementById(section + 'Section');
-                if (sectionElement) sectionElement.style.display = 'block';
+                if (sectionElement) {
+                    sectionElement.style.display = 'block';
+                    console.log('Section displayed:', section);
+                } else {
+                    console.error('Section not found:', section + 'Section');
+                }
 
                 document.querySelectorAll('.sidebar a').forEach(link => {
                     link.classList.remove('active');
-                    if (link.getAttribute('onclick')?.includes(section)) link.classList.add('active');
+                    if (link.getAttribute('onclick')?.includes(section)) {
+                        link.classList.add('active');
+                    }
                 });
 
                 if (section === 'equipment') {
-                    loadEquipmentWithUsage(); // ← REPLACE old line
+                    loadEquipmentWithUsage();
                 }
                 if (section === 'dashboard' || section === 'analytics') {
                     setTimeout(() => {
-                        initCharts();
-                        initAnalyticsCharts();
-                        initCalendar(); // Add this line
-                        initCalendarListeners(); // Add this line
+                        if (typeof initCharts === 'function') initCharts();
+                        if (typeof initAnalyticsCharts === 'function') initAnalyticsCharts();
+                        if (typeof initCalendar === 'function') initCalendar();
+                        if (typeof initCalendarListeners === 'function') initCalendarListeners();
                     }, 100);
                 }
                 if (section === 'history') {
-                    document.getElementById('reservationSearch').value = '';
-                    document.getElementById('statusFilter').value = 'all';
-                    loadReservations();
+                    const searchInput = document.getElementById('reservationSearch');
+                    if (searchInput) searchInput.value = '';
+                    const statusFilter = document.getElementById('statusFilter');
+                    if (statusFilter) statusFilter.value = 'all';
+                    if (typeof loadReservations === 'function') loadReservations();
                 }
-                if (section === 'activity') filterRequestsByTime();
-            }
-
-            // ========== EQUIPMENT FUNCTIONS ==========
-            const equipmentGridData = [{
-                    name: 'Microscope',
-                    image: 'https://cdn-icons-png.flaticon.com/512/2941/2941514.png',
-                    location: 'Microbiology Lab 01',
-                    status: 'available',
-                    lab: 'lab1'
-                },
-                {
-                    name: 'Centrifuge',
-                    image: 'https://cdn-icons-png.flaticon.com/512/2941/2941543.png',
-                    location: 'Research Laboratory',
-                    status: 'in-use',
-                    lab: 'research'
-                },
-                {
-                    name: 'Incubator',
-                    image: 'https://cdn-icons-png.flaticon.com/512/2941/2941538.png',
-                    location: 'Microbiology Lab 02',
-                    status: 'maintenance',
-                    lab: 'lab2'
-                },
-                {
-                    name: 'Autoclave',
-                    image: 'https://cdn-icons-png.flaticon.com/512/2941/2941521.png',
-                    location: 'Microbiology Lab 01',
-                    status: 'available',
-                    lab: 'lab1'
-                },
-                {
-                    name: 'pH Meter',
-                    image: 'https://cdn-icons-png.flaticon.com/512/2941/2941556.png',
-                    location: 'Research Laboratory',
-                    status: 'available',
-                    lab: 'research'
-                },
-                {
-                    name: 'Water Bath',
-                    image: 'https://cdn-icons-png.flaticon.com/512/2941/2941578.png',
-                    location: 'Microbiology Lab 02',
-                    status: 'in-use',
-                    lab: 'lab2'
+                if (section === 'activity') {
+                    if (typeof initRequestSection === 'function') initRequestSection();
                 }
-            ];
-
-            const equipmentDataTable = [{
-                    code: 'MIC-001',
-                    name: 'Microscope',
-                    image: 'https://cdn-icons-png.flaticon.com/512/2941/2941514.png',
-                    available: 4,
-                    total: 8,
-                    maintenance: 2,
-                    usage: 75,
-                    location: 'Microbiology Lab 01',
-                    manufacturer: 'Olympus',
-                    model: 'CX23',
-                    purchaseDate: '2024-01-15',
-                    lastMaintenance: '2026-02-01',
-                    nextMaintenance: '2026-05-01',
-                    description: 'Binocular microscope with LED illumination, 4 objective lenses (4x, 10x, 40x, 100x)'
-                },
-                {
-                    code: 'CEN-002',
-                    name: 'Centrifuge',
-                    image: 'https://cdn-icons-png.flaticon.com/512/2941/2941543.png',
-                    available: 3,
-                    total: 5,
-                    maintenance: 1,
-                    usage: 60,
-                    location: 'Research Laboratory',
-                    manufacturer: 'Eppendorf',
-                    model: '5424R',
-                    purchaseDate: '2023-11-20',
-                    lastMaintenance: '2026-01-15',
-                    nextMaintenance: '2026-04-15',
-                    description: 'Refrigerated microcentrifuge, max speed 15,000 rpm'
-                },
-                {
-                    code: 'INC-003',
-                    name: 'Incubator',
-                    image: 'https://cdn-icons-png.flaticon.com/512/2941/2941538.png',
-                    available: 2,
-                    total: 4,
-                    maintenance: 3,
-                    usage: 50,
-                    location: 'Microbiology Lab 02',
-                    manufacturer: 'Thermo Scientific',
-                    model: 'Heratherm',
-                    purchaseDate: '2023-09-10',
-                    lastMaintenance: '2026-02-10',
-                    nextMaintenance: '2026-03-10',
-                    description: 'Microbiological incubator, 100L capacity'
-                },
-                {
-                    code: 'AUT-004',
-                    name: 'Autoclave',
-                    image: 'https://cdn-icons-png.flaticon.com/512/2941/2941521.png',
-                    available: 6,
-                    total: 6,
-                    maintenance: 0,
-                    usage: 90,
-                    location: 'Microbiology Lab 01',
-                    manufacturer: 'Hirayama',
-                    model: 'HVE-50',
-                    purchaseDate: '2024-02-01',
-                    lastMaintenance: '2026-01-20',
-                    nextMaintenance: '2026-04-20',
-                    description: 'Vertical sterilization autoclave, 50L capacity'
-                },
-                {
-                    code: 'PHM-005',
-                    name: 'pH Meter',
-                    image: 'https://cdn-icons-png.flaticon.com/512/2941/2941556.png',
-                    available: 3,
-                    total: 3,
-                    maintenance: 1,
-                    usage: 35,
-                    location: 'Research Laboratory',
-                    manufacturer: 'Mettler Toledo',
-                    model: 'FiveEasy',
-                    purchaseDate: '2024-03-05',
-                    lastMaintenance: '2026-02-05',
-                    nextMaintenance: '2026-05-05',
-                    description: 'Digital pH meter with automatic temperature compensation'
-                },
-                {
-                    code: 'WAT-006',
-                    name: 'Water Bath',
-                    image: 'https://cdn-icons-png.flaticon.com/512/2941/2941578.png',
-                    available: 5,
-                    total: 7,
-                    maintenance: 2,
-                    usage: 70,
-                    location: 'Microbiology Lab 02',
-                    manufacturer: 'Memmert',
-                    model: 'WNB 14',
-                    purchaseDate: '2023-10-12',
-                    lastMaintenance: '2026-01-25',
-                    nextMaintenance: '2026-02-25',
-                    description: 'Digital water bath, 20L capacity'
-                }
-            ];
-
-            // ── 2. REPLACE your existing displayEquipmentTable() ─────────
-            function displayEquipmentTable(equipment) {
-                const tableBody = document.getElementById('equipmentTableBody');
-                if (!tableBody) return;
-
-                tableBody.innerHTML = '';
-
-                if (!equipment || equipment.length === 0) {
-                    tableBody.innerHTML = '<tr><td colspan="6" class="text-center py-4">No equipment found</td></tr>';
-                    return;
-                }
-                equipment.sort((a, b) => b.usage - a.usage);
-                equipment.forEach(item => {
-                    const code = item.code || 'N/A';
-                    const name = item.name || 'Unknown';
-                    const image = item.image || 'https://cdn-icons-png.flaticon.com/512/2941/2941514.png';
-                    const maintenance = item.maintenance || 0;
-                    const usage = Math.round(parseFloat(item.usage) || 0); // ← from Python AI
-
-                    // Bar colour based on usage level
-                    const barColor = '#22c55e'; // always green
-
-                    const row = document.createElement('tr');
-                    row.setAttribute('data-equipment-id', code);
-
-                    row.innerHTML = `
-            <td>
-                <img src="${image}"
-                     style="width:50px;height:50px;object-fit:contain;"
-                     onerror="this.src='https://cdn-icons-png.flaticon.com/512/2941/2941514.png'">
-            </td>
-            <td>${code}</td>
-            <td>${name}</td>
-            <td>
-              ${maintenance > 0 ? `<span class="badge bg-warning">${maintenance}</span>` : '------'}
-            </td>
-            <td>
-                <div class="d-flex align-items-center gap-2">
-                    <div style="width:80px;height:8px;background:#e9ecef;
-                                border-radius:4px;overflow:hidden;">
-                        <div style="width:${usage}%;height:8px;
-                                    background:${barColor};border-radius:4px;
-                                    transition:width 0.6s ease;"></div>
-                    </div>
-                    <span style="font-weight:600;color:${barColor};min-width:44px;">
-                        ${usage}%
-                    </span>
-                </div>
-            </td>
-            <td>
-                <div class="action-buttons">
-                    <button class="btn-view"
-                            onclick="viewEquipment('${code}')" title="View Details">
-                        <i class="bi bi-eye"></i>
-                    </button>
-                    <button class="btn-edit"
-                            onclick="editEquipment('${code}')" title="Edit">
-                        <i class="bi bi-pencil-square"></i>
-                    </button>
-                    <button class="btn-remove"
-                            onclick="removeEquipment('${code}')" title="Remove">
-                        <i class="bi bi-trash"></i>
-                    </button>
-                </div>
-            </td>
-        `;
-                    tableBody.appendChild(row);
-                });
-
-                document.getElementById('equipmentCount').textContent = `(${equipment.length})`;
             }
 
 
-            // ── PASTE THIS ENTIRE FUNCTION into hod.php, replacing the old viewEquipment() ──
+
+
+
+            //     function displayEquipmentTable(equipment) {
+            //         const tableBody = document.getElementById('equipmentTableBody');
+            //         if (!tableBody) return;
+
+            //         tableBody.innerHTML = '';
+
+            //         if (!equipment || equipment.length === 0) {
+            //             tableBody.innerHTML = '<tr><td colspan="6" class="text-center py-4">No equipment found</td></tr>';
+            //             return;
+            //         }
+
+
+            //         equipment.sort((a, b) => b.usage - a.usage);
+
+            //         equipment.forEach(item => {
+            //             const code = item.code || 'N/A';
+            //             const name = item.name || 'Unknown';
+            //             const image = item.image || 'https://cdn-icons-png.flaticon.com/512/2941/2941514.png';
+            //             const maintenance = item.maintenance || 0;
+            //             const broken = item.broken || 0;
+            //             const usage = Math.round(parseFloat(item.usage) || 0);
+
+
+            //             let barColor = '#22c55e'; 
+            //             if (usage < 30) barColor = '#ef4444'; 
+            //             else if (usage < 60) barColor = '#f59e0b';
+
+            //             const row = document.createElement('tr');
+            //             row.setAttribute('data-equipment-id', code);
+            //             row.setAttribute('data-equipment-id-numeric', item.id || '');
+
+            //             row.innerHTML = `
+            //     <td>
+            //         <img src="${image}"
+            //              style="width:50px;height:50px;object-fit:contain;"
+            //              onerror="this.src='https://cdn-icons-png.flaticon.com/512/2941/2941514.png'"
+            //              alt="${name}">
+            //     </td>
+            //     <td><strong>${name}</strong></td>
+            //     <td>
+            //         ${maintenance > 0 
+            //             ? `<span class="badge bg-warning">${maintenance}</span>` 
+            //             : '<span class="text-muted">------</span>'}
+            //     </td>
+            //     <td>
+            //         ${broken > 0 
+            //             ? `<span class="badge bg-danger">${broken}</span>` 
+            //             : '<span class="text-muted">------</span>'}
+            //     </td>
+            //     <td>
+            //         <div class="d-flex align-items-center gap-2">
+            //             <div style="width:100px;height:8px;background:#e9ecef;
+            //                         border-radius:4px;overflow:hidden;">
+            //                 <div style="width:${usage}%;height:8px;
+            //                             background:${barColor};border-radius:4px;
+            //                             transition:width 0.6s ease;"></div>
+            //             </div>
+            //             <span style="font-weight:600;color:${barColor};min-width:45px;">
+            //                 ${usage}%
+            //             </span>
+            //         </div>
+
+            //     </td>
+            //     <td>
+            //         <div class="action-buttons">
+            //             <button class="btn-view"
+            //                     onclick="viewEquipment('${code}')" title="View Details">
+            //                 <i class="bi bi-eye"></i>
+            //             </button>
+            //             <button class="btn-edit"
+            //                     onclick="editEquipment('${code}')" title="Edit">
+            //                 <i class="bi bi-pencil-square"></i>
+            //             </button>
+            //             <button class="btn-remove"
+            //                     onclick="removeEquipment('${code}')" title="Remove">
+            //                 <i class="bi bi-trash"></i>
+            //             </button>
+            //         </div>
+            //     </td>
+            // `;
+            //             tableBody.appendChild(row);
+            //         });
+
+            //         const countEl = document.getElementById('equipmentCount');
+            //         if (countEl) {
+            //             countEl.textContent = `(${equipment.length})`;
+            //         }
+            //     }
 
             function viewEquipment(code) {
 
-                // Show modal immediately with spinner
                 document.getElementById('equipmentDetailsContent').innerHTML = `
         <div class="text-center py-5">
             <div class="spinner-border text-success" role="status"
                  style="width:2rem;height:2rem;"></div>
             <p class="mt-3 text-muted small fw-semibold">
-                🤖 AI is analysing usage data...
+                Loading equipment details...
             </p>
         </div>
     `;
@@ -5198,30 +7262,6 @@ $query = "SELECT
                 fetch(`get_equipment_details.php?code=${encodeURIComponent(code)}`)
                     .then(res => res.json())
                     .then(eq => {
-
-                        // ── DEBUG mode (when $DEBUG=true in PHP) ─────────────────────────
-                        if (eq.debug) {
-                            document.getElementById('equipmentDetailsContent').innerHTML = `
-                    <div class="p-3">
-                        <div class="alert alert-warning">
-                            <strong>🔧 DEBUG MODE ON</strong> — set <code>$DEBUG = false</code> for production.
-                        </div>
-                        <p><strong>shell_exec:</strong> ${eq.shell_exec_enabled}</p>
-                        <p><strong>python.exe exists:</strong> ${eq.python_exe_exists}</p>
-                        <p><strong>script exists:</strong> ${eq.script_exists}</p>
-                        <p><strong>Python raw output:</strong></p>
-                        <pre class="bg-light p-3 rounded" style="font-size:12px;max-height:200px;overflow-y:auto;">${eq.raw_output || '(empty)'}</pre>
-                        <p><strong>JSON valid:</strong> ${eq.json_decode_result ? '✅ Yes' : '❌ No — Python output is not valid JSON'}</p>
-                        <p><strong>JSON error:</strong> ${eq.json_last_error}</p>
-                        <hr>
-                        <p><strong>Equipment DB row:</strong></p>
-                        <pre class="bg-light p-3 rounded" style="font-size:12px;">${JSON.stringify(eq.equipment_db_row, null, 2)}</pre>
-                    </div>
-                `;
-                            return;
-                        }
-
-                        // ── PHP-level error ───────────────────────────────────────────────
                         if (eq.error) {
                             document.getElementById('equipmentDetailsContent').innerHTML = `
                     <div class="alert alert-danger m-3">
@@ -5230,116 +7270,104 @@ $query = "SELECT
                             return;
                         }
 
-                        // ── Safe AI defaults ──────────────────────────────────────────────
-                        const ai = eq.ai || {
-                            student_id: null,
-                            university_id: null,
-                            full_name: null,
-                            reservation_id: null,
-                            confidence: 0,
-                            sentiment: "Unknown",
-                            keywords: [],
-                            analysis: "AI analysis unavailable.",
-                            raw_comment: "",
-                            mention_found: false
-                        };
 
-                        // ── Grant section (only shown if grant_name exists) ───────────────
-                        const grantHTML = eq.grant_name ? `
+                        const lastUsageHTML = eq.last_booking ? `
                 <tr>
                     <td colspan="2">
-                        <div class="mt-2 mb-1">
-                            <span class="fw-semibold small text-uppercase" style="color:#d97706;">
-                                <i class="bi bi-award-fill me-1"></i>Grant Information
-                            </span>
-                        </div>
-                    </td>
-                </tr>
-                <tr>
-                    <th class="text-muted fw-normal" style="width:150px">Grant Name</th>
-                    <td><span class="badge bg-warning text-dark">${eq.grant_name}</span></td>
-                </tr>
-                ${eq.grant_project ? `
-                <tr>
-                    <th class="text-muted fw-normal">Project</th>
-                    <td>${eq.grant_project}</td>
-                </tr>` : ''}
-                ${(eq.grant_start || eq.grant_end) ? `
-                <tr>
-                    <th class="text-muted fw-normal">Period</th>
-                    <td>${eq.grant_start || '?'} — ${eq.grant_end || '?'}</td>
-                </tr>` : ''}
-            ` : '';
-
-                        // ── AI section ────────────────────────────────────────────────────
-                        const confPct = Math.round((ai.confidence || 0) * 100);
-                        const confColor = confPct >= 70 ? 'success' : confPct >= 40 ? 'warning' : 'danger';
-
-                        const aiHTML = ai.student_id ? `
-                <tr>
-                    <td colspan="2">
-                        <div class="mt-2 mb-1">
+                        <div class="mt-3 mb-2">
                             <span class="fw-semibold small text-uppercase text-primary">
-                                <i class="bi bi-cpu-fill me-1"></i>AI Analysis — Last Usage
+                                <i class="bi bi-clock-history me-1"></i>Last Usage Details
                             </span>
                         </div>
                     </td>
                 </tr>
                 <tr>
-                    <th class="text-muted fw-normal" style="width:150px">Last Used By</th>
+                    <th class="text-muted fw-normal" style="width:150px">Student ID</th>
                     <td>
                         <span class="badge bg-primary fs-6">
-                            <i class="bi bi-person-fill me-1"></i>${ai.university_id || ai.student_id}
+                            <i class="bi bi-person-fill me-1"></i>${eq.last_booking.university_id}
                         </span>
-                        ${ai.full_name
-                            ? `<span class="ms-2 fw-semibold text-dark">${ai.full_name}</span>`
-                            : ''}
-                        <br>
-                        <small class="text-muted">Reservation #${ai.reservation_id}</small>
-                        ${ai.mention_found === false
-                            ? `<br><small class="text-warning">
-                                   <i class="bi bi-exclamation-triangle me-1"></i>
-                                   Equipment not explicitly mentioned in comments
-                               </small>`
-                            : ''}
+                        <span class="ms-2 fw-semibold text-dark">${eq.last_booking.full_name}</span>
                     </td>
                 </tr>
                 <tr>
-                    <th class="text-muted fw-normal">AI Summary</th>
-                    <td><small class="text-muted">${ai.analysis}</small></td>
+                    <th class="text-muted fw-normal">Booking Date</th>
+                    <td>${new Date(eq.last_booking.booking_date).toLocaleString()}</td>
                 </tr>
-                ${ai.raw_comment ? `
                 <tr>
-                    <th class="text-muted fw-normal">Comment</th>
-                    <td><small class="fst-italic text-muted">"${ai.raw_comment}"</small></td>
+                    <th class="text-muted fw-normal">Quantity Used</th>
+                    <td>${eq.last_booking.qty} unit(s)</td>
+                </tr>
+                ${eq.last_booking.comment ? `
+                <tr>
+                    <th class="text-muted fw-normal">Student Comment</th>
+                    <td><em class="text-muted">"${eq.last_booking.comment}"</em></td>
                 </tr>` : ''}
+                ${eq.last_booking.any_comment ? `
+                <tr>
+                    <th class="text-muted fw-normal">Additional Notes</th>
+                    <td><em class="text-muted">"${eq.last_booking.any_comment}"</em></td>
+                </tr>` : ''}
+                <tr>
+                    <th class="text-muted fw-normal">Reservation ID</th>
+                    <td><span class="badge bg-secondary">#${eq.last_booking.reservation_id}</span></td>
+                </tr>
             ` : `
                 <tr>
                     <td colspan="2">
-                        <div class="mt-2 mb-1">
+                        <div class="mt-3 mb-2">
                             <span class="fw-semibold small text-uppercase text-primary">
-                                <i class="bi bi-cpu-fill me-1"></i>AI Analysis — Last Usage
+                                <i class="bi bi-clock-history me-1"></i>Last Usage Details
                             </span>
                         </div>
                     </td>
                 </tr>
                 <tr>
-                    <td colspan="2">
-                        <span class="text-muted fst-italic small">
-                            <i class="bi bi-info-circle me-1"></i>
-                            No completed usage records found for this equipment.
-                        </span>
+                    <td colspan="2" class="text-muted fst-italic py-2">
+                        <i class="bi bi-info-circle me-1"></i>
+                        No usage records found for this equipment.
                     </td>
                 </tr>
             `;
 
-                        // ── Build full modal ──────────────────────────────────────────────
+
+                        const statsHTML = `
+                <tr>
+                    <td colspan="2">
+                        <div class="mt-3 mb-2">
+                            <span class="fw-semibold small text-uppercase text-success">
+                                <i class="bi bi-bar-chart me-1"></i>Usage Statistics (Last 6 Months)
+                            </span>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <th class="text-muted fw-normal">Total Bookings</th>
+                    <td>${eq.total_bookings || 0}</td>
+                </tr>
+                <tr>
+                    <th class="text-muted fw-normal">Completed Bookings</th>
+                    <td>${eq.completed_bookings || 0}</td>
+                </tr>
+                <tr>
+                    <th class="text-muted fw-normal">Usage Rate</th>
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <div style="width:100px;height:8px;background:#e9ecef;border-radius:4px;overflow:hidden;">
+                                <div style="width:${eq.usage}%;height:8px;background:#22c55e;border-radius:4px;"></div>
+                            </div>
+                            <span style="font-weight:600;color:#22c55e;">${eq.usage}%</span>
+                        </div>
+                    </td>
+                </tr>
+            `;
+
+                        // Build full modal - removed location since it's not in your table
                         document.getElementById('equipmentDetailsContent').innerHTML = `
                 <div class="row g-0">
                     <!-- Left: image + name + code -->
                     <div class="col-md-4 text-center border-end p-4">
-                        <img src="${eq.image_path ? '../' + eq.image_path
-                                                   : 'https://cdn-icons-png.flaticon.com/512/2941/2941514.png'}"
+                        <img src="${eq.image_path ? eq.image_path : 'https://cdn-icons-png.flaticon.com/512/2941/2941514.png'}"
                              style="width:140px;height:140px;object-fit:contain;"
                              class="rounded border p-2 bg-light mb-3"
                              onerror="this.src='https://cdn-icons-png.flaticon.com/512/2941/2941514.png'">
@@ -5347,13 +7375,22 @@ $query = "SELECT
                         <span class="badge bg-secondary">
                             <i class="bi bi-upc-scan me-1"></i>${eq.equipment_code}
                         </span>
+                        <div class="mt-3">
+                            <span class="badge bg-info text-dark">
+                                <i class="bi bi-box-seam me-1"></i>Total Qty: ${eq.qty}
+                            </span>
+                            ${eq.maintenance > 0 ? `
+                            <span class="badge bg-warning ms-2">
+                                <i class="bi bi-tools me-1"></i>Maintenance: ${eq.maintenance}
+                            </span>
+                            ` : ''}
+                        </div>
                     </div>
 
                     <!-- Right: details table -->
                     <div class="col-md-8 p-3">
                         <table class="table table-borderless table-sm mb-0">
                             <tbody>
-
                                 <!-- Basic info header -->
                                 <tr>
                                     <td colspan="2" class="pb-1">
@@ -5364,22 +7401,8 @@ $query = "SELECT
                                 </tr>
 
                                 <tr>
-                                    <th class="text-muted fw-normal" style="width:150px">Quantity</th>
-                                    <td>${eq.qty ?? '—'}</td>
-                                </tr>
-
-                                ${eq.location ? `
-                                <tr>
-                                    <th class="text-muted fw-normal">Location</th>
-                                    <td>
-                                        <i class="bi bi-geo-alt-fill text-danger me-1"></i>
-                                        ${eq.location}
-                                    </td>
-                                </tr>` : ''}
-
-                                <tr>
                                     <th class="text-muted fw-normal">Date Added</th>
-                                    <td>${eq.added_datetime || '—'}</td>
+                                    <td>${eq.added_datetime ? new Date(eq.added_datetime).toLocaleDateString() : '—'}</td>
                                 </tr>
 
                                 ${eq.description ? `
@@ -5388,9 +7411,11 @@ $query = "SELECT
                                     <td><small>${eq.description}</small></td>
                                 </tr>` : ''}
 
-                                ${grantHTML}
-                                ${aiHTML}
+                                <!-- Statistics Section -->
+                                ${statsHTML}
 
+                                <!-- Last Usage Section with Student Details -->
+                                ${lastUsageHTML}
                             </tbody>
                         </table>
                     </div>
@@ -5408,107 +7433,206 @@ $query = "SELECT
 
 
 
+            let isEditMode = false;
+            let currentEquipmentId = null;
 
+            // Open add equipment modal
             function addEquipment() {
-                alert('Add Equipment modal would open here');
+                isEditMode = false;
+                currentEquipmentId = null;
+
+                document.getElementById('addEquipmentForm').reset();
+                document.getElementById('eqId').value = '';
+
+                document.getElementById('eqImagePreview').style.display = 'none';
+                document.getElementById('eqImagePlaceholder').style.display = 'block';
+                document.getElementById('currentImageInfo').style.display = 'none';
+
+                document.getElementById('eqQty').value = '1';
+                document.getElementById('eqSimultaneousUsers').value = '1';
+                document.getElementById('eqSterilization').value = 'NO';
+                document.getElementById('eqReservation').value = 'YES';
+
+                document.getElementById('equipmentModalTitle').innerHTML = '<i class="bi bi-plus-circle me-2"></i>Add New Equipment';
+                document.getElementById('modalSaveButtonText').textContent = 'Save Equipment';
+
+                clearEquipmentErrors();
+
+                const modal = new bootstrap.Modal(document.getElementById('addEquipmentModal'));
+                modal.show();
             }
 
-            function editEquipment(code) {
-                alert('Edit equipment: ' + code);
+            // Clear form errors
+            function clearEquipmentErrors() {
+                const errorFields = ['eqCode', 'eqName', 'eqQty'];
+                errorFields.forEach(field => {
+                    const element = document.getElementById(field);
+                    if (element) element.classList.remove('is-invalid');
+                    const errorElement = document.getElementById(field + 'Error');
+                    if (errorElement) errorElement.textContent = '';
+                });
             }
 
-            function removeEquipment(code) {
-                if (confirm(`Remove equipment ${code}?`)) {
-                    const index = equipmentDataTable.findIndex(item => item.code === code);
-                    if (index !== -1) equipmentDataTable.splice(index, 1);
-                    displayEquipmentTable(equipmentDataTable);
-                    alert('Equipment removed!');
+            // Preview image
+            function previewEquipmentImage(input) {
+                const preview = document.getElementById('eqImagePreview');
+                const placeholder = document.getElementById('eqImagePlaceholder');
+
+                if (input.files && input.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        preview.src = e.target.result;
+                        preview.style.display = 'block';
+                        placeholder.style.display = 'none';
+                    }
+                    reader.readAsDataURL(input.files[0]);
                 }
             }
 
+            // Save equipment (add or update)
+            function saveEquipment() {
+                const id = document.getElementById('eqId').value;
+                const code = document.getElementById('eqCode').value.trim();
+                const name = document.getElementById('eqName').value.trim();
+                const qty = document.getElementById('eqQty').value;
+                const simultaneous_users = document.getElementById('eqSimultaneousUsers').value || 1;
+                const sterilization = document.getElementById('eqSterilization').value;
+                const reservation = document.getElementById('eqReservation').value;
+                const description = document.getElementById('eqDescription').value.trim();
+                const imageFile = document.getElementById('eqImage').files[0];
 
+                // Validate
+                let isValid = true;
 
-            // Add this function to show events for selected date
-            function showEventsForDate(date) {
-                const eventsList = document.getElementById('eventsList');
-                const dateStr = date.toISOString().split('T')[0]; // Format: YYYY-MM-DD
-
-                // Sample events data - in real app, this would come from database
-                const events = {
-                    '2026-02-15': [{
-                            title: 'Microscope Reservation - Lab 01',
-                            time: '10:00 AM - 12:00 PM',
-                            type: 'reservation'
-                        },
-                        {
-                            title: 'Centrifuge Maintenance',
-                            time: '02:00 PM - 03:00 PM',
-                            type: 'maintenance'
-                        }
-                    ],
-                    '2026-02-16': [{
-                            title: 'Incubator Calibration',
-                            time: '09:00 AM - 10:30 AM',
-                            type: 'maintenance'
-                        },
-                        {
-                            title: 'Student Practical - Lab 02',
-                            time: '11:00 AM - 01:00 PM',
-                            type: 'practical'
-                        },
-                        {
-                            title: 'Autoclave Sterilization',
-                            time: '02:00 PM - 04:00 PM',
-                            type: 'maintenance'
-                        }
-                    ],
-                    '2026-02-17': [{
-                            title: 'Research Project - DNA Extraction',
-                            time: '09:30 AM - 12:30 PM',
-                            type: 'research'
-                        },
-                        {
-                            title: 'pH Meter Calibration',
-                            time: '01:30 PM - 02:30 PM',
-                            type: 'maintenance'
-                        }
-                    ]
-                };
-
-                // Get events for selected date or show default message
-                const dayEvents = events[dateStr] || [];
-
-                if (dayEvents.length === 0) {
-                    eventsList.innerHTML = '<div class="no-event">No events scheduled for this date</div>';
+                if (!code) {
+                    document.getElementById('eqCode').classList.add('is-invalid');
+                    document.getElementById('eqCodeError').textContent = 'Equipment code is required';
+                    isValid = false;
                 } else {
-                    eventsList.innerHTML = '';
-                    dayEvents.forEach(event => {
-                        const eventItem = document.createElement('div');
-                        eventItem.className = 'event-item';
-
-                        // Determine icon color based on event type
-                        let iconColor = '#ffd700'; // default gold
-                        if (event.type === 'maintenance') iconColor = '#ef4444'; // red
-                        if (event.type === 'practical') iconColor = '#22c55e'; // green
-                        if (event.type === 'research') iconColor = '#3b82f6'; // blue
-
-                        eventItem.innerHTML = `
-                <div class="title">
-                    <i class="fas fa-circle" style="color: ${iconColor};"></i>
-                    <div class="event-title">${event.title}</div>
-                </div>
-                <div class="event-time">${event.time}</div>
-            `;
-
-                        eventsList.appendChild(eventItem);
-                    });
+                    document.getElementById('eqCode').classList.remove('is-invalid');
                 }
+
+                if (!name) {
+                    document.getElementById('eqName').classList.add('is-invalid');
+                    document.getElementById('eqNameError').textContent = 'Equipment name is required';
+                    isValid = false;
+                } else {
+                    document.getElementById('eqName').classList.remove('is-invalid');
+                }
+
+                if (!qty || qty < 1) {
+                    document.getElementById('eqQty').classList.add('is-invalid');
+                    document.getElementById('eqQtyError').textContent = 'Quantity must be at least 1';
+                    isValid = false;
+                } else {
+                    document.getElementById('eqQty').classList.remove('is-invalid');
+                }
+
+                if (!isValid) return;
+
+                const saveBtn = document.querySelector('#addEquipmentModal .btn-success');
+                const originalText = saveBtn.innerHTML;
+                saveBtn.disabled = true;
+                saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
+
+                const formData = new FormData();
+
+                if (id) formData.append('id', id);
+
+                formData.append('code', code);
+                formData.append('name', name);
+                formData.append('qty', qty);
+                formData.append('simultaneous_users', simultaneous_users);
+                formData.append('sterilization_required', sterilization);
+                formData.append('reservation_required', reservation);
+                formData.append('description', description);
+                if (imageFile) formData.append('image', imageFile);
+
+                const url = id ? '../controllers/update_equipment.php' : '../controllers/add_equipment.php';
+
+                fetch(url, {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        saveBtn.disabled = false;
+                        saveBtn.innerHTML = originalText;
+
+                        if (data.success) {
+                            bootstrap.Modal.getInstance(document.getElementById('addEquipmentModal')).hide();
+                            showSuccess(id ? 'Equipment updated successfully!' : 'Equipment added successfully!');
+                            loadEquipmentWithUsage();
+                        } else {
+                            alert('Error: ' + (data.message || 'Operation failed'));
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        saveBtn.disabled = false;
+                        saveBtn.innerHTML = originalText;
+                        alert('Network error. Please try again.');
+                    });
             }
 
+            // Edit equipment
+            function editEquipment(code) {
+                isEditMode = true;
 
+                document.getElementById('equipmentModalTitle').innerHTML = '<i class="bi bi-pencil-square me-2"></i>Edit Equipment';
+                document.getElementById('modalSaveButtonText').textContent = 'Update Equipment';
 
+                clearEquipmentErrors();
 
+                const modal = new bootstrap.Modal(document.getElementById('addEquipmentModal'));
+                modal.show();
 
+                document.getElementById('eqCode').value = 'Loading...';
+                document.getElementById('eqName').value = 'Loading...';
+                document.getElementById('eqCode').disabled = true;
+                document.getElementById('eqName').disabled = true;
+
+                fetch(`../controllers/get_equipment_details.php?code=${encodeURIComponent(code)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        document.getElementById('eqCode').disabled = false;
+                        document.getElementById('eqName').disabled = false;
+
+                        if (data.success) {
+                            currentEquipmentId = data.equipment.id;
+                            document.getElementById('eqId').value = data.equipment.id;
+
+                            document.getElementById('eqCode').value = data.equipment.code || '';
+                            document.getElementById('eqName').value = data.equipment.name || '';
+                            document.getElementById('eqQty').value = data.equipment.total_qty || 1;
+                            document.getElementById('eqSimultaneousUsers').value = data.equipment.simultaneous_users || 1;
+                            document.getElementById('eqSterilization').value = data.equipment.sterilization_required || 'NO';
+                            document.getElementById('eqReservation').value = data.equipment.reservation_required || 'YES';
+                            document.getElementById('eqDescription').value = data.equipment.description || '';
+
+                            if (data.equipment.image_path) {
+                                const imagePath = data.equipment.image_path;
+                                document.getElementById('eqImagePreview').src = imagePath;
+                                document.getElementById('eqImagePreview').style.display = 'block';
+                                document.getElementById('eqImagePlaceholder').style.display = 'none';
+                                document.getElementById('currentImageInfo').innerHTML = 'Current image: <img src="' + imagePath + '" style="height: 30px; width: 30px; object-fit: cover; border-radius: 4px;">';
+                                document.getElementById('currentImageInfo').style.display = 'block';
+                            }
+                        } else {
+                            alert('Error loading equipment details: ' + (data.message || 'Unknown error'));
+                            modal.hide();
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        document.getElementById('eqCode').disabled = false;
+                        document.getElementById('eqName').disabled = false;
+                        alert('Network error. Please try again.');
+                        modal.hide();
+                    });
+            }
+
+         
 
 
 
@@ -5579,6 +7703,7 @@ $query = "SELECT
                 fetch('../controllers/get_reservations.php')
                     .then(r => r.json())
                     .then(res => {
+                        console.log('Reservations data:', res);
                         tableBody.innerHTML = '';
 
                         if (!res.success || res.data.length === 0) {
@@ -5588,29 +7713,44 @@ $query = "SELECT
                         }
 
                         res.data.forEach(item => {
+                            // Determine status badge based on your status values
                             let badgeClass, statusLower;
-                            if (item.status === 'Ready') {
+
+                            // Map your status values to display
+                            const status = item.status || 'pending';
+
+                            if (status === 'ready' || status === 'Ready') {
                                 badgeClass = 'bg-success';
-                                statusLower = 'ready';
-                            } else if (item.status === 'Rejected') {
+                                statusLower = 'Ready';
+                            } else if (status === 'rejected' || status === 'Rejected') {
                                 badgeClass = 'bg-danger';
-                                statusLower = 'rejected';
+                                statusLower = 'Rejected';
+                            } else if (status === 'TO_Pending' || status === 'TO_Pending') {
+                                badgeClass = 'bg-info';
+                                statusLower = 'TO_Pending';
                             } else {
                                 badgeClass = 'bg-warning';
-                                statusLower = 'pending';
+                                statusLower = 'Pending';
                             }
+
+                            // Use the correct field names from your database
+                            const reservationId = item.display_id || item.id || 'N/A';
+                            const location = item.lab_location || '—';
+                            const studentId = item.student_id || '—';
+                            const displayStatus = item.raw_status || status;
+                            const date = item.date || '—';
 
                             const row = document.createElement('tr');
                             row.setAttribute('data-id', item.id);
                             row.setAttribute('data-status', statusLower);
                             row.innerHTML = `
-                  <td>${item.display_id}</td>
-                    <td>${item.location}</td>
-                    <td>${item.student_id}</td>
-                    <td><span class="badge ${badgeClass}">${item.status}</span></td>
-                    <td>${item.date}</td>
+                    <td>${reservationId}</td>
+                    <td>${location}</td>
+                    <td>${studentId}</td>
+                    <td><span class="badge ${badgeClass}">${displayStatus}</span></td>
+                    <td>${date}</td>
                     <td>
-                       <button class="btn-view" onclick="viewReservation(${item.id})">
+                        <button class="btn-view" onclick="viewReservation(${item.id})">
                             <i class="bi bi-eye"></i> View
                         </button>
                     </td>
@@ -5621,8 +7761,8 @@ $query = "SELECT
                         document.getElementById('reservationCount').textContent = '(' + res.data.length + ')';
                     })
                     .catch(err => {
+                        console.error('Error loading reservations:', err);
                         tableBody.innerHTML = `<tr><td colspan="6" class="text-center py-4 text-danger">Error loading data</td></tr>`;
-                        console.error(err);
                     });
             }
 
@@ -5636,13 +7776,15 @@ $query = "SELECT
 
                 // Show modal
                 document.getElementById('resModal').style.display = 'flex';
-                document.body.style.overflow = 'hidden'; // Prevent background scrolling
+                document.body.style.overflow = 'hidden';
 
-                console.log('Fetching reservation ID:', id);
+                console.log('Fetching reservation ID:', id, 'Type:', typeof id);
 
                 fetch(`../controllers/get_reservation_details.php?id=${encodeURIComponent(id)}`)
                     .then(r => r.json())
                     .then(res => {
+                        console.log('API Response:', res);
+
                         if (!res.success) {
                             document.getElementById('resModalContent').innerHTML =
                                 `<div class="alert alert-danger m-3">Error: ${res.message}</div>`;
@@ -5657,6 +7799,25 @@ $query = "SELECT
                             statusBadge = '<span style="background:#ef4444;color:white;padding:4px 12px;border-radius:20px;font-weight:600;font-size:0.85rem;">Rejected</span>';
                         } else {
                             statusBadge = '<span style="background:#f59e0b;color:white;padding:4px 12px;border-radius:20px;font-weight:600;font-size:0.85rem;">Pending</span>';
+                        }
+
+                        // Format date nicely
+                        let formattedDate = res.date || '—';
+                        if (res.date && res.date !== '—') {
+                            try {
+                                const dateObj = new Date(res.date);
+                                if (!isNaN(dateObj.getTime())) {
+                                    formattedDate = dateObj.toLocaleDateString('en-US', {
+                                        year: 'numeric',
+                                        month: 'long',
+                                        day: 'numeric',
+                                        hour: '2-digit',
+                                        minute: '2-digit'
+                                    });
+                                }
+                            } catch (e) {
+                                console.error('Date formatting error:', e);
+                            }
                         }
 
                         // Build rejection reason if exists
@@ -5674,40 +7835,126 @@ $query = "SELECT
                 `;
                         }
 
-                        // Build comment sections if they exist
+                        // Build comment if exists
                         let commentHtml = res.comment ?
                             `<tr><td style="padding:10px 0;color:#166534;font-weight:600;border-top:1px solid #f5f5f5;">Student Comment:</td>
                  <td style="padding:10px 0;border-top:1px solid #f5f5f5;"><em>"${res.comment}"</em></td></tr>` : '';
 
-                        let anyCommentHtml = res.any_comment ?
-                            `<tr><td style="padding:10px 0;color:#166534;font-weight:600;border-top:1px solid #f5f5f5;">Additional Notes:</td>
-                 <td style="padding:10px 0;border-top:1px solid #f5f5f5;">${res.any_comment}</td></tr>` : '';
+                        // Build equipment list HTML
+                        let equipmentHtml = '';
+                        if (res.equipment && res.equipment.length > 0) {
+                            let equipmentRows = '';
+                            res.equipment.forEach(item => {
+                                equipmentRows += `
+                        <tr style="border-bottom: 1px solid #e5e7eb;">
+                            <td style="padding: 12px 8px;">
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <div style="width: 40px; height: 40px; background: #f3f4f6; border-radius: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                                        <img src="${item.image}" 
+                                             style="width: 100%; height: 100%; object-fit: contain;"
+                                             onerror="this.src='https://cdn-icons-png.flaticon.com/512/2941/2941514.png'"
+                                             alt="${item.name}">
+                                    </div>
+                                    <div>
+                                        <div style="font-weight: 600; color: #166534;">${item.name}</div>
+                                        <div style="font-size: 0.8rem; color: #6b7280;">Code: ${item.code}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td style="padding: 12px 8px; text-align: center; vertical-align: middle;">
+                                <span style="background: #22c55e; color: white; padding: 4px 12px; border-radius: 20px; font-weight: 600; font-size: 0.9rem;">
+                                    ${item.booked_qty}
+                                </span>
+                            </td>
+                        </tr>
+                    `;
+                            });
+
+                            equipmentHtml = `
+                    <tr>
+                        <td colspan="2" style="padding: 20px 0 10px 0;">
+                            <div style="background: white; border-radius: 12px; overflow: hidden; border: 1px solid #e5e7eb; margin-top: 15px;">
+                                <div style="background: linear-gradient(135deg, #f0fdf4, #dcfce7); padding: 15px 20px; border-bottom: 2px solid #22c55e;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <h6 style="margin: 0; color: #166534; font-weight: 700; font-size: 1rem;">
+                                            <i class="bi bi-tools" style="margin-right: 8px;"></i>
+                                            Equipment Requested
+                                        </h6>
+                                        <span style="background: #22c55e; color: white; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600;">
+                                            ${res.equipment_count} item${res.equipment_count > 1 ? 's' : ''}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div style="padding: 0 15px;">
+                                    <table style="width: 100%; border-collapse: collapse;">
+                                        <thead>
+                                            <tr style="background: #f9fafb;">
+                                                <th style="padding: 12px 8px; text-align: left; color: #374151; font-weight: 600; font-size: 0.85rem; border-bottom: 2px solid #e5e7eb;">Equipment</th>
+                                                <th style="padding: 12px 8px; text-align: center; color: #374151; font-weight: 600; font-size: 0.85rem; border-bottom: 2px solid #e5e7eb;">Quantity</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            ${equipmentRows}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                        } else {
+                            equipmentHtml = `
+                    <tr>
+                        <td colspan="2" style="padding: 15px 0;">
+                            <div style="background: #f9fafb; border-radius: 12px; padding: 30px 20px; text-align: center; border: 1px dashed #d1d5db; margin-top: 15px;">
+                                <i class="bi bi-tools" style="font-size: 2.5rem; color: #9ca3af; margin-bottom: 10px; display: block;"></i>
+                                <p style="color: #6b7280; margin: 0; font-size: 0.95rem;">No equipment associated with this reservation</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                        }
 
                         // Build the complete modal content
                         document.getElementById('resModalContent').innerHTML = `
                 <table style="width:100%; border-collapse:collapse;">
-                    <tr><td style="padding:10px 0;color:#166534;font-weight:600;width:170px;">Reservation ID:</td>
-                        <td style="padding:10px 0;"><strong>${res.id}</strong></td></tr>
-                    <tr><td style="padding:10px 0;color:#166534;font-weight:600;border-top:1px solid #f5f5f5;">Lab Location:</td>
-                        <td style="padding:10px 0;border-top:1px solid #f5f5f5;">${res.location}</td></tr>
-                    <tr><td style="padding:10px 0;color:#166534;font-weight:600;border-top:1px solid #f5f5f5;">Student ID:</td>
-                        <td style="padding:10px 0;border-top:1px solid #f5f5f5;">${res.student_id}</td></tr>
-                    <tr><td style="padding:10px 0;color:#166534;font-weight:600;border-top:1px solid #f5f5f5;">Supervisor ID:</td>
-                        <td style="padding:10px 0;border-top:1px solid #f5f5f5;">${res.supervisor_id}</td></tr>
-                    <tr><td style="padding:10px 0;color:#166534;font-weight:600;border-top:1px solid #f5f5f5;">Status:</td>
-                        <td style="padding:10px 0;border-top:1px solid #f5f5f5;">${statusBadge}</td></tr>
-                    <tr><td style="padding:10px 0;color:#166534;font-weight:600;border-top:1px solid #f5f5f5;">Date:</td>
-                        <td style="padding:10px 0;border-top:1px solid #f5f5f5;">${res.date}</td></tr>
+                    <tr>
+                        <td style="padding:10px 0;color:#166534;font-weight:600;width:170px;">Reservation ID:</td>
+                        <td style="padding:10px 0;"><strong>${res.id || 'N/A'}</strong></td>
+                    </tr>
+                    <tr>
+                        <td style="padding:10px 0;color:#166534;font-weight:600;border-top:1px solid #f5f5f5;">Lab Location:</td>
+                        <td style="padding:10px 0;border-top:1px solid #f5f5f5;">${res.lab_location || '—'}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding:10px 0;color:#166534;font-weight:600;border-top:1px solid #f5f5f5;">Student ID:</td>
+                        <td style="padding:10px 0;border-top:1px solid #f5f5f5;">
+                            <strong>${res.student_id || '—'}</strong>
+                            ${res.student_name ? `<span style="color:#666; margin-left:8px;">(${res.student_name})</span>` : ''}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding:10px 0;color:#166534;font-weight:600;border-top:1px solid #f5f5f5;">Supervisor ID:</td>
+                        <td style="padding:10px 0;border-top:1px solid #f5f5f5;">${res.supervisor_id || '—'}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding:10px 0;color:#166534;font-weight:600;border-top:1px solid #f5f5f5;">Status:</td>
+                        <td style="padding:10px 0;border-top:1px solid #f5f5f5;">${statusBadge}</td>
+                    </tr>
+                    <tr>
+                        <td style="padding:10px 0;color:#166534;font-weight:600;border-top:1px solid #f5f5f5;">Request Date:</td>
+                        <td style="padding:10px 0;border-top:1px solid #f5f5f5;">${formattedDate}</td>
+                    </tr>
                     ${commentHtml}
-                    ${anyCommentHtml}
                     ${rejectionHtml}
+                    ${equipmentHtml}
                 </table>
             `;
                     })
                     .catch(err => {
                         console.error('Fetch error:', err);
                         document.getElementById('resModalContent').innerHTML =
-                            `<div class="alert alert-danger m-3">Error loading reservation details</div>`;
+                            `<div class="alert alert-danger m-3">Error loading reservation details: ${err.message}</div>`;
                     });
             }
 
@@ -5901,7 +8148,7 @@ $query = "SELECT
                                     label: 'Average',
                                     data: [],
                                     borderColor: '#3b82f6',
-                                    backgroundColor: 'transparent',
+                                    backgroundColor: '#3b82f6',
                                     borderDash: [6, 4],
                                     tension: 0,
                                     fill: false,
@@ -6018,158 +8265,163 @@ $query = "SELECT
 
 
                 // Initialize equipment usage table
-               // displayEquipmentUsageTable(equipmentUsageData);
+                // displayEquipmentUsageTable(equipmentUsageData);
             }
 
-           // Global chart variable
-let equipmentUsageChart = null;
+            // Global chart variable
+            let equipmentUsageChart = null;
 
-function initAnalyticsCharts() {
-    const ctx = document.getElementById('equipmentUsageChart')?.getContext('2d');
-    if (!ctx) return;
-    
-    // Show loading state
-    ctx.canvas.style.opacity = '0.5';
-    
-    // Fetch real data for chart
-    fetch('../controllers/get_equipment_usage_stats.php?limit=6')
-        .then(response => response.json())
-        .then(data => {
-            ctx.canvas.style.opacity = '1';
-            
-            if (data.success && data.equipment.length > 0) {
-                // Destroy old chart if exists
-                if (equipmentUsageChart) equipmentUsageChart.destroy();
-                
-                // Get top 6 equipment by usage
-                const topEquipment = data.equipment.slice(0, 6);
-                const labels = topEquipment.map(e => e.name);
-                const usageData = topEquipment.map(e => e.usage);
-                
-                // Generate colors based on usage
-                const colors = usageData.map(usage => {
-                    if (usage >= 70) return '#22c55e';  // high usage - green
-                    if (usage >= 40) return '#f59e0b';  // medium usage - orange
-                    return '#ef4444';                    // low usage - red
-                });
-                
-                equipmentUsageChart = new Chart(ctx, {
-                    type: 'bar',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            label: 'Usage Percentage',
-                            data: usageData,
-                            backgroundColor: colors,
-                            borderRadius: 8,
-                            barPercentage: 0.7
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: {
-                            legend: { display: false },
-                            tooltip: {
-                                callbacks: {
-                                    label: (context) => {
-                                        const item = topEquipment[context.dataIndex];
-                                        return `${context.raw}% (${item.bookings} bookings)`;
+            function initAnalyticsCharts() {
+                const ctx = document.getElementById('equipmentUsageChart')?.getContext('2d');
+                if (!ctx) return;
+
+                // Show loading state
+                ctx.canvas.style.opacity = '0.5';
+
+                // Fetch real data for chart
+                fetch('../controllers/get_equipment_usage_stats.php?limit=6')
+                    .then(response => response.json())
+                    .then(data => {
+                        ctx.canvas.style.opacity = '1';
+
+                        if (data.success && data.equipment.length > 0) {
+                            // Destroy old chart if exists
+                            if (equipmentUsageChart) equipmentUsageChart.destroy();
+
+                            // Get top 6 equipment by usage
+                            const topEquipment = data.equipment.slice(0, 6);
+                            const labels = topEquipment.map(e => e.name);
+                            const usageData = topEquipment.map(e => e.usage);
+
+                            // Generate colors based on usage
+                            const colors = usageData.map(usage => {
+                                if (usage >= 70) return '#22c55e'; // high usage - green
+                                if (usage >= 40) return '#f59e0b'; // medium usage - orange
+                                return '#ef4444'; // low usage - red
+                            });
+
+                            equipmentUsageChart = new Chart(ctx, {
+                                type: 'bar',
+                                data: {
+                                    labels: labels,
+                                    datasets: [{
+                                        label: 'Usage Percentage',
+                                        data: usageData,
+                                        backgroundColor: colors,
+                                        borderRadius: 8,
+                                        barPercentage: 0.7
+                                    }]
+                                },
+                                options: {
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    plugins: {
+                                        legend: {
+                                            display: false
+                                        },
+                                        tooltip: {
+                                            callbacks: {
+                                                label: (context) => {
+                                                    const item = topEquipment[context.dataIndex];
+                                                    return `${context.raw}% (${item.bookings} bookings)`;
+                                                }
+                                            }
+                                        }
+                                    },
+                                    scales: {
+                                        y: {
+                                            beginAtZero: true,
+                                            max: 100,
+                                            title: {
+                                                display: true,
+                                                text: 'Usage %'
+                                            }
+                                        }
                                     }
                                 }
-                            }
-                        },
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                max: 100,
-                                title: { display: true, text: 'Usage %' }
-                            }
+                            });
+                        } else {
+                            ctx.canvas.parentNode.innerHTML = '<div class="text-center py-4 text-muted">No equipment data available</div>';
                         }
-                    }
-                });
-            } else {
-                ctx.canvas.parentNode.innerHTML = '<div class="text-center py-4 text-muted">No equipment data available</div>';
+                    })
+                    .catch(error => {
+                        console.error('Error loading chart data:', error);
+                        ctx.canvas.parentNode.innerHTML = '<div class="text-center py-4 text-danger">Error loading chart data</div>';
+                    });
             }
-        })
-        .catch(error => {
-            console.error('Error loading chart data:', error);
-            ctx.canvas.parentNode.innerHTML = '<div class="text-center py-4 text-danger">Error loading chart data</div>';
-        });
-}
 
-// Load equipment usage data from database
-function loadEquipmentUsageData() {
-    const tableBody = document.getElementById('equipmentUsageTableBody');
-    if (!tableBody) return;
-    
-    // Show loading state
-    tableBody.innerHTML = `
+            // Load equipment usage data from database
+            function loadEquipmentUsageData() {
+                const tableBody = document.getElementById('equipmentUsageTableBody');
+                if (!tableBody) return;
+
+                // Show loading state
+                tableBody.innerHTML = `
         <tr>
             <td colspan="2" class="text-center py-4">
                 <div class="spinner-border spinner-border-sm text-success me-2"></div>
                 Loading equipment data...
             </td>
         </tr>`;
-    
-    // Fetch equipment usage data from server
-    fetch('../controllers/get_equipment_usage_stats.php')
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                equipmentUsageData = data.equipment;
-                displayEquipmentUsageTable(equipmentUsageData);
-            } else {
-                tableBody.innerHTML = `
+
+                // Fetch equipment usage data from server
+                fetch('../controllers/get_equipment_usage_stats.php')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            equipmentUsageData = data.equipment;
+                            displayEquipmentUsageTable(equipmentUsageData);
+                        } else {
+                            tableBody.innerHTML = `
                     <tr>
                         <td colspan="2" class="text-center py-4 text-danger">
                             ❌ Failed to load equipment data
                         </td>
                     </tr>`;
-            }
-        })
-        .catch(error => {
-            console.error('Error loading equipment usage:', error);
-            tableBody.innerHTML = `
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error loading equipment usage:', error);
+                        tableBody.innerHTML = `
                 <tr>
                     <td colspan="2" class="text-center py-4 text-danger">
                         ❌ Connection error
                     </td>
                 </tr>`;
-        });
-}
+                    });
+            }
 
-// Filter equipment usage table (real-time search)
-function filterEquipmentUsage() {
-    const searchTerm = document.getElementById('equipmentUsageSearch').value.toLowerCase().trim();
-    
-    const filtered = equipmentUsageData.filter(item =>
-        item.name.toLowerCase().includes(searchTerm)
-    );
-    
-    displayEquipmentUsageTable(filtered);
-}
+            // Filter equipment usage table (real-time search)
+            function filterEquipmentUsage() {
+                const searchTerm = document.getElementById('equipmentUsageSearch').value.toLowerCase().trim();
 
-// Display equipment usage table
-function displayEquipmentUsageTable(data) {
-    const tableBody = document.getElementById('equipmentUsageTableBody');
-    if (!tableBody) return;
-    
-    tableBody.innerHTML = '';
-    
-    if (!data || data.length === 0) {
-        tableBody.innerHTML = '<tr><td colspan="2" class="text-center py-4">No equipment found</td></tr>';
-        return;
-    }
-    
-    data.forEach(item => {
-        // Determine color based on usage percentage
-        let color = '#22c55e'; // green for >=60%
-        if (item.usage < 30) color = '#ef4444'; // red for <30%
-        else if (item.usage < 60) color = '#f59e0b'; // orange for 30-59%
-        
-        const row = document.createElement('tr');
-        row.innerHTML = `
+                const filtered = equipmentUsageData.filter(item =>
+                    item.name.toLowerCase().includes(searchTerm)
+                );
+
+                displayEquipmentUsageTable(filtered);
+            }
+
+            // Display equipment usage table
+            function displayEquipmentUsageTable(data) {
+                const tableBody = document.getElementById('equipmentUsageTableBody');
+                if (!tableBody) return;
+
+                tableBody.innerHTML = '';
+
+                if (!data || data.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="2" class="text-center py-4">No equipment found</td></tr>';
+                    return;
+                }
+
+                data.forEach(item => {
+                    // Determine color based on usage percentage
+                    let color = '#22c55e'; // green for >=60%
+                    if (item.usage < 30) color = '#ef4444'; // red for <30%
+                    else if (item.usage < 60) color = '#f59e0b'; // orange for 30-59%
+
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
             <td>
                 <div class="d-flex align-items-center">
                     <span class="fw-semibold">${item.name}</span>
@@ -6186,32 +8438,43 @@ function displayEquipmentUsageTable(data) {
                 </div>
             </td>
         `;
-        tableBody.appendChild(row);
-    });
-}
+                    tableBody.appendChild(row);
+                });
+            }
 
-// Call this when analytics section is shown
-function initAnalyticsSection() {
-    loadEquipmentUsageData();
-}
+            // Call this when analytics section is shown
+            function initAnalyticsSection() {
+                loadEquipmentUsageData();
+            }
 
-       function downloadInventory() {
-    fetch('../controllers/get_equipment_list.php?format=csv')
-        .then(response => response.text())
-        .then(csv => {
-            const blob = new Blob([csv], { type: 'text/csv' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'equipment_inventory.csv';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(url);
-            showSuccess('Inventory downloaded successfully!');
-        })
-        .catch(() => alert('Error downloading inventory'));
-}
+            function downloadInventory() {
+                showSuccess('Generating report, please wait...');
+
+                fetch('get_equipment_fulllist_excel.php')
+                    .then(response => {
+                        if (!response.ok) {
+                            return response.text().then(text => {
+                                throw new Error('Server error: ' + text.substring(0, 200));
+                            });
+                        }
+                        return response.blob();
+                    })
+                    .then(blob => {
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = 'equipment_inventory_' + new Date().toISOString().slice(0, 10) + '.xls';
+                        document.body.appendChild(a);
+                        a.click();
+                        window.URL.revokeObjectURL(url);
+                        document.body.removeChild(a);
+                        showSuccess('Inventory downloaded successfully!');
+                    })
+                    .catch(error => {
+                        console.error('Download error:', error);
+                        showError('Download failed: ' + error.message);
+                    });
+            }
 
             const rejectionReasons = {
                 'REQ003': {
@@ -6252,65 +8515,67 @@ function initAnalyticsSection() {
                 new bootstrap.Modal(document.getElementById('rejectionReasonModal')).show();
             }
 
-          function generateReport(type) {
-    if (type === 'rejected') {
-        // Fetch real rejected requests data
-        fetch('../controllers/get_rejected_requests.php')
-            .then(response => response.json())
-            .then(data => {
-                if (data.success && data.requests.length > 0) {
-                    let report = "REJECTED REQUESTS REPORT\n";
-                    report += "=======================\n\n";
-                    report += "Request ID | Student ID | Reason | Date\n";
-                    report += "----------------------------------------\n";
-                    
-                    data.requests.forEach(req => {
-                        report += `${req.reservation_id} | ${req.university_id} | ${req.reason} | ${req.rejected_date}\n`;
-                    });
-                    
-                    console.log(report);
-                    downloadReport(report, 'rejected_requests.txt');
-                } else {
-                    alert('No rejected requests found');
-                }
-            })
-            .catch(() => alert('Error loading rejected requests'));
-            
-    } else if (type === 'usage') {
-        // Use existing equipmentUsageData
-        if (equipmentUsageData.length > 0) {
-            let report = "EQUIPMENT USAGE REPORT\n";
-            report += "======================\n\n";
-            report += "Equipment Name | Code | Usage % | Bookings\n";
-            report += "----------------------------------------\n";
-            
-            equipmentUsageData.forEach(item => {
-                report += `${item.name} | ${item.code} | ${item.usage}% | ${item.bookings}\n`;
-            });
-            
-            console.log(report);
-            downloadReport(report, 'equipment_usage.txt');
-        } else {
-            alert('No equipment data available');
-        }
-    }
-}
+            function generateReport(type) {
+                if (type === 'rejected') {
+                    // Fetch real rejected requests data
+                    fetch('../controllers/get_rejected_requests.php')
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success && data.requests.length > 0) {
+                                let report = "REJECTED REQUESTS REPORT\n";
+                                report += "=======================\n\n";
+                                report += "Request ID | Student ID | Reason | Date\n";
+                                report += "----------------------------------------\n";
 
-// Helper function to download report
-function downloadReport(content, filename) {
-    const blob = new Blob([content], { type: 'text/plain' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    window.URL.revokeObjectURL(url);
-    
-    // Show success message
-    showSuccess(`${filename} generated successfully!`);
-}
+                                data.requests.forEach(req => {
+                                    report += `${req.reservation_id} | ${req.university_id} | ${req.reason} | ${req.rejected_date}\n`;
+                                });
+
+                                console.log(report);
+                                downloadReport(report, 'rejected_requests.txt');
+                            } else {
+                                alert('No rejected requests found');
+                            }
+                        })
+                        .catch(() => alert('Error loading rejected requests'));
+
+                } else if (type === 'usage') {
+                    // Use existing equipmentUsageData
+                    if (equipmentUsageData.length > 0) {
+                        let report = "EQUIPMENT USAGE REPORT\n";
+                        report += "======================\n\n";
+                        report += "Equipment Name | Code | Usage % | Bookings\n";
+                        report += "----------------------------------------\n";
+
+                        equipmentUsageData.forEach(item => {
+                            report += `${item.name} | ${item.code} | ${item.usage}% | ${item.bookings}\n`;
+                        });
+
+                        console.log(report);
+                        downloadReport(report, 'equipment_usage.txt');
+                    } else {
+                        alert('No equipment data available');
+                    }
+                }
+            }
+
+            // Helper function to download report
+            function downloadReport(content, filename) {
+                const blob = new Blob([content], {
+                    type: 'text/plain'
+                });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+
+                // Show success message
+                showSuccess(`${filename} generated successfully!`);
+            }
 
 
 
@@ -7049,6 +9314,26 @@ Head of Department, Microbiology Department</textarea>
                 </div>
             </div>
         </div>
+        
+
+
+<!-- PUT THIS just before </body>, after all other modals -->
+<div class="modal fade" id="equipmentDetailsModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">
+                    <i class="bi bi-info-circle me-2"></i>Equipment Details
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="equipmentDetailsContent"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 
     </body>
 
