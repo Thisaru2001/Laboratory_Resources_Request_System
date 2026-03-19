@@ -17,7 +17,7 @@ if (!isset($_SESSION["user_id"]) || !isset($_SESSION["user_role"]) || $_SESSION[
 $supervisor_id = $_SESSION["user_id"];
 
 // Get supervisor details
-$user_query = "SELECT first_name, last_name, img_path FROM lab_user WHERE id = ?";
+$user_query = "SELECT first_name, last_name, email, mobile, university_id, img_path, join_datetime FROM lab_user WHERE id = ?";
 $user_result = Database::search($user_query, "i", [$supervisor_id]);
 
 if (!$user_result) {
@@ -1133,12 +1133,14 @@ if ($students_result && $students_result->num_rows > 0) {
             color: #22c55e;
         }
 
+        .day-cell.event {
+            background-color: rgba(255, 215, 0, 0.15) !important;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+        }
+
         .day-cell.event::after {
-            content: '•';
-            position: absolute;
-            bottom: 2px;
-            font-size: 2.5rem;
-            color: #ffd700;
+            content: '';
+            display: none;
         }
 
         .goto-section {
@@ -1349,45 +1351,42 @@ if ($students_result && $students_result->num_rows > 0) {
                    $profile_image = $user_data['img_path'] ?? '';
 
 if (!empty($profile_image)) {
-    // Get just the filename from the path
     $filename = basename($profile_image);
     
-    // Construct the correct path - images are in assets/profile_images/
-    $clean_path = 'assets/profile_images/' . $filename;
+    // Get the application root directory (LRRS folder)
+    $app_root = dirname(__DIR__);
+    $app_name = basename($app_root);
     
-    // Full system path for file checking
-    $full_path = $_SERVER['DOCUMENT_ROOT'] . '/' . $clean_path;
+    // Construct the full file system path
+    $image_file_path = $app_root . '/assets/profile_images/' . $filename;
     
     error_log("Profile image - Filename: " . $filename);
-    error_log("Profile image - Clean path: " . $clean_path);
-    error_log("Profile image - Full path: " . $full_path);
+    error_log("App root: " . $app_root);
+    error_log("Full file path: " . $image_file_path);
+    error_log("File exists: " . (file_exists($image_file_path) ? 'YES' : 'NO'));
     
-    if (file_exists($full_path)) {
-        // From views folder, need to go up one level to root
-        $profile_image = '../' . $clean_path;
-        error_log("Profile image - FOUND! Using: " . $profile_image);
-    } else {
-        // Try without the assets/ prefix if the path in DB already includes it
-        $alt_path = ltrim($profile_image, '/');
-        $full_alt_path = $_SERVER['DOCUMENT_ROOT'] . '/' . $alt_path;
+    if (file_exists($image_file_path)) {
+        // Construct URL that works on both localhost and online servers
+        // Get the base URL from the current request
+        $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https://' : 'http://';
+        $host = $_SERVER['HTTP_HOST'];
         
-        if (file_exists($full_alt_path)) {
-            $profile_image = '../' . $alt_path;
-            error_log("Profile image - Found at alternative path: " . $profile_image);
-        } else {
-            error_log("Profile image - NOT FOUND, using avatar");
-            $profile_image = 'https://ui-avatars.com/api/?name=' . urlencode($full_name) . '&background=22c55e&color=fff&size=100';
-        }
+        // Construct the correct URL path
+        $profile_image = $protocol . $host . '/' . $app_name . '/assets/profile_images/' . $filename;
+        error_log("Using full URL: " . $profile_image);
+    } else {
+        error_log("Image NOT FOUND, using avatar");
+        $profile_image = 'https://ui-avatars.com/api/?name=' . urlencode($full_name) . '&background=22c55e&color=fff&size=100';
     }
 } else {
-    error_log("Profile image - No image in database");
+    error_log("No image path in database, using avatar");
     $profile_image = 'https://ui-avatars.com/api/?name=' . urlencode($full_name) . '&background=22c55e&color=fff&size=100';
 }
                     ?>
 
                    <img src="<?php echo $profile_image; ?>" class="profile-img dropdown-toggle" data-bs-toggle="dropdown">
 <ul class="dropdown-menu dropdown-menu-end" style="border-radius:16px;border:none;box-shadow:0 10px 30px rgba(0,0,0,0.1);">
-    <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i>Profile</a></li>
+    <li><a class="dropdown-item" href="#" onclick="openSupervisorProfileModal(event)"><i class="bi bi-person me-2"></i>Profile</a></li>
     <li><hr class="dropdown-divider"></li>
     <li><a class="dropdown-item text-danger" href="../logout.php"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
 </ul>
@@ -1470,6 +1469,80 @@ if (!empty($profile_image)) {
                                 <i class="bi bi-x-circle me-2"></i>Close
                             </button>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Supervisor Profile Modal -->
+        <div class="modal fade" id="supervisorProfileModal" tabindex="-1" aria-labelledby="supervisorProfileModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content" style="border-radius: 24px; border: none;">
+                    <div class="modal-header" style="background: linear-gradient(135deg, #22c55e, #16a34a); color: white; border-radius: 24px 24px 0 0;">
+                        <h5 class="modal-title" id="supervisorProfileModalLabel">
+                            <i class="bi bi-person-circle me-2"></i>My Profile
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <form id="supervisorProfileForm">
+                            <!-- Profile Image -->
+                            <div class="text-center mb-4">
+                                <div style="position: relative; width: 120px; height: 120px; margin: 0 auto; cursor: pointer;" onclick="document.getElementById('profileImageInput').click()">
+                                    <img id="supervisorProfileImage" src="" alt="Profile" style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 3px solid #22c55e;">
+                                    <div style="position: absolute; bottom: 0; right: 0; background: #22c55e; color: white; width: 35px; height: 35px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                                        <i class="bi bi-camera-fill"></i>
+                                    </div>
+                                </div>
+                                <p class="text-muted mt-2" style="font-size: 0.9rem;">Click to upload image</p>
+                                <input type="file" id="profileImageInput" style="display: none;" accept="image/*" onchange="previewProfileImage(this)">
+                            </div>
+
+                            <!-- Form Fields -->
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="supervisorFirstName" class="form-label fw-semibold">First Name</label>
+                                    <input type="text" class="form-control" id="supervisorFirstName" placeholder="First name" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="supervisorLastName" class="form-label fw-semibold">Last Name</label>
+                                    <input type="text" class="form-control" id="supervisorLastName" placeholder="Last name" required>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="supervisorEmail" class="form-label fw-semibold">Email</label>
+                                    <input type="email" class="form-control" id="supervisorEmail" placeholder="Email" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="supervisorMobile" class="form-label fw-semibold">Mobile</label>
+                                    <input type="text" class="form-control" id="supervisorMobile" placeholder="Mobile number">
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="supervisorUniversityId" class="form-label fw-semibold">University ID</label>
+                                    <input type="text" class="form-control" id="supervisorUniversityId" placeholder="University ID">
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="supervisorJoinDate" class="form-label fw-semibold">Join Date</label>
+                                    <input type="text" class="form-control" id="supervisorJoinDate" placeholder="Join date" readonly style="background-color: #f5f5f5;">
+                                </div>
+                            </div>
+
+                            <!-- Error Message -->
+                            <div id="supervisorProfileError" class="alert alert-danger" style="display: none;"></div>
+                        </form>
+                    </div>
+                    <div class="modal-footer" style="border-top: 1px solid #e0e0e0;">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="bi bi-x-circle me-2"></i>Cancel
+                        </button>
+                        <button type="button" class="btn btn-success" onclick="saveSupervisorProfile()">
+                            <i class="bi bi-check-circle me-2"></i>Save Changes
+                        </button>
                     </div>
                 </div>
             </div>
@@ -1618,7 +1691,7 @@ if (!empty($profile_image)) {
                         <table class="user-table">
                             <thead>
                                 <tr>
-                                    <th>Photo</th>
+                                    <th>Image</th>
                                     <th>Name</th>
                                     <th>University ID</th>
                                     <th>Email</th>
@@ -1633,9 +1706,23 @@ if (!empty($profile_image)) {
                                         data-email="<?= strtolower($st['email']) ?>">
                                         <td>
                                             <?php
-                                            $simg = (!empty($st['img_path']) && file_exists($st['img_path']))
-                                                ? $st['img_path']
-                                                : 'https://ui-avatars.com/api/?name=' . urlencode($st['first_name'] . ' ' . $st['last_name']) . '&background=22c55e&color=fff&size=50';
+                                            $simg = '';
+                                            if (!empty($st['img_path'])) {
+                                                $filename = basename($st['img_path']);
+                                                $app_root = dirname(__DIR__);
+                                                $app_name = basename($app_root);
+                                                $image_file_path = $app_root . '/assets/profile_images/' . $filename;
+                                                
+                                                if (file_exists($image_file_path)) {
+                                                    $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https://' : 'http://';
+                                                    $host = $_SERVER['HTTP_HOST'];
+                                                    $simg = $protocol . $host . '/' . $app_name . '/assets/profile_images/' . $filename;
+                                                }
+                                            }
+                                            
+                                            if (empty($simg)) {
+                                                $simg = 'https://ui-avatars.com/api/?name=' . urlencode($st['first_name'] . ' ' . $st['last_name']) . '&background=22c55e&color=fff&size=50';
+                                            }
                                             ?>
                                             <img src="<?= $simg ?>" style="width:42px;height:42px;border-radius:50%;object-fit:cover;border:2px solid #22c55e;">
                                         </td>
@@ -2109,13 +2196,26 @@ if (!empty($profile_image)) {
             const joinDate = new Date(student.join_datetime).toLocaleString();
             const statusText = student.status == 0 ? 'Pending Approval' : 'Verified';
             const statusClass = student.status == 0 ? 'status-pending' : 'status-accepted';
+            
+            // Build student image URL
+            let studentImage = '';
+            if (student.img_path) {
+                const filename = student.img_path.split('/').pop();
+                const appName = window.location.pathname.split('/')[1]; // Get LRRS from URL
+                studentImage = `${window.location.protocol}//${window.location.host}/${appName}/assets/profile_images/${filename}`;
+            }
+            
+            // Use actual image if available, otherwise create avatar with initials
+            const avatarHtml = studentImage 
+                ? `<img src="${studentImage}" alt="Profile" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid #22c55e;">`
+                : `<div class="student-avatar-large" style="width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, #22c55e, #16a34a); color: white; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: bold; margin: 0 auto; box-shadow: 0 10px 20px rgba(34,197,94,0.3);">
+                    ${(student.first_name?.[0] || '') + (student.last_name?.[0] || '') || '?'}
+                </div>`;
 
             const html = `
         <div class="row">
             <div class="col-12 text-center mb-4">
-                <div class="student-avatar-large" style="width: 100px; height: 100px; border-radius: 50%; background: linear-gradient(135deg, #22c55e, #16a34a); color: white; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; font-weight: bold; margin: 0 auto; box-shadow: 0 10px 20px rgba(34,197,94,0.3);">
-                    ${(student.first_name?.[0] || '') + (student.last_name?.[0] || '') || '?'}
-                </div>
+                ${avatarHtml}
             </div>
             
             <div class="col-md-6">
@@ -2816,6 +2916,104 @@ if (!empty($profile_image)) {
             });
         }
 
+        // Supervisor Profile Functions
+        function openSupervisorProfileModal(event) {
+            event.preventDefault();
+            
+            const supervisorProfileData = {
+                first_name: '<?= htmlspecialchars($user_data['first_name'] ?? '') ?>',
+                last_name: '<?= htmlspecialchars($user_data['last_name'] ?? '') ?>',
+                email: '<?= htmlspecialchars($user_data['email'] ?? '') ?>',
+                mobile: '<?= htmlspecialchars($user_data['mobile'] ?? '') ?>',
+                university_id: '<?= htmlspecialchars($user_data['university_id'] ?? '') ?>',
+                img_path: '<?= htmlspecialchars($profile_image) ?>',
+                join_datetime: '<?= htmlspecialchars($user_data['join_datetime'] ?? '') ?>'
+            };
+
+            // Populate form fields
+            document.getElementById('supervisorFirstName').value = supervisorProfileData.first_name;
+            document.getElementById('supervisorLastName').value = supervisorProfileData.last_name;
+            document.getElementById('supervisorEmail').value = supervisorProfileData.email;
+            document.getElementById('supervisorMobile').value = supervisorProfileData.mobile;
+            document.getElementById('supervisorUniversityId').value = supervisorProfileData.university_id;
+            
+            // Format and display join date
+            if (supervisorProfileData.join_datetime) {
+                const joinDate = new Date(supervisorProfileData.join_datetime);
+                document.getElementById('supervisorJoinDate').value = joinDate.toLocaleDateString();
+            }
+
+            // Set profile image - use the already-processed path from PHP
+            const profileImg = supervisorProfileData.img_path;
+            document.getElementById('supervisorProfileImage').src = profileImg;
+            document.getElementById('supervisorProfileImage').dataset.originalSrc = profileImg;
+
+            // Show modal
+            const profileModal = document.getElementById('supervisorProfileModal');
+            const modal = new bootstrap.Modal(profileModal);
+            profileModal.addEventListener('hidden.bs.modal', function() {
+                location.reload();
+            }, { once: true });
+            modal.show();
+        }
+
+        function previewProfileImage(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('supervisorProfileImage').src = e.target.result;
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function saveSupervisorProfile() {
+            const form = document.getElementById('supervisorProfileForm');
+            const errorDiv = document.getElementById('supervisorProfileError');
+            
+            // Validate form
+            if (!form.checkValidity()) {
+                form.classList.add('was-validated');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('first_name', document.getElementById('supervisorFirstName').value);
+            formData.append('last_name', document.getElementById('supervisorLastName').value);
+            formData.append('email', document.getElementById('supervisorEmail').value);
+            formData.append('mobile', document.getElementById('supervisorMobile').value);
+            formData.append('university_id', document.getElementById('supervisorUniversityId').value);
+
+            // Add profile image if selected
+            const imageInput = document.getElementById('profileImageInput');
+            if (imageInput.files && imageInput.files[0]) {
+                formData.append('profile_image', imageInput.files[0]);
+            }
+
+            fetch('../controllers/update_supervisor_profile.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast('Profile updated successfully!', 'success');
+                    const profileModal = bootstrap.Modal.getInstance(document.getElementById('supervisorProfileModal'));
+                    profileModal.hide();
+                } else {
+                    errorDiv.style.display = 'block';
+                    errorDiv.textContent = data.message || 'Error updating profile';
+                    showToast('Error: ' + data.message, 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                errorDiv.style.display = 'block';
+                errorDiv.textContent = 'An error occurred while saving profile';
+                showToast('Error saving profile', 'error');
+            });
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
             showSection('dashboard');
             initCalendar();
@@ -2825,6 +3023,7 @@ if (!empty($profile_image)) {
             setInterval(checkPendingStudents, 30000);
         });
     </script>
+
 </body>
 
 </html>

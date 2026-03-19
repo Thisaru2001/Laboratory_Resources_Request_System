@@ -45,13 +45,22 @@ $notif_list_query = "SELECT description, created_datetime
                      ORDER BY created_datetime DESC LIMIT 5";
 $notif_list_result = Database::search($notif_list_query, "i", [$student_id]);
 
-// Get student's supervisor
+// Get student's supervisor  
 $supervisor_query = "SELECT supervisor_id_or_hod_id FROM supervisor_assigned_student WHERE student_id = ? LIMIT 1";
 $supervisor_result = Database::search($supervisor_query, "i", [$student_id]);
 $supervisor_id = null;
+$supervisor_name = '';
 if ($supervisor_result && $supervisor_result->num_rows > 0) {
     $supervisor_data = $supervisor_result->fetch_assoc();
     $supervisor_id = $supervisor_data['supervisor_id_or_hod_id'];
+    
+    // Get supervisor's name
+    $sup_name_query = "SELECT first_name, last_name FROM lab_user WHERE id = ?";
+    $sup_name_result = Database::search($sup_name_query, "i", [$supervisor_id]);
+    if ($sup_name_result && $sup_name_result->num_rows > 0) {
+        $sup_name_data = $sup_name_result->fetch_assoc();
+        $supervisor_name = trim($sup_name_data['first_name'] . ' ' . $sup_name_data['last_name']);
+    }
 }
 
 // Get locations for dropdown
@@ -878,18 +887,14 @@ $calendar_events_json = json_encode($calendar_events);
             color: #22c55e;
         }
 
+        .day-cell.event {
+            background-color: rgba(255, 215, 0, 0.15) !important;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+        }
+
         .day-cell.event::after {
-            content: '●';
-            /* Changed from • to ● for a bolder dot */
-            position: absolute;
-            bottom: -2px;
-            /* Adjusted position */
-            font-size: 2rem;
-            /* Increased from 1.2rem to 2rem */
-            color: #ffd700;
-            text-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
-            /* Added glow effect */
-            line-height: 1;
+            content: '';
+            display: none;
         }
 
         .goto-section {
@@ -1443,71 +1448,30 @@ $calendar_events_json = json_encode($calendar_events);
                     $profile_image = $user_data['img_path'] ?? '';
 
                     if (!empty($profile_image)) {
-                        // Clean the path - replace backslashes with forward slashes
-                        $clean_path = str_replace('\\', '/', $profile_image);
-                        $clean_path = ltrim($clean_path, '/');
-
-                        // Get the base URL dynamically
-                        $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https://' : 'http://';
-                        $host = $_SERVER['HTTP_HOST'];
-                        $base_url = $protocol . $host;
-
-                        // For file system check
-                        $full_path = $_SERVER['DOCUMENT_ROOT'] . '/' . $clean_path;
-
-                        // Debug (remove in production)
-                        error_log("=== PROFILE IMAGE DEBUG ===");
-                        error_log("Original path from DB: " . $profile_image);
-                        error_log("Clean path: " . $clean_path);
-                        error_log("Document Root: " . $_SERVER['DOCUMENT_ROOT']);
-                        error_log("Full system path: " . $full_path);
-                        error_log("File exists: " . (file_exists($full_path) ? 'YES' : 'NO'));
-
-                        if (file_exists($full_path)) {
-                            // File exists - construct the full URL
-                            $profile_image = $base_url . '/' . $clean_path;
-                            // error_log("Using URL: " . $profile_image);
+                        $filename = basename($profile_image);
+                        
+                        // Get the application root directory
+                        $app_root = dirname(__DIR__);
+                        $app_name = basename($app_root);
+                        
+                        // Construct the full file system path
+                        $image_file_path = $app_root . '/assets/profile_images/' . $filename;
+                        
+                        if (file_exists($image_file_path)) {
+                            // Construct URL that works on both localhost and online servers
+                            $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https://' : 'http://';
+                            $host = $_SERVER['HTTP_HOST'];
+                            $profile_image = $protocol . $host . '/' . $app_name . '/assets/profile_images/' . $filename;
                         } else {
-                            // Try alternative paths
-                            $alt_paths = [
-                                'assets/profile_images/' . basename($clean_path),
-                                'uploads/profile_images/' . basename($clean_path),
-                                'images/profile/' . basename($clean_path),
-                                '../' . $clean_path,
-                                $clean_path
-                            ];
-
-                            $found = false;
-                            foreach ($alt_paths as $alt_path) {
-                                $full_alt_path = $_SERVER['DOCUMENT_ROOT'] . '/' . ltrim($alt_path, '/');
-                                error_log("Trying alternative: " . $full_alt_path);
-
-                                if (file_exists($full_alt_path)) {
-                                    $profile_image = $base_url . '/' . ltrim($alt_path, '/');
-                                    error_log("Found at: " . $profile_image);
-                                    $found = true;
-                                    break;
-                                }
-                            }
-
-                            if (!$found) {
-                                error_log("No image found, using avatar");
-                                $profile_image = 'https://ui-avatars.com/api/?name=' . urlencode($full_name) . '&background=22c55e&color=fff&size=100';
-                            }
+                            $profile_image = 'https://ui-avatars.com/api/?name=' . urlencode($full_name) . '&background=22c55e&color=fff&size=100';
                         }
                     } else {
-                        error_log("No image path in database, using avatar");
                         $profile_image = 'https://ui-avatars.com/api/?name=' . urlencode($full_name) . '&background=22c55e&color=fff&size=100';
                     }
-
-                    // Final debug
-                    error_log("Final profile image URL: " . $profile_image);
                     ?>
                     <img src="<?php echo htmlspecialchars($profile_image); ?>" class="profile-img dropdown-toggle" data-bs-toggle="dropdown">
-                    <!-- <img src="<?php echo htmlspecialchars($profile_image); ?>" class="profile-img dropdown-toggle" data-bs-toggle="dropdown"> -->
                     <ul class="dropdown-menu dropdown-menu-end" style="border-radius: 16px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
                         <li><a class="dropdown-item" href="#" onclick="openProfileModal(event)" data-bs-toggle="modal" data-bs-target="#profileModal"><i class="bi bi-person me-2"></i>Profile</a></li>
-                        <!-- <li><a class="dropdown-item" href="settings.php"><i class="bi bi-gear me-2"></i>Settings</a></li> -->
                         <li>
                             <hr class="dropdown-divider">
                         </li>
@@ -1573,11 +1537,11 @@ $calendar_events_json = json_encode($calendar_events);
                                     <input type="text" class="form-control bg-light" value="<?php echo date('Y-m-d', strtotime($user_data['join_datetime'] ?? '')); ?>" disabled>
                                 </div>
 
-                                <!-- Supervisor ID -->
-                                <div class="col-md-6">
-                                    <label class="form-label fw-semibold"><i class="bi bi-person-badge text-success me-1"></i>Supervisor ID</label>
-                                    <input type="text" id="supervisorId" class="form-control" value="<?php echo htmlspecialchars($supervisor_id ?? ''); ?>">
-                                </div>
+                                <!-- Supervisor -->
+                                <!-- <div class="col-md-6">
+                                    <label class="form-label fw-semibold"><i class="bi bi-person-badge text-success me-1"></i>Supervisor</label>
+                                    <input type="text" class="form-control bg-light" value="<?php echo htmlspecialchars($supervisor_name ?: 'Not assigned'); ?>" disabled>
+                                </div> -->
 
                                 <!-- Supervisor Name (Read-only) -->
                                 <div class="col-md-6">
@@ -3402,7 +3366,6 @@ $calendar_events_json = json_encode($calendar_events);
             const email = document.getElementById('email').value.trim();
             const mobile = document.getElementById('mobile').value.trim();
             const universityId = document.getElementById('universityId').value.trim();
-            const supervisorId = document.getElementById('supervisorId').value.trim();
             const imageFile = document.getElementById('profileImageInput').files[0];
 
             // Validation
@@ -3426,7 +3389,6 @@ $calendar_events_json = json_encode($calendar_events);
             formData.append('email', email);
             formData.append('mobile', mobile);
             formData.append('university_id', universityId);
-            formData.append('supervisor_id', supervisorId);
             
             // Add image only if a new file was selected
             if (imageFile) {

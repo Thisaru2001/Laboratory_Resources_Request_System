@@ -4,8 +4,8 @@ require_once '../config/database.php';
 
 header('Content-Type: application/json');
 
-// Auth check
-if (!isset($_SESSION['user_role']) || $_SESSION['user_role'] !== 'hod') {
+// Auth check - Allow HOD and Technical Officer
+if (!isset($_SESSION['user_role']) || !in_array($_SESSION['user_role'], ['hod', 'technical_officer'])) {
     echo json_encode(['success' => false, 'message' => 'Unauthorized']);
     exit;
 }

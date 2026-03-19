@@ -12,16 +12,17 @@ if (!isset($_SESSION["user_id"]) || !isset($_SESSION["user_role"]) || $_SESSION[
 $technical_officer_id = $_SESSION["user_id"];
 
 // Get technical officer details
-$user_query = "SELECT first_name, last_name, img_path FROM lab_user WHERE id = ?";
+$user_query = "SELECT first_name, last_name, email, mobile, university_id, img_path, join_datetime FROM lab_user WHERE id = ?";
 $user_result = Database::search($user_query, "i", [$technical_officer_id]);
+$user_data = [];
 $first_name = 'Technical';
 $last_name = 'Officer';
 $profile_image = '';
 if ($user_result && $user_result->num_rows > 0) {
-    $u = $user_result->fetch_assoc();
-    $first_name   = $u['first_name'] ?? 'Technical';
-    $last_name    = $u['last_name']  ?? 'Officer';
-    $profile_image = $u['img_path']   ?? '';
+    $user_data = $user_result->fetch_assoc();
+    $first_name   = $user_data['first_name'] ?? 'Technical';
+    $last_name    = $user_data['last_name']  ?? 'Officer';
+    $profile_image = $user_data['img_path']   ?? '';
 }
 $full_name = trim($first_name . ' ' . $last_name);
 
@@ -789,12 +790,14 @@ if ($requests_result && $requests_result->num_rows > 0) {
             color: #22c55e;
         }
 
+        .day-cell.event {
+            background-color: rgba(255, 215, 0, 0.15) !important;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+        }
+
         .day-cell.event::after {
-            content: '•';
-            position: absolute;
-            bottom: 2px;
-            font-size: 2.5rem;
-            color: #ffd700;
+            content: '';
+            display: none;
         }
 
         .goto-section {
@@ -1298,14 +1301,28 @@ if ($requests_result && $requests_result->num_rows > 0) {
                 <span class="fw-semibold d-none d-sm-block" style="color: #166534;"><?= htmlspecialchars($full_name) ?></span>
                 <div class="dropdown">
                     <?php
-                    if (empty($profile_image) || !file_exists($profile_image)) {
+                    $img_path = $user_data['img_path'] ?? '';
+
+                    if (!empty($img_path)) {
+                        $filename = basename($img_path);
+                        $app_root = dirname(__DIR__);
+                        $app_name = basename($app_root);
+                        $image_file_path = $app_root . '/assets/profile_images/' . $filename;
+                        
+                        if (file_exists($image_file_path)) {
+                            $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https://' : 'http://';
+                            $host = $_SERVER['HTTP_HOST'];
+                            $profile_image = $protocol . $host . '/' . $app_name . '/assets/profile_images/' . $filename;
+                        } else {
+                            $profile_image = 'https://ui-avatars.com/api/?name=' . urlencode($full_name) . '&background=22c55e&color=fff&size=100';
+                        }
+                    } else {
                         $profile_image = 'https://ui-avatars.com/api/?name=' . urlencode($full_name) . '&background=22c55e&color=fff&size=100';
                     }
                     ?>
-                    <img src="<?= $profile_image ?>" class="profile-img dropdown-toggle" data-bs-toggle="dropdown">
+                    <img src="<?php echo htmlspecialchars($profile_image); ?>" class="profile-img dropdown-toggle" data-bs-toggle="dropdown">
                     <ul class="dropdown-menu dropdown-menu-end" style="border-radius: 16px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
-                        <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i>Profile</a></li>
-                        <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i>Settings</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="openProfileModal(event)"><i class="bi bi-person me-2"></i>Profile</a></li>
                         <li>
                             <hr class="dropdown-divider">
                         </li>
@@ -1713,9 +1730,74 @@ if ($requests_result && $requests_result->num_rows > 0) {
                 </div>
             </div>
 
-
-
         </div> <!-- End content-area -->
+
+        <!-- Profile Modal -->
+        <div class="modal fade" id="profileModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content" style="border-radius: 20px; border: none; box-shadow: 0 20px 60px rgba(0,0,0,0.3);">
+                    <div class="modal-header" style="border-bottom: 1px solid #e5e7eb; background: linear-gradient(135deg, #22c55e, #16a34a);">
+                        <h5 class="modal-title text-white fw-bold">My Profile</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <!-- Profile Image Upload -->
+                        <div class="text-center mb-4">
+                            <div style="width: 120px; height: 120px; margin: 0 auto; border-radius: 50%; overflow: hidden; border: 3px solid #22c55e; background: #f3f4f6;">
+                                <img id="profileImagePreview" src="" alt="Profile" style="width: 100%; height: 100%; object-fit: cover;">
+                            </div>
+                            <input type="file" id="profileImageInput" accept="image/*" style="display: none;">
+                            <button type="button" class="btn btn-sm btn-outline-success mt-3" onclick="document.getElementById('profileImageInput').click()">
+                                <i class="bi bi-cloud-upload me-2"></i>Upload Photo
+                            </button>
+                        </div>
+
+                        <!-- Form -->
+                        <form id="profileForm">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">First Name</label>
+                                    <input type="text" class="form-control" id="firstName" placeholder="First name">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">Last Name</label>
+                                    <input type="text" class="form-control" id="lastName" placeholder="Last name">
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Email</label>
+                                <input type="email" class="form-control" id="email" placeholder="Email address">
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">Mobile</label>
+                                    <input type="text" class="form-control" id="mobile" placeholder="Mobile number">
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold">University ID</label>
+                                    <input type="text" class="form-control" id="universityId" placeholder="University ID" readonly>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">Join Date</label>
+                                <input type="text" class="form-control" id="joinDate" readonly style="background-color: #f3f4f6;">
+                            </div>
+
+                            <div class="modal-footer border-top mt-4">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <button type="button" class="btn btn-success" onclick="saveProfile()">
+                                    <i class="bi bi-check-circle me-2"></i>Save Changes
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div> <!-- End main-content -->
 
     <!-- Request Details Modal -->
@@ -1798,7 +1880,7 @@ if ($requests_result && $requests_result->num_rows > 0) {
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
-                            alert('Request rejected successfully!');
+                            showToast('success', 'Request rejected successfully!');
 
                             // Hide modal
                             const modal = bootstrap.Modal.getInstance(document.getElementById('requestDetailsModal'));
@@ -1807,12 +1889,12 @@ if ($requests_result && $requests_result->num_rows > 0) {
                             // Reload and restore section
                             location.reload();
                         } else {
-                            alert('Error: ' + data.message);
+                            showToast('error', 'Error: ' + data.message);
                         }
                     })
                     .catch(error => {
                         console.error('Error:', error);
-                        alert('Error rejecting request');
+                        showToast('error', 'Error rejecting request');
                     });
             }
         }
@@ -1822,7 +1904,7 @@ if ($requests_result && $requests_result->num_rows > 0) {
         // Submit checked equipment
         function submitCheckedEquipment() {
             if (!currentRequestId) {
-                alert('No reservation selected');
+                showToast('warning', 'No reservation selected');
                 return;
             }
 
@@ -1835,12 +1917,12 @@ if ($requests_result && $requests_result->num_rows > 0) {
 
             // Check if ALL checkboxes are checked
             if (allCheckboxes.length === 0) {
-                alert('No equipment found to check');
+                showToast('warning', 'No equipment found to check');
                 return;
             }
 
             if (checkedBoxes.length !== allCheckboxes.length) {
-                alert(`Please check ALL equipment items (${checkedBoxes.length}/${allCheckboxes.length} checked)`);
+                showToast('warning', `Please check ALL equipment items (${checkedBoxes.length}/${allCheckboxes.length} checked)`);
                 return;
             }
 
@@ -1877,7 +1959,7 @@ if ($requests_result && $requests_result->num_rows > 0) {
                     submitBtn.innerHTML = originalText;
 
                     if (data.success) {
-                        alert('Equipment checked successfully!');
+                        showToast('success', 'Equipment checked successfully!');
 
                         // Hide modal
                         const modal = bootstrap.Modal.getInstance(document.getElementById('requestDetailsModal'));
@@ -1926,14 +2008,14 @@ if ($requests_result && $requests_result->num_rows > 0) {
                         filterRequestsByStatus();
 
                     } else {
-                        alert('Error: ' + (data.message || 'Failed to submit'));
+                        showToast('error', 'Error: ' + (data.message || 'Failed to submit'));
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = originalText;
-                    alert('Network error. Please try again.');
+                    showToast('error', 'Network error. Please try again.');
                 });
         }
 
@@ -2022,7 +2104,7 @@ if ($requests_result && $requests_result->num_rows > 0) {
                     .then(r => r.json())
                     .then(data => {
                         if (data.success) {
-                            alert('Rejected!');
+                            showToast('success', 'Rejected!');
 
                             // FIND AND REMOVE THE ROW FROM THE TABLE
                             const tableBody = document.getElementById('requestListBody');
@@ -2057,7 +2139,7 @@ if ($requests_result && $requests_result->num_rows > 0) {
                             }
 
                             filterRequestsByStatus();
-                        } else alert('Error: ' + data.message);
+                        } else showToast('error', 'Error: ' + data.message);
                     });
             }
         }
@@ -2328,7 +2410,7 @@ if ($requests_result && $requests_result->num_rows > 0) {
                             document.getElementById('currentImageInfo').style.display = 'block';
                         }
                     } else {
-                        alert('Error loading equipment details: ' + (data.message || 'Unknown error'));
+                        showToast('error', 'Error loading equipment details: ' + (data.message || 'Unknown error'));
                         modal.hide();
                     }
                 })
@@ -2336,7 +2418,7 @@ if ($requests_result && $requests_result->num_rows > 0) {
                     console.error('Error:', error);
                     document.getElementById('eqCode').disabled = false;
                     document.getElementById('eqName').disabled = false;
-                    alert('Network error. Please try again.');
+                    showToast('error', 'Network error. Please try again.');
                     modal.hide();
                 });
         }
@@ -2567,9 +2649,9 @@ if ($requests_result && $requests_result->num_rows > 0) {
         }
 
         function removeEquipment(code) {
-            if (!confirm(`Are you sure you want to remove equipment "${code}"?\n\nThis action cannot be undone.`)) {
-                return;
-            }
+            // if (!confirm(`Are you sure you want to remove equipment "${code}"?\n\nThis action cannot be undone.`)) {
+            //     return;
+            // }
 
             // Find button by traversing the DOM — no event needed
             const allBtns = document.querySelectorAll('.btn-remove');
@@ -2873,14 +2955,14 @@ if ($requests_result && $requests_result->num_rows > 0) {
                         showSuccess(id ? 'Equipment updated successfully!' : 'Equipment added successfully!');
                         loadEquipmentWithUsage();
                     } else {
-                        alert('Error: ' + (data.message || 'Operation failed'));
+                        showToast('error', 'Error: ' + (data.message || 'Operation failed'));
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
                     saveBtn.disabled = false;
                     saveBtn.innerHTML = originalText;
-                    alert('Network error. Please try again.');
+                    showToast('error', 'Network error. Please try again.');
                 });
         }
 
@@ -3188,10 +3270,10 @@ if ($requests_result && $requests_result->num_rows > 0) {
                         year = y;
                         initCalendar();
                     } else {
-                        alert('Invalid date format. Use MM/YYYY');
+                        showToast('warning', 'Invalid date format. Use MM/YYYY');
                     }
                 } else {
-                    alert('Invalid date format. Use MM/YYYY');
+                    showToast('warning', 'Invalid date format. Use MM/YYYY');
                 }
             });
         }
@@ -3221,7 +3303,160 @@ if ($requests_result && $requests_result->num_rows > 0) {
             if (document.getElementById('requestListBody')) {
                 filterRequestsByStatus();
             }
+
+            // Initialize profile modal
+            const profileModal = document.getElementById('profileModal');
+            if (profileModal) {
+                profileModal.addEventListener('hidden.bs.modal', () => {
+                    location.reload();
+                });
+            }
         });
+
+        // Profile Functions
+        function openProfileModal(event) {
+            event.preventDefault();
+            const modal = new bootstrap.Modal(document.getElementById('profileModal'));
+            
+            // Load user data
+            const firstName = '<?= htmlspecialchars($user_data['first_name'] ?? '') ?>';
+            const lastName = '<?= htmlspecialchars($user_data['last_name'] ?? '') ?>';
+            const email = '<?= htmlspecialchars($user_data['email'] ?? '') ?>';
+            const mobile = '<?= htmlspecialchars($user_data['mobile'] ?? '') ?>';
+            const universityId = '<?= htmlspecialchars($user_data['university_id'] ?? '') ?>';
+            const joinDate = '<?= htmlspecialchars($user_data['join_datetime'] ?? '') ?>';
+            
+            // Populate form
+            document.getElementById('firstName').value = firstName;
+            document.getElementById('lastName').value = lastName;
+            document.getElementById('email').value = email;
+            document.getElementById('mobile').value = mobile;
+            document.getElementById('universityId').value = universityId;
+            document.getElementById('joinDate').value = joinDate ? new Date(joinDate).toLocaleDateString() : '';
+            
+            // Set profile image
+            const profileImg = document.querySelector('.profile-img');
+            document.getElementById('profileImagePreview').src = profileImg.src;
+            
+            modal.show();
+        }
+
+        function previewImage(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // Validate file type
+            const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+            if (!validTypes.includes(file.type)) {
+                showToast('error', 'Please select a valid image file (JPEG, PNG, GIF, or WebP)');
+                return;
+            }
+
+            // Validate file size (5MB max)
+            if (file.size > 5 * 1024 * 1024) {
+                showToast('error', 'Image size must be less than 5MB');
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                document.getElementById('profileImagePreview').src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        document.getElementById('profileImageInput')?.addEventListener('change', previewImage);
+
+        function saveProfile() {
+            const firstName = document.getElementById('firstName').value.trim();
+            const lastName = document.getElementById('lastName').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const mobile = document.getElementById('mobile').value.trim();
+
+            if (!firstName || !lastName || !email || !mobile) {
+                showToast('error', 'Please fill in all required fields');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('first_name', firstName);
+            formData.append('last_name', lastName);
+            formData.append('email', email);
+            formData.append('mobile', mobile);
+
+            const fileInput = document.getElementById('profileImageInput');
+            if (fileInput.files.length > 0) {
+                formData.append('profile_image', fileInput.files[0]);
+            }
+
+            const saveBtn = event.target;
+            const originalText = saveBtn.innerHTML;
+            saveBtn.disabled = true;
+            saveBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Saving...';
+
+            fetch('../controllers/update_technical_officer_profile.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('success', 'Profile updated successfully!');
+                        setTimeout(() => {
+                            bootstrap.Modal.getInstance(document.getElementById('profileModal')).hide();
+                        }, 1000);
+                    } else {
+                        showToast('error', data.message || 'Failed to update profile');
+                        saveBtn.disabled = false;
+                        saveBtn.innerHTML = originalText;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showToast('error', 'Network error. Please try again.');
+                    saveBtn.disabled = false;
+                    saveBtn.innerHTML = originalText;
+                });
+        }
+
+        function showToast(type, message) {
+            const toast = document.createElement('div');
+            toast.className = `toast-notification toast-${type}`;
+            toast.innerHTML = `
+                <i class="bi ${type === 'success' ? 'bi-check-circle' : type === 'error' ? 'bi-exclamation-circle' : 'bi-info-circle'} me-2"></i>
+                ${message}
+            `;
+
+            const colors = {
+                success: '#22c55e',
+                error: '#ef4444',
+                warning: '#f59e0b',
+                info: '#3b82f6'
+            };
+
+            Object.assign(toast.style, {
+                position: 'fixed',
+                bottom: '20px',
+                right: '20px',
+                backgroundColor: colors[type],
+                color: 'white',
+                padding: '12px 20px',
+                borderRadius: '8px',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                zIndex: '9999',
+                display: 'flex',
+                alignItems: 'center',
+                fontSize: '14px',
+                fontWeight: '500',
+                animation: 'slideIn 0.3s ease-out'
+            });
+
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.style.animation = 'slideOut 0.3s ease-out forwards';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
     </script>
 
     <div class="modal fade" id="equipmentDetailsModal" tabindex="-1" aria-hidden="true">

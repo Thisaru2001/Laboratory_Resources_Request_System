@@ -6,25 +6,23 @@ require_once '../config/database.php';
 
 header('Content-Type: application/json');
 
-// Check if student is logged in
+// Check if user is logged in
 if (!isset($_SESSION['user_id'])) {
     echo json_encode(['success' => false, 'message' => 'Not authenticated']);
     exit;
 }
 
-$student_id = $_SESSION['user_id'];
+$technical_officer_id = $_SESSION['user_id'];
 
 // Get POST data
 $first_name = $_POST['first_name'] ?? '';
 $last_name = $_POST['last_name'] ?? '';
 $email = $_POST['email'] ?? '';
 $mobile = $_POST['mobile'] ?? '';
-$university_id = $_POST['university_id'] ?? '';
-$supervisor_id = $_POST['supervisor_id'] ?? '';
 
 // Validation
-if (empty($first_name) || empty($last_name) || empty($email)) {
-    echo json_encode(['success' => false, 'message' => 'First name, last name, and email are required']);
+if (empty($first_name) || empty($last_name) || empty($email) || empty($mobile)) {
+    echo json_encode(['success' => false, 'message' => 'All fields are required']);
     exit;
 }
 
@@ -36,7 +34,7 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
 
 // Check if email is already taken by another user
 $email_check = "SELECT id FROM lab_user WHERE email = ? AND id != ?";
-$email_result = Database::search($email_check, "si", [$email, $student_id]);
+$email_result = Database::search($email_check, "si", [$email, $technical_officer_id]);
 
 if ($email_result && $email_result->num_rows > 0) {
     echo json_encode(['success' => false, 'message' => 'Email is already in use']);
@@ -75,7 +73,7 @@ try {
 
         // Generate unique filename
         $file_extension = pathinfo($file_name, PATHINFO_EXTENSION);
-        $new_filename = 'student_' . $student_id . '_' . time() . '.' . $file_extension;
+        $new_filename = 'technical_officer_' . $technical_officer_id . '_' . time() . '.' . $file_extension;
         $upload_path = $upload_dir . $new_filename;
 
         // Move uploaded file
@@ -89,52 +87,22 @@ try {
 
     // Build update query
     if ($profile_image_path) {
-        $update_query = "UPDATE lab_user SET first_name = ?, last_name = ?, email = ?, mobile = ?, university_id = ?, img_path = ? WHERE id = ?";
-        $success = Database::iud($update_query, "ssssssi", [$first_name, $last_name, $email, $mobile, $university_id, $profile_image_path, $student_id]);
+        $update_query = "UPDATE lab_user SET first_name = ?, last_name = ?, email = ?, mobile = ?, img_path = ? WHERE id = ?";
+        $success = Database::iud($update_query, "sssssi", [$first_name, $last_name, $email, $mobile, $profile_image_path, $technical_officer_id]);
     } else {
-        $update_query = "UPDATE lab_user SET first_name = ?, last_name = ?, email = ?, mobile = ?, university_id = ? WHERE id = ?";
-        $success = Database::iud($update_query, "sssssi", [$first_name, $last_name, $email, $mobile, $university_id, $student_id]);
+        $update_query = "UPDATE lab_user SET first_name = ?, last_name = ?, email = ?, mobile = ? WHERE id = ?";
+        $success = Database::iud($update_query, "ssssi", [$first_name, $last_name, $email, $mobile, $technical_officer_id]);
     }
     
     if ($success) {
-        // Update supervisor assignment if provided
-        if (!empty($supervisor_id)) {
-            // First, check if supervisor assignment exists
-            $check_query = "SELECT id FROM supervisor_assigned_student WHERE student_id = ?";
-            $check_result = Database::search($check_query, "i", [$student_id]);
-            
-            if ($check_result && $check_result->num_rows > 0) {
-                // Update existing assignment
-                $update_sup = "UPDATE supervisor_assigned_student SET supervisor_id_or_hod_id = ? WHERE student_id = ?";
-                Database::iud($update_sup, "ii", [$supervisor_id, $student_id]);
-            } else {
-                // Create new assignment
-                $insert_sup = "INSERT INTO supervisor_assigned_student (student_id, supervisor_id_or_hod_id) VALUES (?, ?)";
-                Database::iud($insert_sup, "ii", [$student_id, $supervisor_id]);
-            }
-        }
-
-        error_log("Student profile updated - ID: {$student_id}, Name: {$first_name} {$last_name}");
+        // Update session if name changed
+        $_SESSION['first_name'] = $first_name;
+        $_SESSION['last_name'] = $last_name;
         
-        $response = [
-            'success' => true,
-            'message' => 'Profile updated successfully',
-            'first_name' => htmlspecialchars($first_name),
-            'last_name' => htmlspecialchars($last_name)
-        ];
-        
-        // Include image path in response if updated
-        if ($profile_image_path) {
-            $response['profile_image'] = $profile_image_path;
-        }
-        
-        echo json_encode($response);
+        echo json_encode(['success' => true, 'message' => 'Profile updated successfully']);
     } else {
         echo json_encode(['success' => false, 'message' => 'Failed to update profile']);
     }
-
 } catch (Exception $e) {
-    error_log("Error in update_student_profile.php: " . $e->getMessage());
-    echo json_encode(['success' => false, 'message' => 'An error occurred']);
+    echo json_encode(['success' => false, 'message' => 'Error: ' . $e->getMessage()]);
 }
-?>

@@ -20,7 +20,7 @@ try {
 FROM lab_user 
 WHERE status = 0 
 AND who_approved = ?
-AND approval_datetime IS NULL
+AND approved_datetime IS NULL
 ORDER BY join_datetime DESC";
     
     $result = Database::search($query, "i", [$supervisor_id]);
