@@ -120,7 +120,7 @@ if ($cal_result && $cal_result->num_rows > 0) {
             'end_year'  => (int)$end->format('Y'),
             'title'     => $row['reservation_id'],
             'student'   => $row['student_name'],
-            'equipment' => $row['equipment_list'] ?? 'No equipment',
+            'equipment' => $row['equipment_list'] ?? '-------',
             'location'  => $row['location'],
             'duration'  => $row['continue_days'] . ' day(s)',
         ];
@@ -189,7 +189,7 @@ if ($students_result && $students_result->num_rows > 0) {
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Supervisor Dashboard - Microbiology Lab</title>
+    <title>Supervisor Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
@@ -360,6 +360,61 @@ if ($students_result && $students_result->num_rows > 0) {
         .btn-view:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
+        }
+
+        /* Toggle Student Status Buttons */
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 50px;
+            height: 26px;
+            cursor: pointer;
+        }
+
+        .toggle-checkbox {
+            display: none;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            border-radius: 26px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+        }
+
+        .toggle-slider:before {
+            content: '';
+            position: absolute;
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .toggle-checkbox:checked + .toggle-slider {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            box-shadow: 0 2px 8px rgba(34, 197, 94, 0.4);
+        }
+
+        .toggle-checkbox:checked + .toggle-slider:before {
+            transform: translateX(24px);
+        }
+
+        .toggle-switch:hover .toggle-slider {
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .toggle-switch:hover .toggle-checkbox:checked + .toggle-slider {
+            box-shadow: 0 3px 12px rgba(34, 197, 94, 0.5);
         }
 
         /* Notification Bell */
@@ -555,9 +610,64 @@ if ($students_result && $students_result->num_rows > 0) {
             transform: translateY(-8px);
             box-shadow: 0 30px 60px rgba(0, 0, 0, 0.15);
         }
+.analytics-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(250px, 300px));
+    gap: 20px;
+    margin-bottom: 30px;
+    justify-content: center;
+    justify-items: center;
+}
 
+.stat-card {
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    border-radius: 20px;
+    padding: 25px;
+    color: white;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s;
+    cursor: pointer;
+    width: 100%;
+    max-width: 280px;
+    box-sizing: border-box;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(34, 197, 94, 0.4);
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: rgba(255, 255, 255, 0.1);
+    transform: rotate(45deg);
+    transition: all 0.3s;
+}
+
+.stat-card i {
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+}
+
+.stat-card h3 {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 5px;
+}
+
+.stat-card p {
+    margin: 0;
+    opacity: 0.9;
+    font-size: 0.95rem;
+}
         /* Stat cards */
-        .analytics-grid {
+        /* .analytics-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 20px;
@@ -607,7 +717,7 @@ if ($students_result && $students_result->num_rows > 0) {
             margin: 0;
             opacity: 0.9;
             font-size: 0.95rem;
-        }
+        } */
 
         /* Tables */
         .table thead th {
@@ -1027,7 +1137,7 @@ if ($students_result && $students_result->num_rows > 0) {
             content: '•';
             position: absolute;
             bottom: 2px;
-            font-size: 1.2rem;
+            font-size: 2.5rem;
             color: #ffd700;
         }
 
@@ -1180,6 +1290,8 @@ if ($students_result && $students_result->num_rows > 0) {
             background: linear-gradient(135deg, #22c55e, #16a34a);
             border-radius: 10px;
         }
+
+        
     </style>
 </head>
 
@@ -1215,7 +1327,7 @@ if ($students_result && $students_result->num_rows > 0) {
                     <i class="bi bi-list fs-3"></i>
                 </button>
                 <h5 class="fw-bold mb-0" style="background:linear-gradient(135deg,#22c55e,#16a34a);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">
-                    Supervisor Dashboard
+                    Welcome, <?= htmlspecialchars($first_name) ?>
                 </h5>
             </div>
             <div class="d-flex align-items-center gap-3">
@@ -1379,7 +1491,7 @@ if (!empty($profile_image)) {
                     </div>
                     <div class="stat-card" onclick="showSection('requests')">
                         <i class="bi bi-hourglass-split"></i>
-                        <h3><?= $pending_count ?></h3>
+                        <h3 class="text-warning"><?= $pending_count ?></h3>
                         <p>Reseravtion Pending Approvals</p>
                     </div>
                     <div class="stat-card">
@@ -1387,11 +1499,7 @@ if (!empty($profile_image)) {
                         <h3><?= $today_count ?></h3>
                         <p>Today's Practicals</p>
                     </div>
-                    <div class="stat-card" onclick="showSection('requests')">
-                        <i class="bi bi-journals"></i>
-                        <h3><?= $total_reservations ?></h3>
-                        <p>Total Reservations</p>
-                    </div>
+                   
                 </div>
 
                 <!-- Recent Pending Requests Quick View -->
@@ -1436,9 +1544,9 @@ if (!empty($profile_image)) {
                                             <button class="btn-approve me-1" onclick="quickAction(<?= $res['id'] ?>,'approve')">
                                                 <i class="bi bi-check-lg"></i>
                                             </button>
-                                            <button class="btn-reject" onclick="quickAction(<?= $res['id'] ?>,'reject')">
+                                            <!-- <button class="btn-reject" onclick="quickAction(<?= $res['id'] ?>,'reject')">
                                                 <i class="bi bi-x-lg"></i>
-                                            </button>
+                                            </button> -->
                                         </td>
                                     </tr>
                                 <?php } ?>
@@ -1514,7 +1622,7 @@ if (!empty($profile_image)) {
                                     <th>Name</th>
                                     <th>University ID</th>
                                     <th>Email</th>
-                                    <th>Reservations</th>
+                                    <!-- <th>Reservations</th> -->
                                     <th>Actions</th>
                                 </tr>
                             </thead>
@@ -1534,13 +1642,21 @@ if (!empty($profile_image)) {
                                         <td><strong><?= htmlspecialchars($st['first_name'] . ' ' . $st['last_name']) ?></strong></td>
                                         <td><?= htmlspecialchars($st['university_id']) ?></td>
                                         <td><?= htmlspecialchars($st['email']) ?></td>
-                                        <td>
+                                        <!-- <td>
                                             <span class="badge bg-info"><?= $st['request_count'] ?? 0 ?> reservations</span>
-                                        </td>
+                                        </td> -->
                                         <td>
-                                            <button class="btn-view" onclick="viewStudentReservations(<?= $st['id'] ?>, '<?= htmlspecialchars($st['first_name'] . ' ' . $st['last_name']) ?>')">
-                                                <i class="bi bi-eye"></i> View
-                                            </button>
+                                            <div style="display: flex; gap: 8px; align-items: center;">
+                                                <button class="btn-view" onclick="viewStudent(<?= $st['id'] ?>)">
+                                                    <i class="bi bi-eye"></i> View
+                                                </button>
+                                                <label class="toggle-switch">
+                                                    <input type="checkbox" class="toggle-checkbox" 
+                                                           <?= ($st['status'] == 1) ? 'checked' : '' ?>
+                                                           onchange="toggleStudentStatus(<?= $st['id'] ?>, this)">
+                                                    <span class="toggle-slider"></span>
+                                                </label>
+                                            </div>
                                         </td>
                                     </tr>
                                 <?php endforeach; ?>
@@ -1621,9 +1737,9 @@ if (!empty($profile_image)) {
                                                     <button class="btn-approve" onclick="quickAction(<?= $res['id'] ?>,'approve')" title="Approve">
                                                         <i class="bi bi-check-lg"></i>
                                                     </button>
-                                                    <button class="btn-reject" onclick="quickAction(<?= $res['id'] ?>,'reject')" title="Reject">
+                                                    <!-- <button class="btn-reject" onclick="quickAction(<?= $res['id'] ?>,'reject')" title="Reject">
                                                         <i class="bi bi-x-lg"></i>
-                                                    </button>
+                                                    </button> -->
                                                 <?php endif; ?>
                                             </div>
                                         </td>
@@ -1991,7 +2107,7 @@ if (!empty($profile_image)) {
         function displayStudentDetails(student) {
             const fullName = `${student.first_name || ''} ${student.last_name || ''}`.trim();
             const joinDate = new Date(student.join_datetime).toLocaleString();
-            const statusText = student.status == 0 ? 'Pending Approval' : 'Accepted';
+            const statusText = student.status == 0 ? 'Pending Approval' : 'Verified';
             const statusClass = student.status == 0 ? 'status-pending' : 'status-accepted';
 
             const html = `
@@ -2043,7 +2159,7 @@ if (!empty($profile_image)) {
                     <h6 class="text-success fw-bold mb-3"><i class="bi bi-calendar me-2"></i>Account Info</h6>
                     <table class="table table-borderless mb-0" style="font-size: 0.95rem;">
                         <tr>
-                            <th style="width: 120px; color: #6c757d;">Request Date</th>
+                            <th style="width: 120px; color: #6c757d;">Joined Date</th>
                             <td>${joinDate}</td>
                         </tr>
                        
@@ -2351,7 +2467,7 @@ if (!empty($profile_image)) {
         function confirmReject() {
             const reason = document.getElementById('rejectReasonText').value.trim();
             if (!reason) {
-                alert('Please enter a rejection reason.');
+                showToast('Please enter a rejection reason.', 'warning');
                 return;
             }
             submitAction(currentModalResId, 'reject', reason);
@@ -2381,7 +2497,7 @@ if (!empty($profile_image)) {
             const reason = document.getElementById('quickRejectReason').value.trim();
             const resId = document.getElementById('quickRejectResId').value;
             if (!reason) {
-                alert('Please enter a rejection reason.');
+                showToast('Please enter a rejection reason.', 'warning');
                 return;
             }
             bootstrap.Modal.getInstance(document.getElementById('quickRejectModal')).hide();
@@ -2389,29 +2505,31 @@ if (!empty($profile_image)) {
         }
 
         // ===== SUBMIT APPROVE / REJECT via AJAX =====
-        function submitAction(resId, action, reason) {
-            const formData = new FormData();
-            formData.append('reservation_id', resId);
-            formData.append('action', action);
-            formData.append('reason', reason);
+   function submitAction(resId, action, reason) {
+    const formData = new FormData();
+    formData.append('reservation_id', resId);
+    formData.append('action', action);
+    formData.append('reason', reason);
 
-            fetch('../controllers/handle_reservation.php', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(r => r.json())
-                .then(data => {
-                    if (data.success) {
-                        alert(action === 'approve' ?
-                            '✅ Reservation approved! Forwarded to Technical Officer.' :
-                            '❌ Reservation rejected.');
-                        location.reload();
-                    } else {
-                        alert('Error: ' + (data.message || 'Unknown error'));
-                    }
-                })
-                .catch(() => alert('Network error. Please try again.'));
-        }
+    fetch('../controllers/handle_reservation.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                if (action === 'approve') {
+                    showToast('✅ Reservation approved! Forwarded to Technical Officer.', 'success');
+                } else {
+                    showToast('❌ Reservation rejected.', 'error');
+                }
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                showToast('Error: ' + (data.message || 'Unknown error'), 'error');
+            }
+        })
+        .catch(() => showToast('Network error. Please try again.', 'error'));
+}
 
         // ===== VIEW STUDENT RESERVATIONS =====
         function viewStudentReservations(studentId, studentName) {
@@ -2564,8 +2682,8 @@ if (!empty($profile_image)) {
                         month = m;
                         year = y;
                         initCalendar();
-                    } else alert('Use MM/YYYY');
-                } else alert('Use MM/YYYY');
+                    } else showToast('Use MM/YYYY format', 'warning');
+                } else showToast('Use MM/YYYY format', 'warning');
             });
         }
 
@@ -2605,6 +2723,98 @@ if (!empty($profile_image)) {
                 });
         }
 
+        // ===== REUSABLE TOAST NOTIFICATION =====
+        function showToast(message, type) {
+            const colors = {
+                success: { color: '#22c55e', icon: 'bi-check-circle-fill' },
+                error: { color: '#ef4444', icon: 'bi-x-circle-fill' },
+                warning: { color: '#f59e0b', icon: 'bi-exclamation-triangle-fill' },
+                info: { color: '#3b82f6', icon: 'bi-info-circle-fill' }
+            };
+
+            const c = colors[type] || colors.info;
+            
+            // Create toast element if not exists
+            let toast = document.getElementById('appToast');
+            if (!toast) {
+                const toastHtml = `
+                    <div id="appToast" style="position: fixed; bottom: 20px; right: 20px; background: white; padding: 16px 20px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 12px; min-width: 300px; z-index: 9999; animation: slideIn 0.3s ease;">
+                        <i id="appToastIcon" class="bi" style="font-size: 1.3rem;"></i>
+                        <span id="appToastMsg" style="color: #333; font-weight: 500;"></span>
+                    </div>
+                    <style>
+                        @keyframes slideIn {
+                            from { transform: translateX(400px); opacity: 0; }
+                            to { transform: translateX(0); opacity: 1; }
+                        }
+                        @keyframes slideOut {
+                            from { transform: translateX(0); opacity: 1; }
+                            to { transform: translateX(400px); opacity: 0; }
+                        }
+                    </style>
+                `;
+                document.body.insertAdjacentHTML('beforeend', toastHtml);
+                toast = document.getElementById('appToast');
+            }
+
+            const icon = document.getElementById('appToastIcon');
+            const msg = document.getElementById('appToastMsg');
+            
+            icon.className = `bi ${c.icon}`;
+            icon.style.color = c.color;
+            msg.textContent = message;
+            toast.style.borderLeft = `5px solid ${c.color}`;
+            toast.style.display = 'flex';
+
+            // Auto hide after 3 seconds
+            clearTimeout(toast.timeout);
+            toast.timeout = setTimeout(() => {
+                toast.style.animation = 'slideOut 0.3s ease forward';
+                setTimeout(() => {
+                    toast.style.display = 'none';
+                    toast.style.animation = '';
+                }, 300);
+            }, 3000);
+        }
+
+        // ===== TOGGLE STUDENT STATUS =====
+        function toggleStudentStatus(studentId, checkboxElement) {
+            const isChecked = checkboxElement.checked;
+            const newStatus = isChecked ? 1 : 0;
+            const actionText = isChecked ? 'activate' : 'deactivate';
+            
+            // if (!confirm(`Are you sure you want to ${actionText} this student?`)) {
+                
+            //     checkboxElement.checked = !isChecked;
+            //     return;
+            // }
+
+            checkboxElement.disabled = true;
+
+            fetch('../controllers/toggle_student_status.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ student_id: studentId, status: newStatus })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast(`✅ Student ${actionText}d successfully!`, 'success');
+                } else {
+                    // Revert checkbox on error
+                    checkboxElement.checked = !isChecked;
+                    showToast('Error: ' + data.message, 'error');
+                }
+                checkboxElement.disabled = false;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                // Revert checkbox on error
+                checkboxElement.checked = !isChecked;
+                showToast('Error updating student status', 'error');
+                checkboxElement.disabled = false;
+            });
+        }
 
         document.addEventListener('DOMContentLoaded', () => {
             showSection('dashboard');

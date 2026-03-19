@@ -12,7 +12,7 @@ if (!isset($_SESSION["user_id"]) || !isset($_SESSION["user_role"]) || $_SESSION[
 $student_id = $_SESSION["user_id"];
 
 // Get user details
-$user_query = "SELECT first_name, last_name, img_path FROM lab_user WHERE id = ?";
+$user_query = "SELECT id, first_name, last_name, email, mobile, university_id, img_path, join_datetime FROM lab_user WHERE id = ?";
 $user_result = Database::search($user_query, "i", [$student_id]);
 
 if (!$user_result) {
@@ -28,8 +28,8 @@ if (!$user_result) {
 }
 $full_name = trim($first_name . ' ' . $last_name);
 
-// Get notification count
-$notif_query = "SELECT COUNT(*) as count FROM notification WHERE owner_of_notification = ?";
+// Get notification count - only unread
+$notif_query = "SELECT COUNT(*) as count FROM notification WHERE owner_of_notification = ? AND status = 'unread'";
 $notif_result = Database::search($notif_query, "i", [$student_id]);
 $notif_count = 0;
 if ($notif_result) {
@@ -38,10 +38,10 @@ if ($notif_result) {
 }
 
 // Get recent notifications
-// Get recent notifications - FIXED: use created_datetime instead of created_at
+// Get recent notifications - FIXED: use created_datetime instead of created_at, AND status = 'unread' to show only unread
 $notif_list_query = "SELECT description, created_datetime 
                      FROM notification 
-                     WHERE owner_of_notification = ? 
+                     WHERE owner_of_notification = ? AND status = 'unread'
                      ORDER BY created_datetime DESC LIMIT 5";
 $notif_list_result = Database::search($notif_list_query, "i", [$student_id]);
 
@@ -1389,10 +1389,10 @@ $calendar_events_json = json_encode($calendar_events);
                     </div>
                     <div class="notification-list" id="notificationList">
                         <?php
-                        // Get notifications for specific student
+                        // Get notifications for specific student - only unread
                         $notif_query = "SELECT id, description, created_datetime, status 
                         FROM notification 
-                        WHERE owner_of_notification = ? 
+                        WHERE owner_of_notification = ? AND status = 'unread'
                         ORDER BY created_datetime DESC 
                         LIMIT 5";
 
@@ -1506,13 +1506,101 @@ $calendar_events_json = json_encode($calendar_events);
                     <img src="<?php echo htmlspecialchars($profile_image); ?>" class="profile-img dropdown-toggle" data-bs-toggle="dropdown">
                     <!-- <img src="<?php echo htmlspecialchars($profile_image); ?>" class="profile-img dropdown-toggle" data-bs-toggle="dropdown"> -->
                     <ul class="dropdown-menu dropdown-menu-end" style="border-radius: 16px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
-                        <li><a class="dropdown-item" href="profile.php"><i class="bi bi-person me-2"></i>Profile</a></li>
-                        <li><a class="dropdown-item" href="settings.php"><i class="bi bi-gear me-2"></i>Settings</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="openProfileModal(event)" data-bs-toggle="modal" data-bs-target="#profileModal"><i class="bi bi-person me-2"></i>Profile</a></li>
+                        <!-- <li><a class="dropdown-item" href="settings.php"><i class="bi bi-gear me-2"></i>Settings</a></li> -->
                         <li>
                             <hr class="dropdown-divider">
                         </li>
                         <li><a class="dropdown-item text-danger" href="../logout.php"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
                     </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Modal -->
+        <div class="modal fade" id="profileModal" tabindex="-1" aria-labelledby="profileModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content" style="border-radius: 20px; border: none;">
+                    <div class="modal-header" style="background: linear-gradient(135deg, #22c55e, #16a34a); color: white; border: none; border-radius: 20px 20px 0 0;">
+                        <h5 class="modal-title fw-bold" id="profileModalLabel"><i class="bi bi-person-circle me-2"></i>My Profile</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <form id="profileForm">
+                            <div class="row g-3">
+                                <!-- Profile Image -->
+                                <div class="col-12 text-center mb-3">
+                                    <div style="position: relative; width: 120px; margin: 0 auto;">
+                                        <img id="profileImagePreview" src="<?php echo htmlspecialchars($profile_image); ?>" class="rounded-circle" style="width: 120px; height: 120px; object-fit: cover; border: 4px solid #22c55e; cursor: pointer;" onclick="document.getElementById('profileImageInput').click();">
+                                        <input type="file" id="profileImageInput" style="display: none;" accept="image/*" onchange="previewImage(event)">
+                                        <small class="text-muted d-block mt-2">Click image to change</small>
+                                    </div>
+                                </div>
+
+                                <!-- First Name -->
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold"><i class="bi bi-person text-success me-1"></i>First Name</label>
+                                    <input type="text" id="firstName" class="form-control" value="<?php echo htmlspecialchars($first_name); ?>" required>
+                                </div>
+
+                                <!-- Last Name -->
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold"><i class="bi bi-person text-success me-1"></i>Last Name</label>
+                                    <input type="text" id="lastName" class="form-control" value="<?php echo htmlspecialchars($last_name); ?>" required>
+                                </div>
+
+                                <!-- University ID -->
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold"><i class="bi bi-card-text text-success me-1"></i>University ID</label>
+                                    <input type="text" id="universityId" class="form-control" value="<?php echo htmlspecialchars($user_data['university_id'] ?? ''); ?>">
+                                </div>
+
+                                <!-- Email -->
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold"><i class="bi bi-envelope text-success me-1"></i>Email</label>
+                                    <input type="email" id="email" class="form-control" value="<?php echo htmlspecialchars($user_data['email'] ?? ''); ?>" required>
+                                </div>
+
+                                <!-- Mobile -->
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold"><i class="bi bi-telephone text-success me-1"></i>Mobile</label>
+                                    <input type="tel" id="mobile" class="form-control" value="<?php echo htmlspecialchars($user_data['mobile'] ?? ''); ?>">
+                                </div>
+
+                                <!-- Join Date (Read-only) -->
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold"><i class="bi bi-calendar text-success me-1"></i>Joined Date</label>
+                                    <input type="text" class="form-control bg-light" value="<?php echo date('Y-m-d', strtotime($user_data['join_datetime'] ?? '')); ?>" disabled>
+                                </div>
+
+                                <!-- Supervisor ID -->
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold"><i class="bi bi-person-badge text-success me-1"></i>Supervisor ID</label>
+                                    <input type="text" id="supervisorId" class="form-control" value="<?php echo htmlspecialchars($supervisor_id ?? ''); ?>">
+                                </div>
+
+                                <!-- Supervisor Name (Read-only) -->
+                                <div class="col-md-6">
+                                    <label class="form-label fw-semibold"><i class="bi bi-person-check text-success me-1"></i>Supervisor Name</label>
+                                    <input type="text" id="supervisorName" class="form-control bg-light" value="<?php 
+                                        if ($supervisor_id) {
+                                            $sup_query = "SELECT CONCAT(first_name, ' ', last_name) as name FROM lab_user WHERE id = ?";
+                                            $sup_result = Database::search($sup_query, "i", [$supervisor_id]);
+                                            if ($sup_result && $sup_result->num_rows > 0) {
+                                                echo htmlspecialchars($sup_result->fetch_assoc()['name']);
+                                            }
+                                        }
+                                    ?>" disabled>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer" style="border-top: 1px solid #e0e0e0;">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-success" onclick="saveProfile()" style="background: linear-gradient(135deg, #22c55e, #16a34a); border: none;">
+                            <i class="bi bi-check-circle me-1"></i>Save Changes
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -3279,6 +3367,102 @@ $calendar_events_json = json_encode($calendar_events);
                 toast.style.transform = 'translateX(100px)';
                 setTimeout(() => toast.style.display = 'none', 300);
             }, 3000);
+        }
+
+        // =============================================
+        // PROFILE MODAL FUNCTIONS
+        // =============================================
+        function openProfileModal(event) {
+            event.preventDefault();
+            const profileModal = document.getElementById('profileModal');
+            const modal = new bootstrap.Modal(profileModal);
+            
+            // Add listener for when modal is hidden (closed)
+            profileModal.addEventListener('hidden.bs.modal', function() {
+                location.reload();
+            }, { once: true }); // Only trigger once
+            
+            modal.show();
+        }
+
+        function previewImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('profileImagePreview').src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function saveProfile() {
+            const firstName = document.getElementById('firstName').value.trim();
+            const lastName = document.getElementById('lastName').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const mobile = document.getElementById('mobile').value.trim();
+            const universityId = document.getElementById('universityId').value.trim();
+            const supervisorId = document.getElementById('supervisorId').value.trim();
+            const imageFile = document.getElementById('profileImageInput').files[0];
+
+            // Validation
+            if (!firstName) {
+                showToast('warning', 'First name is required');
+                return;
+            }
+            if (!lastName) {
+                showToast('warning', 'Last name is required');
+                return;
+            }
+            if (!email) {
+                showToast('warning', 'Email is required');
+                return;
+            }
+
+            // Prepare FormData
+            const formData = new FormData();
+            formData.append('first_name', firstName);
+            formData.append('last_name', lastName);
+            formData.append('email', email);
+            formData.append('mobile', mobile);
+            formData.append('university_id', universityId);
+            formData.append('supervisor_id', supervisorId);
+            
+            // Add image only if a new file was selected
+            if (imageFile) {
+                formData.append('profile_image', imageFile);
+            }
+
+            // Send to server
+            fetch('../controllers/update_student_profile.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast('success', '✅ Profile updated successfully!');
+                    // Update the page name display
+                    document.getElementById('userName').textContent = firstName;
+                    document.getElementById('userNameDisplay').textContent = firstName + ' ' + lastName;
+                    
+                    // Update profile image if changed
+                    if (data.profile_image) {
+                        document.getElementById('profileImagePreview').src = data.profile_image;
+                    }
+                    
+                    // Close modal
+                    setTimeout(() => {
+                        bootstrap.Modal.getInstance(document.getElementById('profileModal')).hide();
+                    }, 500);
+                } else {
+                    showToast('error', data.message || 'Failed to update profile');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('error', 'Error saving profile');
+            });
         }
     </script>
 

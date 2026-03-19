@@ -1187,7 +1187,7 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
                 content: '•';
                 position: absolute;
                 bottom: 2px;
-                font-size: 1.2rem;
+                font-size: 2.5rem;
                 color: #ffd700;
             }
 
@@ -5845,7 +5845,7 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
             </tr>
             <tr>
                 <td style="color:#166534; font-weight:600; padding:9px 0; border-top:1px solid #f0f0f0;">
-                    Requested On:
+                    Joined Date:
                 </td>
                 <td style="padding:9px 0; border-top:1px solid #f0f0f0;">
                     ${item.join_datetime ? new Date(item.join_datetime).toLocaleString() : '—'}

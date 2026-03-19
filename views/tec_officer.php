@@ -793,7 +793,7 @@ if ($requests_result && $requests_result->num_rows > 0) {
             content: '•';
             position: absolute;
             bottom: 2px;
-            font-size: 1.2rem;
+            font-size: 2.5rem;
             color: #ffd700;
         }
 
