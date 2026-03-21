@@ -4066,12 +4066,7 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
                             // Full system path for file checking (document root + clean path)
                             $full_path = $_SERVER['DOCUMENT_ROOT'] . '/' . $clean_path;
 
-                            // Debug (remove in production)
-                            // error_log("Profile image path check:");
-                            // error_log("Clean path: " . $clean_path);
-                            // error_log("Full path: " . $full_path);
-                            // error_log("File exists: " . (file_exists($full_path) ? 'YES' : 'NO'));
-
+                        
                             // Check if file exists
                             if (!file_exists($full_path)) {
                                 // Try alternative path - maybe it's stored without 'assets/' prefix

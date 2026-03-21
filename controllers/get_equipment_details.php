@@ -50,15 +50,32 @@ if ($result->num_rows === 0) {
 
 $row = $result->fetch_assoc();
 
-// Handle image path
+// Handle image path - return relative path that works from /views/ folder
 $image_url = 'https://cdn-icons-png.flaticon.com/512/2941/2941514.png'; // Default image
 
 if (!empty($row['image_path'])) {
+    // The image_path from DB already includes "assets/equipment_images/filename"
+    // We just need to return a relative path from the /views/ folder to reach it
+    
+    // Clean the stored path
     $clean_path = str_replace('\\', '/', $row['image_path']);
     $clean_path = ltrim($clean_path, '/');
+    
+    // Check if file exists at this location
     $full_path = $_SERVER['DOCUMENT_ROOT'] . '/' . $clean_path;
+    
+    // Log for debugging
+    error_log("Equipment image check - DB path: " . $row['image_path']);
+    error_log("Equipment image check - Full check path: " . $full_path);
+    error_log("Equipment image check - File exists: " . (file_exists($full_path) ? 'YES' : 'NO'));
+    
     if (file_exists($full_path)) {
-        $image_url = '/' . $clean_path;
+        // Return relative path from /views/ to the asset
+        // Since /views/ is one level up from root, we use ../
+        $image_url = '../' . $clean_path;
+        error_log("Equipment image found! URL: " . $image_url);
+    } else {
+        error_log("Equipment image NOT found at: " . $full_path);
     }
 }
 

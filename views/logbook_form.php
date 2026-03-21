@@ -211,7 +211,7 @@ session_start();
                         </div>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label"><i class="bi bi-receipt me-1"></i>Reservation ID</label>
+                      <label class="form-label"><i class="bi bi-receipt me-1"></i>Reservation ID (we will send this ID to your email)</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-hash"></i></span>
                             <input type="text" id="reservation_id" class="form-control"

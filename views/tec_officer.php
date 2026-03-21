@@ -3913,6 +3913,11 @@ let currentLogbookId = null;
 
 function loadPendingLogbooks() {
     const container = document.getElementById('notificationList');
+    if (!container) {
+        console.error('notificationList container not found');
+        return;
+    }
+    
     container.innerHTML = `
         <div class="text-center p-3">
             <div class="spinner-border text-success spinner-border-sm" role="status"></div>
@@ -3921,24 +3926,45 @@ function loadPendingLogbooks() {
     `;
     
     fetch('../controllers/fetch_pending_logbooks_technicalOfficer.php')
-        .then(response => response.json())
+        .then(response => {
+            console.log('Response status:', response.status);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
         .then(data => {
+            console.log('Logbooks data received:', data);
+            
             if (data.error) {
-                console.error(data.error);
-                updateNotificationList([]);
+                console.error('Error from server:', data.error);
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="bi bi-exclamation-circle"></i>
+                        <p>${data.error}</p>
+                    </div>
+                `;
+                updateBadgeCount(0);
                 return;
             }
-            updateNotificationList(data);
-            updateBadgeCount(data.length);
+            
+            // Ensure data is an array
+            const logbooksArray = Array.isArray(data) ? data : [];
+            console.log('Processing logbooks:', logbooksArray.length);
+            
+            updateNotificationList(logbooksArray);
+            updateBadgeCount(logbooksArray.length);
         })
         .catch(error => {
             console.error('Error loading pending logbooks:', error);
             container.innerHTML = `
                 <div class="empty-state">
                     <i class="bi bi-exclamation-circle"></i>
-                    <p>Error loading notifications. Please refresh.</p>
+                    <p>Error loading notifications</p>
+                    <small>${error.message}</small>
                 </div>
             `;
+            updateBadgeCount(0);
         });
 }
 

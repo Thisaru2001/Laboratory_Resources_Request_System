@@ -34,13 +34,15 @@ if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
     exit;
 }
 
-// Check if email is already taken by another user
-$email_check = "SELECT id FROM lab_user WHERE email = ? AND id != ?";
-$email_result = Database::search($email_check, "si", [$email, $student_id]);
+// Check if email is already taken by another user (only if email was actually changed)
+if (trim($email) !== '') {
+    $email_check = "SELECT id FROM lab_user WHERE LOWER(email) = LOWER(?) AND id != ?";
+    $email_result = Database::search($email_check, "si", [$email, $student_id]);
 
-if ($email_result && $email_result->num_rows > 0) {
-    echo json_encode(['success' => false, 'message' => 'Email is already in use']);
-    exit;
+    if ($email_result && $email_result->num_rows > 0) {
+        echo json_encode(['success' => false, 'message' => 'Email is already in use by another user. Please use a different email address.']);
+        exit;
+    }
 }
 
 $profile_image_path = null;

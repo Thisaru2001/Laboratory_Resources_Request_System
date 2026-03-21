@@ -178,6 +178,8 @@ $calendar_events_json = json_encode($calendar_events);
             box-shadow: 4px 0 20px rgba(0, 0, 0, 0.2);
             border-radius: 0 30px 30px 0;
             overflow-y: auto;
+            display: flex;
+            flex-direction: column;
         }
 
         .sidebar::before {
@@ -240,7 +242,7 @@ $calendar_events_json = json_encode($calendar_events);
 
         .sidebar-footer {
             padding: 20px;
-            margin-top: 30px;
+            margin-top: auto;
             text-align: center;
             background: rgba(0, 0, 0, 0.2);
             font-size: 0.85rem;
@@ -1445,31 +1447,65 @@ $calendar_events_json = json_encode($calendar_events);
 
                 <div class="dropdown">
                     <?php
-                    $profile_image = $user_data['img_path'] ?? '';
-
+                    // $profile_image = $_SESSION['user']['img_path'] ?? $_SESSION['img_path'] ?? '';
+error_log("Profile image path: " . $profile_image);
                     if (!empty($profile_image)) {
-                        $filename = basename($profile_image);
+                         // Clean the path (remove any leading slashes and fix backslashes)
+                            $clean_path = str_replace('\\', '/', $profile_image);
+                            $clean_path = ltrim($clean_path, '/');
+
+                            // Remove any 'LRRS/' prefix if it exists (just in case)
+                            $clean_path = preg_replace('/^LRRS\//', '', $clean_path);
+
+                            // Use relative path from /views/ to /assets/
+                            // This works on both localhost (/LRRS/...) and online server (/...)
+                            $image_url = '../' . $clean_path;
+
+                            // Try multiple possible locations for the file
+                            $possible_paths = [
+                                $_SERVER['DOCUMENT_ROOT'] . '/LRRS/' . $clean_path,  // Localhost
+                                $_SERVER['DOCUMENT_ROOT'] . '/' . $clean_path,       // Online server
+                            ];
+
+                            $file_found = false;
+                            foreach ($possible_paths as $path) {
+                                if (file_exists($path)) {
+                                    $file_found = true;
+                                    error_log("Image found at: " . $path);
+                                    break;
+                                }
+                            }
                         
-                        // Get the application root directory
-                        $app_root = dirname(__DIR__);
-                        $app_name = basename($app_root);
-                        
-                        // Construct the full file system path
-                        $image_file_path = $app_root . '/assets/profile_images/' . $filename;
-                        
-                        if (file_exists($image_file_path)) {
-                            // Construct URL that works on both localhost and online servers
-                            $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https://' : 'http://';
-                            $host = $_SERVER['HTTP_HOST'];
-                            $profile_image = $protocol . $host . '/' . $app_name . '/assets/profile_images/' . $filename;
-                        } else {
-                            $profile_image = 'https://ui-avatars.com/api/?name=' . urlencode($full_name) . '&background=22c55e&color=fff&size=100';
-                        }
+                            // If not found, try alternative path (without assets/ prefix)
+                            if (!$file_found) {
+                                $filename = basename($clean_path);
+                                $alt_path = 'assets/profile_images/' . $filename;
+                                
+                                $alt_possible_paths = [
+                                    $_SERVER['DOCUMENT_ROOT'] . '/LRRS/' . $alt_path,  // Localhost
+                                    $_SERVER['DOCUMENT_ROOT'] . '/' . $alt_path,       // Online server
+                                ];
+
+                                foreach ($alt_possible_paths as $path) {
+                                    if (file_exists($path)) {
+                                        $image_url = '../' . $alt_path;
+                                        $file_found = true;
+                                        error_log("Image found at alternative path: " . $path);
+                                        break;
+                                    }
+                                }
+                            }
+
+                            // If still not found, use avatar
+                            if (!$file_found) {
+                                error_log("Image not found at any location. Checked: " . implode(", ", $possible_paths));
+                                $image_url = "https://ui-avatars.com/api/?name=" . urlencode($full_name) . "&background=22c55e&color=fff&size=100";
+                            }
                     } else {
-                        $profile_image = 'https://ui-avatars.com/api/?name=' . urlencode($full_name) . '&background=22c55e&color=fff&size=100';
+                        $image_url = 'https://ui-avatars.com/api/?name=' . urlencode($full_name) . '&background=22c55e&color=fff&size=100';
                     }
                     ?>
-                    <img src="<?php echo htmlspecialchars($profile_image); ?>" class="profile-img dropdown-toggle" data-bs-toggle="dropdown">
+                    <img src="<?php echo htmlspecialchars($image_url); ?>" class="profile-img dropdown-toggle" data-bs-toggle="dropdown">
                     <ul class="dropdown-menu dropdown-menu-end" style="border-radius: 16px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
                         <li><a class="dropdown-item" href="#" onclick="openProfileModal(event)" data-bs-toggle="modal" data-bs-target="#profileModal"><i class="bi bi-person me-2"></i>Profile</a></li>
                         <li>
@@ -1495,7 +1531,7 @@ $calendar_events_json = json_encode($calendar_events);
                                 <!-- Profile Image -->
                                 <div class="col-12 text-center mb-3">
                                     <div style="position: relative; width: 120px; margin: 0 auto;">
-                                        <img id="profileImagePreview" src="<?php echo htmlspecialchars($profile_image); ?>" class="rounded-circle" style="width: 120px; height: 120px; object-fit: cover; border: 4px solid #22c55e; cursor: pointer;" onclick="document.getElementById('profileImageInput').click();">
+                                        <img id="profileImagePreview" src="<?php echo htmlspecialchars($image_url); ?>" class="rounded-circle" style="width: 120px; height: 120px; object-fit: cover; border: 4px solid #22c55e; cursor: pointer;" onclick="document.getElementById('profileImageInput').click();">
                                         <input type="file" id="profileImageInput" style="display: none;" accept="image/*" onchange="previewImage(event)">
                                         <small class="text-muted d-block mt-2">Click image to change</small>
                                     </div>

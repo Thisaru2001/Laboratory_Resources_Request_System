@@ -68,33 +68,36 @@ while ($row = $result->fetch_assoc()) {
     // Handle image path
     $image_url = 'https://upload.wikimedia.org/wikipedia/commons/b/b7/Ukrainian_microscope_%28cropped%29.jpg'; // Default image
     
-   if (!empty($row['image_path'])) {
-    // Get just the filename
-    $filename = basename($row['image_path']);
-    
-    // Construct the correct path
-    $clean_path = 'assets/equipment/' . $filename;
-    
-    // For web URL
-    $image_url = '/' . $clean_path;
-    
-    // Verify
-    $full_path = $_SERVER['DOCUMENT_ROOT'] . '/' . $clean_path;
-    if (!file_exists($full_path)) {
-        error_log("Image not found: " . $full_path);
-        $image_url = 'https://cdn-icons-png.flaticon.com/512/2941/2941514.png';
+    if (!empty($row['image_path'])) {
+        // The image_path from DB is like: "assets/equipment_images/filename"
+        // Clean it up
+        $clean_path = str_replace('\\', '/', $row['image_path']);
+        $clean_path = ltrim($clean_path, '/');
+        
+        // Check if file exists
+        $full_path = $_SERVER['DOCUMENT_ROOT'] . '/' . $clean_path;
+        
+        error_log("Equipment list image - DB path: " . $row['image_path']);
+        error_log("Equipment list image - Check path: " . $full_path);
+        
+        if (file_exists($full_path)) {
+            // Use relative path from /views/ folder
+            $image_url = '../' . $clean_path;
+            error_log("Equipment list image found! URL: " . $image_url);
+        } else {
+            error_log("Equipment list image NOT found. Falling back to default.");
+        }
     }
-}
     
     // Display locations or "No location assigned"
     $location_display = !empty($row['locations']) ? $row['locations'] : '<span class="text-muted">Not assigned to any lab</span>';
     
     echo '<tr>';
-    echo '<td data-label="Image"><img src="' . $image_url . '" class="equipment-image" alt="' . htmlspecialchars($row['name']) . '" style="width: 50px; height: 50px; object-fit: contain;"></td>';
+    echo '<td data-label="Image"><img src="' . htmlspecialchars($image_url) . '" class="equipment-image" alt="' . htmlspecialchars($row['name']) . '" style="width: 50px; height: 50px; object-fit: contain;"></td>';
     echo '<td data-label="Name"><strong>' . htmlspecialchars($row['name']) . '</strong><br><small class="text-muted">Code: ' . htmlspecialchars($row['code']) . '</small></td>';
     echo '<td data-label="Location">' . $location_display . '</td>';
     echo '<td data-label="Action">';
-  echo '<button class="btn-view" onclick="viewEquipmentDetails(\'' . htmlspecialchars($row['code']) . '\')">';
+    echo '<button class="btn-view" onclick="viewEquipmentDetails(\'' . htmlspecialchars($row['code']) . '\')">';
     echo '<i class="bi bi-eye"></i> View';
     echo '</button>';
     echo '</td>';

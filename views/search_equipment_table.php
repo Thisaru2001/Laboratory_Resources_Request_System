@@ -13,7 +13,7 @@ $search_term = $_GET['term'] ?? '';
 $lab_id = $_GET['lab_id'] ?? 'all';
 
 // Build query with proper availability calculation
-$query = "SELECT e.id, e.code, e.name, e.total_qty, e.description, 
+$query = "SELECT e.id, e.code, e.name, e.total_qty, e.description, e.image_path,
           l.id as location_id, l.location,
           COALESCE((SELECT SUM(broken_qty) FROM broken WHERE equipment_id = e.id), 0) as broken_qty,
           COALESCE((SELECT SUM(repair_qty) FROM repair WHERE equipment_id = e.id), 0) as repair_qty,
@@ -58,8 +58,22 @@ while ($row = $result->fetch_assoc()) {
     $status_color = $available > 0 ? '#22c55e' : '#dc3545';
     $status_text = $available > 0 ? 'Available' : 'Not Available';
     
-    // Default image
-    $image_url = 'https://cdn-icons-png.flaticon.com/512/2941/2941514.png';
+    // Handle image path
+    $image_url = 'https://cdn-icons-png.flaticon.com/512/2941/2941514.png'; // Default image
+    
+    if (!empty($row['image_path'])) {
+        // Clean up the stored path
+        $clean_path = str_replace('\\', '/', $row['image_path']);
+        $clean_path = ltrim($clean_path, '/');
+        
+        // Check if file exists
+        $full_path = $_SERVER['DOCUMENT_ROOT'] . '/' . $clean_path;
+        
+        if (file_exists($full_path)) {
+            // Use relative path from /views/ folder
+            $image_url = '../' . $clean_path;
+        }
+    }
     
     // Highlight search term if present
     $display_name = htmlspecialchars($row['name']);
@@ -70,7 +84,7 @@ while ($row = $result->fetch_assoc()) {
     }
     
     echo '<tr>';
-    echo '<td data-label="Image"><img src="' . $image_url . '" class="equipment-image" alt="' . htmlspecialchars($row['name']) . '" style="width: 40px; height: 40px; object-fit: contain;"></td>';
+    echo '<td data-label="Image"><img src="' . htmlspecialchars($image_url) . '" class="equipment-image" alt="' . htmlspecialchars($row['name']) . '" style="width: 40px; height: 40px; object-fit: contain;"></td>';
     echo '<td data-label="Name">' . $display_name . '<br><small class="text-muted">Code: ' . $display_code . '</small></td>';
     echo '<td data-label="Location">' . htmlspecialchars($row['location']) . '</td>';
     echo '<td data-label="Availability">';
