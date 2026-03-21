@@ -114,6 +114,25 @@ session_start();
         .upload-btn-wrap.disabled input[type="file"] { pointer-events:none; }
         .upload-status { font-size:.82rem; color:#6b7280; }
         .upload-status .count-now { font-weight:700; color:#16a34a; }
+        .camera-modal { position:fixed; inset:0; background:rgba(0,0,0,.95); z-index:9998; display:none; flex-direction:column; align-items:center; justify-content:center; }
+        .camera-modal.show { display:flex; }
+        .camera-container { position:relative; width:100%; max-width:500px; background:black; border-radius:16px; overflow:hidden; aspect-ratio:3/4; }
+        .camera-video { width:100%; height:100%; object-fit:cover; }
+        .camera-canvas { display:none; }
+        .camera-controls { position:absolute; bottom:20px; left:0; right:0; display:flex; justify-content:center; gap:16px; z-index:100; }
+        .camera-btn { width:60px; height:60px; border-radius:50%; border:3px solid white; background:rgba(34,197,94,.9); color:white; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:1.5rem; transition:all .2s; }
+        .camera-btn:hover { transform:scale(1.1); background:rgba(34,197,94,1); }
+        .camera-btn.cancel { background:rgba(220,38,38,.8); }
+        .camera-btn.cancel:hover { background:rgba(220,38,38,1); }
+        .camera-header { position:absolute; top:16px; left:0; right:0; display:flex; justify-content:space-between; align-items:center; padding:0 20px; z-index:100; }
+        .camera-title { color:white; font-weight:600; font-size:1.1rem; }
+        .camera-close-btn { background:rgba(0,0,0,.5); color:white; border:none; width:40px; height:40px; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center; font-size:1.5rem; transition:all .2s; }
+        .camera-close-btn:hover { background:rgba(0,0,0,.8); }
+        .upload-status .count-max { color:#8b5cf6; }
+        .camera-upload-btn { display:inline-flex; align-items:center; gap:8px; padding:9px 20px; background:#8b5cf6; color:white; border-radius:30px; font-size:.88rem; font-weight:600; cursor:pointer; border:none; transition:all .25s; box-shadow:0 4px 12px rgba(139,92,246,.3); user-select:none; white-space:nowrap; }
+        .camera-upload-btn:hover { transform:translateY(-2px); box-shadow:0 6px 18px rgba(139,92,246,.4); }
+        .camera-upload-btn.disabled { background:#d8b4fe; cursor:not-allowed; box-shadow:none; transform:none; }
+        @media(max-width:600px) { .camera-container { max-width:100%; } }
         .verify-wrap { margin-bottom:1.25rem; }
         .verify-box { background:#f0fdf4; border:2px solid #bbf7d0; border-radius:16px; padding:16px 20px; display:flex; align-items:flex-start; gap:14px; cursor:pointer; transition:border-color .2s,background .2s,box-shadow .2s; user-select:none; }
         .verify-box:hover { border-color:#22c55e; box-shadow:0 0 0 3px rgba(34,197,94,.1); }
@@ -224,6 +243,9 @@ session_start();
                                 <input type="file" id="photoInput"
                                        accept="image/jpeg,image/png,image/gif,image/webp">
                             </div>
+                            <button type="button" class="camera-upload-btn" id="cameraBtn" title="Capture from camera">
+                                <i class="bi bi-camera"></i> Camera
+                            </button>
                             <span class="upload-status">
                                 <span class="count-now" id="photoCount">0</span>
                                 <span class="count-max"> / 4 photos &bull; each max 8 MB</span>
@@ -281,6 +303,30 @@ session_start();
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
+    <!-- Camera Capture Modal -->
+    <div class="camera-modal" id="cameraModal">
+        <div class="camera-container">
+            <video class="camera-video" id="cameraVideo" playsinline></video>
+            <canvas class="camera-canvas" id="captureCanvas"></canvas>
+            
+            <div class="camera-header">
+                <span class="camera-title">Capture Photo</span>
+                <button type="button" class="camera-close-btn" id="cameraCancelBtn" title="Close camera">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+            
+            <div class="camera-controls">
+                <button type="button" class="camera-btn cancel" id="cameraStopBtn" title="Cancel">
+                    <i class="bi bi-x"></i>
+                </button>
+                <button type="button" class="camera-btn" id="cameraCaptureBtn" title="Capture photo">
+                    <i class="bi bi-camera-fill"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Success Modal — static backdrop, auto-redirects after 3 s -->
     <div class="modal fade" id="successModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
         <div class="modal-dialog"><div class="modal-content border-0">
@@ -330,14 +376,25 @@ session_start();
         const verifyHint  = document.getElementById('verifyHint');
         const overlay     = document.getElementById('submitOverlay');
         const submitBtn   = document.getElementById('submitBtn');
-
+        
+        // Camera elements
+        const cameraBtn = document.getElementById('cameraBtn');
+        const cameraModal = document.getElementById('cameraModal');
+        const cameraVideo = document.getElementById('cameraVideo');
+        const captureCanvas = document.getElementById('captureCanvas');
+        const cameraCaptureBtn = document.getElementById('cameraCaptureBtn');
+        const cameraStopBtn = document.getElementById('cameraStopBtn');
+        const cameraCancelBtn = document.getElementById('cameraCancelBtn');
+        
         let files = [];  // { name, dataUrl }
+        let cameraStream = null;
 
         function syncUI() {
             countEl.textContent = files.length;
             const full = files.length >= MAX_PHOTOS;
             uploadWrap.classList.toggle('disabled', full);
             uploadLabel.classList.toggle('disabled', full);
+            cameraBtn.classList.toggle('disabled', full);
             uploadLabel.innerHTML = full
                 ? '<i class="bi bi-check2-all"></i> Max photos added'
                 : '<i class="bi bi-plus-circle-fill"></i> Add Photo';
@@ -381,6 +438,64 @@ session_start();
             verifyBox.classList.toggle('checked', this.checked);
             if (this.checked) { verifyBox.classList.remove('invalid'); verifyHint.classList.remove('show'); }
         });
+
+        // ────── CAMERA FUNCTIONALITY ──────────────────────────────
+        cameraBtn.addEventListener('click', async function (e) {
+            e.preventDefault();
+            if (files.length >= MAX_PHOTOS) {
+                showError('Maximum 4 photos allowed. Remove one first.');
+                return;
+            }
+            
+            try {
+                cameraStream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: 'environment' },
+                    audio: false
+                });
+                cameraVideo.srcObject = cameraStream;
+                cameraModal.classList.add('show');
+            } catch (err) {
+                if (err.name === 'NotAllowedError') {
+                    showError('Camera permission denied. Please allow camera access and try again.');
+                } else if (err.name === 'NotFoundError') {
+                    showError('No camera device found. Please check your device.');
+                } else {
+                    showError('Unable to access camera: ' + err.message);
+                }
+            }
+        });
+
+        cameraCaptureBtn.addEventListener('click', function () {
+            if (!cameraStream) return;
+            
+            const video = cameraVideo;
+            const canvas = captureCanvas;
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0);
+            
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+            files.push({ 
+                name: 'camera_' + timestamp + '.jpg', 
+                dataUrl: dataUrl 
+            });
+            renderStrip();
+            closeCamera();
+        });
+
+        function closeCamera() {
+            if (cameraStream) {
+                cameraStream.getTracks().forEach(track => track.stop());
+                cameraStream = null;
+            }
+            cameraModal.classList.remove('show');
+        }
+
+        cameraStopBtn.addEventListener('click', closeCamera);
+        cameraCancelBtn.addEventListener('click', closeCamera);
 
         window.resetForm = function () {
             document.getElementById('university_id').value = '';

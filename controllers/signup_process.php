@@ -126,7 +126,9 @@ try {
 
     // If there are validation errors, return them
     if (!empty($response['fields'])) {
-        $response['message'] = 'Please correct the errors';
+        $error_count = count($response['fields']);
+        $first_error = $response['fields'][0]['message'] ?? 'Validation failed';
+        $response['message'] = "Validation failed (" . $error_count . " error" . ($error_count > 1 ? "s" : "") . "): " . $first_error;
         echo json_encode($response);
         exit;
     }
@@ -263,7 +265,9 @@ try {
 
     // If there are validation errors from role validation, return them
     if (!empty($response['fields'])) {
-        $response['message'] = 'Somthing went wrong!';
+        $error_count = count($response['fields']);
+        $first_error = $response['fields'][0]['message'] ?? 'Validation failed';
+        $response['message'] = "Validation error (" . $error_count . " issue" . ($error_count > 1 ? "s" : "") . "): " . $first_error;
         echo json_encode($response);
         exit;
     }
@@ -288,7 +292,13 @@ try {
         throw new Exception('Password hashing failed');
     }
     
-    $remember_token = bin2hex(random_bytes(32));
+    // Generate and hash the remember token (university_id + password)
+    $token_data = $university_id . $password;
+    $remember_token = password_hash($token_data, PASSWORD_BCRYPT);
+    if ($remember_token === false) {
+        throw new Exception('Token hashing failed');
+    }
+    
     $verification_code = '000000';
 
     // Get current date and time

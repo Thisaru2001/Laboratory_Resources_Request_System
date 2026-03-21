@@ -29,7 +29,7 @@ if (empty($password)) {
 }
 
 // Login attempt limiting
-$max_attempts = 4;
+$max_attempts = 50;
 $lockout_time = 15 * 60;
 
 $attempts_file = sys_get_temp_dir() . '/login_attempts_' . md5($university_id . $_SERVER['REMOTE_ADDR']);
@@ -88,49 +88,46 @@ if ($count == 1) {
     // First verify password
     if (password_verify($password, $user['password_user'])) {
 
-        // Then verify the token
-        if (password_verify($token, $user['remember_token'])) {
+        // Clear login attempts on successful login
+        if (file_exists($attempts_file)) {
+            unlink($attempts_file);
+        }
 
-            // Clear login attempts on successful login
-            if (file_exists($attempts_file)) {
-                unlink($attempts_file);
-            }
+        // Get user role from database
+        $user_role = $user['role'] ?? 'student';
 
-            // Get user role from database
-            $user_role = $user['role'] ?? 'student';
+        // Store user data in session
+        $_SESSION["user"] = $user;
+        $_SESSION["user_id"] = $user['id'];
+        $_SESSION["user_first_name"] = $user['first_name'] ?? '';
+        $_SESSION["user_last_name"] = $user['last_name'] ?? '';
+        $_SESSION["user_role"] = $user_role;
+        $_SESSION["last_activity"] = time();
+        $_SESSION["ip_address"] = $_SERVER['REMOTE_ADDR'];
+        $_SESSION["user_agent"] = $_SERVER['HTTP_USER_AGENT'];
 
-            // Store user data in session
-            $_SESSION["user"] = $user;
-            $_SESSION["user_id"] = $user['id'];
-            $_SESSION["user_first_name"] = $user['first_name'] ?? '';
-            $_SESSION["user_last_name"] = $user['last_name'] ?? '';
-            $_SESSION["user_role"] = $user_role;
-            $_SESSION["last_activity"] = time();
-            $_SESSION["ip_address"] = $_SERVER['REMOTE_ADDR'];
-            $_SESSION["user_agent"] = $_SERVER['HTTP_USER_AGENT'];
+        // Set redirect path based on role
+        $role_lower = strtolower($user_role);
+        switch ($role_lower) {
+            case 'student':
+                $redirect = "views/student.php";
+                break;
+            case 'technical_officer':
+                $redirect = "views/tec_officer.php";
+                break;
+            case 'supervisor':
+                $redirect = "views/supervisor.php";
+                break;
+            case 'hod':
+                $redirect = "views/hod.php";
+                break;
+            default:
+                $redirect = "views/student.php";
+        }
 
-            // Set redirect path based on role
-            $role_lower = strtolower($user_role);
-            switch ($role_lower) {
-                case 'student':
-                    $redirect = "views/student.php";
-                    break;
-                case 'technical_officer':
-                    $redirect = "views/tec_officer.php";
-                    break;
-                case 'supervisor':
-                    $redirect = "views/supervisor.php";
-                    break;
-                case 'hod':
-                    $redirect = "views/hod.php";
-                    break;
-                default:
-                    $redirect = "views/student.php";
-            }
+        // error_log("Redirect URL: " . $redirect);
 
-            // error_log("Redirect URL: " . $redirect);
-
-            session_regenerate_id(true);
+        session_regenerate_id(true);
 
        // Handle "Remember Me" functionality
 // Replace entire Remember Me section:
@@ -138,41 +135,33 @@ if ($remember_me == "true" || $remember_me == "1") {
     $encrypted_pwd = encryptData($password);
     setcookie("display_uid", $university_id, time() + (60 * 60 * 24 * 30), "/");
     setcookie("display_pwd", $encrypted_pwd, time() + (60 * 60 * 24 * 30), "/");
+    
+    // Update remember_token in database with the new password's token
+    $token_data = $university_id . $password;
+    $new_remember_token = password_hash($token_data, PASSWORD_BCRYPT);
+    $update_token_sql = "UPDATE lab_user SET remember_token = ? WHERE id = ?";
+    Database::iud($update_token_sql, "si", [$new_remember_token, $user['id']]);
 } else {
     setcookie("display_uid", "", time() - 3600, "/");
     setcookie("display_pwd", "", time() - 3600, "/");
 }          
 
-            // Log user session
-            try {
-                $insert_sql_user_sessions = "INSERT INTO user_session (created_at, lab_user_id) VALUES (NOW(), ?)";
-                Database::iud($insert_sql_user_sessions, "i", [$user['id']]);
-            } catch (Exception $e) {
-                error_log("Session logging error: " . $e->getMessage());
-            }
-
-            // IMPORTANT: Return success with redirect path
-            // Make sure there's NO whitespace before or after
-
-            echo "success|$redirect";
-            error_log("About to redirect to: " . $redirect);
-            error_log("Session user_id: " . ($_SESSION["user_id"] ?? 'not set'));
-            error_log("Session user_role: " . ($_SESSION["user_role"] ?? 'not set'));
-            exit();
-        } else {
-            // Token verification failed
-            $attempts++;
-            $attempt_data = [
-                'attempts' => $attempts,
-                'first_attempt' => $first_attempt,
-                'ip' => $_SERVER['REMOTE_ADDR']
-            ];
-            file_put_contents($attempts_file, json_encode($attempt_data));
-
-            echo "Security verification failed. Please contact Supervisor or HOD.";
-            error_log("Security Warning: Token verification failed for University ID: " . $university_id);
-            exit();
+        // Log user session
+        try {
+            $insert_sql_user_sessions = "INSERT INTO user_session (created_at, lab_user_id) VALUES (NOW(), ?)";
+            Database::iud($insert_sql_user_sessions, "i", [$user['id']]);
+        } catch (Exception $e) {
+            error_log("Session logging error: " . $e->getMessage());
         }
+
+        // IMPORTANT: Return success with redirect path
+        // Make sure there's NO whitespace before or after
+
+        echo "success|$redirect";
+        error_log("About to redirect to: " . $redirect);
+        error_log("Session user_id: " . ($_SESSION["user_id"] ?? 'not set'));
+        error_log("Session user_role: " . ($_SESSION["user_role"] ?? 'not set'));
+        exit();
     } else {
         // Wrong password
         $attempts++;
