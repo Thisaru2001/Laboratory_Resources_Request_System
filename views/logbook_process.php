@@ -230,13 +230,14 @@ if ($dupResult && $dupResult->num_rows > 0) {
 // ════════════════════════════════════════════════════════════════════════════
 $inserted = Database::iud(
     "INSERT INTO practical_finished_logbook
-        (reservation_id, student_id, any_comment,
+        (reservation_id, student_id, supervisor_id, any_comment,
          img_path1, img_path2, img_path3, img_path4)
-     VALUES (?, ?, ?, ?, ?, ?, ?)",
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
     'iisssss',
     [
         $reservation_db_id,
         $student_id,
+        $supervisor_id,
         $any_comment,
        
        
@@ -276,7 +277,9 @@ $notifSqlhod = "INSERT INTO practical_finished_hod_notify_and_approval
              (description, create_datetime, status, practical_finished_logbook_id)
              VALUES (?, NOW(), 'unread', ?)";
 
-
+$notifSqlsupervisor = "INSERT INTO practical_finished_supervisor_notify_and_approval
+             (description, create_datetime, status, practical_finished_logbook_id)
+             VALUES (?, NOW(), 'unread', ?)";
 
 
 
@@ -324,8 +327,9 @@ if ($hod_id > 0) {
 
 // Notify Supervisor
 if ($supervisor_id > 0) {
-    Database::iud($notifSql, 'si', [$notifMsg, $supervisor_id]);
+    Database::iud($notifSqlsupervisor, 'si', [$notifMsg, $logbook_id]);
 }
+
 // ════════════════════════════════════════════════════════════════════════════
 //  10. Success response
 // ════════════════════════════════════════════════════════════════════════════
