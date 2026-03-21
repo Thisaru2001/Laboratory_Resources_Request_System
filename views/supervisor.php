@@ -1546,6 +1546,29 @@ if ($students_result && $students_result->num_rows > 0) {
             margin-top: 0.25rem;
         }
 
+        /* Pulsing Status Indicator Dot */
+        .status-indicator-dot {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #ef4444;
+            animation: pulse-slow 2s ease-in-out infinite;
+            box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+        }
+
+        @keyframes pulse-slow {
+            0% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+            }
+            50% {
+                box-shadow: 0 0 0 5px rgba(239, 68, 68, 0.3);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+            }
+        }
+
         
     </style>
 </head>
@@ -1886,9 +1909,7 @@ if (!empty($profile_image)) {
                                             <button class="btn-view me-1" onclick="openRequestModal(<?= $res['id'] ?>)">
                                                 <i class="bi bi-eye"></i>
                                             </button>
-                                            <button class="btn-approve me-1" onclick="quickAction(<?= $res['id'] ?>,'approve')">
-                                                <i class="bi bi-check-lg"></i>
-                                            </button>
+                                            <span class="status-indicator-dot" title="Pending Approval"></span>
                                             <!-- <button class="btn-reject" onclick="quickAction(<?= $res['id'] ?>,'reject')">
                                                 <i class="bi bi-x-lg"></i>
                                             </button> -->

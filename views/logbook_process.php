@@ -233,7 +233,7 @@ $inserted = Database::iud(
         (reservation_id, student_id, supervisor_id, any_comment,
          img_path1, img_path2, img_path3, img_path4)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-    'iisssss',
+    'iiisssss',
     [
         $reservation_db_id,
         $student_id,

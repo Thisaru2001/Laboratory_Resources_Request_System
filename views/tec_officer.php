@@ -912,6 +912,28 @@ if ($requests_result && $requests_result->num_rows > 0) {
             margin-left: 28px;
         }
 
+        .event-item .event-details {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.8);
+            line-height: 1.6;
+        }
+
+        .event-item .event-details i {
+            color: #ffd700;
+            margin-right: 6px;
+            font-size: 0.9rem;
+        }
+
+        .event-date-range {
+            font-size: 0.8rem;
+            color: #ffd700;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
         .no-event {
             text-align: center;
             padding: 50px 20px;
@@ -1793,7 +1815,9 @@ if ($requests_result && $requests_result->num_rows > 0) {
                                 <div class="event-day" id="eventDay"></div>
                                 <div class="event-date" id="eventDate"></div>
                             </div>
-                            <div class="events-list" id="eventsList"></div>
+                            <div class="events-list" id="eventsList">
+                                <div class="no-event">Select a date to view bookings</div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -2183,9 +2207,9 @@ if ($requests_result && $requests_result->num_rows > 0) {
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-success" onclick="submitCheckedEquipment()" id="submitModalBtn">
-                        <i class="bi bi-check-circle me-2"></i>Submit Checked
+                        <i class="bi bi-check-circle me-2"></i>Submit
                     </button>
-                    <button type="button" class="btn btn-danger" onclick="rejectRequestFromModal()" id="rejectModalBtn" style="display:none;">
+                    <button type="button" class="btn btn-danger" onclick="showRejectRequestModal(currentRequestId)" id="rejectModalBtn" style="display:none;">
                         <i class="bi bi-x-circle me-2"></i>Reject
                     </button>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
@@ -2227,47 +2251,18 @@ if ($requests_result && $requests_result->num_rows > 0) {
 
         function rejectRequestFromModal() {
             if (!currentRequestId) return;
-
+            
             // Save current section before reload
             saveCurrentSection();
-
-            const reason = prompt('Please enter rejection reason:');
-            if (!reason) return;
-
-            if (confirm(`Are you sure you want to reject this request?`)) {
-                const formData = new FormData();
-                formData.append('reservation_id', currentRequestId);
-                formData.append('action', 'reject');
-                formData.append('reason', reason);
-
-                fetch('../controllers/handle_to_approval.php', {
-                        method: 'POST',
-                        body: formData
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            showToast('success', 'Request rejected successfully!');
-
-                            // Hide modal
-                            const modal = bootstrap.Modal.getInstance(document.getElementById('requestDetailsModal'));
-                            if (modal) modal.hide();
-
-                            // Reload and restore section
-                            location.reload();
-                        } else {
-                            showToast('error', 'Error: ' + data.message);
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        showToast('error', 'Error rejecting request');
-                    });
-            }
+            
+            // Close the reservation details modal
+            const detailsModal = bootstrap.Modal.getInstance(document.getElementById('requestDetailsModal'));
+            if (detailsModal) detailsModal.hide();
+            
+            // Show the rejection reason modal
+            showRejectRequestModal(currentRequestId);
         }
 
-        // Submit checked equipment
-        // Submit checked equipment
         // Submit checked equipment
         function submitCheckedEquipment() {
             if (!currentRequestId) {
@@ -2289,7 +2284,10 @@ if ($requests_result && $requests_result->num_rows > 0) {
             }
 
             if (checkedBoxes.length !== allCheckboxes.length) {
-                showToast('warning', `Please check ALL equipment items (${checkedBoxes.length}/${allCheckboxes.length} checked)`);
+              showToast('warning', 
+    `⚠️ Please Ready ALL equipment items (${checkedBoxes.length}/${allCheckboxes.length} checked). ` +
+    `Note: Reject with reason if any equipment not ready or count insufficient - student can resubmit.`
+);
                 return;
             }
 
@@ -2449,66 +2447,121 @@ if ($requests_result && $requests_result->num_rows > 0) {
         }
 
 
-        // Add this function
+        // Reject request with reason modal
         function rejectRequest(id) {
-            // Save current section before reload
             saveCurrentSection();
-
             currentRequestId = id;
-            const reason = prompt('Please enter rejection reason:');
-            if (!reason) return;
+            showRejectRequestModal(id);
+        }
 
-            if (confirm(`Reject request ${id}?`)) {
-                const formData = new FormData();
-                formData.append('reservation_id', id);
-                formData.append('action', 'reject');
-                formData.append('reason', reason);
+        // Show rejection reason modal for request
+        function showRejectRequestModal(id) {
+            try {
+                const modalElement = document.getElementById('rejectRequestReasonModal');
+                const textarea = document.getElementById('requestRejectionReason');
+                
+                if (!modalElement) {
+                    console.error('Modal element "rejectRequestReasonModal" not found in DOM');
+                    return;
+                }
+                
+                if (!textarea) {
+                    console.error('Textarea "requestRejectionReason" not found in DOM');
+                    return;
+                }
+                
+                // Clear textarea
+                textarea.value = '';
+                textarea.classList.remove('is-invalid');
+                
+                // Remove any existing error message
+                const errorDiv = document.getElementById('requestReasonError');
+                if (errorDiv) {
+                    errorDiv.remove();
+                }
+                
+                // Show modal
+                const modal = new bootstrap.Modal(modalElement);
+                modal.show();
+                
+            } catch (error) {
+                console.error('Error showing request rejection modal:', error);
+            }
+        }
 
-                fetch('../controllers/handle_to_approval.php', {
-                        method: 'POST',
-                        body: formData
-                    })
-                    .then(r => r.json())
-                    .then(data => {
-                        if (data.success) {
-                            showToast('success', 'Rejected!');
+        // Confirm rejection of request
+        function confirmRejectRequest() {
+            const textarea = document.getElementById('requestRejectionReason');
+            if (!textarea) return;
+            
+            const reason = textarea.value.trim();
+            if (!reason) {
+                textarea.classList.add('is-invalid');
+                const errorDiv = document.createElement('div');
+                errorDiv.id = 'requestReasonError';
+                errorDiv.className = 'invalid-feedback d-block';
+                errorDiv.textContent = 'Please provide a reason for rejection';
+                if (!document.getElementById('requestReasonError')) {
+                    textarea.parentNode.appendChild(errorDiv);
+                }
+                return;
+            }
+            
+            closeModalManually('rejectRequestReasonModal');
+            executeRejectRequest(currentRequestId, reason);
+        }
 
-                            // FIND AND REMOVE THE ROW FROM THE TABLE
-                            const tableBody = document.getElementById('requestListBody');
-                            if (tableBody) {
-                                const rows = tableBody.getElementsByTagName('tr');
+        // Execute the request rejection
+        function executeRejectRequest(id, reason) {
+            const formData = new FormData();
+            formData.append('reservation_id', id);
+            formData.append('action', 'reject');
+            formData.append('reason', reason);
 
-                                for (let i = 0; i < rows.length; i++) {
-                                    const firstCell = rows[i].getElementsByTagName('td')[0];
-                                    if (firstCell && firstCell.textContent === id) {
-                                        rows[i].style.transition = 'opacity 0.3s';
-                                        rows[i].style.opacity = '0';
+            fetch('../controllers/handle_to_approval.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('success', 'Rejected!');
 
-                                        setTimeout(() => {
-                                            rows[i].remove();
-                                            updatePendingCount();
+                        // FIND AND REMOVE THE ROW FROM THE TABLE
+                        const tableBody = document.getElementById('requestListBody');
+                        if (tableBody) {
+                            const rows = tableBody.getElementsByTagName('tr');
 
-                                            if (tableBody.getElementsByTagName('tr').length === 0) {
-                                                const emptyRow = document.createElement('tr');
-                                                emptyRow.innerHTML = '<td colspan="6" class="text-center">No requests found</td>';
-                                                tableBody.appendChild(emptyRow);
-                                            }
-                                        }, 300);
-                                        break;
-                                    }
+                            for (let i = 0; i < rows.length; i++) {
+                                const firstCell = rows[i].getElementsByTagName('td')[0];
+                                if (firstCell && firstCell.textContent === id) {
+                                    rows[i].style.transition = 'opacity 0.3s';
+                                    rows[i].style.opacity = '0';
+
+                                    setTimeout(() => {
+                                        rows[i].remove();
+                                        updatePendingCount();
+
+                                        if (tableBody.getElementsByTagName('tr').length === 0) {
+                                            const emptyRow = document.createElement('tr');
+                                            emptyRow.innerHTML = '<td colspan="6" class="text-center">No requests found</td>';
+                                            tableBody.appendChild(emptyRow);
+                                        }
+                                    }, 300);
+                                    break;
                                 }
                             }
+                        }
 
-                            // Update requests array
-                            const index = requests.findIndex(req => req.id === id);
-                            if (index !== -1) {
-                                requests.splice(index, 1);
-                            }
+                        // Update requests array
+                        const index = requests.findIndex(req => req.id === id);
+                        if (index !== -1) {
+                            requests.splice(index, 1);
+                        }
 
-                            filterRequestsByStatus();
-                        } else showToast('error', 'Error: ' + data.message);
-                    });
-            }
+                        filterRequestsByStatus();
+                    } else showToast('error', 'Error: ' + data.message);
+                });
         }
 
         // Display reservation details in modal
@@ -2530,7 +2583,7 @@ if ($requests_result && $requests_result->num_rows > 0) {
                                    id="eq_${item.id}" value="${item.id}" 
                                    data-equipment-id="${item.equipment_id}"
                                    data-quantity="${item.qty}">
-                            <label class="form-check-label" for="eq_${item.id}">Check</label>
+                            <label class="form-check-label" for="eq_${item.id}">Ready</label>
                         </div>
                     </td>
                 </tr>
@@ -3561,24 +3614,51 @@ if ($requests_result && $requests_result->num_rows > 0) {
                 eventDateEl.innerHTML = `${day} ${months[month]} ${year}`;
             }
 
-            let eventsHtml = "";
+            let dayEvents = [];
             eventsArr.forEach(event => {
                 if (event.day === day && event.month === month + 1 && event.year === year) {
+                    dayEvents.push(event);
+                }
+                if (event.year === year && event.month === month + 1) {
+                    if (day >= event.day && day <= event.end_day && !dayEvents.includes(event)) {
+                        dayEvents.push(event);
+                    }
+                }
+            });
+
+            let eventsHtml = "";
+            if (dayEvents.length > 0) {
+                dayEvents.forEach(event => {
+                    let dateRange = '';
+                    if (event.day !== event.end_day || event.month !== event.end_month) {
+                        dateRange = `<div class="event-date-range">
+                    ${event.day} ${months[event.month-1]} - ${event.end_day} ${months[event.end_month-1]} ${event.end_year}
+                </div>`;
+                    }
+
+                    let equipmentHtml = '';
+                    if (event.equipment) {
+                        equipmentHtml = `<div><i class="bi bi-tools" style="color: #ffd700;"></i> ${event.equipment}</div>`;
+                    }
+
                     eventsHtml += `
                 <div class="event-item">
                     <div class="title">
                         <i class="fas fa-circle"></i>
                         <span class="event-title">${event.title}</span>
                     </div>
-                    <div class="event-time">${event.student} - ${event.location}</div>
-                    <div class="event-time" style="margin-left: 28px; font-size: 0.8rem;">${event.duration}</div>
+                    ${dateRange}
+                    <div class="event-time"><strong>Duration:</strong> ${event.duration}</div>
+                    <div class="event-details">
+                        <div><i class="bi bi-person-fill" style="color: #ffd700;"></i> Student: ${event.student}</div>
+                        <div><i class="bi bi-pin-map-fill" style="color: #ffd700;"></i> ${event.location}</div>
+                        ${equipmentHtml}
+                    </div>
                 </div>
             `;
-                }
-            });
-
-            if (eventsHtml === "") {
-                eventsHtml = '<div class="no-event">No events scheduled</div>';
+                });
+            } else {
+                eventsHtml = '<div class="no-event">No bookings scheduled for this day</div>';
             }
 
             const eventsList = document.getElementById('eventsList');
@@ -5207,6 +5287,36 @@ function rejectLogbookFromModal() {
                             <i class="bi bi-x-circle"></i> Cancel
                         </button>
                         <button type="button" class="btn btn-danger" onclick="confirmReject()">
+                            <i class="bi bi-check-circle"></i> Confirm Reject
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Request Rejection Reason Modal -->
+        <div class="modal fade" id="rejectRequestReasonModal" tabindex="-1" data-bs-backdrop="static">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title">
+                            <i class="bi bi-x-circle me-2"></i>Reject Request
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" onclick="closeModalManually('rejectRequestReasonModal')"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Please provide reason for rejection:</label>
+                            <textarea id="requestRejectionReason" class="form-control" rows="4"
+                                placeholder="Enter detailed reason why this request is being rejected..."></textarea>
+                            <small class="text-muted">This reason will be sent to the student.</small>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" onclick="closeModalManually('rejectRequestReasonModal')">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </button>
+                        <button type="button" class="btn btn-danger" onclick="confirmRejectRequest()">
                             <i class="bi bi-check-circle"></i> Confirm Reject
                         </button>
                     </div>

@@ -1835,7 +1835,7 @@ $calendar_events_json = json_encode($calendar_events);
                                         echo "<div class='action-buttons'>";
 
                                         // View button for all statuses
-                                        echo "<button class='btn-view me-2' onclick='viewReservation(\"" . htmlspecialchars($row['reservation_id']) . "\")' title='View Details'>";
+                                        echo "<button class='btn-view me-2' onclick='viewReservation(\"" . htmlspecialchars($row['id']) . "\")' title='View Details'>";
                                         echo "<i class='bi bi-eye'></i>";
                                         echo "</button>";
 
