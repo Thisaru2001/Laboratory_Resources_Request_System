@@ -263,6 +263,11 @@ if ($requests_result && $requests_result->num_rows > 0) {
             backdrop-filter: blur(5px);
             z-index: 999;
         }
+         #rejectReasonModal.show .modal-dialog,
+            #confirmModal.show .modal-dialog {
+                z-index: 9001 !important;
+                position: relative !important;
+            }
 
         .sidebar-overlay.active {
             display: block;
@@ -1257,6 +1262,347 @@ if ($requests_result && $requests_result->num_rows > 0) {
                 flex-direction: column;
             }
         }
+
+/* Animation for removing items */
+@keyframes slideOut {
+    from {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+}
+
+/* Shake animation for validation */
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+.is-invalid {
+    border-color: #dc2626 !important;
+}
+
+.invalid-feedback {
+    display: block !important;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+    color: #dc2626;
+}
+        /* Notification Bell and Dropdown Styles - ADD THIS */
+.notification-bell {
+    position: relative;
+    cursor: pointer;
+    margin-right: 15px;
+}
+
+.notification-bell i {
+    font-size: 1.5rem;
+    color: #166534;
+    transition: all 0.3s;
+}
+
+.notification-bell:hover i {
+    transform: rotate(15deg);
+    color: #22c55e;
+}
+
+/* Request Badge - only visible when count > 0 */
+.request-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: #dd1818;
+    color: white;
+    border-radius: 50%;
+    min-width: 20px;
+    height: 20px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0 5px;
+    box-shadow: 0 2px 5px rgba(220, 53, 69, 0.3);
+    animation: pulse 2s infinite;
+}
+
+.request-badge.visible {
+    display: flex;
+}
+
+/* Notification Dropdown */
+.notification-dropdown {
+    position: absolute;
+    top: 45px;
+    right: 0;
+    width: 380px;
+    max-height: 500px;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    overflow: hidden;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    display: none;
+}
+
+.notification-dropdown.show {
+    display: block;
+    animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.dropdown-header {
+    padding: 12px 16px;
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: white;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.dropdown-header h6 {
+    margin: 0;
+    font-weight: 600;
+    color: white;
+}
+
+.btn-close-sm {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: 1.2rem;
+}
+
+.btn-close-sm:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: rotate(90deg);
+}
+
+.dropdown-body {
+    max-height: 450px;
+    overflow-y: auto;
+}
+
+/* Modal Styles */
+.modal {
+    z-index: 1050 !important;
+}
+
+.modal-backdrop {
+    z-index: 1040 !important;
+}
+
+.modal.fade .modal-dialog {
+    transition: transform 0.3s ease-out;
+}
+
+.modal.show .modal-dialog {
+    transform: none;
+}
+
+/* Ensure dropdowns are above modals */
+.dropdown-menu {
+    z-index: 1060 !important;
+}
+
+/* Fix for notification dropdown z-index */
+.notification-dropdown {
+    z-index: 1070 !important;
+}
+
+/* Animation for modal */
+@keyframes modalSlideIn {
+    from {
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.notification-item {
+    padding: 15px;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background 0.2s;
+    cursor: pointer;
+}
+
+.notification-item:hover {
+    background: #f9fafb;
+}
+
+.notification-item.unread {
+    background: #f0fdf4;
+    border-left: 3px solid #22c55e;
+}
+
+.notification-title {
+    font-weight: 600;
+    color: #1f2937;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.notification-title strong {
+    color: #166534;
+}
+
+.notification-meta {
+    font-size: 12px;
+    color: #6c757d;
+    margin-bottom: 8px;
+    line-height: 1.5;
+}
+
+.notification-meta i {
+    margin-right: 4px;
+}
+
+.notification-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+}
+
+.btn-approve {
+    background: #22c55e;
+    color: white;
+    border: none;
+    padding: 5px 14px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.btn-approve:hover {
+    background: #16a34a;
+    transform: translateY(-1px);
+}
+
+.btn-reject {
+    background: #ef4444;
+    color: white;
+    border: none;
+    padding: 5px 14px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.btn-reject:hover {
+    background: #dc2626;
+    transform: translateY(-1px);
+}
+
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #9ca3af;
+}
+
+.empty-state i {
+    font-size: 48px;
+    margin-bottom: 10px;
+    opacity: 0.5;
+}
+
+/* Toast Notification Styles */
+.toast-notification {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 12px 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    z-index: 9999;
+    font-size: 14px;
+    font-weight: 500;
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateX(400px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOut {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(400px);
+        opacity: 0;
+    }
+}
+
+.toast-success {
+    background: #22c55e;
+    color: white;
+    border-left: 4px solid #166534;
+}
+
+.toast-error {
+    background: #ef4444;
+    color: white;
+    border-left: 4px solid #b91c1c;
+}
+
+.toast-warning {
+    background: #f59e0b;
+    color: white;
+    border-left: 4px solid #d97706;
+}
+
+.toast-info {
+    background: #3b82f6;
+    color: white;
+    border-left: 4px solid #1e40af;
+}
     </style>
 
     <!-- Keep original favicon -->
@@ -1298,6 +1644,26 @@ if ($requests_result && $requests_result->num_rows > 0) {
                 <h5 class="fw-bold mb-0" style="background: linear-gradient(135deg, #22c55e, #16a34a); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Technical Officer Dashboard</h5>
             </div>
             <div class="d-flex align-items-center gap-3">
+
+             <!-- Notification Bell with Dropdown -->
+                        <div class="notification-bell" style="position:relative;">
+                            <i class="bi bi-journal-check fs-5" style="color: #166534; cursor: pointer;" onclick="toggleNotificationDropdown()"></i>
+                            <span class="request-badge" id="requestBadge">0</span>
+
+                            <!-- Dropdown Menu -->
+                            <div id="notificationDropdown" class="notification-dropdown" style="display: none;">
+                                <div class="dropdown-header">
+                                    <h6>Pending Logbook Reviews</h6>
+                                    <button class="btn-close-sm" onclick="toggleNotificationDropdown()">×</button>
+                                </div>
+                                <div class="dropdown-body" id="notificationList">
+                                    <div class="text-center p-3">
+                                        <div class="spinner-border text-success spinner-border-sm" role="status"></div>
+                                        <p class="mt-2 mb-0">Loading...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                 <span class="fw-semibold d-none d-sm-block" style="color: #166534;"><?= htmlspecialchars($full_name) ?></span>
                 <div class="dropdown">
                     <?php
@@ -1320,6 +1686,8 @@ if ($requests_result && $requests_result->num_rows > 0) {
                         $profile_image = 'https://ui-avatars.com/api/?name=' . urlencode($full_name) . '&background=22c55e&color=fff&size=100';
                     }
                     ?>
+                   
+
                     <img src="<?php echo htmlspecialchars($profile_image); ?>" class="profile-img dropdown-toggle" data-bs-toggle="dropdown">
                     <ul class="dropdown-menu dropdown-menu-end" style="border-radius: 16px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
                         <li><a class="dropdown-item" href="#" onclick="openProfileModal(event)"><i class="bi bi-person me-2"></i>Profile</a></li>
@@ -1484,9 +1852,8 @@ if ($requests_result && $requests_result->num_rows > 0) {
             e.code,
             e.name,
             e.description,
-            e.qty,
-            e.added_datetime,
-            e.img_path,
+            e.total_qty,
+            e.image_path,
             (SELECT COALESCE(SUM(broken_qty), 0) FROM broken WHERE equipment_id = e.id) as broken_qty,
             (SELECT COALESCE(SUM(repair_qty), 0) FROM repair WHERE equipment_id = e.id) as repair_qty
         FROM equipment e
@@ -1499,7 +1866,7 @@ if ($requests_result && $requests_result->num_rows > 0) {
             while ($equipment_row = $equipment_result->fetch_assoc()) { // Changed variable name
                 $equipment_code = htmlspecialchars($equipment_row['code']);
                 $name = htmlspecialchars($equipment_row['name']);
-                $total_qty = (int)$equipment_row['qty'];
+                $total_qty = (int)$equipment_row['total_qty'];
                 $broken_qty = (int)$equipment_row['broken_qty'];
                 $repair_qty = (int)$equipment_row['repair_qty'];
 
@@ -1507,7 +1874,7 @@ if ($requests_result && $requests_result->num_rows > 0) {
                 $available_qty = $total_qty - ($broken_qty + $repair_qty);
 
                 // Calculate usage percentage (based on bookings)
-                $usage_query = "SELECT COUNT(*) as booking_count FROM booking WHERE equipment_id = ?";
+                $usage_query = "SELECT COUNT(*) as booking_count FROM book_equipment WHERE equipment_id = ?";
                 $usage_result = Database::search($usage_query, "i", [$equipment_row['id']]);
                 $usage_count = 0;
                 if ($usage_result && $usage_result->num_rows > 0) {
@@ -3281,6 +3648,8 @@ if ($requests_result && $requests_result->num_rows > 0) {
         // ========== INITIALIZATION ==========
         document.addEventListener('DOMContentLoaded', function() {
             initCalendar();
+            loadPendingLogbooks();
+            startNotificationPolling();
 
             // Check if this is a fresh login (you can set a flag in your PHP session)
             const isFreshLogin = <?php echo isset($_SESSION['fresh_login']) ? 'true' : 'false'; ?>;
@@ -3457,6 +3826,987 @@ if ($requests_result && $requests_result->num_rows > 0) {
                 setTimeout(() => toast.remove(), 300);
             }, 3000);
         }
+
+       // ========== LOGBOOK APPROVAL SYSTEM FOR TECHNICAL OFFICER ==========
+let notificationPollingInterval = null;
+let currentLogbookId = null;
+
+function loadPendingLogbooks() {
+    const container = document.getElementById('notificationList');
+    container.innerHTML = `
+        <div class="text-center p-3">
+            <div class="spinner-border text-success spinner-border-sm" role="status"></div>
+            <p class="mt-2 mb-0">Loading pending logbooks...</p>
+        </div>
+    `;
+    
+    fetch('../controllers/fetch_pending_logbooks_technicalOfficer.php')
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                console.error(data.error);
+                updateNotificationList([]);
+                return;
+            }
+            updateNotificationList(data);
+            updateBadgeCount(data.length);
+        })
+        .catch(error => {
+            console.error('Error loading pending logbooks:', error);
+            container.innerHTML = `
+                <div class="empty-state">
+                    <i class="bi bi-exclamation-circle"></i>
+                    <p>Error loading notifications. Please refresh.</p>
+                </div>
+            `;
+        });
+}
+
+function updateNotificationList(logbooks) {
+    const container = document.getElementById('notificationList');
+
+    if (!logbooks || logbooks.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <i class="bi bi-check-circle"></i>
+                <p>No pending logbooks to review</p>
+            </div>
+        `;
+        return;
+    }
+
+    let html = '';
+    logbooks.forEach(logbook => {
+        // Format the date if available
+        const submittedDate = logbook.submitted_date && logbook.submitted_date !== 'Awaiting review' 
+            ? new Date(logbook.submitted_date).toLocaleString() 
+            : 'Awaiting review';
+        
+        html += `
+            <div class="notification-item" id="logbook-${logbook.id}">
+                <div class="notification-title">
+                    <strong>Logbook #${logbook.id}</strong> - ${escapeHtml(logbook.student_name)}
+                </div>
+                <div class="notification-meta">
+                    <i class="bi bi-person-badge"></i> ${escapeHtml(logbook.university_id)}<br>
+                    <i class="bi bi-receipt"></i> Reservation: ${escapeHtml(logbook.reservation_code)}<br>
+                    <i class="bi bi-calendar"></i> Submitted: ${submittedDate}<br>
+                    <i class="bi bi-image"></i> Photos: ${logbook.has_photos || 0} image(s)
+                </div>
+                ${logbook.any_comment ? `
+                <div class="notification-meta">
+                    <i class="bi bi-chat"></i> Comment: ${escapeHtml(logbook.any_comment.substring(0, 100))}${logbook.any_comment.length > 100 ? '...' : ''}
+                </div>
+                ` : ''}
+                <div class="notification-actions">
+                    <button class="btn-approve" onclick="approveLogbook(${logbook.id})">
+                        <i class="bi bi-check-circle"></i> Approve
+                    </button>
+                    <button class="btn-reject" onclick="rejectLogbook(${logbook.id})">
+                        <i class="bi bi-x-circle"></i> Reject
+                    </button>
+                    <button class="btn-view" onclick="viewLogbookDetails(${logbook.id})">
+                        <i class="bi bi-eye"></i> View Details
+                    </button>
+                </div>
+            </div>
+        `;
+    });
+    container.innerHTML = html;
+}
+
+function updateBadgeCount(count) {
+    const badge = document.getElementById('requestBadge');
+    if (badge) {
+        if (count > 0) {
+            badge.textContent = count;
+            badge.classList.add('visible');
+        } else {
+            badge.textContent = '0';
+            badge.classList.remove('visible');
+        }
+    }
+}
+
+// Approve logbook with modal confirmation
+function approveLogbook(logbookId) {
+    showConfirmModal(
+        'Approve Logbook',
+        '<div class="text-center">' +
+        '<i class="bi bi-check-circle-fill text-success" style="font-size: 48px;"></i>' +
+        '<p class="mt-3">Are you sure you want to approve this logbook?</p>' +
+        '<p class="text-muted small">This will mark the logbook as reviewed and send it to HOD for final approval.</p>' +
+        '</div>',
+        'Yes, Approve',
+        'btn-success',
+        () => {
+            executeApprove(logbookId);
+        }
+    );
+}
+
+// Reject logbook - shows rejection reason modal first
+function rejectLogbook(logbookId) {
+    showRejectModal(logbookId);
+}
+
+// Show rejection reason modal
+function showRejectModal(logbookId) {
+    currentLogbookId = logbookId;
+    
+    const modalElement = document.getElementById('rejectReasonModal');
+    const textarea = document.getElementById('rejectionReason');
+    
+    if (!modalElement || !textarea) {
+        console.error('Modal or textarea not found');
+        const reason = prompt('Enter rejection reason:');
+        if (reason && reason.trim()) executeReject(logbookId, reason);
+        return;
+    }
+    
+    // Clear textarea
+    textarea.value = '';
+    textarea.classList.remove('is-invalid');
+    
+    // Remove any error div
+    const errorDiv = document.getElementById('reasonError');
+    if (errorDiv) errorDiv.remove();
+    
+    // Show modal using Bootstrap
+    const modal = new bootstrap.Modal(modalElement);
+    modal.show();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Confirm rejection after entering reason
+// function confirmReject() {
+//     const reason = document.getElementById('rejectionReason').value.trim();
+    
+//     if (!reason) {
+//         const textarea = document.getElementById('rejectionReason');
+//         textarea.classList.add('is-invalid');
+        
+//         let errorDiv = document.getElementById('reasonError');
+//         if (!errorDiv) {
+//             errorDiv = document.createElement('div');
+//             errorDiv.id = 'reasonError';
+//             errorDiv.className = 'invalid-feedback';
+//             errorDiv.innerHTML = '<i class="bi bi-exclamation-circle"></i> Please enter a reason for rejection';
+//             textarea.parentNode.appendChild(errorDiv);
+//         }
+        
+//         textarea.style.animation = 'shake 0.5s';
+//         setTimeout(() => {
+//             textarea.style.animation = '';
+//         }, 500);
+        
+//         return;
+//     }
+    
+//     // Close rejection modal
+//     const rejectModal = document.getElementById('rejectReasonModal');
+//     const modal = bootstrap.Modal.getInstance(rejectModal);
+//     if (modal) modal.hide();
+    
+//     // Show confirmation modal
+//     showConfirmModal(
+//         'Reject Logbook',
+//         '<div class="text-center">' +
+//         '<i class="bi bi-exclamation-triangle-fill text-warning" style="font-size: 48px;"></i>' +
+//         '<p class="mt-3"><strong>Are you sure you want to reject this logbook?</strong></p>' +
+//         '<div class="alert alert-danger mt-3">' +
+//         '<i class="bi bi-info-circle me-2"></i>' +
+//         '<strong>Reason:</strong> ' + escapeHtml(reason) +
+//         '</div>' +
+//         '<p class="text-danger small mt-2">⚠️ This action cannot be undone. The student will be notified.</p>' +
+//         '</div>',
+//         'Yes, Reject',
+//         'btn-danger',
+//         () => {
+//             executeReject(currentLogbookId, reason);
+//         }
+//     );
+// }
+
+// Execute approve action
+function executeApprove(logbookId) {
+    showToast('info', 'Processing approval...');
+    closeModalManually('confirmModal');
+    
+    fetch('../controllers/approve_logbook_technicalOfficer.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            logbook_id: logbookId,
+            action: 'approve'
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const item = document.getElementById(`logbook-${logbookId}`);
+            if (item) {
+                item.style.transition = 'all 0.3s ease';
+                item.style.opacity = '0';
+                item.style.transform = 'translateX(-100%)';
+                setTimeout(() => {
+                    if (item.parentNode) item.remove();
+                    const remainingItems = document.querySelectorAll('.notification-item').length;
+                    updateBadgeCount(remainingItems);
+                    
+                    if (remainingItems === 0) {
+                        document.getElementById('notificationList').innerHTML = `
+                            <div class="empty-state">
+                                <i class="bi bi-check-circle"></i>
+                                <p>No pending logbooks to review</p>
+                            </div>
+                        `;
+                    }
+                }, 300);
+            }
+            showToast('success', data.message || 'Logbook approved successfully!');
+        } else {
+            showToast('error', data.message || 'Error approving logbook');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('error', 'Network error. Please try again.');
+    });
+}
+
+// Execute reject action
+function executeReject(logbookId, reason) {
+    showToast('Processing rejection...', 'info');
+    
+    const rejectBtn = document.querySelector(`#logbook-${logbookId} .btn-reject`);
+    if (rejectBtn) {
+        rejectBtn.disabled = true;
+        rejectBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Rejecting...';
+    }
+    
+    fetch('../controllers/approve_logbook_technicalOfficer.php', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            logbook_id: logbookId,
+            action: 'reject',
+            reason: reason
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const item = document.getElementById(`logbook-${logbookId}`);
+            if (item) {
+                item.style.transition = 'all 0.3s ease';
+                item.style.opacity = '0';
+                item.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    if (item.parentNode) item.remove();
+                    const remainingItems = document.querySelectorAll('.notification-item').length;
+                    updateBadgeCount(remainingItems);
+                    
+                    if (remainingItems === 0) {
+                        document.getElementById('notificationList').innerHTML = `
+                            <div class="empty-state">
+                                <i class="bi bi-check-circle" style="font-size: 3rem;"></i>
+                                <p class="mt-3">No pending logbooks to review</p>
+                            </div>
+                        `;
+                    }
+                }, 300);
+            }
+            showToast(data.message || 'Logbook rejected successfully', 'warning');
+        } else {
+            showToast(data.message || 'Error rejecting logbook', 'error');
+            if (rejectBtn) {
+                rejectBtn.disabled = false;
+                rejectBtn.innerHTML = '<i class="bi bi-x-circle"></i> Reject';
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showToast('Network error. Please try again.', 'error');
+        if (rejectBtn) {
+            rejectBtn.disabled = false;
+            rejectBtn.innerHTML = '<i class="bi bi-x-circle"></i> Reject';
+        }
+    });
+}
+
+// View logbook details
+// function viewLogbookDetails(logbookId) {
+//     showToast('Loading logbook details...', 'info');
+//     fetch(`../controllers/get_logbook_details_technicalOfficer.php?id=${logbookId}`)
+//         .then(response => response.json())
+//         .then(data => {
+//             if (data.success) {
+               
+//                 let imagesHtml = '';
+//                 if (data.images && data.images.length > 0) {
+//                     imagesHtml = '<div style="margin-top: 15px;"><strong>Images:</strong><div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 5px;">';
+//                     data.images.forEach(img => {
+//                         imagesHtml += `<img src="../${img}" style="max-width: 150px; max-height: 150px; border-radius: 8px; border: 1px solid #ddd;" onerror="this.style.display=\'none\'">`;
+//                     });
+//                     imagesHtml += '</div></div>';
+//                 }
+                
+            
+//                 const details = `Logbook #${logbookId}\n\n` +
+//                     `Student: ${data.student_name}\n` +
+//                     `University ID: ${data.university_id}\n` +
+//                     `Email: ${data.student_email}\n` +
+//                     `Mobile: ${data.student_mobile}\n` +
+//                     `Reservation: ${data.reservation_code}\n` +
+//                     `Request Date: ${data.request_date}\n` +
+//                     `Duration: ${data.duration}\n` +
+//                     `Lab Location: ${data.location}\n\n` +
+//                     `Student Comment:\n${data.description}\n`;
+                
+              
+//                 if (data.images && data.images.length > 0) {
+//                     alert(details + '\n\nImages available. Check console for image URLs.');
+//                     console.log('Images:', data.images);
+//                 } else {
+//                     alert(details);
+//                 }
+//                 showToast('Logbook details loaded', 'success');
+//             } else {
+//                 showToast(data.message || 'Failed to load logbook details', 'error');
+//             }
+//         })
+//         .catch(error => {
+//             console.error('Error:', error);
+//             showToast('Error loading details', 'error');
+//         });
+// }
+
+// Show confirmation modal
+function showConfirmModal(title, message, confirmText, confirmClass, onConfirm) {
+    const modalElement = document.getElementById('confirmModal');
+    const modalHeader = document.getElementById('confirmModalHeader');
+    const modalTitle = document.getElementById('confirmModalTitle');
+    const modalBody = document.getElementById('confirmModalBody');
+    const confirmBtn = document.getElementById('confirmModalBtn');
+    
+    // Reset and style header
+    modalHeader.className = 'modal-header';
+    if (confirmClass === 'btn-success') {
+        modalHeader.classList.add('bg-success', 'text-white');
+    } else if (confirmClass === 'btn-danger') {
+        modalHeader.classList.add('bg-danger', 'text-white');
+    } else {
+        modalHeader.classList.add('bg-warning', 'text-white');
+    }
+    
+    // Set title and message
+    modalTitle.innerHTML = `<i class="bi bi-question-circle me-2"></i>${title}`;
+    modalBody.innerHTML = message;
+    
+    // Style the confirm button
+    confirmBtn.className = 'btn ' + confirmClass;
+    confirmBtn.innerHTML = `<i class="bi bi-check-circle me-2"></i>${confirmText}`;
+    
+    // Remove previous event listeners by cloning
+    const newConfirmBtn = confirmBtn.cloneNode(true);
+    confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
+    
+    // Add click handler
+    newConfirmBtn.addEventListener('click', () => {
+        const modal = bootstrap.Modal.getInstance(modalElement);
+        if (modal) modal.hide();
+        if (onConfirm && typeof onConfirm === 'function') {
+            onConfirm();
+        }
+    });
+    
+    // Show modal
+    const modal = new bootstrap.Modal(modalElement);
+    modal.show();
+}
+
+// Helper function to close modals manually
+function closeModalManually(modalId) {
+    const modalElement = document.getElementById(modalId);
+    if (modalElement) {
+        try {
+            const modal = bootstrap.Modal.getInstance(modalElement);
+            if (modal) {
+                modal.hide();
+            } else {
+                modalElement.classList.remove('show');
+                modalElement.style.display = 'none';
+            }
+        } catch (e) {
+            modalElement.classList.remove('show');
+            modalElement.style.display = 'none';
+        }
+        
+        // Remove backdrop if any
+        const backdrops = document.querySelectorAll('.modal-backdrop');
+        backdrops.forEach(backdrop => backdrop.remove());
+        
+        // Restore body scroll
+        document.body.style.overflow = '';
+        document.body.classList.remove('modal-open');
+    }
+}
+
+// Confirm rejection from modal
+function confirmReject() {
+    const textarea = document.getElementById('rejectionReason');
+    if (!textarea) return;
+    
+    const reason = textarea.value.trim();
+    if (!reason) {
+        textarea.classList.add('is-invalid');
+        const errorDiv = document.createElement('div');
+        errorDiv.id = 'reasonError';
+        errorDiv.className = 'invalid-feedback d-block';
+        errorDiv.textContent = 'Please provide a reason for rejection';
+        if (!document.getElementById('reasonError')) {
+            textarea.parentNode.appendChild(errorDiv);
+        }
+        return;
+    }
+    
+    closeModalManually('rejectReasonModal');
+    if (currentLogbookId) {
+        executeReject(currentLogbookId, reason);
+    }
+}
+
+// Helper function to escape HTML
+function escapeHtml(text) {
+    if (!text) return '';
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+// Start polling for new logbooks every 30 seconds
+function startNotificationPolling() {
+    if (notificationPollingInterval) clearInterval(notificationPollingInterval);
+    notificationPollingInterval = setInterval(loadPendingLogbooks, 30000);
+}
+
+function stopNotificationPolling() {
+    if (notificationPollingInterval) clearInterval(notificationPollingInterval);
+}
+
+// Toggle notification dropdown
+function toggleNotificationDropdown() {
+    const dropdown = document.getElementById('notificationDropdown');
+    if (dropdown && (dropdown.style.display === 'none' || dropdown.style.display === '')) {
+        dropdown.style.display = 'block';
+        loadPendingLogbooks();
+    } else if (dropdown) {
+        dropdown.style.display = 'none';
+    }
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function(event) {
+    const logbookBell = document.querySelector('[onclick="toggleNotificationDropdown()"]');
+    const logbookDropdown = document.getElementById('notificationDropdown');
+    if (logbookBell && logbookDropdown) {
+        const bellParent = logbookBell.closest('.notification-bell');
+        if (bellParent && !bellParent.contains(event.target)) {
+            logbookDropdown.style.display = 'none';
+        }
+    }
+});
+
+function viewLogbookDetails(logbookId) {
+    showToast('info', 'Loading logbook details...');
+    // Store the logbook ID for approve/reject buttons
+    window.currentViewingLogbookId = logbookId;
+    
+    fetch(`../controllers/get_logbook_details_technicalOfficer.php?id=${logbookId}`)
+        .then(response => {
+            console.log('Response status:', response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log('Logbook details response:', data);
+            if (data.success) {
+                // Build images HTML
+                let imagesHtml = '';
+                if (data.images && data.images.length > 0) {
+                    imagesHtml = '<div class="mt-4"><strong class="d-block mb-3"><i class="bi bi-image me-2"></i>Submitted Photos:</strong><div style="display: flex; flex-wrap: wrap; gap: 15px;">';
+                    data.images.forEach((img, idx) => {
+                        imagesHtml += `<div style="text-align: center;"><img src="../${img}" style="width: 180px; height: 180px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd; box-shadow: 0 2px 4px rgba(0,0,0,0.1);" onerror="this.style.display='none'" title="Photo ${idx + 1}"><p class="small text-muted mt-2">Photo ${idx + 1}</p></div>`;
+                    });
+                    imagesHtml += '</div></div>';
+                }
+                
+                const detailsHtml = `
+                    <div style="max-height: 600px; overflow-y: auto;">
+                        <div class="card border-0 shadow-sm mb-3">
+                            <div class="card-body">
+                                <h6 class="fw-bold mb-3" style="color: #166534;"><i class="bi bi-person me-2"></i>Student Information</h6>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <p class="mb-2"><strong>Name:</strong> ${escapeHtml(data.student_name)}</p>
+                                        <p class="mb-2"><strong>University ID:</strong> ${escapeHtml(data.university_id)}</p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p class="mb-2"><strong>Email:</strong> ${escapeHtml(data.student_email)}</p>
+                                        <p class="mb-2"><strong>Mobile:</strong> ${escapeHtml(data.student_mobile)}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card border-0 shadow-sm mb-3">
+                            <div class="card-body">
+                                <h6 class="fw-bold mb-3" style="color: #166534;"><i class="bi bi-receipt me-2"></i>Reservation Details</h6>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <p class="mb-2"><strong>Reservation Code:</strong> ${escapeHtml(data.reservation_code)}</p>
+                                        <p class="mb-2"><strong>Request Date:</strong> ${escapeHtml(data.request_date)}</p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <p class="mb-2"><strong>Duration:</strong> ${escapeHtml(data.duration || 'N/A')}</p>
+                                        <p class="mb-2"><strong>Lab Location:</strong> ${escapeHtml(data.location || 'N/A')}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card border-0 shadow-sm mb-3">
+                            <div class="card-body">
+                                <h6 class="fw-bold mb-3" style="color: #166534;"><i class="bi bi-chat-left-text me-2"></i>Student's Practical Session Comment</h6>
+                                <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; border-left: 3px solid #22c55e;">
+                                    <p class="mb-0">${escapeHtml(data.description || 'No comment provided')}</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        ${imagesHtml}
+                    </div>
+                `;
+                
+                // Create modal content
+                const modalElement = document.getElementById('logbookDetailsModal');
+                if (modalElement) {
+                    const body = modalElement.querySelector('.modal-body');
+                    if (body) {
+                        body.innerHTML = detailsHtml;
+                        const modal = new bootstrap.Modal(modalElement);
+                        modal.show();
+                    }
+                } else {
+                    alert(`Logbook #${logbookId}\nStudent: ${data.student_name}\nUniversity ID: ${data.university_id}`);
+                }
+                showToast('success', 'Logbook details loaded');
+            } else {
+                console.error('Server response error:', data);
+                showToast('error', data.message || 'Failed to load logbook details');
+            }
+        })
+        .catch(error => {
+            console.error('Fetch error:', error);
+            showToast('error', 'Error loading details: ' + error.message);
+        });
+}
+
+// Approve logbook from modal
+function approveLogbookFromModal() {
+    const logbookId = window.currentViewingLogbookId;
+    if (!logbookId) {
+        showToast('error', 'No logbook selected');
+        return;
+    }
+    
+    showConfirmModal(
+        'Approve Logbook',
+        '<div class="text-center">' +
+        '<i class="bi bi-check-circle-fill text-success" style="font-size: 48px;"></i>' +
+        '<p class="mt-3">Are you sure you want to approve this logbook?</p>' +
+        '<p class="text-muted small">This will mark the logbook as reviewed and send it to HOD for final approval.</p>' +
+        '</div>',
+        'Yes, Approve',
+        'btn-success',
+        () => {
+            executeApprove(logbookId);
+        }
+    );
+}
+
+// Reject logbook from modal
+function rejectLogbookFromModal() {
+    const logbookId = window.currentViewingLogbookId;
+    if (!logbookId) {
+        showToast('error', 'No logbook selected');
+        return;
+    }
+    
+    showRejectModal(logbookId);
+}
+
+        // function startNotificationPolling() {
+        //     if (notificationPollingInterval) clearInterval(notificationPollingInterval);
+        //     notificationPollingInterval = setInterval(loadPendingLogbooks, 30000);
+        // }
+
+        function stopNotificationPolling() {
+            if (notificationPollingInterval) clearInterval(notificationPollingInterval);
+        }
+
+        // function toggleNotificationDropdown() {
+        //     const dropdown = document.getElementById('notificationDropdown');
+        //     if (dropdown && (dropdown.style.display === 'none' || dropdown.style.display === '')) {
+        //         dropdown.style.display = 'block';
+        //         if (typeof loadPendingLogbooks === 'function') {
+        //             loadPendingLogbooks();
+        //         }
+        //     } else if (dropdown) {
+        //         dropdown.style.display = 'none';
+        //     }
+        // }
+
+
+
+          // Show rejection reason modal
+            // function showRejectModal(logbookId) {
+            //     console.log('showRejectModal called:', logbookId);
+            //     currentLogbookId = logbookId;
+
+            //     try {
+            //         const modalElement = document.getElementById('rejectReasonModal');
+            //         const textarea = document.getElementById('rejectionReason');
+
+            //         console.log('Modal element exists:', !!modalElement);
+            //         console.log('Textarea exists:', !!textarea);
+
+            //         if (!modalElement || !textarea) {
+            //             console.error('Modal or textarea not found');
+            //             const reason = prompt('Enter rejection reason:');
+            //             if (reason && reason.trim()) executeReject(logbookId, reason);
+            //             return;
+            //         }
+
+                    
+            //         textarea.value = '';
+            //         textarea.classList.remove('is-invalid');
+
+                  
+            //         const errorDiv = document.getElementById('reasonError');
+            //         if (errorDiv) errorDiv.remove();
+
+               
+            //         const existingBackdrop = document.querySelector('.modal-backdrop');
+            //         if (existingBackdrop) existingBackdrop.remove();
+
+                   
+            //         modalElement.classList.add('show');
+            //         modalElement.style.display = 'block';
+
+            //         console.log('Modal element classes after manual add:', modalElement.className);
+            //         console.log('Modal display style:', window.getComputedStyle(modalElement).display);
+
+                    
+            //         const backdrop = document.createElement('div');
+            //         backdrop.className = 'modal-backdrop fade show';
+            //         backdrop.style.zIndex = '8999';
+            //         document.body.appendChild(backdrop);
+
+            //         console.log('Backdrop created and appended');
+
+                  
+            //         document.body.style.overflow = 'hidden';
+            //         document.body.classList.add('modal-open');
+
+                  
+            //         if (typeof bootstrap !== 'undefined') {
+            //             try {
+            //                 const modal = new bootstrap.Modal(modalElement, {
+            //                     backdrop: false,
+            //                     keyboard: false
+            //                 });
+            //                 modal.show();
+            //                 console.log('Bootstrap modal also showed (fallback)');
+            //             } catch (e) {
+            //                 console.log('Bootstrap modal show failed, but manual show succeeded:', e.message);
+            //             }
+            //         }
+
+            //     } catch (error) {
+            //         console.error('Error in showRejectModal:', error);
+            //         const reason = prompt('Enter rejection reason:');
+            //         if (reason && reason.trim()) executeReject(logbookId, reason);
+            //     }
+            // }
+
+            // Confirm rejection
+            function confirmReject() {
+                const reason = document.getElementById('rejectionReason').value.trim();
+
+                if (!reason) {
+                    // Show error in modal
+                    const textarea = document.getElementById('rejectionReason');
+                    textarea.classList.add('is-invalid');
+
+                    // Add error message if not exists
+                    let errorDiv = document.getElementById('reasonError');
+                    if (!errorDiv) {
+                        errorDiv = document.createElement('div');
+                        errorDiv.id = 'reasonError';
+                        errorDiv.className = 'invalid-feedback';
+                        errorDiv.innerHTML = '<i class="bi bi-exclamation-circle"></i> Please enter a reason for rejection';
+                        textarea.parentNode.appendChild(errorDiv);
+                    }
+
+                    // Focus and shake animation
+                    textarea.style.animation = 'shake 0.5s';
+                    setTimeout(() => {
+                        textarea.style.animation = '';
+                    }, 500);
+
+                    return;
+                }
+
+                // Close rejection modal manually
+                closeModalManually('rejectReasonModal');
+
+                // Show confirmation modal
+                showConfirmModal(
+                    'Reject Logbook',
+                    '<div class="text-center"><i class="bi bi-exclamation-triangle-fill text-warning" style="font-size: 48px;"></i><p class="mt-3">Are you sure you want to reject this logbook?</p><p class="text-muted small">Reason: <strong>' + escapeHtml(reason) + '</strong></p><p class="text-danger small">This action cannot be undone.</p></div>',
+                    'Yes, Reject',
+                    'btn-danger',
+                    () => {
+                        executeReject(currentLogbookId, reason);
+                    }
+                );
+            }
+
+            // Helper function to close modals manually
+            // function closeModalManually(modalId) {
+            //     const modalElement = document.getElementById(modalId);
+            //     if (modalElement) {
+            //         // Remove show class
+            //         modalElement.classList.remove('show');
+            //         modalElement.style.display = 'none';
+
+            //         console.log('Modal closed manually:', modalId);
+
+            //         // Try Bootstrap method as fallback
+            //         if (typeof bootstrap !== 'undefined') {
+            //             try {
+            //                 const instance = bootstrap.Modal.getInstance(modalElement);
+            //                 if (instance) {
+            //                     instance.hide();
+            //                 }
+            //             } catch (e) {
+            //                 console.log('Bootstrap modal hide not available, but manual close done');
+            //             }
+            //         }
+
+            //         // Remove backdrop
+            //         const backdrop = document.querySelector('.modal-backdrop');
+            //         if (backdrop) {
+            //             backdrop.remove();
+            //         }
+
+            //         // Restore body scroll
+            //         document.body.style.overflow = '';
+            //         document.body.classList.remove('modal-open');
+            //     }
+            // }
+
+            // Execute reject
+            // function executeReject(logbookId, reason) {
+            //     // Show loading state
+            //     showToast('Processing rejection...', 'info');
+
+            //     fetch('../controllers/approve_logbook_technicalOfficer.php', {
+            //             method: 'POST',
+            //             headers: {
+            //                 'Content-Type': 'application/json',
+            //             },
+            //             body: JSON.stringify({
+            //                 logbook_id: logbookId,
+            //                 action: 'reject',
+            //                 reason: reason
+            //             })
+            //         })
+            //         .then(response => response.json())
+            //         .then(data => {
+            //             if (data.success) {
+            //                 // Remove the item from list
+            //                 const item = document.getElementById(`logbook-${logbookId}`);
+            //                 if (item) {
+            //                     item.style.animation = 'slideOut 0.3s ease';
+            //                     setTimeout(() => item.remove(), 300);
+            //                 }
+
+            //                 // Update badge count
+            //                 const remainingItems = document.querySelectorAll('.notification-item').length;
+            //                 updateBadgeCount(remainingItems);
+
+            //                 // Show success message
+            //                 showToast(data.message || 'Logbook rejected successfully', 'warning');
+
+            //                 // Refresh list if no items left
+            //                 if (remainingItems === 0) {
+            //                     setTimeout(() => {
+            //                         document.getElementById('notificationList').innerHTML = `
+            //             <div class="empty-state">
+            //                 <i class="bi bi-check-circle"></i>
+            //                 <p>No pending logbooks to review</p>
+            //             </div>
+            //         `;
+            //                     }, 300);
+            //                 }
+            //             } else {
+            //                 showToast(data.message || 'Error rejecting logbook', 'error');
+            //             }
+            //         })
+            //         .catch(error => {
+            //             console.error('Error:', error);
+            //             showToast('Network error. Please try again.', 'error');
+            //         });
+            // }
+
+
+
+            // Execute approve
+            function executeApprove(logbookId) {
+                // Show loading state
+                showToast('Processing approval...', 'info');
+
+                fetch('../controllers/approve_logbook_technicalOfficer.php', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            logbook_id: logbookId,
+                            action: 'approve'
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Remove the item from list with animation
+                            const item = document.getElementById(`logbook-${logbookId}`);
+                            if (item) {
+                                item.style.animation = 'slideOut 0.3s ease';
+                                setTimeout(() => item.remove(), 300);
+                            }
+
+                            // Update badge count
+                            const remainingItems = document.querySelectorAll('.notification-item').length;
+                            updateBadgeCount(remainingItems);
+
+                            // Show success message
+                            showToast(data.message || 'Logbook approved successfully!', 'success');
+
+                            // Refresh list if no items left
+                            if (remainingItems === 0) {
+                                setTimeout(() => {
+                                    document.getElementById('notificationList').innerHTML = `
+                        <div class="empty-state">
+                            <i class="bi bi-check-circle"></i>
+                            <p>No pending logbooks to review</p>
+                        </div>
+                    `;
+                                }, 300);
+                            }
+                        } else {
+                            showToast(data.message || 'Error approving logbook', 'error');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        showToast('Network error. Please try again.', 'error');
+                    });
+            }
+
+            // Helper function to escape HTML
+            // function escapeHtml(text) {
+            //     const div = document.createElement('div');
+            //     div.textContent = text;
+            //     return div.innerHTML;
+            // }
+
+          
+
+            // Add animation styles
+            const style = document.createElement('style');
+            style.textContent = `
+    @keyframes slideOut {
+        from {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        to {
+            opacity: 0;
+            transform: translateX(100%);
+        }
+    }
+    
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        75% { transform: translateX(5px); }
+    }
+    
+    .is-invalid {
+        border-color: #dc2626 !important;
+    }
+    
+    .invalid-feedback {
+        display: block !important;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+`;
+            document.head.appendChild(style);
+
+            // Optional: Clear rejection reason error when typing
+            document.addEventListener('DOMContentLoaded', function() {
+                const reasonTextarea = document.getElementById('rejectionReason');
+                if (reasonTextarea) {
+                    reasonTextarea.addEventListener('input', function() {
+                        this.classList.remove('is-invalid');
+                        const errorDiv = document.getElementById('reasonError');
+                        if (errorDiv) errorDiv.remove();
+                    });
+                }
+            });
+
+            // View logbook details
+            // function viewLogbookDetails(logbookId) {
+            //     window.open(`../controllers/view_logbook.php?id=${logbookId}`, '_blank', 'width=900,height=700');
+            // }
+
     </script>
 
     <div class="modal fade" id="equipmentDetailsModal" tabindex="-1" aria-hidden="true">
@@ -3804,6 +5154,90 @@ if ($requests_result && $requests_result->num_rows > 0) {
             </div>
         </div>
     </div>
+
+    <!-- Logbook Details Modal -->
+    <div class="modal fade" id="logbookDetailsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-journal-check me-2"></i>Logbook Details
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="spinner-border text-success" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-1"></i>Close
+                    </button>
+                    <button type="button" class="btn btn-danger" onclick="rejectLogbookFromModal()" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-1"></i>Reject
+                    </button>
+                    <button type="button" class="btn btn-success" onclick="approveLogbookFromModal()">
+                        <i class="bi bi-check-circle me-1"></i>Approve
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+     <div class="modal fade" id="rejectReasonModal" tabindex="-1" data-bs-backdrop="static">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title">
+                            <i class="bi bi-x-circle me-2"></i>Reject Logbook
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" onclick="closeModalManually('rejectReasonModal')"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Please provide reason for rejection:</label>
+                            <textarea id="rejectionReason" class="form-control" rows="4"
+                                placeholder="Enter detailed reason why this logbook is being rejected..."></textarea>
+                            <small class="text-muted">This reason will be sent to the student.</small>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" onclick="closeModalManually('rejectReasonModal')">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </button>
+                        <button type="button" class="btn btn-danger" onclick="confirmReject()">
+                            <i class="bi bi-check-circle"></i> Confirm Reject
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Confirmation Modal -->
+        <div class="modal fade" id="confirmModal" tabindex="-1" data-bs-backdrop="static">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header" id="confirmModalHeader">
+                        <h5 class="modal-title" id="confirmModalTitle">
+                            <i class="bi bi-question-circle me-2"></i>Confirm Action
+                        </h5>
+                        <button type="button" class="btn-close" onclick="closeModalManually('confirmModal')"></button>
+                    </div>
+                    <div class="modal-body" id="confirmModalBody">
+                        Are you sure you want to perform this action?
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" onclick="closeModalManually('confirmModal')">
+                            <i class="bi bi-x-circle"></i> Cancel
+                        </button>
+                        <button type="button" class="btn" id="confirmModalBtn">
+                            <i class="bi bi-check-circle"></i> Confirm
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
 </body>
 
 </html>

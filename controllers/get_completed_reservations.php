@@ -11,14 +11,15 @@ ini_set('display_errors', 1);
 // Debug: Log that the script was called
 error_log("get_completed_reservations.php called - using practical_finished_logbook table");
 
-// Check if there are any completed practicals in the logbook
+// Check if there are any completed practicals in the logbook (approved by HOD)
 $check_query = "
     SELECT COUNT(*) as total 
-    FROM practical_finished_logbook 
-    WHERE hod_id IS NOT NULL
+    FROM practical_finished_logbook p
+    INNER JOIN practical_finished_hod_notify_and_approval h ON p.id = h.practical_finished_logbook_id
+    WHERE h.is_approved = 1
 ";
 
-$check_result = Database::search($check_query);
+$check_result = Database::search($check_query, '');
 $has_data = false;
 $total_count = 0;
 
@@ -53,14 +54,14 @@ $sql = "
         DATE_FORMAT(r.request_date, '%Y-%m') AS month_sort,
         COUNT(*) AS total
     FROM practical_finished_logbook p
+    INNER JOIN practical_finished_hod_notify_and_approval h ON p.id = h.practical_finished_logbook_id
     JOIN reservation r ON p.reservation_id = r.id
-    WHERE p.hod_id IS NOT NULL
-      AND r.request_date >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
+    WHERE h.is_approved = 1 AND r.request_date >= DATE_SUB(CURDATE(), INTERVAL 6 MONTH)
     GROUP BY month_sort, month_label
     ORDER BY month_sort ASC
 ";
 
-$result = Database::search($sql);
+$result = Database::search($sql, '');
 
 $labels = [];
 $data = [];
@@ -81,14 +82,15 @@ if ($result && $result->num_rows > 0) {
             DATE_FORMAT(r.request_date, '%Y-%m') AS month_sort,
             COUNT(*) AS total
         FROM practical_finished_logbook p
+        INNER JOIN practical_finished_hod_notify_and_approval h ON p.id = h.practical_finished_logbook_id
         JOIN reservation r ON p.reservation_id = r.id
-        WHERE p.hod_id IS NOT NULL
+        WHERE h.is_approved = 1
         GROUP BY month_sort, month_label
         ORDER BY month_sort ASC
         LIMIT 6
     ";
     
-    $result = Database::search($sql);
+    $result = Database::search($sql, '');
     
     if ($result && $result->num_rows > 0) {
         while ($row = $result->fetch_assoc()) {

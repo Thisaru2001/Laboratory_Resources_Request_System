@@ -2,10 +2,7 @@
 session_start();
 
 // Session guard — redirect if not logged in
-if (empty($_SESSION['user_id'])) {
-    header('Location: ../index.php');
-    exit;
-}
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -18,7 +15,7 @@ if (empty($_SESSION['user_id'])) {
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="icon" type="image/svg+xml" href="assets/resources/flask.svg">
-
+   <link rel="icon" type="image/svg+xml" href="../assets/resources/flask.svg">
     <style>
         *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
         :root { --g:#22c55e; --gd:#16a34a; --gdk:#15803d; }
@@ -294,7 +291,7 @@ if (empty($_SESSION['user_id'])) {
                 <p id="successMessage" class="mb-2"></p>
                 <p class="text-muted small mb-0">
                     <i class="bi bi-clock me-1"></i>
-                    Redirecting in <span id="countdown">3</span> seconds…
+                    Redirecting in <span id="countdown">1</span> seconds…
                 </p>
             </div>
         </div></div>
@@ -445,7 +442,7 @@ if (empty($_SESSION['user_id'])) {
                 if (res.ok) {
                     document.getElementById('successMessage').textContent = res.message;
                     new bootstrap.Modal(document.getElementById('successModal')).show();
-                    let s = 3;
+                    let s = 1;
                     const tick = setInterval(() => {
                         s--;
                         document.getElementById('countdown').textContent = s;

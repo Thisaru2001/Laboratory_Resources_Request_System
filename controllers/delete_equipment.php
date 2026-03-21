@@ -37,11 +37,13 @@ try {
         exit;
     }
 
-    // Check for active bookings
+    // Check for active bookings - use book_equipment and join with reservation
     $bookingResult = Database::search(
-        "SELECT COUNT(*) as count FROM booking 
-         WHERE equipment_id = ? 
-         AND status NOT IN ('completed', 'cancelled', 'rejected')",
+        "SELECT COUNT(*) as count FROM book_equipment be 
+         JOIN reservation r ON be.reservation_id = r.id
+         WHERE be.equipment_id = ? 
+         AND r.technical_officer_id IS NOT NULL
+         AND NOT EXISTS (SELECT 1 FROM reject_reason rr WHERE rr.reservation_id = r.id)",
         "i",
         [$equipmentId]
     );

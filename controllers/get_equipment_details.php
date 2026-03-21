@@ -28,7 +28,6 @@ $query = "SELECT
             e.description, 
             e.sterilization_required,
             e.reservation_required, 
-            e.added_datatime,
             e.image_path as image_path,
             GROUP_CONCAT(DISTINCT l.location SEPARATOR ', ') as locations
           FROM equipment e
@@ -75,7 +74,6 @@ echo json_encode([
         'description' => $row['description'],
         'sterilization_required' => $row['sterilization_required'] ?? 'NO',
         'reservation_required' => $row['reservation_required'] ?? 'YES',
-        'added_datetime' => $row['added_datatime'],
         'image_path' => $image_url,
         'locations' => $row['locations'] ?? 'Not assigned'
     ]
