@@ -5342,13 +5342,24 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
                             </h5>
                         </div>
 
+                        <!-- Search Input -->
+                        <div class="mb-3">
+                            <input type="text" 
+                                   id="logbookSearchInput" 
+                                   class="form-control form-control-lg" 
+                                   placeholder="🔍 Search by Reservation ID (e.g., RES-2026-)..." 
+                                   style="border: 2px solid #e0e0e0; border-radius: 8px;"
+                                   oninput="filterLogbookTable()">
+                        </div>
+
                         <div class="table-responsive">
                             <table class="table table-striped table-hover">
                                 <thead class="table-light">
                                     <tr>
-                                        <th style="width: 10%;">NO</th>
-                                        <th style="width: 50%;">Reservation ID</th>
-                                        <th style="width: 40%;">Action</th>
+                                        <th style="width: 8%;">NO</th>
+                                        <th style="width: 35%;">Reservation ID</th>
+                                        <th style="width: 27%;">Submitted Date</th>
+                                        <th style="width: 30%;">Action</th>
                                     </tr>
                                 </thead>
                                 <tbody id="logbookTableBody">
@@ -6062,9 +6073,15 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
                 const tableBody = document.getElementById('logbookTableBody');
                 if (!tableBody) return;
 
+                // Clear search input when reloading
+                const searchInput = document.getElementById('logbookSearchInput');
+                if (searchInput) {
+                    searchInput.value = '';
+                }
+
                 tableBody.innerHTML = `
         <tr>
-            <td colspan="3" class="text-center py-4">
+            <td colspan="4" class="text-center py-4">
                 <div class="spinner-border text-success me-2" role="status"
                      style="width:1.5rem;height:1.5rem;"></div>
                 <span style="color:#166534;font-weight:600;">
@@ -6080,22 +6097,38 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
 
                         if (data.success && data.logbooks && data.logbooks.length > 0) {
                             let rowNumber = 1;
-                            const rows = data.logbooks.map(logbook => `
+                            const rows = data.logbooks.map(logbook => {
+                                // Format datetime - handle various date formats
+                                let dateTimeStr = 'N/A';
+                                if (logbook.datetime_submitted) {
+                                    const date = new Date(logbook.datetime_submitted);
+                                    dateTimeStr = !isNaN(date) ? date.toLocaleString() : logbook.datetime_submitted;
+                                } else if (logbook.creation_datetime) {
+                                    const date = new Date(logbook.creation_datetime);
+                                    dateTimeStr = !isNaN(date) ? date.toLocaleString() : logbook.creation_datetime;
+                                } else if (logbook.datetime) {
+                                    const date = new Date(logbook.datetime);
+                                    dateTimeStr = !isNaN(date) ? date.toLocaleString() : logbook.datetime;
+                                }
+                                
+                                return `
                     <tr>
                         <td>${rowNumber++}</td>
                         <td>${logbook.reservation_code || 'N/A'}</td>
+                        <td><small class="text-muted">${dateTimeStr}</small></td>
                         <td>
                             <button class="btn btn-primary btn-sm" 
                                     onclick="viewLogbookDetailsHODD(${logbook.id})">
                                 <i class="bi bi-eye"></i> View
                             </button>
                         </td>
-                    </tr>`).join('');
+                    </tr>`;
+                            }).join('');
                             tableBody.innerHTML = rows;
                         } else {
                             tableBody.innerHTML = `
                     <tr>
-                        <td colspan="3" class="text-center py-4 text-muted">
+                        <td colspan="4" class="text-center py-4 text-muted">
                             📚 No logbooks found
                         </td>
                     </tr>`;
@@ -6105,11 +6138,67 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
                         console.error('Logbook load error:', error);
                         tableBody.innerHTML = `
                 <tr>
-                    <td colspan="3" class="text-center py-4 text-danger">
+                    <td colspan="4" class="text-center py-4 text-danger">
                         ❌ Failed to load logbooks
                     </td>
                 </tr>`;
                     });
+            }
+
+            // Filter logbook table by reservation code
+            function filterLogbookTable() {
+                const searchInput = document.getElementById('logbookSearchInput');
+                const filterValue = searchInput ? searchInput.value.toUpperCase().trim() : '';
+                const tableRows = document.querySelectorAll('#logbookTableBody tr');
+                let visibleCount = 0;
+
+                tableRows.forEach(row => {
+                    // Skip loading and "no data" rows
+                    if (row.innerHTML.includes('Loading') || 
+                        row.innerHTML.includes('No logbooks found') || 
+                        row.innerHTML.includes('Failed to load')) {
+                        return;
+                    }
+
+                    // Get the reservation ID from the second column (index 1)
+                    const cells = row.querySelectorAll('td');
+                    if (cells.length > 1) {
+                        const reservationCode = cells[1].textContent.toUpperCase().trim();
+                        
+                        // Show row if filter is empty or matches reservation code
+                        if (filterValue === '' || reservationCode.includes(filterValue)) {
+                            row.style.display = '';
+                            visibleCount++;
+                        } else {
+                            row.style.display = 'none';
+                        }
+                    }
+                });
+
+                // Show "no results" message if no rows match
+                if (visibleCount === 0 && filterValue !== '') {
+                    const tableBody = document.getElementById('logbookTableBody');
+                    if (tableBody && !tableBody.querySelector('.no-results-row')) {
+                        // Check if there are any visible data rows (not counting no-results message)
+                        const hasData = tableBody.querySelectorAll('tr[style="display: ""]:not(.no-results-row)').length > 0;
+                        if (!hasData) {
+                            const noResultsRow = document.createElement('tr');
+                            noResultsRow.className = 'no-results-row';
+                            noResultsRow.innerHTML = `
+                                <td colspan="4" class="text-center py-4 text-muted">
+                                    🔍 No logbooks found matching "${filterValue}"
+                                </td>
+                            `;
+                            tableBody.appendChild(noResultsRow);
+                        }
+                    }
+                } else {
+                    // Remove no-results message if it exists
+                    const noResultsRow = document.querySelector('#logbookTableBody .no-results-row');
+                    if (noResultsRow) {
+                        noResultsRow.remove();
+                    }
+                }
             }
 
 
@@ -6487,6 +6576,14 @@ function viewLogbookDetailsHODD(logbookId) {
                             </div>
                             <div class="card-body p-3">
                                 <table class="table table-sm table-borderless mb-0">
+                                 <tr>
+                                        <td class="text-muted fw-semibold">HOD</td>
+                                        <td>${lb.hod_is_approved == 1
+                                            ? '<span class="badge bg-success">Approved</span>'
+                                            : lb.hod_is_approved == 0
+                                            ? '<span class="badge bg-danger">Rejected</span>'
+                                            : '<span class="badge bg-warning text-dark">Pending</span>'}</td>
+                                    </tr>
                                     <tr>
                                         <td class="text-muted fw-semibold">Supervisor</td>
                                         <td>${lb.sup_is_approved == 1

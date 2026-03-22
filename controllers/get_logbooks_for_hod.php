@@ -23,6 +23,7 @@ try {
             pfl.img_path2,
             pfl.img_path3,
             pfl.img_path4,
+            pfl.datetime AS datetime_submitted,
 
             -- Student info
             CONCAT(student.first_name, ' ', student.last_name) AS student_name,

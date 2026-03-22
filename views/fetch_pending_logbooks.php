@@ -45,7 +45,7 @@ LEFT JOIN practical_finished_technicalofficer_notify_and_approval tech_approval
     ON l.id = tech_approval.practical_finished_logbook_id
 LEFT JOIN practical_finished_hod_notify_and_approval h
     ON l.id = h.practical_finished_logbook_id
-WHERE (h.is_approved IS NULL OR h.is_approved = 0)
+WHERE (h.is_approved IS NULL)
 ORDER BY l.id DESC";
 
 $result = Database::search($query, '');

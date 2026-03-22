@@ -83,7 +83,7 @@ try {
         $rejectQuery = "UPDATE practical_finished_hod_notify_and_approval 
                         SET is_approved = 0, 
                             approved_or_rejected_datetime = NOW(),status = 'read',
-                            reason = ? 
+                            rejection_reason = ? 
                         WHERE id = ?";
         $rejectResult = Database::iud($rejectQuery, 'si', [$reason, $approvalId]);
         
