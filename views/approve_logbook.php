@@ -121,7 +121,7 @@ try {
 
         if ($updated) {
             // Notify student of HOD rejection
-            $notifMessage = "Your logbook (ID: $logbook_id) has been rejected by the HOD. Reason: $reason";
+            $notifMessage = "Your logbook has been rejected by the HOD. Reason: $reason";
             $notifQuery   = "INSERT INTO notification
                              (description, created_datetime, owner_of_notification, status, need_approval)
                              VALUES (?, NOW(), ?, 'unread', 0)";

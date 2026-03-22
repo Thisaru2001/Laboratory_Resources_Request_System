@@ -263,11 +263,12 @@ if ($requests_result && $requests_result->num_rows > 0) {
             backdrop-filter: blur(5px);
             z-index: 999;
         }
-         #rejectReasonModal.show .modal-dialog,
-            #confirmModal.show .modal-dialog {
-                z-index: 9001 !important;
-                position: relative !important;
-            }
+
+        #rejectReasonModal.show .modal-dialog,
+        #confirmModal.show .modal-dialog {
+            z-index: 9001 !important;
+            position: relative !important;
+        }
 
         .sidebar-overlay.active {
             display: block;
@@ -1285,346 +1286,362 @@ if ($requests_result && $requests_result->num_rows > 0) {
             }
         }
 
-/* Animation for removing items */
-@keyframes slideOut {
-    from {
-        opacity: 1;
-        transform: translateX(0);
-    }
-    to {
-        opacity: 0;
-        transform: translateX(100%);
-    }
-}
+        /* Animation for removing items */
+        @keyframes slideOut {
+            from {
+                opacity: 1;
+                transform: translateX(0);
+            }
 
-/* Shake animation for validation */
-@keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-5px); }
-    75% { transform: translateX(5px); }
-}
+            to {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+        }
 
-.is-invalid {
-    border-color: #dc2626 !important;
-}
+        /* Shake animation for validation */
+        @keyframes shake {
 
-.invalid-feedback {
-    display: block !important;
-    font-size: 0.875rem;
-    margin-top: 0.25rem;
-    color: #dc2626;
-}
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-5px);
+            }
+
+            75% {
+                transform: translateX(5px);
+            }
+        }
+
+        .is-invalid {
+            border-color: #dc2626 !important;
+        }
+
+        .invalid-feedback {
+            display: block !important;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+            color: #dc2626;
+        }
+
         /* Notification Bell and Dropdown Styles - ADD THIS */
-.notification-bell {
-    position: relative;
-    cursor: pointer;
-    margin-right: 15px;
-}
+        .notification-bell {
+            position: relative;
+            cursor: pointer;
+            margin-right: 15px;
+        }
 
-.notification-bell i {
-    font-size: 1.5rem;
-    color: #166534;
-    transition: all 0.3s;
-}
+        .notification-bell i {
+            font-size: 1.5rem;
+            color: #166534;
+            transition: all 0.3s;
+        }
 
-.notification-bell:hover i {
-    transform: rotate(15deg);
-    color: #22c55e;
-}
+        .notification-bell:hover i {
+            transform: rotate(15deg);
+            color: #22c55e;
+        }
 
-/* Request Badge - only visible when count > 0 */
-.request-badge {
-    position: absolute;
-    top: -8px;
-    right: -8px;
-    background: #dd1818;
-    color: white;
-    border-radius: 50%;
-    min-width: 20px;
-    height: 20px;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.7rem;
-    font-weight: 600;
-    padding: 0 5px;
-    box-shadow: 0 2px 5px rgba(220, 53, 69, 0.3);
-    animation: pulse 2s infinite;
-}
+        /* Request Badge - only visible when count > 0 */
+        .request-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: #dd1818;
+            color: white;
+            border-radius: 50%;
+            min-width: 20px;
+            height: 20px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 0 5px;
+            box-shadow: 0 2px 5px rgba(220, 53, 69, 0.3);
+            animation: pulse 2s infinite;
+        }
 
-.request-badge.visible {
-    display: flex;
-}
+        .request-badge.visible {
+            display: flex;
+        }
 
-/* Notification Dropdown */
-.notification-dropdown {
-    position: absolute;
-    top: 45px;
-    right: 0;
-    width: 380px;
-    max-height: 500px;
-    background: white;
-    border-radius: 16px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-    z-index: 1000;
-    overflow: hidden;
-    border: 1px solid rgba(0, 0, 0, 0.1);
-    display: none;
-}
+        /* Notification Dropdown */
+        .notification-dropdown {
+            position: absolute;
+            top: 45px;
+            right: 0;
+            width: 380px;
+            max-height: 500px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            overflow: hidden;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            display: none;
+        }
 
-.notification-dropdown.show {
-    display: block;
-    animation: slideDown 0.3s ease;
-}
+        .notification-dropdown.show {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
 
-@keyframes slideDown {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
 
-.dropdown-header {
-    padding: 12px 16px;
-    background: linear-gradient(135deg, #22c55e, #16a34a);
-    color: white;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
 
-.dropdown-header h6 {
-    margin: 0;
-    font-weight: 600;
-    color: white;
-}
+        .dropdown-header {
+            padding: 12px 16px;
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: white;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-.btn-close-sm {
-    background: rgba(255, 255, 255, 0.2);
-    border: none;
-    color: white;
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.3s;
-    font-size: 1.2rem;
-}
+        .dropdown-header h6 {
+            margin: 0;
+            font-weight: 600;
+            color: white;
+        }
 
-.btn-close-sm:hover {
-    background: rgba(255, 255, 255, 0.3);
-    transform: rotate(90deg);
-}
+        .btn-close-sm {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1.2rem;
+        }
 
-.dropdown-body {
-    max-height: 450px;
-    overflow-y: auto;
-}
+        .btn-close-sm:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: rotate(90deg);
+        }
 
-/* Modal Styles */
-.modal {
-    z-index: 1050 !important;
-}
+        .dropdown-body {
+            max-height: 450px;
+            overflow-y: auto;
+        }
 
-.modal-backdrop {
-    z-index: 1040 !important;
-}
+        /* Modal Styles */
+        .modal {
+            z-index: 1050 !important;
+        }
 
-.modal.fade .modal-dialog {
-    transition: transform 0.3s ease-out;
-}
+        .modal-backdrop {
+            z-index: 1040 !important;
+        }
 
-.modal.show .modal-dialog {
-    transform: none;
-}
+        .modal.fade .modal-dialog {
+            transition: transform 0.3s ease-out;
+        }
 
-/* Ensure dropdowns are above modals */
-.dropdown-menu {
-    z-index: 1060 !important;
-}
+        .modal.show .modal-dialog {
+            transform: none;
+        }
 
-/* Fix for notification dropdown z-index */
-.notification-dropdown {
-    z-index: 1070 !important;
-}
+        /* Ensure dropdowns are above modals */
+        .dropdown-menu {
+            z-index: 1060 !important;
+        }
 
-/* Animation for modal */
-@keyframes modalSlideIn {
-    from {
-        transform: translateY(-50px);
-        opacity: 0;
-    }
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
-}
+        /* Fix for notification dropdown z-index */
+        .notification-dropdown {
+            z-index: 1070 !important;
+        }
 
-.notification-item {
-    padding: 15px;
-    border-bottom: 1px solid #f0f0f0;
-    transition: background 0.2s;
-    cursor: pointer;
-}
+        /* Animation for modal */
+        @keyframes modalSlideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
 
-.notification-item:hover {
-    background: #f9fafb;
-}
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
 
-.notification-item.unread {
-    background: #f0fdf4;
-    border-left: 3px solid #22c55e;
-}
+        .notification-item {
+            padding: 15px;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background 0.2s;
+            cursor: pointer;
+        }
 
-.notification-title {
-    font-weight: 600;
-    color: #1f2937;
-    margin-bottom: 8px;
-    font-size: 14px;
-}
+        .notification-item:hover {
+            background: #f9fafb;
+        }
 
-.notification-title strong {
-    color: #166534;
-}
+        .notification-item.unread {
+            background: #f0fdf4;
+            border-left: 3px solid #22c55e;
+        }
 
-.notification-meta {
-    font-size: 12px;
-    color: #6c757d;
-    margin-bottom: 8px;
-    line-height: 1.5;
-}
+        .notification-title {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
 
-.notification-meta i {
-    margin-right: 4px;
-}
+        .notification-title strong {
+            color: #166534;
+        }
 
-.notification-actions {
-    display: flex;
-    gap: 8px;
-    margin-top: 10px;
-    flex-wrap: wrap;
-}
+        .notification-meta {
+            font-size: 12px;
+            color: #6c757d;
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
 
-.btn-approve {
-    background: #22c55e;
-    color: white;
-    border: none;
-    padding: 5px 14px;
-    border-radius: 6px;
-    font-size: 12px;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-}
+        .notification-meta i {
+            margin-right: 4px;
+        }
 
-.btn-approve:hover {
-    background: #16a34a;
-    transform: translateY(-1px);
-}
+        .notification-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+            flex-wrap: wrap;
+        }
 
-.btn-reject {
-    background: #ef4444;
-    color: white;
-    border: none;
-    padding: 5px 14px;
-    border-radius: 6px;
-    font-size: 12px;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-}
+        .btn-approve {
+            background: #22c55e;
+            color: white;
+            border: none;
+            padding: 5px 14px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
 
-.btn-reject:hover {
-    background: #dc2626;
-    transform: translateY(-1px);
-}
+        .btn-approve:hover {
+            background: #16a34a;
+            transform: translateY(-1px);
+        }
 
-.empty-state {
-    text-align: center;
-    padding: 40px 20px;
-    color: #9ca3af;
-}
+        .btn-reject {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 5px 14px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
 
-.empty-state i {
-    font-size: 48px;
-    margin-bottom: 10px;
-    opacity: 0.5;
-}
+        .btn-reject:hover {
+            background: #dc2626;
+            transform: translateY(-1px);
+        }
 
-/* Toast Notification Styles */
-.toast-notification {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    padding: 12px 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    z-index: 9999;
-    font-size: 14px;
-    font-weight: 500;
-    animation: slideIn 0.3s ease-out;
-}
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #9ca3af;
+        }
 
-@keyframes slideIn {
-    from {
-        transform: translateX(400px);
-        opacity: 0;
-    }
-    to {
-        transform: translateX(0);
-        opacity: 1;
-    }
-}
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 10px;
+            opacity: 0.5;
+        }
 
-@keyframes slideOut {
-    from {
-        transform: translateX(0);
-        opacity: 1;
-    }
-    to {
-        transform: translateX(400px);
-        opacity: 0;
-    }
-}
+        /* Toast Notification Styles */
+        .toast-notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 9999;
+            font-size: 14px;
+            font-weight: 500;
+            animation: slideIn 0.3s ease-out;
+        }
 
-.toast-success {
-    background: #22c55e;
-    color: white;
-    border-left: 4px solid #166534;
-}
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
 
-.toast-error {
-    background: #ef4444;
-    color: white;
-    border-left: 4px solid #b91c1c;
-}
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
 
-.toast-warning {
-    background: #f59e0b;
-    color: white;
-    border-left: 4px solid #d97706;
-}
+        @keyframes slideOut {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
 
-.toast-info {
-    background: #3b82f6;
-    color: white;
-    border-left: 4px solid #1e40af;
-}
+            to {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+        }
+
+        .toast-success {
+            background: #22c55e;
+            color: white;
+            border-left: 4px solid #166534;
+        }
+
+        .toast-error {
+            background: #ef4444;
+            color: white;
+            border-left: 4px solid #b91c1c;
+        }
+
+        .toast-warning {
+            background: #f59e0b;
+            color: white;
+            border-left: 4px solid #d97706;
+        }
+
+        .toast-info {
+            background: #3b82f6;
+            color: white;
+            border-left: 4px solid #1e40af;
+        }
     </style>
 
     <!-- Keep original favicon -->
@@ -1667,25 +1684,25 @@ if ($requests_result && $requests_result->num_rows > 0) {
             </div>
             <div class="d-flex align-items-center gap-3">
 
-             <!-- Notification Bell with Dropdown -->
-                        <div class="notification-bell" style="position:relative;">
-                            <i class="bi bi-journal-check fs-5" style="color: #166534; cursor: pointer;" onclick="toggleNotificationDropdown()"></i>
-                            <span class="request-badge" id="requestBadge">0</span>
+                <!-- Notification Bell with Dropdown -->
+                <div class="notification-bell" style="position:relative;">
+                    <i class="bi bi-journal-check fs-5" style="color: #166534; cursor: pointer;" onclick="toggleNotificationDropdown()"></i>
+                    <span class="request-badge" id="requestBadge">0</span>
 
-                            <!-- Dropdown Menu -->
-                            <div id="notificationDropdown" class="notification-dropdown" style="display: none;">
-                                <div class="dropdown-header">
-                                    <h6>Pending Logbook Reviews</h6>
-                                    <button class="btn-close-sm" onclick="toggleNotificationDropdown()">×</button>
-                                </div>
-                                <div class="dropdown-body" id="notificationList">
-                                    <div class="text-center p-3">
-                                        <div class="spinner-border text-success spinner-border-sm" role="status"></div>
-                                        <p class="mt-2 mb-0">Loading...</p>
-                                    </div>
-                                </div>
+                    <!-- Dropdown Menu -->
+                    <div id="notificationDropdown" class="notification-dropdown" style="display: none;">
+                        <div class="dropdown-header">
+                            <h6>Pending Logbook Reviews</h6>
+                            <button class="btn-close-sm" onclick="toggleNotificationDropdown()">×</button>
+                        </div>
+                        <div class="dropdown-body" id="notificationList">
+                            <div class="text-center p-3">
+                                <div class="spinner-border text-success spinner-border-sm" role="status"></div>
+                                <p class="mt-2 mb-0">Loading...</p>
                             </div>
                         </div>
+                    </div>
+                </div>
                 <span class="fw-semibold d-none d-sm-block" style="color: #166534;"><?= htmlspecialchars($full_name) ?></span>
                 <div class="dropdown">
                     <?php
@@ -1696,7 +1713,7 @@ if ($requests_result && $requests_result->num_rows > 0) {
                         $app_root = dirname(__DIR__);
                         $app_name = basename($app_root);
                         $image_file_path = $app_root . '/assets/profile_images/' . $filename;
-                        
+
                         if (file_exists($image_file_path)) {
                             $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https://' : 'http://';
                             $host = $_SERVER['HTTP_HOST'];
@@ -1708,7 +1725,7 @@ if ($requests_result && $requests_result->num_rows > 0) {
                         $profile_image = 'https://ui-avatars.com/api/?name=' . urlencode($full_name) . '&background=22c55e&color=fff&size=100';
                     }
                     ?>
-                   
+
 
                     <img src="<?php echo htmlspecialchars($profile_image); ?>" class="profile-img dropdown-toggle" data-bs-toggle="dropdown">
                     <ul class="dropdown-menu dropdown-menu-end" style="border-radius: 16px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
@@ -1745,15 +1762,15 @@ if ($requests_result && $requests_result->num_rows > 0) {
                         <h3><?= $utilization_rate ?>%</h3>
                         <p>Utilization Rate</p>
                     </div>
-                    <div class="stat-card"  onclick="viewPendingRequests()">
+                    <div class="stat-card" onclick="viewPendingRequests()">
                         <i class="bi bi-tools"></i>
                         <h3 class="text-warning"><?= $pending_count ?></h3>
-                         <!-- <button class="btn btn-sm btn-outline-primary p-1" onclick="viewPendingRequests()" style="line-height: 1;">
+                        <!-- <button class="btn btn-sm btn-outline-primary p-1" onclick="viewPendingRequests()" style="line-height: 1;">
                             <i class="bi bi-eye"></i>
                         </button> -->
                         <p> Request Pending</p>
                     </div>
-                      <div class="stat-card">
+                    <div class="stat-card">
                         <i class="bi bi-flask"></i>
                         <h3><?= $today_count ?></h3>
                         <p> Today's Practicals</p>
@@ -1855,23 +1872,23 @@ if ($requests_result && $requests_result->num_rows > 0) {
                     <!-- Equipment Table -->
                     <div class="table-responsive mt-3">
                         <table class="user-table">
-    <thead>
-        <tr>
-            <th>Image</th>
-            <th>Equipment Name</th>
-            <th>Maintenance qty</th>
-            <th>Broken qty</th>
-            <th>Usage %</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody id="equipmentTableBody">
-        <?php
-        // Define the equipment data array
-        $equipmentDataTable = [];
+                            <thead>
+                                <tr>
+                                    <th>Image</th>
+                                    <th>Equipment Name</th>
+                                    <th>Maintenance qty</th>
+                                    <th>Broken qty</th>
+                                    <th>Usage %</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="equipmentTableBody">
+                                <?php
+                                // Define the equipment data array
+                                $equipmentDataTable = [];
 
-        // Fetch equipment data from database
-        $equipment_query = "SELECT 
+                                // Fetch equipment data from database
+                                $equipment_query = "SELECT 
             e.id,
             e.code,
             e.name,
@@ -1884,132 +1901,132 @@ if ($requests_result && $requests_result->num_rows > 0) {
         WHERE e.is_hod_checked = 1
         ORDER BY e.name ASC";
 
-        $equipment_result = Database::search($equipment_query);
+                                $equipment_result = Database::search($equipment_query);
 
-        if ($equipment_result && $equipment_result->num_rows > 0) {
-            while ($equipment_row = $equipment_result->fetch_assoc()) { // Changed variable name
-                $equipment_code = htmlspecialchars($equipment_row['code']);
-                $name = htmlspecialchars($equipment_row['name']);
-                $total_qty = (int)$equipment_row['total_qty'];
-                $broken_qty = (int)$equipment_row['broken_qty'];
-                $repair_qty = (int)$equipment_row['repair_qty'];
+                                if ($equipment_result && $equipment_result->num_rows > 0) {
+                                    while ($equipment_row = $equipment_result->fetch_assoc()) { // Changed variable name
+                                        $equipment_code = htmlspecialchars($equipment_row['code']);
+                                        $name = htmlspecialchars($equipment_row['name']);
+                                        $total_qty = (int)$equipment_row['total_qty'];
+                                        $broken_qty = (int)$equipment_row['broken_qty'];
+                                        $repair_qty = (int)$equipment_row['repair_qty'];
 
-                // Calculate available quantity
-                $available_qty = $total_qty - ($broken_qty + $repair_qty);
+                                        // Calculate available quantity
+                                        $available_qty = $total_qty - ($broken_qty + $repair_qty);
 
-                // Calculate usage percentage (based on bookings)
-                $usage_query = "SELECT COUNT(*) as booking_count FROM book_equipment WHERE equipment_id = ?";
-                $usage_result = Database::search($usage_query, "i", [$equipment_row['id']]);
-                $usage_count = 0;
-                if ($usage_result && $usage_result->num_rows > 0) {
-                    $usage_row = $usage_result->fetch_assoc();
-                    $usage_count = $usage_row['booking_count'];
-                }
+                                        // Calculate usage percentage (based on bookings)
+                                        $usage_query = "SELECT COUNT(*) as booking_count FROM book_equipment WHERE equipment_id = ?";
+                                        $usage_result = Database::search($usage_query, "i", [$equipment_row['id']]);
+                                        $usage_count = 0;
+                                        if ($usage_result && $usage_result->num_rows > 0) {
+                                            $usage_row = $usage_result->fetch_assoc();
+                                            $usage_count = $usage_row['booking_count'];
+                                        }
 
-                // FIXED: Calculate percentage based on total quantity or usage pattern
-                // Option 1: Percentage of times this equipment is used vs others
-                $total_bookings_query = "SELECT COUNT(*) as total FROM reservation";
-                $total_bookings_result = Database::search($total_bookings_query);
-                $total_bookings = 0;
+                                        // FIXED: Calculate percentage based on total quantity or usage pattern
+                                        // Option 1: Percentage of times this equipment is used vs others
+                                        $total_bookings_query = "SELECT COUNT(*) as total FROM reservation";
+                                        $total_bookings_result = Database::search($total_bookings_query);
+                                        $total_bookings = 0;
 
-                if ($total_bookings_result && $total_bookings_result->num_rows > 0) {
-                    $total_bookings_row = $total_bookings_result->fetch_assoc(); // Different variable name
-                    $total_bookings = $total_bookings_row['total'];
-                }
+                                        if ($total_bookings_result && $total_bookings_result->num_rows > 0) {
+                                            $total_bookings_row = $total_bookings_result->fetch_assoc(); // Different variable name
+                                            $total_bookings = $total_bookings_row['total'];
+                                        }
 
-                // Calculate usage percentage based on ALL bookings
-                $usage_percentage = $total_bookings > 0 ? round(($usage_count / $total_bookings) * 100) : 0;
-                $usage_percentage = min(100, $usage_percentage); // Cap at 100%
+                                        // Calculate usage percentage based on ALL bookings
+                                        $usage_percentage = $total_bookings > 0 ? round(($usage_count / $total_bookings) * 100) : 0;
+                                        $usage_percentage = min(100, $usage_percentage); // Cap at 100%
 
-                // Set image path
-                $image_path = !empty($equipment_row['img_path'])
-                    ? '/' . ltrim(str_replace('\\', '/', $equipment_row['img_path']), '/')
-                    : 'https://cdn-icons-png.flaticon.com/512/2941/2941514.png';
+                                        // Set image path
+                                        $image_path = !empty($equipment_row['img_path'])
+                                            ? '/' . ltrim(str_replace('\\', '/', $equipment_row['img_path']), '/')
+                                            : 'https://cdn-icons-png.flaticon.com/512/2941/2941514.png';
 
-                // Add to data array for JavaScript
-                $equipmentDataTable[] = [
-                    'code' => $equipment_code,
-                    'name' => $name,
-                    'image' => $image_path,
-                    'total' => $total_qty,
-                    'broken' => $broken_qty,
-                    'maintenance' => $repair_qty,
-                    'usage' => $usage_percentage,
-                    'id' => $equipment_row['id']
-                ];
+                                        // Add to data array for JavaScript
+                                        $equipmentDataTable[] = [
+                                            'code' => $equipment_code,
+                                            'name' => $name,
+                                            'image' => $image_path,
+                                            'total' => $total_qty,
+                                            'broken' => $broken_qty,
+                                            'maintenance' => $repair_qty,
+                                            'usage' => $usage_percentage,
+                                            'id' => $equipment_row['id']
+                                        ];
 
-                // Determine badge color for available/total ratio
-                $ratio = $total_qty > 0 ? $available_qty / $total_qty : 0;
-                $badgeColor = '#22c55e'; // green
-                if ($ratio < 0.3) $badgeColor = '#ef4444'; // red
-                else if ($ratio < 0.6) $badgeColor = '#f59e0b'; // orange
+                                        // Determine badge color for available/total ratio
+                                        $ratio = $total_qty > 0 ? $available_qty / $total_qty : 0;
+                                        $badgeColor = '#22c55e'; // green
+                                        if ($ratio < 0.3) $badgeColor = '#ef4444'; // red
+                                        else if ($ratio < 0.6) $badgeColor = '#f59e0b'; // orange
 
-                // Bar color based on usage
-                $barColor = '#22c55e';
-                if ($usage_percentage < 30) $barColor = '#ef4444';
-                else if ($usage_percentage < 60) $barColor = '#f59e0b';
-        ?>
-                <tr data-equipment-id="<?php echo $equipment_code; ?>"
-                    data-equipment-id-numeric="<?php echo $equipment_row['id']; ?>"
-                    data-maintenance="<?php echo $repair_qty; ?>"
-                    data-broken="<?php echo $broken_qty; ?>">
-                    <td>
-                        <img src="<?php echo $image_path; ?>"
-                            style="width:50px;height:50px;object-fit:contain;"
-                            onerror="this.src='https://cdn-icons-png.flaticon.com/512/2941/2941514.png'"
-                            alt="<?php echo $name; ?>">
-                    </td>
-                    <td><strong><?php echo $name; ?></strong></td>
-                    <td>
-                        <?php if ($repair_qty > 0): ?>
-                            <span class="badge bg-warning"><?php echo $repair_qty; ?></span>
-                        <?php else: ?>
-                            <span class="text-muted">------</span>
-                        <?php endif; ?>
-                    </td>
-                    <td>
-                        <?php if ($broken_qty > 0): ?>
-                            <span class="badge bg-danger"><?php echo $broken_qty; ?></span>
-                        <?php else: ?>
-                            <span class="text-muted">------</span>
-                        <?php endif; ?>
-                    </td>
-                    <td>
-                        <div class="d-flex align-items-center gap-2">
-                            <div style="width:90px;height:8px;background:#e9ecef;border-radius:4px;overflow:hidden;">
-                                <div style="width:<?php echo $usage_percentage; ?>%;height:8px;background:<?php echo $barColor; ?>;border-radius:4px;transition:width 0.6s ease;"></div>
-                            </div>
-                            <span style="font-weight:600;color:<?php echo $barColor; ?>;min-width:45px;">
-                                <?php echo $usage_percentage; ?>%
-                            </span>
-                        </div>
-                    </td>
-                    <td>
-                        <div class="action-buttons">
-                            <button class="btn-view" onclick="viewEquipmentByCode('<?php echo $equipment_code; ?>')" title="View Details">
-                                <i class="bi bi-eye"></i>
-                            </button>
-                            <button class="btn-edit" onclick="editEquipment('<?php echo $equipment_code; ?>')" title="Edit">
-                                <i class="bi bi-pencil-square"></i>
-                            </button>
-                            <button class="btn-remove" onclick="removeEquipment('<?php echo $equipment_code; ?>')" title="Remove">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-            <?php
-            }
-        } else {
-            ?>
-            <tr>
-                <td colspan="6" class="text-center py-4">No equipment found in database</td>
-            </tr>
-        <?php
-        }
-        ?>
-    </tbody>
-</table>
+                                        // Bar color based on usage
+                                        $barColor = '#22c55e';
+                                        if ($usage_percentage < 30) $barColor = '#ef4444';
+                                        else if ($usage_percentage < 60) $barColor = '#f59e0b';
+                                ?>
+                                        <tr data-equipment-id="<?php echo $equipment_code; ?>"
+                                            data-equipment-id-numeric="<?php echo $equipment_row['id']; ?>"
+                                            data-maintenance="<?php echo $repair_qty; ?>"
+                                            data-broken="<?php echo $broken_qty; ?>">
+                                            <td>
+                                                <img src="<?php echo $image_path; ?>"
+                                                    style="width:50px;height:50px;object-fit:contain;"
+                                                    onerror="this.src='https://cdn-icons-png.flaticon.com/512/2941/2941514.png'"
+                                                    alt="<?php echo $name; ?>">
+                                            </td>
+                                            <td><strong><?php echo $name; ?></strong></td>
+                                            <td>
+                                                <?php if ($repair_qty > 0): ?>
+                                                    <span class="badge bg-warning"><?php echo $repair_qty; ?></span>
+                                                <?php else: ?>
+                                                    <span class="text-muted">------</span>
+                                                <?php endif; ?>
+                                            </td>
+                                            <td>
+                                                <?php if ($broken_qty > 0): ?>
+                                                    <span class="badge bg-danger"><?php echo $broken_qty; ?></span>
+                                                <?php else: ?>
+                                                    <span class="text-muted">------</span>
+                                                <?php endif; ?>
+                                            </td>
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <div style="width:90px;height:8px;background:#e9ecef;border-radius:4px;overflow:hidden;">
+                                                        <div style="width:<?php echo $usage_percentage; ?>%;height:8px;background:<?php echo $barColor; ?>;border-radius:4px;transition:width 0.6s ease;"></div>
+                                                    </div>
+                                                    <span style="font-weight:600;color:<?php echo $barColor; ?>;min-width:45px;">
+                                                        <?php echo $usage_percentage; ?>%
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div class="action-buttons">
+                                                    <button class="btn-view" onclick="viewEquipmentByCode('<?php echo $equipment_code; ?>')" title="View Details">
+                                                        <i class="bi bi-eye"></i>
+                                                    </button>
+                                                    <button class="btn-edit" onclick="editEquipment('<?php echo $equipment_code; ?>')" title="Edit">
+                                                        <i class="bi bi-pencil-square"></i>
+                                                    </button>
+                                                    <button class="btn-remove" onclick="removeEquipment('<?php echo $equipment_code; ?>')" title="Remove">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    <?php
+                                    }
+                                } else {
+                                    ?>
+                                    <tr>
+                                        <td colspan="6" class="text-center py-4">No equipment found in database</td>
+                                    </tr>
+                                <?php
+                                }
+                                ?>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -2251,14 +2268,14 @@ if ($requests_result && $requests_result->num_rows > 0) {
 
         function rejectRequestFromModal() {
             if (!currentRequestId) return;
-            
+
             // Save current section before reload
             saveCurrentSection();
-            
+
             // Close the reservation details modal
             const detailsModal = bootstrap.Modal.getInstance(document.getElementById('requestDetailsModal'));
             if (detailsModal) detailsModal.hide();
-            
+
             // Show the rejection reason modal
             showRejectRequestModal(currentRequestId);
         }
@@ -2284,10 +2301,10 @@ if ($requests_result && $requests_result->num_rows > 0) {
             }
 
             if (checkedBoxes.length !== allCheckboxes.length) {
-              showToast('warning', 
-    `⚠️ Please Ready ALL equipment items (${checkedBoxes.length}/${allCheckboxes.length} checked). ` +
-    `Note: Reject with reason if any equipment not ready or count insufficient - student can resubmit.`
-);
+                showToast('warning',
+                    `⚠️ Please Ready ALL equipment items (${checkedBoxes.length}/${allCheckboxes.length} checked). ` +
+                    `Note: Reject with reason if any equipment not ready or count insufficient - student can resubmit.`
+                );
                 return;
             }
 
@@ -2459,31 +2476,31 @@ if ($requests_result && $requests_result->num_rows > 0) {
             try {
                 const modalElement = document.getElementById('rejectRequestReasonModal');
                 const textarea = document.getElementById('requestRejectionReason');
-                
+
                 if (!modalElement) {
                     console.error('Modal element "rejectRequestReasonModal" not found in DOM');
                     return;
                 }
-                
+
                 if (!textarea) {
                     console.error('Textarea "requestRejectionReason" not found in DOM');
                     return;
                 }
-                
+
                 // Clear textarea
                 textarea.value = '';
                 textarea.classList.remove('is-invalid');
-                
+
                 // Remove any existing error message
                 const errorDiv = document.getElementById('requestReasonError');
                 if (errorDiv) {
                     errorDiv.remove();
                 }
-                
+
                 // Show modal
                 const modal = new bootstrap.Modal(modalElement);
                 modal.show();
-                
+
             } catch (error) {
                 console.error('Error showing request rejection modal:', error);
             }
@@ -2493,7 +2510,7 @@ if ($requests_result && $requests_result->num_rows > 0) {
         function confirmRejectRequest() {
             const textarea = document.getElementById('requestRejectionReason');
             if (!textarea) return;
-            
+
             const reason = textarea.value.trim();
             if (!reason) {
                 textarea.classList.add('is-invalid');
@@ -2506,7 +2523,7 @@ if ($requests_result && $requests_result->num_rows > 0) {
                 }
                 return;
             }
-            
+
             closeModalManually('rejectRequestReasonModal');
             executeRejectRequest(currentRequestId, reason);
         }
@@ -3766,7 +3783,7 @@ if ($requests_result && $requests_result->num_rows > 0) {
         function openProfileModal(event) {
             event.preventDefault();
             const modal = new bootstrap.Modal(document.getElementById('profileModal'));
-            
+
             // Load user data
             const firstName = '<?= htmlspecialchars($user_data['first_name'] ?? '') ?>';
             const lastName = '<?= htmlspecialchars($user_data['last_name'] ?? '') ?>';
@@ -3774,7 +3791,7 @@ if ($requests_result && $requests_result->num_rows > 0) {
             const mobile = '<?= htmlspecialchars($user_data['mobile'] ?? '') ?>';
             const universityId = '<?= htmlspecialchars($user_data['university_id'] ?? '') ?>';
             const joinDate = '<?= htmlspecialchars($user_data['join_datetime'] ?? '') ?>';
-            
+
             // Populate form
             document.getElementById('firstName').value = firstName;
             document.getElementById('lastName').value = lastName;
@@ -3782,11 +3799,11 @@ if ($requests_result && $requests_result->num_rows > 0) {
             document.getElementById('mobile').value = mobile;
             document.getElementById('universityId').value = universityId;
             document.getElementById('joinDate').value = joinDate ? new Date(joinDate).toLocaleDateString() : '';
-            
+
             // Set profile image
             const profileImg = document.querySelector('.profile-img');
             document.getElementById('profileImagePreview').src = profileImg.src;
-            
+
             modal.show();
         }
 
@@ -3907,88 +3924,88 @@ if ($requests_result && $requests_result->num_rows > 0) {
             }, 3000);
         }
 
-       // ========== LOGBOOK APPROVAL SYSTEM FOR TECHNICAL OFFICER ==========
-let notificationPollingInterval = null;
-let currentLogbookId = null;
+        // ========== LOGBOOK APPROVAL SYSTEM FOR TECHNICAL OFFICER ==========
+        let notificationPollingInterval = null;
+        let currentLogbookId = null;
 
-function loadPendingLogbooks() {
-    const container = document.getElementById('notificationList');
-    if (!container) {
-        console.error('notificationList container not found');
-        return;
-    }
-    
-    container.innerHTML = `
+        function loadPendingLogbooks() {
+            const container = document.getElementById('notificationList');
+            if (!container) {
+                console.error('notificationList container not found');
+                return;
+            }
+
+            container.innerHTML = `
         <div class="text-center p-3">
             <div class="spinner-border text-success spinner-border-sm" role="status"></div>
             <p class="mt-2 mb-0">Loading pending logbooks...</p>
         </div>
     `;
-    
-    fetch('../controllers/fetch_pending_logbooks_technicalOfficer.php')
-        .then(response => {
-            console.log('Response status:', response.status);
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-        })
-        .then(data => {
-            console.log('Logbooks data received:', data);
-            
-            if (data.error) {
-                console.error('Error from server:', data.error);
-                container.innerHTML = `
+
+            fetch('../controllers/fetch_pending_logbooks_technicalOfficer.php')
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Logbooks data received:', data);
+
+                    if (data.error) {
+                        console.error('Error from server:', data.error);
+                        container.innerHTML = `
                     <div class="empty-state">
                         <i class="bi bi-exclamation-circle"></i>
                         <p>${data.error}</p>
                     </div>
                 `;
-                updateBadgeCount(0);
-                return;
-            }
-            
-            // Ensure data is an array
-            const logbooksArray = Array.isArray(data) ? data : [];
-            console.log('Processing logbooks:', logbooksArray.length);
-            
-            updateNotificationList(logbooksArray);
-            updateBadgeCount(logbooksArray.length);
-        })
-        .catch(error => {
-            console.error('Error loading pending logbooks:', error);
-            container.innerHTML = `
+                        updateBadgeCount(0);
+                        return;
+                    }
+
+                    // Ensure data is an array
+                    const logbooksArray = Array.isArray(data) ? data : [];
+                    console.log('Processing logbooks:', logbooksArray.length);
+
+                    updateNotificationList(logbooksArray);
+                    updateBadgeCount(logbooksArray.length);
+                })
+                .catch(error => {
+                    console.error('Error loading pending logbooks:', error);
+                    container.innerHTML = `
                 <div class="empty-state">
                     <i class="bi bi-exclamation-circle"></i>
                     <p>Error loading notifications</p>
                     <small>${error.message}</small>
                 </div>
             `;
-            updateBadgeCount(0);
-        });
-}
+                    updateBadgeCount(0);
+                });
+        }
 
-function updateNotificationList(logbooks) {
-    const container = document.getElementById('notificationList');
+        function updateNotificationList(logbooks) {
+            const container = document.getElementById('notificationList');
 
-    if (!logbooks || logbooks.length === 0) {
-        container.innerHTML = `
+            if (!logbooks || logbooks.length === 0) {
+                container.innerHTML = `
             <div class="empty-state">
                 <i class="bi bi-check-circle"></i>
                 <p>No pending logbooks to review</p>
             </div>
         `;
-        return;
-    }
+                return;
+            }
 
-    let html = '';
-    logbooks.forEach(logbook => {
-        // Format the date if available
-        const submittedDate = logbook.submitted_date && logbook.submitted_date !== 'Awaiting review' 
-            ? new Date(logbook.submitted_date).toLocaleString() 
-            : 'Awaiting review';
-        
-        html += `
+            let html = '';
+            logbooks.forEach(logbook => {
+                // Format the date if available
+                const submittedDate = logbook.submitted_date && logbook.submitted_date !== 'Awaiting review' ?
+                    new Date(logbook.submitted_date).toLocaleString() :
+                    'Awaiting review';
+
+                html += `
             <div class="notification-item" id="logbook-${logbook.id}">
                 <div class="notification-title">
                     <strong>Logbook #${logbook.id}</strong> - ${escapeHtml(logbook.student_name)}
@@ -4008,469 +4025,471 @@ function updateNotificationList(logbooks) {
                 </div>
             </div>
         `;
-    });
-    container.innerHTML = html;
-}
-
-function updateBadgeCount(count) {
-    const badge = document.getElementById('requestBadge');
-    if (badge) {
-        if (count > 0) {
-            badge.textContent = count;
-            badge.classList.add('visible');
-        } else {
-            badge.textContent = '0';
-            badge.classList.remove('visible');
+            });
+            container.innerHTML = html;
         }
-    }
-}
 
-// Approve logbook with modal confirmation
-function approveLogbook(logbookId) {
-    showConfirmModal(
-        'Approve Logbook',
-        '<div class="text-center">' +
-        '<i class="bi bi-check-circle-fill text-success" style="font-size: 48px;"></i>' +
-        '<p class="mt-3">Are you sure you want to approve this logbook?</p>' +
-        '<p class="text-muted small">This will mark the logbook as reviewed and send it to HOD for final approval.</p>' +
-        '</div>',
-        'Yes, Approve',
-        'btn-success',
-        () => {
-            executeApprove(logbookId);
+        function updateBadgeCount(count) {
+            const badge = document.getElementById('requestBadge');
+            if (badge) {
+                if (count > 0) {
+                    badge.textContent = count;
+                    badge.classList.add('visible');
+                } else {
+                    badge.textContent = '0';
+                    badge.classList.remove('visible');
+                }
+            }
         }
-    );
-}
 
-// Reject logbook - shows rejection reason modal first
-function rejectLogbook(logbookId) {
-    showRejectModal(logbookId);
-}
+        // Approve logbook with modal confirmation
+        function approveLogbook(logbookId) {
+            showConfirmModal(
+                'Approve Logbook',
+                '<div class="text-center">' +
+                '<i class="bi bi-check-circle-fill text-success" style="font-size: 48px;"></i>' +
+                '<p class="mt-3">Are you sure you want to approve this logbook?</p>' +
+                '<p class="text-muted small">This will mark the logbook as reviewed and send it to HOD for final approval.</p>' +
+                '</div>',
+                'Yes, Approve',
+                'btn-success',
+                () => {
+                    executeApprove(logbookId);
+                }
+            );
+        }
 
-// Show rejection reason modal
-function showRejectModal(logbookId) {
-    currentLogbookId = logbookId;
-    
-    const modalElement = document.getElementById('rejectReasonModal');
-    const textarea = document.getElementById('rejectionReason');
-    
-    if (!modalElement || !textarea) {
-        console.error('Modal or textarea not found');
-        const reason = prompt('Enter rejection reason:');
-        if (reason && reason.trim()) executeReject(logbookId, reason);
-        return;
-    }
-    
-    // Clear textarea
-    textarea.value = '';
-    textarea.classList.remove('is-invalid');
-    
-    // Remove any error div
-    const errorDiv = document.getElementById('reasonError');
-    if (errorDiv) errorDiv.remove();
-    
-    // Show modal using Bootstrap
-    const modal = new bootstrap.Modal(modalElement);
-    modal.show();
-}
+        // Reject logbook - shows rejection reason modal first
+        function rejectLogbook(logbookId) {
+            showRejectModal(logbookId);
+        }
 
+        // Show rejection reason modal
+        function showRejectModal(logbookId) {
+            currentLogbookId = logbookId;
 
+            const modalElement = document.getElementById('rejectReasonModal');
+            const textarea = document.getElementById('rejectionReason');
 
+            if (!modalElement || !textarea) {
+                console.error('Modal or textarea not found');
+                const reason = prompt('Enter rejection reason:');
+                if (reason && reason.trim()) executeReject(logbookId, reason);
+                return;
+            }
 
+            // Clear textarea
+            textarea.value = '';
+            textarea.classList.remove('is-invalid');
 
+            // Remove any error div
+            const errorDiv = document.getElementById('reasonError');
+            if (errorDiv) errorDiv.remove();
 
-
-
-
-
-
-
-
-
-
-
-
+            // Show modal using Bootstrap
+            const modal = new bootstrap.Modal(modalElement);
+            modal.show();
+        }
 
 
 
-// Confirm rejection after entering reason
-// function confirmReject() {
-//     const reason = document.getElementById('rejectionReason').value.trim();
-    
-//     if (!reason) {
-//         const textarea = document.getElementById('rejectionReason');
-//         textarea.classList.add('is-invalid');
-        
-//         let errorDiv = document.getElementById('reasonError');
-//         if (!errorDiv) {
-//             errorDiv = document.createElement('div');
-//             errorDiv.id = 'reasonError';
-//             errorDiv.className = 'invalid-feedback';
-//             errorDiv.innerHTML = '<i class="bi bi-exclamation-circle"></i> Please enter a reason for rejection';
-//             textarea.parentNode.appendChild(errorDiv);
-//         }
-        
-//         textarea.style.animation = 'shake 0.5s';
-//         setTimeout(() => {
-//             textarea.style.animation = '';
-//         }, 500);
-        
-//         return;
-//     }
-    
-//     // Close rejection modal
-//     const rejectModal = document.getElementById('rejectReasonModal');
-//     const modal = bootstrap.Modal.getInstance(rejectModal);
-//     if (modal) modal.hide();
-    
-//     // Show confirmation modal
-//     showConfirmModal(
-//         'Reject Logbook',
-//         '<div class="text-center">' +
-//         '<i class="bi bi-exclamation-triangle-fill text-warning" style="font-size: 48px;"></i>' +
-//         '<p class="mt-3"><strong>Are you sure you want to reject this logbook?</strong></p>' +
-//         '<div class="alert alert-danger mt-3">' +
-//         '<i class="bi bi-info-circle me-2"></i>' +
-//         '<strong>Reason:</strong> ' + escapeHtml(reason) +
-//         '</div>' +
-//         '<p class="text-danger small mt-2">⚠️ This action cannot be undone. The student will be notified.</p>' +
-//         '</div>',
-//         'Yes, Reject',
-//         'btn-danger',
-//         () => {
-//             executeReject(currentLogbookId, reason);
-//         }
-//     );
-// }
 
-// Execute approve action
-function executeApprove(logbookId) {
-    //showToast('info', 'Processing approval...');
-    closeModalManually('confirmModal');
-    
-    fetch('../controllers/approve_logbook_technicalOfficer.php', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            logbook_id: logbookId,
-            action: 'approve'
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            const item = document.getElementById(`logbook-${logbookId}`);
-            if (item) {
-                item.style.transition = 'all 0.3s ease';
-                item.style.opacity = '0';
-                item.style.transform = 'translateX(-100%)';
-                setTimeout(() => {
-                    if (item.parentNode) item.remove();
-                    const remainingItems = document.querySelectorAll('.notification-item').length;
-                    updateBadgeCount(remainingItems);
-                    
-                    if (remainingItems === 0) {
-                        document.getElementById('notificationList').innerHTML = `
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        // Confirm rejection after entering reason
+        // function confirmReject() {
+        //     const reason = document.getElementById('rejectionReason').value.trim();
+
+        //     if (!reason) {
+        //         const textarea = document.getElementById('rejectionReason');
+        //         textarea.classList.add('is-invalid');
+
+        //         let errorDiv = document.getElementById('reasonError');
+        //         if (!errorDiv) {
+        //             errorDiv = document.createElement('div');
+        //             errorDiv.id = 'reasonError';
+        //             errorDiv.className = 'invalid-feedback';
+        //             errorDiv.innerHTML = '<i class="bi bi-exclamation-circle"></i> Please enter a reason for rejection';
+        //             textarea.parentNode.appendChild(errorDiv);
+        //         }
+
+        //         textarea.style.animation = 'shake 0.5s';
+        //         setTimeout(() => {
+        //             textarea.style.animation = '';
+        //         }, 500);
+
+        //         return;
+        //     }
+
+        //     // Close rejection modal
+        //     const rejectModal = document.getElementById('rejectReasonModal');
+        //     const modal = bootstrap.Modal.getInstance(rejectModal);
+        //     if (modal) modal.hide();
+
+        //     // Show confirmation modal
+        //     showConfirmModal(
+        //         'Reject Logbook',
+        //         '<div class="text-center">' +
+        //         '<i class="bi bi-exclamation-triangle-fill text-warning" style="font-size: 48px;"></i>' +
+        //         '<p class="mt-3"><strong>Are you sure you want to reject this logbook?</strong></p>' +
+        //         '<div class="alert alert-danger mt-3">' +
+        //         '<i class="bi bi-info-circle me-2"></i>' +
+        //         '<strong>Reason:</strong> ' + escapeHtml(reason) +
+        //         '</div>' +
+        //         '<p class="text-danger small mt-2">⚠️ This action cannot be undone. The student will be notified.</p>' +
+        //         '</div>',
+        //         'Yes, Reject',
+        //         'btn-danger',
+        //         () => {
+        //             executeReject(currentLogbookId, reason);
+        //         }
+        //     );
+        // }
+
+        // Execute approve action
+        function executeApprove(logbookId) {
+            //showToast('info', 'Processing approval...');
+            closeModalManually('confirmModal');
+
+            fetch('../controllers/approve_logbook_technicalOfficer.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        logbook_id: logbookId,
+                        action: 'approve'
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('success', data.message || 'Logbook approved successfully!');
+                        const item = document.getElementById(`logbook-${logbookId}`);
+                        if (item) {
+                            item.style.transition = 'all 0.3s ease';
+                            item.style.opacity = '0';
+                            item.style.transform = 'translateX(-100%)';
+                            setTimeout(() => {
+                                if (item.parentNode) item.remove();
+                                const remainingItems = document.querySelectorAll('.notification-item').length;
+                                updateBadgeCount(remainingItems);
+
+                                if (remainingItems === 0) {
+                                    document.getElementById('notificationList').innerHTML = `
                             <div class="empty-state">
                                 <i class="bi bi-check-circle"></i>
                                 <p>No pending logbooks to review</p>
                             </div>
                         `;
+                                }
+                            }, 300);
+                        }
+
+
+                        setTimeout(function() {
+                            location.reload();
+                        }, 2000); // 2000ms = 2 seconds
+
+                    } else {
+                        showToast('error', data.message || 'Error approving logbook');
                     }
-                }, 300);
-            }
-           showToast('success', data.message || 'Logbook approved successfully!');
-
-setTimeout(function () {
-    location.reload();
-}, 2000); // 2000ms = 2 seconds
-
-        } else {
-            showToast('error', data.message || 'Error approving logbook');
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showToast('error', 'Network error. Please try again.');
+                });
         }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        showToast('error', 'Network error. Please try again.');
-    });
-}
 
-// Execute reject action
-function executeReject(logbookId, reason) {
-   // showToast('info', 'Processing rejection...');
-    
-    const rejectBtn = document.querySelector(`#logbook-${logbookId} .btn-reject`);
-    if (rejectBtn) {
-        rejectBtn.disabled = true;
-        rejectBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Rejecting...';
-    }
-    
-    fetch('../controllers/approve_logbook_technicalOfficer.php', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            logbook_id: logbookId,
-            action: 'reject',
-            reason: reason
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            const item = document.getElementById(`logbook-${logbookId}`);
-            if (item) {
-                item.style.transition = 'all 0.3s ease';
-                item.style.opacity = '0';
-                item.style.transform = 'translateX(100%)';
-                setTimeout(() => {
-                    if (item.parentNode) item.remove();
-                    const remainingItems = document.querySelectorAll('.notification-item').length;
-                    updateBadgeCount(remainingItems);
-                    
-                    if (remainingItems === 0) {
-                        document.getElementById('notificationList').innerHTML = `
+        // Execute reject action
+        function executeReject(logbookId, reason) {
+            // showToast('info', 'Processing rejection...');
+
+            const rejectBtn = document.querySelector(`#logbook-${logbookId} .btn-reject`);
+            if (rejectBtn) {
+                rejectBtn.disabled = true;
+                rejectBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Rejecting...';
+            }
+
+            fetch('../controllers/approve_logbook_technicalOfficer.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        logbook_id: logbookId,
+                        action: 'reject',
+                        reason: reason
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                           showToast('warning', data.message || 'Logbook rejected successfully');
+                        const item = document.getElementById(`logbook-${logbookId}`);
+                        if (item) {
+                            item.style.transition = 'all 0.3s ease';
+                            item.style.opacity = '0';
+                            item.style.transform = 'translateX(100%)';
+                            setTimeout(() => {
+                                if (item.parentNode) item.remove();
+                                const remainingItems = document.querySelectorAll('.notification-item').length;
+                                updateBadgeCount(remainingItems);
+
+                                if (remainingItems === 0) {
+                                    document.getElementById('notificationList').innerHTML = `
                             <div class="empty-state">
                                 <i class="bi bi-check-circle" style="font-size: 3rem;"></i>
                                 <p class="mt-3">No pending logbooks to review</p>
                             </div>
                         `;
+                                }
+                            }, 300);
+                        }
+                     
+                        setTimeout(function() {
+                            location.reload();
+                        }, 2000); // refresh after 3 seconds
+                    } else {
+                        showToast('error', data.message || 'Error rejecting logbook');
+                        if (rejectBtn) {
+                            rejectBtn.disabled = false;
+                            rejectBtn.innerHTML = '<i class="bi bi-x-circle"></i> Reject';
+                        }
                     }
-                }, 300);
-            }
-            showToast('warning', data.message || 'Logbook rejected successfully');
-            setTimeout(function () {
-    location.reload();
-}, 2000); // refresh after 3 seconds
-        } else {
-            showToast('error', data.message || 'Error rejecting logbook');
-            if (rejectBtn) {
-                rejectBtn.disabled = false;
-                rejectBtn.innerHTML = '<i class="bi bi-x-circle"></i> Reject';
-            }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showToast('error', 'Network error. Please try again.');
+                    if (rejectBtn) {
+                        rejectBtn.disabled = false;
+                        rejectBtn.innerHTML = '<i class="bi bi-x-circle"></i> Reject';
+                    }
+                });
         }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        showToast('error', 'Network error. Please try again.');
-        if (rejectBtn) {
-            rejectBtn.disabled = false;
-            rejectBtn.innerHTML = '<i class="bi bi-x-circle"></i> Reject';
-        }
-    });
-}
 
-// View logbook details
-// function viewLogbookDetails(logbookId) {
-//     showToast('info', 'Loading logbook details...');
-//     fetch(`../controllers/get_logbook_details_technicalOfficer.php?id=${logbookId}`)
-//         .then(response => response.json())
-//         .then(data => {
-//             if (data.success) {
-               
-//                 let imagesHtml = '';
-//                 if (data.images && data.images.length > 0) {
-//                     imagesHtml = '<div style="margin-top: 15px;"><strong>Images:</strong><div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 5px;">';
-//                     data.images.forEach(img => {
-//                         imagesHtml += `<img src="../${img}" style="max-width: 150px; max-height: 150px; border-radius: 8px; border: 1px solid #ddd;" onerror="this.style.display=\'none\'">`;
-//                     });
-//                     imagesHtml += '</div></div>';
-//                 }
-                
-            
-//                 const details = `Logbook #${logbookId}\n\n` +
-//                     `Student: ${data.student_name}\n` +
-//                     `University ID: ${data.university_id}\n` +
-//                     `Email: ${data.student_email}\n` +
-//                     `Mobile: ${data.student_mobile}\n` +
-//                     `Reservation: ${data.reservation_code}\n` +
-//                     `Request Date: ${data.request_date}\n` +
-//                     `Duration: ${data.duration}\n` +
-//                     `Lab Location: ${data.location}\n\n` +
-//                     `Student Comment:\n${data.description}\n`;
-                
-              
-//                 if (data.images && data.images.length > 0) {
-//                     alert(details + '\n\nImages available. Check console for image URLs.');
-//                     console.log('Images:', data.images);
-//                 } else {
-//                     alert(details);
-//                 }
-//                 showToast('Logbook details loaded', 'success');
-//             } else {
-//                 showToast(data.message || 'Failed to load logbook details', 'error');
-//             }
-//         })
-//         .catch(error => {
-//             console.error('Error:', error);
-//             showToast('Error loading details', 'error');
-//         });
-// }
+        // View logbook details
+        // function viewLogbookDetails(logbookId) {
+        //     showToast('info', 'Loading logbook details...');
+        //     fetch(`../controllers/get_logbook_details_technicalOfficer.php?id=${logbookId}`)
+        //         .then(response => response.json())
+        //         .then(data => {
+        //             if (data.success) {
 
-// Show confirmation modal
-function showConfirmModal(title, message, confirmText, confirmClass, onConfirm) {
-    const modalElement = document.getElementById('confirmModal');
-    const modalHeader = document.getElementById('confirmModalHeader');
-    const modalTitle = document.getElementById('confirmModalTitle');
-    const modalBody = document.getElementById('confirmModalBody');
-    const confirmBtn = document.getElementById('confirmModalBtn');
-    
-    // Reset and style header
-    modalHeader.className = 'modal-header';
-    if (confirmClass === 'btn-success') {
-        modalHeader.classList.add('bg-success', 'text-white');
-    } else if (confirmClass === 'btn-danger') {
-        modalHeader.classList.add('bg-danger', 'text-white');
-    } else {
-        modalHeader.classList.add('bg-warning', 'text-white');
-    }
-    
-    // Set title and message
-    modalTitle.innerHTML = `<i class="bi bi-question-circle me-2"></i>${title}`;
-    modalBody.innerHTML = message;
-    
-    // Style the confirm button
-    confirmBtn.className = 'btn ' + confirmClass;
-    confirmBtn.innerHTML = `<i class="bi bi-check-circle me-2"></i>${confirmText}`;
-    
-    // Remove previous event listeners by cloning
-    const newConfirmBtn = confirmBtn.cloneNode(true);
-    confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
-    
-    // Add click handler
-    newConfirmBtn.addEventListener('click', () => {
-        const modal = bootstrap.Modal.getInstance(modalElement);
-        if (modal) modal.hide();
-        if (onConfirm && typeof onConfirm === 'function') {
-            onConfirm();
-        }
-    });
-    
-    // Show modal
-    const modal = new bootstrap.Modal(modalElement);
-    modal.show();
-}
+        //                 let imagesHtml = '';
+        //                 if (data.images && data.images.length > 0) {
+        //                     imagesHtml = '<div style="margin-top: 15px;"><strong>Images:</strong><div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 5px;">';
+        //                     data.images.forEach(img => {
+        //                         imagesHtml += `<img src="../${img}" style="max-width: 150px; max-height: 150px; border-radius: 8px; border: 1px solid #ddd;" onerror="this.style.display=\'none\'">`;
+        //                     });
+        //                     imagesHtml += '</div></div>';
+        //                 }
 
-// Helper function to close modals manually
-function closeModalManually(modalId) {
-    const modalElement = document.getElementById(modalId);
-    if (modalElement) {
-        try {
-            const modal = bootstrap.Modal.getInstance(modalElement);
-            if (modal) {
-                modal.hide();
+
+        //                 const details = `Logbook #${logbookId}\n\n` +
+        //                     `Student: ${data.student_name}\n` +
+        //                     `University ID: ${data.university_id}\n` +
+        //                     `Email: ${data.student_email}\n` +
+        //                     `Mobile: ${data.student_mobile}\n` +
+        //                     `Reservation: ${data.reservation_code}\n` +
+        //                     `Request Date: ${data.request_date}\n` +
+        //                     `Duration: ${data.duration}\n` +
+        //                     `Lab Location: ${data.location}\n\n` +
+        //                     `Student Comment:\n${data.description}\n`;
+
+
+        //                 if (data.images && data.images.length > 0) {
+        //                     alert(details + '\n\nImages available. Check console for image URLs.');
+        //                     console.log('Images:', data.images);
+        //                 } else {
+        //                     alert(details);
+        //                 }
+        //                 showToast('Logbook details loaded', 'success');
+        //             } else {
+        //                 showToast(data.message || 'Failed to load logbook details', 'error');
+        //             }
+        //         })
+        //         .catch(error => {
+        //             console.error('Error:', error);
+        //             showToast('Error loading details', 'error');
+        //         });
+        // }
+
+        // Show confirmation modal
+        function showConfirmModal(title, message, confirmText, confirmClass, onConfirm) {
+            const modalElement = document.getElementById('confirmModal');
+            const modalHeader = document.getElementById('confirmModalHeader');
+            const modalTitle = document.getElementById('confirmModalTitle');
+            const modalBody = document.getElementById('confirmModalBody');
+            const confirmBtn = document.getElementById('confirmModalBtn');
+
+            // Reset and style header
+            modalHeader.className = 'modal-header';
+            if (confirmClass === 'btn-success') {
+                modalHeader.classList.add('bg-success', 'text-white');
+            } else if (confirmClass === 'btn-danger') {
+                modalHeader.classList.add('bg-danger', 'text-white');
             } else {
-                modalElement.classList.remove('show');
-                modalElement.style.display = 'none';
+                modalHeader.classList.add('bg-warning', 'text-white');
             }
-        } catch (e) {
-            modalElement.classList.remove('show');
-            modalElement.style.display = 'none';
-        }
-        
-        // Remove backdrop if any
-        const backdrops = document.querySelectorAll('.modal-backdrop');
-        backdrops.forEach(backdrop => backdrop.remove());
-        
-        // Restore body scroll
-        document.body.style.overflow = '';
-        document.body.classList.remove('modal-open');
-    }
-}
 
-// Confirm rejection from modal
-function confirmReject() {
-    const textarea = document.getElementById('rejectionReason');
-    if (!textarea) return;
-    
-    const reason = textarea.value.trim();
-    if (!reason) {
-        textarea.classList.add('is-invalid');
-        const errorDiv = document.createElement('div');
-        errorDiv.id = 'reasonError';
-        errorDiv.className = 'invalid-feedback d-block';
-        errorDiv.textContent = 'Please provide a reason for rejection';
-        if (!document.getElementById('reasonError')) {
-            textarea.parentNode.appendChild(errorDiv);
-        }
-        return;
-    }
-    
-    closeModalManually('rejectReasonModal');
-    if (currentLogbookId) {
-        executeReject(currentLogbookId, reason);
-    }
-}
+            // Set title and message
+            modalTitle.innerHTML = `<i class="bi bi-question-circle me-2"></i>${title}`;
+            modalBody.innerHTML = message;
 
-// Helper function to escape HTML
-function escapeHtml(text) {
-    if (!text) return '';
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
+            // Style the confirm button
+            confirmBtn.className = 'btn ' + confirmClass;
+            confirmBtn.innerHTML = `<i class="bi bi-check-circle me-2"></i>${confirmText}`;
 
-// Start polling for new logbooks every 30 seconds
-function startNotificationPolling() {
-    if (notificationPollingInterval) clearInterval(notificationPollingInterval);
-    notificationPollingInterval = setInterval(loadPendingLogbooks, 30000);
-}
+            // Remove previous event listeners by cloning
+            const newConfirmBtn = confirmBtn.cloneNode(true);
+            confirmBtn.parentNode.replaceChild(newConfirmBtn, confirmBtn);
 
-function stopNotificationPolling() {
-    if (notificationPollingInterval) clearInterval(notificationPollingInterval);
-}
-
-// Toggle notification dropdown
-function toggleNotificationDropdown() {
-    const dropdown = document.getElementById('notificationDropdown');
-    if (dropdown && (dropdown.style.display === 'none' || dropdown.style.display === '')) {
-        dropdown.style.display = 'block';
-        loadPendingLogbooks();
-    } else if (dropdown) {
-        dropdown.style.display = 'none';
-    }
-}
-
-// Close dropdown when clicking outside
-document.addEventListener('click', function(event) {
-    const logbookBell = document.querySelector('[onclick="toggleNotificationDropdown()"]');
-    const logbookDropdown = document.getElementById('notificationDropdown');
-    if (logbookBell && logbookDropdown) {
-        const bellParent = logbookBell.closest('.notification-bell');
-        if (bellParent && !bellParent.contains(event.target)) {
-            logbookDropdown.style.display = 'none';
-        }
-    }
-});
-
-function viewLogbookDetails(logbookId) {
-    showToast('info', 'Loading logbook details...');
-    // Store the logbook ID for approve/reject buttons
-    window.currentViewingLogbookId = logbookId;
-    
-    fetch(`../controllers/get_logbook_details_technicalOfficer.php?id=${logbookId}`)
-        .then(response => {
-            console.log('Response status:', response.status);
-            return response.json();
-        })
-        .then(data => {
-            console.log('Logbook details response:', data);
-            if (data.success) {
-                // Build images HTML
-                let imagesHtml = '';
-                if (data.images && data.images.length > 0) {
-                    imagesHtml = '<div class="mt-4"><strong class="d-block mb-3"><i class="bi bi-image me-2"></i>Submitted Photos:</strong><div style="display: flex; flex-wrap: nowrap; gap: 15px; overflow-x: auto; padding-bottom: 10px;">';
-                    data.images.forEach((img, idx) => {
-                        const fileName = img.split('/').pop();
-                        imagesHtml += `<div style="text-align: center; flex-shrink: 0;"><img src="../${img}" style="width: 180px; height: 180px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd; box-shadow: 0 2px 4px rgba(0,0,0,0.1); cursor: pointer;" onerror="this.style.display='none'" title="Photo ${idx + 1}"><p class="small text-muted mt-2">Photo ${idx + 1}</p><a href="../${img}" download="${fileName}" class="btn btn-sm btn-outline-primary mt-1" style="font-size: 0.75rem; padding: 3px 8px;"><i class="bi bi-download"></i></a></div>`;
-                    });
-                    imagesHtml += '</div></div>';
+            // Add click handler
+            newConfirmBtn.addEventListener('click', () => {
+                const modal = bootstrap.Modal.getInstance(modalElement);
+                if (modal) modal.hide();
+                if (onConfirm && typeof onConfirm === 'function') {
+                    onConfirm();
                 }
-                
-                const detailsHtml = `
+            });
+
+            // Show modal
+            const modal = new bootstrap.Modal(modalElement);
+            modal.show();
+        }
+
+        // Helper function to close modals manually
+        function closeModalManually(modalId) {
+            const modalElement = document.getElementById(modalId);
+            if (modalElement) {
+                try {
+                    const modal = bootstrap.Modal.getInstance(modalElement);
+                    if (modal) {
+                        modal.hide();
+                    } else {
+                        modalElement.classList.remove('show');
+                        modalElement.style.display = 'none';
+                    }
+                } catch (e) {
+                    modalElement.classList.remove('show');
+                    modalElement.style.display = 'none';
+                }
+
+                // Remove backdrop if any
+                const backdrops = document.querySelectorAll('.modal-backdrop');
+                backdrops.forEach(backdrop => backdrop.remove());
+
+                // Restore body scroll
+                document.body.style.overflow = '';
+                document.body.classList.remove('modal-open');
+            }
+        }
+
+        // Confirm rejection from modal
+        function confirmReject() {
+            const textarea = document.getElementById('rejectionReason');
+            if (!textarea) return;
+
+            const reason = textarea.value.trim();
+            if (!reason) {
+                textarea.classList.add('is-invalid');
+                const errorDiv = document.createElement('div');
+                errorDiv.id = 'reasonError';
+                errorDiv.className = 'invalid-feedback d-block';
+                errorDiv.textContent = 'Please provide a reason for rejection';
+                if (!document.getElementById('reasonError')) {
+                    textarea.parentNode.appendChild(errorDiv);
+                }
+                return;
+            }
+
+            closeModalManually('rejectReasonModal');
+            if (currentLogbookId) {
+                executeReject(currentLogbookId, reason);
+            }
+        }
+
+        // Helper function to escape HTML
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // Start polling for new logbooks every 30 seconds
+        function startNotificationPolling() {
+            if (notificationPollingInterval) clearInterval(notificationPollingInterval);
+            notificationPollingInterval = setInterval(loadPendingLogbooks, 30000);
+        }
+
+        function stopNotificationPolling() {
+            if (notificationPollingInterval) clearInterval(notificationPollingInterval);
+        }
+
+        // Toggle notification dropdown
+        function toggleNotificationDropdown() {
+            const dropdown = document.getElementById('notificationDropdown');
+            if (dropdown && (dropdown.style.display === 'none' || dropdown.style.display === '')) {
+                dropdown.style.display = 'block';
+                loadPendingLogbooks();
+            } else if (dropdown) {
+                dropdown.style.display = 'none';
+            }
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const logbookBell = document.querySelector('[onclick="toggleNotificationDropdown()"]');
+            const logbookDropdown = document.getElementById('notificationDropdown');
+            if (logbookBell && logbookDropdown) {
+                const bellParent = logbookBell.closest('.notification-bell');
+                if (bellParent && !bellParent.contains(event.target)) {
+                    logbookDropdown.style.display = 'none';
+                }
+            }
+        });
+
+        function viewLogbookDetails(logbookId) {
+            //  showToast('info', 'Loading logbook details...');
+            // Store the logbook ID for approve/reject buttons
+            window.currentViewingLogbookId = logbookId;
+
+            fetch(`../controllers/get_logbook_details_technicalOfficer.php?id=${logbookId}`)
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Logbook details response:', data);
+                    if (data.success) {
+                        // Build images HTML
+                        let imagesHtml = '';
+                        if (data.images && data.images.length > 0) {
+                            imagesHtml = '<div class="mt-4"><strong class="d-block mb-3"><i class="bi bi-image me-2"></i>Submitted Photos:</strong><div style="display: flex; flex-wrap: nowrap; gap: 15px; overflow-x: auto; padding-bottom: 10px;">';
+                            data.images.forEach((img, idx) => {
+                                const fileName = img.split('/').pop();
+                                imagesHtml += `<div style="text-align: center; flex-shrink: 0;"><img src="../${img}" style="width: 180px; height: 180px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd; box-shadow: 0 2px 4px rgba(0,0,0,0.1); cursor: pointer;" onerror="this.style.display='none'" title="Photo ${idx + 1}"><p class="small text-muted mt-2">Photo ${idx + 1}</p><a href="../${img}" download="${fileName}" class="btn btn-sm btn-outline-primary mt-1" style="font-size: 0.75rem; padding: 3px 8px;"><i class="bi bi-download"></i></a></div>`;
+                            });
+                            imagesHtml += '</div></div>';
+                        }
+
+                        const detailsHtml = `
                     <div style="max-height: 600px; overflow-y: auto;">
                         <div class="card border-0 shadow-sm mb-3">
                             <div class="card-body">
@@ -4516,64 +4535,64 @@ function viewLogbookDetails(logbookId) {
                         ${imagesHtml}
                     </div>
                 `;
-                
-                // Create modal content
-                const modalElement = document.getElementById('logbookDetailsModal');
-                if (modalElement) {
-                    const body = modalElement.querySelector('.modal-body');
-                    if (body) {
-                        body.innerHTML = detailsHtml;
-                        const modal = new bootstrap.Modal(modalElement);
-                        modal.show();
+
+                        // Create modal content
+                        const modalElement = document.getElementById('logbookDetailsModal');
+                        if (modalElement) {
+                            const body = modalElement.querySelector('.modal-body');
+                            if (body) {
+                                body.innerHTML = detailsHtml;
+                                const modal = new bootstrap.Modal(modalElement);
+                                modal.show();
+                            }
+                        } else {
+                            alert(`Logbook #${logbookId}\nStudent: ${data.student_name}\nUniversity ID: ${data.university_id}`);
+                        }
+                        showToast('success', 'Logbook details loaded');
+                    } else {
+                        console.error('Server response error:', data);
+                        showToast('error', data.message || 'Failed to load logbook details');
                     }
-                } else {
-                    alert(`Logbook #${logbookId}\nStudent: ${data.student_name}\nUniversity ID: ${data.university_id}`);
-                }
-                showToast('success', 'Logbook details loaded');
-            } else {
-                console.error('Server response error:', data);
-                showToast('error', data.message || 'Failed to load logbook details');
-            }
-        })
-        .catch(error => {
-            console.error('Fetch error:', error);
-            showToast('error', 'Error loading details: ' + error.message);
-        });
-}
-
-// Approve logbook from modal
-function approveLogbookFromModal() {
-    const logbookId = window.currentViewingLogbookId;
-    if (!logbookId) {
-        showToast('error', 'No logbook selected');
-        return;
-    }
-    
-    showConfirmModal(
-        'Approve Logbook',
-        '<div class="text-center">' +
-        '<i class="bi bi-check-circle-fill text-success" style="font-size: 48px;"></i>' +
-        '<p class="mt-3">Are you sure you want to approve this logbook?</p>' +
-        '<p class="text-muted small">This will mark the logbook as reviewed and send it to HOD for final approval.</p>' +
-        '</div>',
-        'Yes, Approve',
-        'btn-success',
-        () => {
-            executeApprove(logbookId);
+                })
+                .catch(error => {
+                    console.error('Fetch error:', error);
+                    showToast('error', 'Error loading details: ' + error.message);
+                });
         }
-    );
-}
 
-// Reject logbook from modal
-function rejectLogbookFromModal() {
-    const logbookId = window.currentViewingLogbookId;
-    if (!logbookId) {
-        showToast('error', 'No logbook selected');
-        return;
-    }
-    
-    showRejectModal(logbookId);
-}
+        // Approve logbook from modal
+        function approveLogbookFromModal() {
+            const logbookId = window.currentViewingLogbookId;
+            if (!logbookId) {
+                showToast('error', 'No logbook selected');
+                return;
+            }
+
+            showConfirmModal(
+                'Approve Logbook',
+                '<div class="text-center">' +
+                '<i class="bi bi-check-circle-fill text-success" style="font-size: 48px;"></i>' +
+                '<p class="mt-3">Are you sure you want to approve this logbook?</p>' +
+                '<p class="text-muted small">This will mark the logbook as reviewed and send it to HOD for final approval.</p>' +
+                '</div>',
+                'Yes, Approve',
+                'btn-success',
+                () => {
+                    executeApprove(logbookId);
+                }
+            );
+        }
+
+        // Reject logbook from modal
+        function rejectLogbookFromModal() {
+            const logbookId = window.currentViewingLogbookId;
+            if (!logbookId) {
+                showToast('error', 'No logbook selected');
+                return;
+            }
+
+            showRejectModal(logbookId);
+        }
 
         // function startNotificationPolling() {
         //     if (notificationPollingInterval) clearInterval(notificationPollingInterval);
@@ -4598,275 +4617,279 @@ function rejectLogbookFromModal() {
 
 
 
-          // Show rejection reason modal
-            // function showRejectModal(logbookId) {
-            //     console.log('showRejectModal called:', logbookId);
-            //     currentLogbookId = logbookId;
+        // Show rejection reason modal
+        // function showRejectModal(logbookId) {
+        //     console.log('showRejectModal called:', logbookId);
+        //     currentLogbookId = logbookId;
 
-            //     try {
-            //         const modalElement = document.getElementById('rejectReasonModal');
-            //         const textarea = document.getElementById('rejectionReason');
+        //     try {
+        //         const modalElement = document.getElementById('rejectReasonModal');
+        //         const textarea = document.getElementById('rejectionReason');
 
-            //         console.log('Modal element exists:', !!modalElement);
-            //         console.log('Textarea exists:', !!textarea);
+        //         console.log('Modal element exists:', !!modalElement);
+        //         console.log('Textarea exists:', !!textarea);
 
-            //         if (!modalElement || !textarea) {
-            //             console.error('Modal or textarea not found');
-            //             const reason = prompt('Enter rejection reason:');
-            //             if (reason && reason.trim()) executeReject(logbookId, reason);
-            //             return;
-            //         }
+        //         if (!modalElement || !textarea) {
+        //             console.error('Modal or textarea not found');
+        //             const reason = prompt('Enter rejection reason:');
+        //             if (reason && reason.trim()) executeReject(logbookId, reason);
+        //             return;
+        //         }
 
-                    
-            //         textarea.value = '';
-            //         textarea.classList.remove('is-invalid');
 
-                  
-            //         const errorDiv = document.getElementById('reasonError');
-            //         if (errorDiv) errorDiv.remove();
+        //         textarea.value = '';
+        //         textarea.classList.remove('is-invalid');
 
-               
-            //         const existingBackdrop = document.querySelector('.modal-backdrop');
-            //         if (existingBackdrop) existingBackdrop.remove();
 
-                   
-            //         modalElement.classList.add('show');
-            //         modalElement.style.display = 'block';
+        //         const errorDiv = document.getElementById('reasonError');
+        //         if (errorDiv) errorDiv.remove();
 
-            //         console.log('Modal element classes after manual add:', modalElement.className);
-            //         console.log('Modal display style:', window.getComputedStyle(modalElement).display);
 
-                    
-            //         const backdrop = document.createElement('div');
-            //         backdrop.className = 'modal-backdrop fade show';
-            //         backdrop.style.zIndex = '8999';
-            //         document.body.appendChild(backdrop);
+        //         const existingBackdrop = document.querySelector('.modal-backdrop');
+        //         if (existingBackdrop) existingBackdrop.remove();
 
-            //         console.log('Backdrop created and appended');
 
-                  
-            //         document.body.style.overflow = 'hidden';
-            //         document.body.classList.add('modal-open');
+        //         modalElement.classList.add('show');
+        //         modalElement.style.display = 'block';
 
-                  
-            //         if (typeof bootstrap !== 'undefined') {
-            //             try {
-            //                 const modal = new bootstrap.Modal(modalElement, {
-            //                     backdrop: false,
-            //                     keyboard: false
-            //                 });
-            //                 modal.show();
-            //                 console.log('Bootstrap modal also showed (fallback)');
-            //             } catch (e) {
-            //                 console.log('Bootstrap modal show failed, but manual show succeeded:', e.message);
-            //             }
-            //         }
+        //         console.log('Modal element classes after manual add:', modalElement.className);
+        //         console.log('Modal display style:', window.getComputedStyle(modalElement).display);
 
-            //     } catch (error) {
-            //         console.error('Error in showRejectModal:', error);
-            //         const reason = prompt('Enter rejection reason:');
-            //         if (reason && reason.trim()) executeReject(logbookId, reason);
-            //     }
-            // }
 
-            // Confirm rejection
-            function confirmReject() {
-                const reason = document.getElementById('rejectionReason').value.trim();
+        //         const backdrop = document.createElement('div');
+        //         backdrop.className = 'modal-backdrop fade show';
+        //         backdrop.style.zIndex = '8999';
+        //         document.body.appendChild(backdrop);
 
-                if (!reason) {
-                    // Show error in modal
-                    const textarea = document.getElementById('rejectionReason');
-                    textarea.classList.add('is-invalid');
+        //         console.log('Backdrop created and appended');
 
-                    // Add error message if not exists
-                    let errorDiv = document.getElementById('reasonError');
-                    if (!errorDiv) {
-                        errorDiv = document.createElement('div');
-                        errorDiv.id = 'reasonError';
-                        errorDiv.className = 'invalid-feedback';
-                        errorDiv.innerHTML = '<i class="bi bi-exclamation-circle"></i> Please enter a reason for rejection';
-                        textarea.parentNode.appendChild(errorDiv);
-                    }
 
-                    // Focus and shake animation
-                    textarea.style.animation = 'shake 0.5s';
-                    setTimeout(() => {
-                        textarea.style.animation = '';
-                    }, 500);
+        //         document.body.style.overflow = 'hidden';
+        //         document.body.classList.add('modal-open');
 
-                    return;
+
+        //         if (typeof bootstrap !== 'undefined') {
+        //             try {
+        //                 const modal = new bootstrap.Modal(modalElement, {
+        //                     backdrop: false,
+        //                     keyboard: false
+        //                 });
+        //                 modal.show();
+        //                 console.log('Bootstrap modal also showed (fallback)');
+        //             } catch (e) {
+        //                 console.log('Bootstrap modal show failed, but manual show succeeded:', e.message);
+        //             }
+        //         }
+
+        //     } catch (error) {
+        //         console.error('Error in showRejectModal:', error);
+        //         const reason = prompt('Enter rejection reason:');
+        //         if (reason && reason.trim()) executeReject(logbookId, reason);
+        //     }
+        // }
+
+        // Confirm rejection
+        function confirmReject() {
+            const reason = document.getElementById('rejectionReason').value.trim();
+
+            if (!reason) {
+                // Show error in modal
+                const textarea = document.getElementById('rejectionReason');
+                textarea.classList.add('is-invalid');
+
+                // Add error message if not exists
+                let errorDiv = document.getElementById('reasonError');
+                if (!errorDiv) {
+                    errorDiv = document.createElement('div');
+                    errorDiv.id = 'reasonError';
+                    errorDiv.className = 'invalid-feedback';
+                    errorDiv.innerHTML = '<i class="bi bi-exclamation-circle"></i> Please enter a reason for rejection';
+                    textarea.parentNode.appendChild(errorDiv);
                 }
 
-                // Close rejection modal manually
-                closeModalManually('rejectReasonModal');
+                // Focus and shake animation
+                textarea.style.animation = 'shake 0.5s';
+                setTimeout(() => {
+                    textarea.style.animation = '';
+                }, 500);
 
-                // Show confirmation modal
-                showConfirmModal(
-                    'Reject Logbook',
-                    '<div class="text-center"><i class="bi bi-exclamation-triangle-fill text-warning" style="font-size: 48px;"></i><p class="mt-3">Are you sure you want to reject this logbook?</p><p class="text-muted small">Reason: <strong>' + escapeHtml(reason) + '</strong></p><p class="text-danger small">This action cannot be undone.</p></div>',
-                    'Yes, Reject',
-                    'btn-danger',
-                    () => {
-                        executeReject(currentLogbookId, reason);
-                    }
-                );
+                return;
             }
 
-            // Helper function to close modals manually
-            // function closeModalManually(modalId) {
-            //     const modalElement = document.getElementById(modalId);
-            //     if (modalElement) {
-            //         // Remove show class
-            //         modalElement.classList.remove('show');
-            //         modalElement.style.display = 'none';
+            // Close rejection modal manually
+            closeModalManually('rejectReasonModal');
 
-            //         console.log('Modal closed manually:', modalId);
+            // Show confirmation modal
+            showConfirmModal(
+                'Reject Logbook',
+                '<div class="text-center"><i class="bi bi-exclamation-triangle-fill text-warning" style="font-size: 48px;"></i><p class="mt-3">Are you sure you want to reject this logbook?</p><p class="text-muted small">Reason: <strong>' + escapeHtml(reason) + '</strong></p><p class="text-danger small">This action cannot be undone.</p></div>',
+                'Yes, Reject',
+                'btn-danger',
+                () => {
+                    executeReject(currentLogbookId, reason);
+                }
+            );
+        }
 
-            //         // Try Bootstrap method as fallback
-            //         if (typeof bootstrap !== 'undefined') {
-            //             try {
-            //                 const instance = bootstrap.Modal.getInstance(modalElement);
-            //                 if (instance) {
-            //                     instance.hide();
-            //                 }
-            //             } catch (e) {
-            //                 console.log('Bootstrap modal hide not available, but manual close done');
-            //             }
-            //         }
+        // Helper function to close modals manually
+        // function closeModalManually(modalId) {
+        //     const modalElement = document.getElementById(modalId);
+        //     if (modalElement) {
+        //         // Remove show class
+        //         modalElement.classList.remove('show');
+        //         modalElement.style.display = 'none';
 
-            //         // Remove backdrop
-            //         const backdrop = document.querySelector('.modal-backdrop');
-            //         if (backdrop) {
-            //             backdrop.remove();
-            //         }
+        //         console.log('Modal closed manually:', modalId);
 
-            //         // Restore body scroll
-            //         document.body.style.overflow = '';
-            //         document.body.classList.remove('modal-open');
-            //     }
-            // }
+        //         // Try Bootstrap method as fallback
+        //         if (typeof bootstrap !== 'undefined') {
+        //             try {
+        //                 const instance = bootstrap.Modal.getInstance(modalElement);
+        //                 if (instance) {
+        //                     instance.hide();
+        //                 }
+        //             } catch (e) {
+        //                 console.log('Bootstrap modal hide not available, but manual close done');
+        //             }
+        //         }
 
-            // Execute reject
-            // function executeReject(logbookId, reason) {
-            //     // Show loading state
-            //     showToast('Processing rejection...', 'info');
+        //         // Remove backdrop
+        //         const backdrop = document.querySelector('.modal-backdrop');
+        //         if (backdrop) {
+        //             backdrop.remove();
+        //         }
 
-            //     fetch('../controllers/approve_logbook_technicalOfficer.php', {
-            //             method: 'POST',
-            //             headers: {
-            //                 'Content-Type': 'application/json',
-            //             },
-            //             body: JSON.stringify({
-            //                 logbook_id: logbookId,
-            //                 action: 'reject',
-            //                 reason: reason
-            //             })
-            //         })
-            //         .then(response => response.json())
-            //         .then(data => {
-            //             if (data.success) {
-            //                 // Remove the item from list
-            //                 const item = document.getElementById(`logbook-${logbookId}`);
-            //                 if (item) {
-            //                     item.style.animation = 'slideOut 0.3s ease';
-            //                     setTimeout(() => item.remove(), 300);
-            //                 }
+        //         // Restore body scroll
+        //         document.body.style.overflow = '';
+        //         document.body.classList.remove('modal-open');
+        //     }
+        // }
 
-            //                 // Update badge count
-            //                 const remainingItems = document.querySelectorAll('.notification-item').length;
-            //                 updateBadgeCount(remainingItems);
+        // Execute reject
+        // function executeReject(logbookId, reason) {
+        //     // Show loading state
+        //     showToast('Processing rejection...', 'info');
 
-            //                 // Show success message
-            //                 showToast(data.message || 'Logbook rejected successfully', 'warning');
+        //     fetch('../controllers/approve_logbook_technicalOfficer.php', {
+        //             method: 'POST',
+        //             headers: {
+        //                 'Content-Type': 'application/json',
+        //             },
+        //             body: JSON.stringify({
+        //                 logbook_id: logbookId,
+        //                 action: 'reject',
+        //                 reason: reason
+        //             })
+        //         })
+        //         .then(response => response.json())
+        //         .then(data => {
+        //             if (data.success) {
+        //                 // Remove the item from list
+        //                 const item = document.getElementById(`logbook-${logbookId}`);
+        //                 if (item) {
+        //                     item.style.animation = 'slideOut 0.3s ease';
+        //                     setTimeout(() => item.remove(), 300);
+        //                 }
 
-            //                 // Refresh list if no items left
-            //                 if (remainingItems === 0) {
-            //                     setTimeout(() => {
-            //                         document.getElementById('notificationList').innerHTML = `
-            //             <div class="empty-state">
-            //                 <i class="bi bi-check-circle"></i>
-            //                 <p>No pending logbooks to review</p>
-            //             </div>
-            //         `;
-            //                     }, 300);
-            //                 }
-            //             } else {
-            //                 showToast(data.message || 'Error rejecting logbook', 'error');
-            //             }
-            //         })
-            //         .catch(error => {
-            //             console.error('Error:', error);
-            //             showToast('Network error. Please try again.', 'error');
-            //         });
-            // }
+        //                 // Update badge count
+        //                 const remainingItems = document.querySelectorAll('.notification-item').length;
+        //                 updateBadgeCount(remainingItems);
+
+        //                 // Show success message
+        //                 showToast(data.message || 'Logbook rejected successfully', 'warning');
+
+        //                 // Refresh list if no items left
+        //                 if (remainingItems === 0) {
+        //                     setTimeout(() => {
+        //                         document.getElementById('notificationList').innerHTML = `
+        //             <div class="empty-state">
+        //                 <i class="bi bi-check-circle"></i>
+        //                 <p>No pending logbooks to review</p>
+        //             </div>
+        //         `;
+        //                     }, 300);
+        //                 }
+        //             } else {
+        //                 showToast(data.message || 'Error rejecting logbook', 'error');
+        //             }
+        //         })
+        //         .catch(error => {
+        //             console.error('Error:', error);
+        //             showToast('Network error. Please try again.', 'error');
+        //         });
+        // }
 
 
 
-            // Execute approve
-            function executeApprove(logbookId) {
-                // Show loading state
-                showToast('Processing approval...', 'info');
+        // Execute approve
+        function executeApprove(logbookId) {
+            // Show loading state
+            //  showToast('Processing approval...', 'info');
 
-                fetch('../controllers/approve_logbook_technicalOfficer.php', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            logbook_id: logbookId,
-                            action: 'approve'
-                        })
+            fetch('../controllers/approve_logbook_technicalOfficer.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        logbook_id: logbookId,
+                        action: 'approve'
                     })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            // Remove the item from list with animation
-                            const item = document.getElementById(`logbook-${logbookId}`);
-                            if (item) {
-                                item.style.animation = 'slideOut 0.3s ease';
-                                setTimeout(() => item.remove(), 300);
-                            }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                          // Show success message
+                        showToast(data.message || 'Logbook approved successfully!', 'success');
+                        // Remove the item from list with animation
+                        const item = document.getElementById(`logbook-${logbookId}`);
+                        if (item) {
+                            item.style.animation = 'slideOut 0.3s ease';
+                            setTimeout(() => item.remove(), 300);
+                        }
 
-                            // Update badge count
-                            const remainingItems = document.querySelectorAll('.notification-item').length;
-                            updateBadgeCount(remainingItems);
+                        // Update badge count
+                        const remainingItems = document.querySelectorAll('.notification-item').length;
+                        updateBadgeCount(remainingItems);
 
-                            // Show success message
-                            showToast(data.message || 'Logbook approved successfully!', 'success');
+                      
 
-                            // Refresh list if no items left
-                            if (remainingItems === 0) {
-                                setTimeout(() => {
-                                    document.getElementById('notificationList').innerHTML = `
+                        // Refresh list if no items left
+                        if (remainingItems === 0) {
+                            setTimeout(() => {
+                                document.getElementById('notificationList').innerHTML = `
                         <div class="empty-state">
                             <i class="bi bi-check-circle"></i>
                             <p>No pending logbooks to review</p>
                         </div>
                     `;
-                                }, 300);
-                            }
-                        } else {
-                            showToast(data.message || 'Error approving logbook', 'error');
+                            }, 300);
                         }
-                    })
-                    .catch(error => {
-                        console.error('Error:', error);
-                        showToast('Network error. Please try again.', 'error');
-                    });
-            }
+                        setTimeout(function () {
+    location.reload();
+}, 1500); // 2000ms = 2 seconds
+                    } else {
+                        showToast(data.message || 'Error approving logbook', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showToast('Network error. Please try again.', 'error');
+                });
+        }
 
-            // Helper function to escape HTML
-            // function escapeHtml(text) {
-            //     const div = document.createElement('div');
-            //     div.textContent = text;
-            //     return div.innerHTML;
-            // }
+        // Helper function to escape HTML
+        // function escapeHtml(text) {
+        //     const div = document.createElement('div');
+        //     div.textContent = text;
+        //     return div.innerHTML;
+        // }
 
-          
 
-            // Add animation styles
-            const style = document.createElement('style');
-            style.textContent = `
+
+        // Add animation styles
+        const style = document.createElement('style');
+        style.textContent = `
     @keyframes slideOut {
         from {
             opacity: 1;
@@ -4894,25 +4917,24 @@ function rejectLogbookFromModal() {
         margin-top: 0.25rem;
     }
 `;
-            document.head.appendChild(style);
+        document.head.appendChild(style);
 
-            // Optional: Clear rejection reason error when typing
-            document.addEventListener('DOMContentLoaded', function() {
-                const reasonTextarea = document.getElementById('rejectionReason');
-                if (reasonTextarea) {
-                    reasonTextarea.addEventListener('input', function() {
-                        this.classList.remove('is-invalid');
-                        const errorDiv = document.getElementById('reasonError');
-                        if (errorDiv) errorDiv.remove();
-                    });
-                }
-            });
+        // Optional: Clear rejection reason error when typing
+        document.addEventListener('DOMContentLoaded', function() {
+            const reasonTextarea = document.getElementById('rejectionReason');
+            if (reasonTextarea) {
+                reasonTextarea.addEventListener('input', function() {
+                    this.classList.remove('is-invalid');
+                    const errorDiv = document.getElementById('reasonError');
+                    if (errorDiv) errorDiv.remove();
+                });
+            }
+        });
 
-            // View logbook details
-            // function viewLogbookDetails(logbookId) {
-            //     window.open(`../controllers/view_logbook.php?id=${logbookId}`, '_blank', 'width=900,height=700');
-            // }
-
+        // View logbook details
+        // function viewLogbookDetails(logbookId) {
+        //     window.open(`../controllers/view_logbook.php?id=${logbookId}`, '_blank', 'width=900,height=700');
+        // }
     </script>
 
     <div class="modal fade" id="equipmentDetailsModal" tabindex="-1" aria-hidden="true">
@@ -5291,89 +5313,89 @@ function rejectLogbookFromModal() {
         </div>
     </div>
 
-     <div class="modal fade" id="rejectReasonModal" tabindex="-1" data-bs-backdrop="static">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header bg-danger text-white">
-                        <h5 class="modal-title">
-                            <i class="bi bi-x-circle me-2"></i>Reject Logbook
-                        </h5>
-                        <button type="button" class="btn-close btn-close-white" onclick="closeModalManually('rejectReasonModal')"></button>
+    <div class="modal fade" id="rejectReasonModal" tabindex="-1" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-x-circle me-2"></i>Reject Logbook
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" onclick="closeModalManually('rejectReasonModal')"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Please provide reason for rejection:</label>
+                        <textarea id="rejectionReason" class="form-control" rows="4"
+                            placeholder="Enter detailed reason why this logbook is being rejected..."></textarea>
+                        <small class="text-muted">This reason will be sent to the student.</small>
                     </div>
-                    <div class="modal-body">
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Please provide reason for rejection:</label>
-                            <textarea id="rejectionReason" class="form-control" rows="4"
-                                placeholder="Enter detailed reason why this logbook is being rejected..."></textarea>
-                            <small class="text-muted">This reason will be sent to the student.</small>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" onclick="closeModalManually('rejectReasonModal')">
-                            <i class="bi bi-x-circle"></i> Cancel
-                        </button>
-                        <button type="button" class="btn btn-danger" onclick="confirmReject()">
-                            <i class="bi bi-check-circle"></i> Confirm Reject
-                        </button>
-                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModalManually('rejectReasonModal')">
+                        <i class="bi bi-x-circle"></i> Cancel
+                    </button>
+                    <button type="button" class="btn btn-danger" onclick="confirmReject()">
+                        <i class="bi bi-check-circle"></i> Confirm Reject
+                    </button>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Request Rejection Reason Modal -->
-        <div class="modal fade" id="rejectRequestReasonModal" tabindex="-1" data-bs-backdrop="static">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header bg-danger text-white">
-                        <h5 class="modal-title">
-                            <i class="bi bi-x-circle me-2"></i>Reject Request
-                        </h5>
-                        <button type="button" class="btn-close btn-close-white" onclick="closeModalManually('rejectRequestReasonModal')"></button>
+    <!-- Request Rejection Reason Modal -->
+    <div class="modal fade" id="rejectRequestReasonModal" tabindex="-1" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-x-circle me-2"></i>Reject Request
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" onclick="closeModalManually('rejectRequestReasonModal')"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Please provide reason for rejection:</label>
+                        <textarea id="requestRejectionReason" class="form-control" rows="4"
+                            placeholder="Enter detailed reason why this request is being rejected..."></textarea>
+                        <small class="text-muted">This reason will be sent to the student.</small>
                     </div>
-                    <div class="modal-body">
-                        <div class="mb-3">
-                            <label class="form-label fw-bold">Please provide reason for rejection:</label>
-                            <textarea id="requestRejectionReason" class="form-control" rows="4"
-                                placeholder="Enter detailed reason why this request is being rejected..."></textarea>
-                            <small class="text-muted">This reason will be sent to the student.</small>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" onclick="closeModalManually('rejectRequestReasonModal')">
-                            <i class="bi bi-x-circle"></i> Cancel
-                        </button>
-                        <button type="button" class="btn btn-danger" onclick="confirmRejectRequest()">
-                            <i class="bi bi-check-circle"></i> Confirm Reject
-                        </button>
-                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModalManually('rejectRequestReasonModal')">
+                        <i class="bi bi-x-circle"></i> Cancel
+                    </button>
+                    <button type="button" class="btn btn-danger" onclick="confirmRejectRequest()">
+                        <i class="bi bi-check-circle"></i> Confirm Reject
+                    </button>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Confirmation Modal -->
-        <div class="modal fade" id="confirmModal" tabindex="-1" data-bs-backdrop="static">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header" id="confirmModalHeader">
-                        <h5 class="modal-title" id="confirmModalTitle">
-                            <i class="bi bi-question-circle me-2"></i>Confirm Action
-                        </h5>
-                        <button type="button" class="btn-close" onclick="closeModalManually('confirmModal')"></button>
-                    </div>
-                    <div class="modal-body" id="confirmModalBody">
-                        Are you sure you want to perform this action?
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" onclick="closeModalManually('confirmModal')">
-                            <i class="bi bi-x-circle"></i> Cancel
-                        </button>
-                        <button type="button" class="btn" id="confirmModalBtn">
-                            <i class="bi bi-check-circle"></i> Confirm
-                        </button>
-                    </div>
+    <!-- Confirmation Modal -->
+    <div class="modal fade" id="confirmModal" tabindex="-1" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header" id="confirmModalHeader">
+                    <h5 class="modal-title" id="confirmModalTitle">
+                        <i class="bi bi-question-circle me-2"></i>Confirm Action
+                    </h5>
+                    <button type="button" class="btn-close" onclick="closeModalManually('confirmModal')"></button>
+                </div>
+                <div class="modal-body" id="confirmModalBody">
+                    Are you sure you want to perform this action?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" onclick="closeModalManually('confirmModal')">
+                        <i class="bi bi-x-circle"></i> Cancel
+                    </button>
+                    <button type="button" class="btn" id="confirmModalBtn">
+                        <i class="bi bi-check-circle"></i> Confirm
+                    </button>
                 </div>
             </div>
         </div>
+    </div>
 </body>
 
 </html>

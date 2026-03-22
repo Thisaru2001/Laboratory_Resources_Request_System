@@ -6086,7 +6086,7 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
                         <td>${logbook.reservation_code || 'N/A'}</td>
                         <td>
                             <button class="btn btn-primary btn-sm" 
-                                    onclick="viewLogbookDetailsHOD(${logbook.id})">
+                                    onclick="viewLogbookDetailsHODD(${logbook.id})">
                                 <i class="bi bi-eye"></i> View
                             </button>
                         </td>
@@ -6181,8 +6181,6 @@ function showConfirmationModal(title, message, onConfirm, confirmText = 'Confirm
 }
 
 // ========== LOGBOOK DETAIL FUNCTIONS ==========
-
-// Unified function for HOD to view logbook details with approve/reject
 function viewLogbookDetailsHOD(logbookId) {
     console.log('Viewing logbook:', logbookId);
 
@@ -6213,6 +6211,197 @@ function viewLogbookDetailsHOD(logbookId) {
                         <i class="bi bi-x-circle me-1"></i>Reject
                     </button>
                     <button type="button" class="btn btn-success" id="approveBtnHOD" onclick="approveLogbookHOD(${logbookId})" disabled>
+                        <i class="bi bi-check-circle me-1"></i>Approve
+                    </button>
+                </div>
+            </div>
+        </div>`;
+
+    document.body.appendChild(modal);
+    const modalInstance = new bootstrap.Modal(modal);
+    modalInstance.show();
+    modal.addEventListener('hidden.bs.modal', () => modal.remove());
+
+    fetch(`../controllers/get_logbook_details.php?id=${logbookId}`)
+        .then(r => r.json())
+        .then(data => {
+            if (!data.success || !data.logbook) {
+                document.getElementById('logbookDetailBody').innerHTML = `
+                    <div class="alert alert-danger m-3">
+                        <i class="bi bi-exclamation-circle me-2"></i>
+                        ${data.message || 'Failed to load logbook details'}
+                    </div>`;
+                return;
+            }
+
+            const lb = data.logbook;
+            const imgPaths = lb.evidence_images || [];
+
+            const imagesHtml = imgPaths.length > 0
+                ? `<div style="display:flex;flex-wrap:nowrap;overflow-x:auto;gap:12px;padding:12px;background:#f9fafb;border-radius:8px;">
+                    ${imgPaths.map((p, idx) => {
+                        const fileName = p.split('/').pop();
+                        return `<div style="flex-shrink:0;position:relative;">
+                            <img src="../${p}" class="rounded border"
+                                 style="height:150px;width:150px;object-fit:cover;cursor:pointer;"
+                                 onclick="window.open(this.src,'_blank')"
+                                 onerror="this.style.display='none'"
+                                 alt="Evidence photo ${idx + 1}">
+                            <a href="../${p}" download="${fileName}"
+                               class="btn btn-sm btn-outline-primary"
+                               style="position:absolute;bottom:8px;right:8px;padding:4px 8px;">
+                                <i class="bi bi-download"></i>
+                            </a>
+                        </div>`;
+                    }).join('')}
+                  </div>`
+                : '<p class="text-muted fst-italic"><i class="bi bi-info-circle me-1"></i>No photos submitted</p>';
+
+            document.getElementById('logbookDetailBody').innerHTML = `
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0"><i class="bi bi-person me-2"></i><strong>Student Info</strong></h6>
+                            </div>
+                            <div class="card-body p-3">
+                                <table class="table table-sm table-borderless mb-0">
+                                    <tr><td class="text-muted fw-semibold">Name</td><td>${lb.student_name || '—'}</td></tr>
+                                    <tr><td class="text-muted fw-semibold">University ID</td><td>${lb.university_id || '—'}</td></tr>
+                                    <tr><td class="text-muted fw-semibold">Email</td><td>${lb.student_email || '—'}</td></tr>
+                                    <tr><td class="text-muted fw-semibold">Mobile</td><td>${lb.student_mobile || '—'}</td></tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0"><i class="bi bi-calendar me-2"></i><strong>Reservation Info</strong></h6>
+                            </div>
+                            <div class="card-body p-3">
+                                <table class="table table-sm table-borderless mb-0">
+                                    <tr><td class="text-muted fw-semibold">Reservation ID</td><td>${lb.reservation_code || '—'}</td></tr>
+                                    <tr><td class="text-muted fw-semibold">Lab Location</td><td>${lb.lab_location || '—'}</td></tr>
+                                    <tr><td class="text-muted fw-semibold">Date</td><td>${lb.submitted_date || '—'}</td></tr>
+                                    <tr><td class="text-muted fw-semibold">Duration</td><td>${lb.continue_days || 1} day(s)</td></tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0"><i class="bi bi-check2 me-2"></i><strong>Approval Status</strong></h6>
+                            </div>
+                            <div class="card-body p-3">
+                                <table class="table table-sm table-borderless mb-0">
+                                    <tr>
+                                        <td class="text-muted fw-semibold">Supervisor</td>
+                                        <td>${lb.sup_is_approved == 1
+                                            ? '<span class="badge bg-success">Approved</span>'
+                                            : lb.sup_is_approved == 0
+                                            ? '<span class="badge bg-danger">Rejected</span>'
+                                            : '<span class="badge bg-warning text-dark">Pending</span>'}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-muted fw-semibold">Tech Officer</td>
+                                        <td>${lb.tech_is_approved == 1
+                                            ? '<span class="badge bg-success">Approved</span>'
+                                            : lb.tech_is_approved == 0
+                                            ? '<span class="badge bg-danger">Rejected</span>'
+                                            : '<span class="badge bg-warning text-dark">Pending</span>'}</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0"><i class="bi bi-person-check me-2"></i><strong>Reviewers</strong></h6>
+                            </div>
+                            <div class="card-body p-3">
+                                <table class="table table-sm table-borderless mb-0">
+                                    <tr><td class="text-muted fw-semibold">Supervisor</td><td>${lb.supervisor_name || 'Not assigned'}</td></tr>
+                                    <tr><td class="text-muted fw-semibold">Tech Officer</td><td>${lb.tech_officer_name || 'Not Reviewed'}</td></tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0"><i class="bi bi-chat-left me-2"></i><strong>Comments</strong></h6>
+                            </div>
+                            <div class="card-body p-3">
+                                <p class="mb-0">${lb.any_comment || '<span class="text-muted fst-italic">No comments provided</span>'}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0"><i class="bi bi-images me-2"></i><strong>Evidence Photos${imgPaths.length > 0 ? ` (${imgPaths.length})` : ''}</strong></h6>
+                            </div>
+                            <div class="card-body p-3">${imagesHtml}</div>
+                        </div>
+                    </div>
+                </div>`;
+
+            const approveBtnHOD = document.getElementById('approveBtnHOD');
+            const rejectBtnHOD = document.getElementById('rejectBtnHOD');
+
+            if (true) {
+                approveBtnHOD.disabled = false;
+                rejectBtnHOD.disabled = false;
+            } else {
+                approveBtnHOD.disabled = true;
+                rejectBtnHOD.disabled = true;
+                approveBtnHOD.title = 'Cannot approve until Supervisor and Technical Officer approve';
+                rejectBtnHOD.title = 'Cannot reject until Supervisor and Technical Officer approve';
+            }
+        })
+        .catch(err => {
+            console.error('Error:', err);
+            document.getElementById('logbookDetailBody').innerHTML = `
+                <div class="alert alert-danger m-3">
+                    <i class="bi bi-exclamation-circle me-2"></i>
+                    Error loading logbook details
+                </div>`;
+        });
+}
+// Unified function for HOD to view logbook details with approve/reject
+function viewLogbookDetailsHODD(logbookId) {
+    console.log('Viewing logbook:', logbookId);
+
+    const existing = document.getElementById('logbookDetailModal');
+    if (existing) existing.remove();
+
+    const modal = document.createElement('div');
+    modal.className = 'modal fade';
+    modal.id = 'logbookDetailModal';
+    modal.innerHTML = `
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header text-white" style="background:linear-gradient(135deg,#22c55e,#16a34a);">
+                    <h5 class="modal-title">
+                        <i class="bi bi-journal-check me-2"></i>Logbook Details
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="logbookDetailBody">
+                    <div class="text-center py-5">
+                        <div class="spinner-border text-success" role="status" style="width:2rem;height:2rem;"></div>
+                        <p class="mt-3 text-muted">Loading details...</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-danger d-none" id="rejectBtnHOD" onclick="rejectLogbookHOD(${logbookId})" disabled>
+                        <i class="bi bi-x-circle me-1"></i>Reject
+                    </button>
+                    <button type="button" class="btn btn-success d-none" id="approveBtnHOD" onclick="approveLogbookHOD(${logbookId})" disabled>
                         <i class="bi bi-check-circle me-1"></i>Approve
                     </button>
                 </div>
@@ -10877,7 +11066,7 @@ function rejectLogbookHOD(logbookId) {
             // Execute reject
             function executeReject(logbookId, reason) {
                 // Show loading state
-                showToast('Processing rejection...', 'info');
+               // showToast('Processing rejection...', 'info');
 
                 fetch('approve_logbook.php', {
                         method: 'POST',
@@ -10947,7 +11136,7 @@ function rejectLogbookHOD(logbookId) {
             // Execute approve
             function executeApprove(logbookId) {
                 // Show loading state
-                showToast('Processing approval...', 'info');
+             //   showToast('Processing approval...', 'info');
 
                 fetch('approve_logbook.php', {
                         method: 'POST',

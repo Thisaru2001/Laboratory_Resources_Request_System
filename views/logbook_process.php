@@ -150,11 +150,13 @@ foreach ($photoData as $idx => $dataUrl) {
 // ════════════════════════════════════════════════════════════════════════════
 $resResult = Database::search(
     "SELECT id, 
-            student_id,
-            technical_officer_id
-     FROM reservation 
-     WHERE reservation_id = ? 
-     LIMIT 1",
+       student_id,
+       technical_officer_id
+FROM reservation 
+WHERE reservation_id = ? 
+  AND supervisor_id IS NOT NULL
+  AND technical_officer_id IS NOT NULL
+LIMIT 1",
     's',
     [$reservation_no]
 );

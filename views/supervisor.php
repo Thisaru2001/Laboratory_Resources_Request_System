@@ -3536,7 +3536,7 @@ if (!empty($profile_image)) {
         }
 
         function executeApprove(logbookId) {
-            showToast('Processing approval...', 'info');
+          //  showToast('Processing approval...', 'info');
             closeModalManually('confirmModal');
             
             fetch('../controllers/approve_logbook_supervisor.php', {
@@ -3554,7 +3554,7 @@ if (!empty($profile_image)) {
                 if (data.success) {
                     // Close the logbook details modal
                     closeModalManually('logbookDetailsModal');
-                    
+                      showToast(data.message || 'Logbook approved successfully!', 'success');
                     const item = document.getElementById(`logbook-${logbookId}`);
                     if (item) {
                         item.style.transition = 'all 0.3s ease';
@@ -3575,7 +3575,7 @@ if (!empty($profile_image)) {
                             }
                         }, 300);
                     }
-                    showToast(data.message || 'Logbook approved successfully!', 'success');
+                  
                     setTimeout(() => {
                         location.reload();
                     }, 1500);
@@ -3590,7 +3590,7 @@ if (!empty($profile_image)) {
         }
 
         function executeReject(logbookId, reason) {
-            showToast('Processing rejection...', 'info');
+          //  showToast('Processing rejection...', 'info');
             
             fetch('../controllers/approve_logbook_supervisor.php', {
                 method: 'POST',
@@ -3611,7 +3611,7 @@ if (!empty($profile_image)) {
                     
                     // Close the logbook details modal
                     closeModalManually('logbookDetailsModal');
-                    
+                      showToast(data.message || 'Logbook rejected successfully', 'warning');
                     const item = document.getElementById(`logbook-${logbookId}`);
                     if (item) {
                         item.style.transition = 'all 0.3s ease';
@@ -3632,7 +3632,7 @@ if (!empty($profile_image)) {
                             }
                         }, 300);
                     }
-                    showToast(data.message || 'Logbook rejected successfully', 'warning');
+                  
                     setTimeout(() => {
                         location.reload();
                     }, 1500);
@@ -3647,7 +3647,7 @@ if (!empty($profile_image)) {
         }
 
         function viewLogbookDetails(logbookId) {
-            showToast('Loading logbook details...', 'info');
+          //  showToast('Loading logbook details...', 'info');
             window.currentViewingLogbookId = logbookId;
             
             fetch(`../controllers/get_logbook_details_supervisor.php?id=${logbookId}`)

@@ -29,7 +29,7 @@ if (empty($password)) {
 }
 
 // Login attempt limiting
-$max_attempts = 10;  // Allow 10 attempts before lockout
+$max_attempts = 20;  // Allow 10 attempts before lockout
 $lockout_time = 15 * 60;
 
 $attempts_file = sys_get_temp_dir() . '/login_attempts_' . md5($university_id . $_SERVER['REMOTE_ADDR']);
