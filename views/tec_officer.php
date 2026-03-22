@@ -4145,7 +4145,7 @@ function showRejectModal(logbookId) {
 
 // Execute approve action
 function executeApprove(logbookId) {
-    showToast('info', 'Processing approval...');
+    //showToast('info', 'Processing approval...');
     closeModalManually('confirmModal');
     
     fetch('../controllers/approve_logbook_technicalOfficer.php', {
@@ -4181,10 +4181,12 @@ function executeApprove(logbookId) {
                     }
                 }, 300);
             }
-            showToast('success', data.message || 'Logbook approved successfully!');
-            setTimeout(function () {
+           showToast('success', data.message || 'Logbook approved successfully!');
+
+setTimeout(function () {
     location.reload();
-}, 3000); // refresh after 3 seconds
+}, 2000); // 2000ms = 2 seconds
+
         } else {
             showToast('error', data.message || 'Error approving logbook');
         }
@@ -4197,7 +4199,7 @@ function executeApprove(logbookId) {
 
 // Execute reject action
 function executeReject(logbookId, reason) {
-    showToast('info', 'Processing rejection...');
+   // showToast('info', 'Processing rejection...');
     
     const rejectBtn = document.querySelector(`#logbook-${logbookId} .btn-reject`);
     if (rejectBtn) {
@@ -4242,7 +4244,7 @@ function executeReject(logbookId, reason) {
             showToast('warning', data.message || 'Logbook rejected successfully');
             setTimeout(function () {
     location.reload();
-}, 3000); // refresh after 3 seconds
+}, 2000); // refresh after 3 seconds
         } else {
             showToast('error', data.message || 'Error rejecting logbook');
             if (rejectBtn) {

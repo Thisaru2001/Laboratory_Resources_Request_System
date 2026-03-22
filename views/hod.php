@@ -6326,7 +6326,7 @@ function viewLogbookDetailsHOD(logbookId) {
                             <div class="card-body p-3">
                                 <table class="table table-sm table-borderless mb-0">
                                     <tr><td class="text-muted fw-semibold">Supervisor</td><td>${lb.supervisor_name || 'Not assigned'}</td></tr>
-                                    <tr><td class="text-muted fw-semibold">Tech Officer</td><td>${lb.tech_officer_name || 'Not assigned'}</td></tr>
+                                    <tr><td class="text-muted fw-semibold">Tech Officer</td><td>${lb.tech_officer_name || 'Not Reviewed'}</td></tr>
                                 </table>
                             </div>
                         </div>
@@ -6354,7 +6354,7 @@ function viewLogbookDetailsHOD(logbookId) {
             const approveBtnHOD = document.getElementById('approveBtnHOD');
             const rejectBtnHOD = document.getElementById('rejectBtnHOD');
 
-            if (lb.sup_is_approved == 1 && lb.tech_is_approved == 1) {
+            if (true) {
                 approveBtnHOD.disabled = false;
                 rejectBtnHOD.disabled = false;
             } else {

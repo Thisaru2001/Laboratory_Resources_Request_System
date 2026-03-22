@@ -261,7 +261,7 @@ $logbook_id = Database::lastInsertId();
 // ════════════════════════════════════════════════════════════════════════════
 $stuName = trim(($student['first_name'] ?? '') . ' ' . ($student['last_name'] ?? '')) ?: 'Unknown Student';
 
-$notifMsg = "Practical Finish Logbook #$logbook_id has been submitted by "
+$notifMsg = "Practical Finish Logbook has been submitted by "
           . "$stuName ($uni_id) for Reservation #$reservation_no. "
           . "Please review the evidence.";
 
@@ -270,16 +270,16 @@ $notifSql = "INSERT INTO notification
              VALUES (?, NOW(), ?, 'unread', 1)";
 
 $notifSqltechof = "INSERT INTO practical_finished_technicalOfficer_notify_and_approval
-             (description, create_datetime, status, practical_finished_logbook_id)
-             VALUES (?, NOW(), 'unread', ?)";
+             (description, status, practical_finished_logbook_id)
+             VALUES (?, 'unread', ?)";
              
 $notifSqlhod = "INSERT INTO practical_finished_hod_notify_and_approval
-             (description, create_datetime, status, practical_finished_logbook_id)
-             VALUES (?, NOW(), 'unread', ?)";
+             (description, status, practical_finished_logbook_id)
+             VALUES (?, 'unread', ?)";
 
 $notifSqlsupervisor = "INSERT INTO practical_finished_supervisor_notify_and_approval
-             (description, create_datetime, status, practical_finished_logbook_id)
-             VALUES (?, NOW(), 'unread', ?)";
+             (description, status, practical_finished_logbook_id)
+             VALUES (?, 'unread', ?)";
 
 
 
