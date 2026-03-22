@@ -79,6 +79,11 @@ $count = $result->num_rows;
 if ($count == 1) {
     $user = $result->fetch_assoc();
 
+    // Debug: Log what we got from database
+    error_log("DEBUG signin: User fetched - ID: " . ($user['id'] ?? 'NO_ID') . 
+              ", img_path: " . ($user['img_path'] ?? 'NOT_SET') . 
+              ", Email: " . ($user['email'] ?? 'NO_EMAIL'));
+
     // Check if account is deactivated
     if (isset($user['status']) && $user['status'] == 0) {
         echo "Your account is not activated. Please contact the supervisor.";
@@ -98,6 +103,10 @@ if ($count == 1) {
 
         // Store user data in session
         $_SESSION["user"] = $user;
+        // Also explicitly set img_path in session for easier access
+        $_SESSION["img_path"] = $user['img_path'] ?? '';
+        
+        error_log("DEBUG signin: Session set - img_path in session: " . ($_SESSION["img_path"] ?? 'EMPTY'));
         $_SESSION["user_id"] = $user['id'];
         $_SESSION["user_first_name"] = $user['first_name'] ?? '';
         $_SESSION["user_last_name"] = $user['last_name'] ?? '';

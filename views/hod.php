@@ -3921,7 +3921,9 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
             <!-- <a onclick="showSection('requestList')"><i class="bi bi-list-check"></i> Request List</a> -->
             <a onclick="showSection('equipment')"><i class="bi bi-tools"></i> Equipment Manage</a>
             <a onclick="showSection('history')"><i class="bi bi-clock-history"></i> Rservation Details</a>
-            <a onclick="showSection('activity')"><i class="bi bi-activity"></i> Requests</a>
+            <a onclick="showSection('activity')"><i class="bi bi-activity"></i> Requests
+                <span class="request-count-badge" id="sidebarRequestBadge">0</span>
+            </a>
             <a onclick="showSection('analytics')"><i class="bi bi-download"></i> Download</a>
             <a onclick="showSection('logbook')"><i class="bi bi-book"></i> Logbook</a>
             <!-- <a onclick="showSection('reports')"><i class="bi bi-file-text"></i> Reports</a> -->
@@ -4053,6 +4055,8 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
                         // Get profile image path from session
                         $profile_image = $_SESSION['user']['img_path'] ?? $_SESSION['img_path'] ?? '';
 
+                        error_log("DEBUG: Profile image from session: " . ($profile_image ?: 'EMPTY'));
+
                         if (!empty($profile_image)) {
                             // Clean the path (remove any leading slashes and fix backslashes)
                             $clean_path = str_replace('\\', '/', $profile_image);
@@ -4061,31 +4065,38 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
                             // Remove any 'LRRS/' prefix if it exists (just in case)
                             $clean_path = preg_replace('/^LRRS\//', '', $clean_path);
 
-                            // For web path on server - NO /LRRS/ prefix, just use the clean path
-                            $image_url = '/' . $clean_path;
+                            // For web path on server - /LRRS/ prefix needed for correct URL
+                            $image_url = '/LRRS/' . $clean_path;
 
-                            // Full system path for file checking (document root + clean path)
-                            $full_path = $_SERVER['DOCUMENT_ROOT'] . '/' . $clean_path;
+                            // Full system path for file checking: need to include LRRS folder
+                            // DOCUMENT_ROOT is C:/xampp/htdocs, but project is at C:/xampp/htdocs/LRRS
+                            $full_path = $_SERVER['DOCUMENT_ROOT'] . '/LRRS/' . $clean_path;
 
+                            error_log("DEBUG: Checking full path: " . $full_path);
                         
                             // Check if file exists
                             if (!file_exists($full_path)) {
+                                error_log("DEBUG: File not found at main path, trying alternative path");
                                 // Try alternative path - maybe it's stored without 'assets/' prefix
                                 $filename = basename($clean_path);
                                 $alt_path = 'assets/profile_images/' . $filename;
-                                $full_alt_path = $_SERVER['DOCUMENT_ROOT'] . '/' . $alt_path;
-
+                                $full_alt_path = $_SERVER['DOCUMENT_ROOT'] . '/LRRS/' . $alt_path;
+                                error_log("DEBUG: Checking alternate path: " . $full_alt_path);
                                 if (file_exists($full_alt_path)) {
-                                    $image_url = '/' . $alt_path;
-                                    error_log("Found at alternative path: " . $image_url);
+                                    $image_url = '/LRRS/' . $alt_path;
+                                    error_log("DEBUG: Found at alternative path: " . $image_url);
                                 } else {
+                                    error_log("DEBUG: File not found at alternative path either, using avatar");
                                     // Fallback to avatar if image doesn't exist
                                     $image_url = "https://ui-avatars.com/api/?name=" . urlencode($full_name) . "&background=22c55e&color=fff&size=100";
                                     error_log("Image not found, using avatar");
                                 }
+                            } else {
+                                error_log("DEBUG: File found at main path: " . $image_url);
                             }
                         } else {
                             // No profile image, use avatar
+                            error_log("DEBUG: No profile image in session, using avatar");
                             $image_url = "https://ui-avatars.com/api/?name=" . urlencode($full_name) . "&background=22c55e&color=fff&size=100";
                         }
                         ?>
@@ -7710,7 +7721,7 @@ function rejectLogbookHOD(logbookId) {
                     // Calculate total pending requests
                     const totalCount = tCount + sCount;
 
-                    // Update the main notification badge
+                    // Update the main notification badge (bell icon)
                     const badge = document.getElementById('requestBadge');
                     if (badge) {
                         if (totalCount > 0) {
@@ -7719,6 +7730,18 @@ function rejectLogbookHOD(logbookId) {
                         } else {
                             badge.textContent = '0';
                             badge.classList.remove('visible');
+                        }
+                    }
+
+                    // Update the sidebar badge
+                    const sidebarBadge = document.getElementById('sidebarRequestBadge');
+                    if (sidebarBadge) {
+                        if (totalCount > 0) {
+                            sidebarBadge.textContent = totalCount;
+                            sidebarBadge.classList.remove('zero-count');
+                        } else {
+                            sidebarBadge.textContent = '0';
+                            sidebarBadge.classList.add('zero-count');
                         }
                     }
 

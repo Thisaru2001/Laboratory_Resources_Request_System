@@ -362,6 +362,42 @@ if ($students_result && $students_result->num_rows > 0) {
             box-shadow: 0 6px 16px rgba(59, 130, 246, 0.4);
         }
 
+        .btn-rejectstu {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-rejectstu:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
+        }
+
+        #modalRejectStudentBtn {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            color: white;
+            border: none;
+            padding: 8px 24px;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        #modalRejectStudentBtn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(239, 68, 68, 0.4);
+        }
+
         /* Toggle Student Status Buttons */
         .toggle-switch {
             position: relative;
@@ -1759,6 +1795,9 @@ if (!empty($profile_image)) {
                             <button class="btn-accept me-2" id="modalAcceptStudentBtn" onclick="acceptStudentFromModal()" style="display: none;">
                                 <i class="bi bi-check-circle me-2"></i>Accept Request
                             </button>
+                            <button class="btn-rejectstu me-2" id="modalRejectStudentBtn" onclick="rejectStudentFromModal()" style="display: none;">
+                                <i class="bi bi-x-circle me-2"></i>Reject Request
+                            </button>
 
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                                 <i class="bi bi-x-circle me-2"></i>Close
@@ -2393,6 +2432,9 @@ if (!empty($profile_image)) {
               <button class="btn-accept" onclick="acceptStudent(${request.id}, 'modal', event)">
                     <i class="bi bi-check-circle me-1"></i>Accept
                 </button>
+              <button class="btn-rejectstu" onclick="rejectStudent(${request.id}, 'card', event)">
+                    <i class="bi bi-x-circle me-1"></i>Reject
+                </button>
             </div>
         `;
                 container.appendChild(card);
@@ -2529,6 +2571,7 @@ if (!empty($profile_image)) {
             document.getElementById('studentDetailsDisplay').style.display = 'none';
             document.getElementById('studentDetailsError').style.display = 'none';
             document.getElementById('modalAcceptStudentBtn').style.display = 'none';
+            document.getElementById('modalRejectStudentBtn').style.display = 'none';
 
             // Fetch student details via AJAX
             fetch(`../controllers/get_student_details.php?id=${studentId}`)
@@ -2545,9 +2588,10 @@ if (!empty($profile_image)) {
                         displayStudentDetails(data.student);
                         document.getElementById('studentDetailsDisplay').style.display = 'block';
 
-                        // Show accept button only if status is pending (0)
+                        // Show accept and reject buttons only if status is pending (0)
                         if (data.student.status == 0) {
                             document.getElementById('modalAcceptStudentBtn').style.display = 'inline-block';
+                            document.getElementById('modalRejectStudentBtn').style.display = 'inline-block';
                         }
                     } else {
                         document.getElementById('studentDetailsError').style.display = 'block';
@@ -2741,6 +2785,214 @@ if (!empty($profile_image)) {
                     if (modalAcceptBtn) {
                         modalAcceptBtn.disabled = false;
                         modalAcceptBtn.innerHTML = '<i class="bi bi-check-circle me-2"></i>Accept Request';
+                    }
+                });
+        }
+
+        // Function to reject student from card or modal
+        function rejectStudent(studentId, source = 'card', event) {
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+
+            // Show rejection reason prompt
+            const reason = prompt('Enter rejection reason (required):\n\nExample: Account information incomplete, Please contact department');
+            if (!reason || !reason.trim()) {
+                showToast('Rejection cancelled', 'warning');
+                return;
+            }
+
+            if (!confirm('Reject this student account request?\n\nReason: ' + reason)) return;
+
+            // Find and hide the button
+            if (event && event.target) {
+                const clickedBtn = event.target.closest('.btn-rejectstu');
+                if (clickedBtn) {
+                    clickedBtn.style.display = 'none';
+                }
+            }
+
+            fetch('../controllers/reject_student.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        student_id: studentId,
+                        reason: reason.trim()
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('✅ Student request rejected', 'success');
+
+                        if (source === 'card') {
+                            // Remove card from modal
+                            const card = document.getElementById(`request-${studentId}`);
+                            if (card) {
+                                setTimeout(() => {
+                                    card.remove();
+
+                                    // Update badge
+                                    const badge = document.getElementById('notificationBadge');
+                                    if (badge) {
+                                        badge.textContent = Math.max(0, parseInt(badge.textContent) - 1);
+                                    }
+
+                                    // If no more requests, show empty message
+                                    if (document.querySelectorAll('.request-card').length === 0) {
+                                        const container = document.getElementById('requestsContainer');
+                                        const noRequests = document.getElementById('noRequestsMessage');
+                                        if (container) container.style.display = 'none';
+                                        if (noRequests) noRequests.style.display = 'block';
+                                    }
+                                }, 300);
+                            }
+
+                            // Update badge immediately
+                            const badge = document.getElementById('notificationBadge');
+                            if (badge) {
+                                badge.textContent = Math.max(0, parseInt(badge.textContent) - 1);
+                            }
+
+                        } else if (source === 'modal') {
+                            // Close modal after rejection
+                            setTimeout(() => {
+                                const modal = bootstrap.Modal.getInstance(document.getElementById('studentDetailsModal'));
+                                if (modal) {
+                                    modal.hide();
+                                }
+                            }, 800);
+
+                            // Remove card from notification modal if it exists
+                            const card = document.getElementById(`request-${studentId}`);
+                            if (card) {
+                                setTimeout(() => {
+                                    card.remove();
+                                }, 800);
+                            }
+
+                            // Update badge
+                            const badge = document.getElementById('notificationBadge');
+                            if (badge) {
+                                const currentCount = parseInt(badge.textContent) || 0;
+                                badge.textContent = Math.max(0, currentCount - 1);
+                            }
+
+                            // Refresh pending requests if modal is open
+                            const notificationModal = document.getElementById('notificationModal');
+                            if (notificationModal && notificationModal.classList.contains('show')) {
+                                fetchPendingRequests();
+                            }
+                        }
+
+                        // Refresh parent window if it exists
+                        if (window.opener && !window.opener.closed) {
+                            window.opener.refreshNotifications();
+                        }
+                    } else {
+                        showToast('Error: ' + (data.message || 'Failed to reject student'), 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showToast('Error rejecting student', 'error');
+                });
+        }
+
+        // Function to reject student from modal
+        function rejectStudentFromModal() {
+            if (!currentStudentId) return;
+
+            // Show rejection reason prompt
+            const reason = prompt('Enter rejection reason (required):\n\nExample: Account information incomplete, Please contact department');
+            if (!reason || !reason.trim()) {
+                showToast('Rejection cancelled', 'warning');
+                return;
+            }
+
+            if (!confirm('Reject this student account request?\n\nReason: ' + reason)) return;
+
+            const modalRejectBtn = document.getElementById('modalRejectStudentBtn');
+            if (modalRejectBtn) {
+                modalRejectBtn.disabled = true;
+                modalRejectBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Rejecting...';
+            }
+
+            fetch('../controllers/reject_student.php', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        student_id: currentStudentId,
+                        reason: reason.trim()
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('✅ Student request rejected', 'success');
+
+                        // Update the status badge in the modal to show "Rejected"
+                        const statusBadge = document.querySelector('#studentDetailsDisplay .status-badge');
+                        if (statusBadge) {
+                            statusBadge.className = 'status-badge';
+                            statusBadge.textContent = 'Rejected';
+                            statusBadge.style.background = '#f8d7da';
+                            statusBadge.style.color = '#842029';
+                        }
+
+                        // Close modal after a short delay
+                        setTimeout(() => {
+                            const modal = bootstrap.Modal.getInstance(document.getElementById('studentDetailsModal'));
+                            if (modal) {
+                                modal.hide();
+                            }
+                        }, 1000);
+
+                        // Remove card from notification modal if it exists
+                        const card = document.getElementById(`request-${currentStudentId}`);
+                        if (card) {
+                            setTimeout(() => {
+                                card.remove();
+                            }, 1000);
+                        }
+
+                        // Update badge
+                        const badge = document.getElementById('notificationBadge');
+                        if (badge) {
+                            const currentCount = parseInt(badge.textContent) || 0;
+                            badge.textContent = Math.max(0, currentCount - 1);
+                        }
+
+                        // Refresh pending requests if modal is open
+                        const notificationModal = document.getElementById('notificationModal');
+                        if (notificationModal && notificationModal.classList.contains('show')) {
+                            fetchPendingRequests();
+                        }
+
+                        // Refresh parent window if it exists
+                        if (window.opener && !window.opener.closed) {
+                            window.opener.refreshNotifications();
+                        }
+
+                    } else {
+                        showToast('Error: ' + (data.message || 'Failed to reject student'), 'error');
+                        if (modalRejectBtn) {
+                            modalRejectBtn.disabled = false;
+                            modalRejectBtn.innerHTML = '<i class="bi bi-x-circle me-2"></i>Reject Request';
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showToast('Error rejecting student', 'error');
+                    if (modalRejectBtn) {
+                        modalRejectBtn.disabled = false;
+                        modalRejectBtn.innerHTML = '<i class="bi bi-x-circle me-2"></i>Reject Request';
                     }
                 });
         }
