@@ -138,6 +138,12 @@ try {
         // }
         
         if ($updated) {
+             $updateLogbookQueryy = "
+                UPDATE practical_finished_logbook 
+                SET who_technicalOfficer_id = ?
+                WHERE id = ?
+            ";
+            Database::iud($updateLogbookQueryy, 'ii', [$technical_officer_id, $logbook_id]);
             error_log('Successfully rejected logbook ' . $logbook_id);
             echo json_encode(['success' => true, 'message' => 'Logbook rejected']);
             exit();

@@ -137,6 +137,7 @@ try {
                     error_log('Deleted evidence image: ' . $fullPath);
                 }
             }
+            
 
             // Notify student
             $notifMessage = "Your logbook (ID: $logbook_id) has been rejected by your supervisor. Reason: $reason";

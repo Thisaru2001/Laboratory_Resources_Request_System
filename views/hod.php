@@ -10519,12 +10519,12 @@ function rejectLogbookHOD(logbookId) {
                     <i class="bi bi-image"></i> Photos: ${logbook.has_photos} image(s)
                 </div>
                 <div class="notification-meta" style="margin-top: 8px;">
-                    <span style="display: inline-block; padding: 4px 8px; background: ${logbook.supervisor_approved ? '#d4edda' : '#f8d7da'}; color: ${logbook.supervisor_approved ? '#155724' : '#856404'}; border-radius: 4px; font-size: 12px; margin-right: 5px;">
-                        <i class="bi ${logbook.supervisor_approved ? 'bi-check-circle' : 'bi-clock'}"></i> Supervisor: ${logbook.supervisor_approved ? 'Approved' : 'Pending'}
-                    </span>
-                    <span style="display: inline-block; padding: 4px 8px; background: ${logbook.technical_officer_approved ? '#d4edda' : '#f8d7da'}; color: ${logbook.technical_officer_approved ? '#155724' : '#856404'}; border-radius: 4px; font-size: 12px;">
-                        <i class="bi ${logbook.technical_officer_approved ? 'bi-check-circle' : 'bi-clock'}"></i> Tech Officer: ${logbook.technical_officer_approved ? 'Approved' : 'Pending'}
-                    </span>
+                  <span style="display:inline-block;padding:4px 8px;background:${logbook.supervisor_approved === 1 ? '#d4edda' : logbook.supervisor_approved === 0 ? '#f8d7da' : '#fff3cd'};color:${logbook.supervisor_approved === 1 ? '#155724' : logbook.supervisor_approved === 0 ? '#842029' : '#856404'};border-radius:4px;font-size:12px;margin-right:5px;">
+    <i class="bi ${logbook.supervisor_approved === 1 ? 'bi-check-circle' : logbook.supervisor_approved === 0 ? 'bi-x-circle' : 'bi-clock'}"></i> Supervisor: ${logbook.supervisor_approved === 1 ? 'Approved' : logbook.supervisor_approved === 0 ? 'Rejected' : 'Pending'}
+</span>
+<span style="display:inline-block;padding:4px 8px;background:${logbook.technical_officer_approved === 1 ? '#d4edda' : logbook.technical_officer_approved === 0 ? '#f8d7da' : '#fff3cd'};color:${logbook.technical_officer_approved === 1 ? '#155724' : logbook.technical_officer_approved === 0 ? '#842029' : '#856404'};border-radius:4px;font-size:12px;">
+    <i class="bi ${logbook.technical_officer_approved === 1 ? 'bi-check-circle' : logbook.technical_officer_approved === 0 ? 'bi-x-circle' : 'bi-clock'}"></i> Tech Officer: ${logbook.technical_officer_approved === 1 ? 'Approved' : logbook.technical_officer_approved === 0 ? 'Rejected' : 'Pending'}
+</span>
                 </div>
                 
                 ${!bothApproved ? `

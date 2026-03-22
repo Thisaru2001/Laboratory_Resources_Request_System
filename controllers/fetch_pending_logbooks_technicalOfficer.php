@@ -50,7 +50,7 @@ LEFT JOIN practical_finished_supervisor_notify_and_approval sup_notify
 LEFT JOIN practical_finished_technicalofficer_notify_and_approval to_notify
     ON l.id = to_notify.practical_finished_logbook_id
 WHERE sup_notify.is_approved IS NOT NULL
-  AND to_notify.status = 'unread'
+  AND (to_notify.status = 'unread' OR to_notify.status IS NULL)
 ORDER BY l.id DESC";
 
 $result = Database::search($query, '');
