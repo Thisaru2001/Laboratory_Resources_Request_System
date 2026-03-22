@@ -29,7 +29,7 @@ if (empty($password)) {
 }
 
 // Login attempt limiting
-$max_attempts = 50;
+$max_attempts = 10;  // Allow 10 attempts before lockout
 $lockout_time = 15 * 60;
 
 $attempts_file = sys_get_temp_dir() . '/login_attempts_' . md5($university_id . $_SERVER['REMOTE_ADDR']);
@@ -43,8 +43,8 @@ if (file_exists($attempts_file)) {
     if ($attempts >= $max_attempts) {
         $time_elapsed = time() - $first_attempt;
         if ($time_elapsed < $lockout_time) {
-            $minutes_remaining = ceil(($lockout_time - $time_elapsed) / 60);
-            echo "Too many failed login attempts. Please try again in " . $minutes_remaining . " minutes.";
+            $seconds_remaining = $lockout_time - $time_elapsed;
+            echo "Multiple failed login attempts. Please wait " . ceil($seconds_remaining / 60) . " seconds before trying again.";
             exit;
         } else {
             // Reset attempts after lockout period
@@ -158,9 +158,9 @@ if ($remember_me == "true" || $remember_me == "1") {
         // Make sure there's NO whitespace before or after
 
         echo "success|$redirect";
-        error_log("About to redirect to: " . $redirect);
-        error_log("Session user_id: " . ($_SESSION["user_id"] ?? 'not set'));
-        error_log("Session user_role: " . ($_SESSION["user_role"] ?? 'not set'));
+        // error_log("About to redirect to: " . $redirect);
+        // error_log("Session user_id: " . ($_SESSION["user_id"] ?? 'not set'));
+        // error_log("Session user_role: " . ($_SESSION["user_role"] ?? 'not set'));
         exit();
     } else {
         // Wrong password
@@ -172,12 +172,8 @@ if ($remember_me == "true" || $remember_me == "1") {
         ];
         file_put_contents($attempts_file, json_encode($attempt_data));
 
-        $remaining_attempts = $max_attempts - $attempts;
-        if ($remaining_attempts > 0) {
-            echo "Invalid University ID or Password. " . $remaining_attempts . " attempts remaining.";
-        } else {
-            echo "Maximum login attempts exceeded. Please try again after 15 minutes.";
-        }
+        // Simply show "Invalid credentials" without showing attempt count
+        echo "Invalid University ID or Password.";
         exit();
     }
 } else {
@@ -190,12 +186,8 @@ if ($remember_me == "true" || $remember_me == "1") {
     ];
     file_put_contents($attempts_file, json_encode($attempt_data));
 
-    $remaining_attempts = $max_attempts - $attempts;
-    if ($remaining_attempts > 0) {
-        echo "Invalid University ID or Password. " . $remaining_attempts . " attempts remaining.";
-    } else {
-        echo "Maximum login attempts exceeded. Please try again after 15 minutes.";
-    }
+    // Simply show "Invalid credentials" without showing attempt count
+    echo "Invalid University ID or Password.";
     exit();
 }
 

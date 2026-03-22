@@ -27,7 +27,7 @@ $query = "SELECT
     l.student_id,
     l.any_comment,
     l.supervisor_id,
-    l.who_technical_officer_checked,
+    l.who_technicalOfficer_id,
     l.img_path1,
     l.img_path2,
     l.img_path3,
@@ -43,18 +43,20 @@ $query = "SELECT
     r.reservation_id as reservation_code,
     r.request_date,
     r.continue_days,
+    loc.location as lab_location,
+    loc.is_room,
     sup_notify.is_approved,
     sup_notify.status,
     sup_notify.rejection_reason,
-    sup_notify.approved_datetime,
-    sup_notify.rejected_datetime
+    sup_notify.approved_or_rejected_datetime  
 FROM practical_finished_logbook l
 INNER JOIN lab_user u ON l.student_id = u.id
 INNER JOIN reservation r ON l.reservation_id = r.id
 LEFT JOIN lab_user sup ON l.supervisor_id = sup.id
+LEFT JOIN location loc ON r.location_id = loc.id
 LEFT JOIN practical_finished_supervisor_notify_and_approval sup_notify 
     ON l.id = sup_notify.practical_finished_logbook_id
-WHERE l.id = ?";
+WHERE l.id  = ?";
 
 $result = Database::search($query, 'i', [$logbook_id]);
 
@@ -87,14 +89,13 @@ if ($result && $result->num_rows > 0) {
         'reservation_code' => $row['reservation_code'],
         'request_date' => $row['request_date'],
         'duration' => ($row['continue_days'] ?? 0) . ' days',
-        'location' => $row['location'] ?? 'N/A',
+        'location' => $row['lab_location'] ?? 'N/A',
         'description' => $row['any_comment'],
         'images' => $images,
         'is_approved' => $row['is_approved'],
         'status' => $row['status'],
         'rejection_reason' => $row['rejection_reason'],
-        'approved_datetime' => $row['approved_datetime'],
-        'rejected_datetime' => $row['rejected_datetime']
+        'approved_or_rejected_datetime' => $row['approved_or_rejected_datetime']
     ];
     
     echo json_encode($logbookDetails);

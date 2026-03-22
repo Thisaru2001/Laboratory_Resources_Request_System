@@ -211,7 +211,7 @@ session_start();
                         </div>
                     </div>
                     <div class="col-md-6">
-                      <label class="form-label"><i class="bi bi-receipt me-1"></i>Reservation ID (we will send this ID to your email)</label>
+                      <label class="form-label"><i class="bi bi-receipt me-1"></i>Reservation ID (send this ID to your email)</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-hash"></i></span>
                             <input type="text" id="reservation_id" class="form-control"
@@ -238,10 +238,11 @@ session_start();
                         <div class="upload-row">
                             <div class="upload-btn-wrap" id="uploadWrap">
                                 <label class="upload-btn" id="uploadLabel">
-                                    <i class="bi bi-plus-circle-fill"></i> Add Photo
+                                    <i class="bi bi-plus-circle-fill"></i> Add Photos
                                 </label>
                                 <input type="file" id="photoInput"
-                                       accept="image/jpeg,image/png,image/gif,image/webp">
+                                       accept="image/jpeg,image/png,image/gif,image/webp"
+                                       multiple>
                             </div>
                             <button type="button" class="camera-upload-btn" id="cameraBtn" title="Capture from camera">
                                 <i class="bi bi-camera"></i> Camera
@@ -310,7 +311,7 @@ session_start();
             <canvas class="camera-canvas" id="captureCanvas"></canvas>
             
             <div class="camera-header">
-                <span class="camera-title">Capture Photo</span>
+                <span class="camera-title">Capture Photo <span id="cameraCounter" style="font-size:0.9em;margin-left:8px;background:rgba(34,197,94,0.9);padding:4px 12px;border-radius:20px;">1/4</span></span>
                 <button type="button" class="camera-close-btn" id="cameraCancelBtn" title="Close camera">
                     <i class="bi bi-x-lg"></i>
                 </button>
@@ -323,6 +324,10 @@ session_start();
                 <button type="button" class="camera-btn" id="cameraCaptureBtn" title="Capture photo">
                     <i class="bi bi-camera-fill"></i>
                 </button>
+            </div>
+            
+            <div style="position:absolute;bottom:90px;left:0;right:0;text-align:center;color:white;font-size:0.9rem;display:none;" id="cameraSaveMsg">
+                ✓ Saved! Take another? Click the camera icon again.
             </div>
         </div>
     </div>
@@ -397,7 +402,7 @@ session_start();
             cameraBtn.classList.toggle('disabled', full);
             uploadLabel.innerHTML = full
                 ? '<i class="bi bi-check2-all"></i> Max photos added'
-                : '<i class="bi bi-plus-circle-fill"></i> Add Photo';
+                : '<i class="bi bi-plus-circle-fill"></i> Add Photos';
         }
 
         function renderStrip() {
@@ -423,15 +428,55 @@ session_start();
         }
 
         photoInput.addEventListener('change', function () {
-            const file = this.files[0];
+            const selectedFiles = Array.from(this.files);
             photoInput.value = '';
-            if (!file) return;
-            if (files.length >= MAX_PHOTOS) { showError('Maximum 4 photos allowed. Remove one first.'); return; }
-            if (file.size > MAX_BYTES)      { showError('"' + file.name + '" exceeds the 8 MB limit.'); return; }
-            if (!OK_TYPES.includes(file.type)) { showError('"' + file.name + '" is an unsupported format. Use JPG, PNG, or WEBP.'); return; }
-            const rd = new FileReader();
-            rd.onload = e => { files.push({ name: file.name, dataUrl: e.target.result }); renderStrip(); };
-            rd.readAsDataURL(file);
+            if (selectedFiles.length === 0) return;
+
+            // Show warning if user selected more than 4 files
+            let filesToProcess = selectedFiles;
+            if (selectedFiles.length > MAX_PHOTOS) {
+                showError('You selected ' + selectedFiles.length + ' images. Maximum is 4. Only the first 4 will be added.');
+                filesToProcess = selectedFiles.slice(0, MAX_PHOTOS);
+            }
+
+            let added = 0;
+            let skipped = 0;
+            const errors = [];
+
+            filesToProcess.forEach(file => {
+                // Can't add more than needed (already at capacity)
+                if (files.length + added >= MAX_PHOTOS) {
+                    skipped++;
+                    return;
+                }
+                // Validate file size
+                if (file.size > MAX_BYTES) {
+                    errors.push('"' + file.name + '" exceeds the 8 MB limit.');
+                    skipped++;
+                    return;
+                }
+                // Validate file type
+                if (!OK_TYPES.includes(file.type)) {
+                    errors.push('"' + file.name + '" is unsupported. Use JPG, PNG, or WEBP.');
+                    skipped++;
+                    return;
+                }
+                // Read and add
+                const rd = new FileReader();
+                rd.onload = e => {
+                    files.push({ name: file.name, dataUrl: e.target.result });
+                    renderStrip();
+                };
+                rd.readAsDataURL(file);
+                added++;
+            });
+
+            // Show summary of validation errors (if any)
+            if (errors.length > 0) {
+                const msg = 'Issues with some files:\n' + errors.join('\n') + 
+                    (skipped > errors.length ? '\n\nAdded ' + added + ', skipped ' + (skipped - errors.length) + '.' : '');
+                showError(msg);
+            }
         });
 
         verifyChk.addEventListener('change', function () {
@@ -453,6 +498,8 @@ session_start();
                     audio: false
                 });
                 cameraVideo.srcObject = cameraStream;
+                updateCameraCounter();
+                document.getElementById('cameraSaveMsg').style.display = 'none';
                 cameraModal.classList.add('show');
             } catch (err) {
                 if (err.name === 'NotAllowedError') {
@@ -465,8 +512,19 @@ session_start();
             }
         });
 
+        function updateCameraCounter() {
+            const remaining = MAX_PHOTOS - files.length;
+            document.getElementById('cameraCounter').textContent = (files.length + 1) + '/' + MAX_PHOTOS;
+        }
+
         cameraCaptureBtn.addEventListener('click', function () {
             if (!cameraStream) return;
+            
+            // Validate: can't capture if already at max
+            if (files.length >= MAX_PHOTOS) {
+                showError('Maximum 4 photos reached. Remove one first if you want to capture another.');
+                return;
+            }
             
             const video = cameraVideo;
             const canvas = captureCanvas;
@@ -483,7 +541,30 @@ session_start();
                 dataUrl: dataUrl 
             });
             renderStrip();
-            closeCamera();
+            
+            // Show save message with count
+            const saveMsg = document.getElementById('cameraSaveMsg');
+            const remaining = MAX_PHOTOS - files.length;
+            if (remaining > 0) {
+                saveMsg.innerHTML = '✓ Saved! (' + files.length + '/' + MAX_PHOTOS + ') Capture ' + remaining + ' more?';
+            } else {
+                saveMsg.innerHTML = '✓ Saved! All ' + MAX_PHOTOS + ' photos captured!';
+            }
+            saveMsg.style.display = 'block';
+            updateCameraCounter();
+            
+            // Auto-hide message after 2 seconds
+            setTimeout(() => {
+                saveMsg.style.display = 'none';
+            }, 2500);
+            
+            // Check if max reached - auto close
+            if (files.length >= MAX_PHOTOS) {
+                setTimeout(() => {
+                    closeCamera();
+                    showError('✓ All 4 photos captured! Ready to submit your evidence.');
+                }, 2500);
+            }
         });
 
         function closeCamera() {

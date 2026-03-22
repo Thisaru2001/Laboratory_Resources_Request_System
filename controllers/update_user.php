@@ -262,7 +262,7 @@ try {
     if (!empty($updated_user['mobile']) && strlen($updated_user['mobile']) == 10) {
         $updated_user['mobile_formatted'] = substr($updated_user['mobile'], 0, 3) . '-' . substr($updated_user['mobile'], 3, 3) . '-' . substr($updated_user['mobile'], 6, 4);
     }
-    
+    error_log( $updated_user['image_url']);
     echo json_encode([
         'success' => true, 
         'message' => 'User updated successfully',

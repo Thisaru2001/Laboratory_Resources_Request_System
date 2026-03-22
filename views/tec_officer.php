@@ -3999,18 +3999,9 @@ function updateNotificationList(logbooks) {
                     <i class="bi bi-calendar"></i> Submitted: ${submittedDate}<br>
                     <i class="bi bi-image"></i> Photos: ${logbook.has_photos || 0} image(s)
                 </div>
-                ${logbook.any_comment ? `
-                <div class="notification-meta">
-                    <i class="bi bi-chat"></i> Comment: ${escapeHtml(logbook.any_comment.substring(0, 100))}${logbook.any_comment.length > 100 ? '...' : ''}
-                </div>
-                ` : ''}
-                <div class="notification-actions">
-                    <button class="btn-approve" onclick="approveLogbook(${logbook.id})">
-                        <i class="bi bi-check-circle"></i> Approve
-                    </button>
-                    <button class="btn-reject" onclick="rejectLogbook(${logbook.id})">
-                        <i class="bi bi-x-circle"></i> Reject
-                    </button>
+               
+                <div class="notification-actions justify-content-center">
+                  
                     <button class="btn-view" onclick="viewLogbookDetails(${logbook.id})">
                         <i class="bi bi-eye"></i> View Details
                     </button>
@@ -4191,6 +4182,9 @@ function executeApprove(logbookId) {
                 }, 300);
             }
             showToast('success', data.message || 'Logbook approved successfully!');
+            setTimeout(function () {
+    location.reload();
+}, 3000); // refresh after 3 seconds
         } else {
             showToast('error', data.message || 'Error approving logbook');
         }
@@ -4203,7 +4197,7 @@ function executeApprove(logbookId) {
 
 // Execute reject action
 function executeReject(logbookId, reason) {
-    showToast('Processing rejection...', 'info');
+    showToast('info', 'Processing rejection...');
     
     const rejectBtn = document.querySelector(`#logbook-${logbookId} .btn-reject`);
     if (rejectBtn) {
@@ -4245,9 +4239,12 @@ function executeReject(logbookId, reason) {
                     }
                 }, 300);
             }
-            showToast(data.message || 'Logbook rejected successfully', 'warning');
+            showToast('warning', data.message || 'Logbook rejected successfully');
+            setTimeout(function () {
+    location.reload();
+}, 3000); // refresh after 3 seconds
         } else {
-            showToast(data.message || 'Error rejecting logbook', 'error');
+            showToast('error', data.message || 'Error rejecting logbook');
             if (rejectBtn) {
                 rejectBtn.disabled = false;
                 rejectBtn.innerHTML = '<i class="bi bi-x-circle"></i> Reject';
@@ -4256,7 +4253,7 @@ function executeReject(logbookId, reason) {
     })
     .catch(error => {
         console.error('Error:', error);
-        showToast('Network error. Please try again.', 'error');
+        showToast('error', 'Network error. Please try again.');
         if (rejectBtn) {
             rejectBtn.disabled = false;
             rejectBtn.innerHTML = '<i class="bi bi-x-circle"></i> Reject';
@@ -4266,7 +4263,7 @@ function executeReject(logbookId, reason) {
 
 // View logbook details
 // function viewLogbookDetails(logbookId) {
-//     showToast('Loading logbook details...', 'info');
+//     showToast('info', 'Loading logbook details...');
 //     fetch(`../controllers/get_logbook_details_technicalOfficer.php?id=${logbookId}`)
 //         .then(response => response.json())
 //         .then(data => {
@@ -4463,9 +4460,10 @@ function viewLogbookDetails(logbookId) {
                 // Build images HTML
                 let imagesHtml = '';
                 if (data.images && data.images.length > 0) {
-                    imagesHtml = '<div class="mt-4"><strong class="d-block mb-3"><i class="bi bi-image me-2"></i>Submitted Photos:</strong><div style="display: flex; flex-wrap: wrap; gap: 15px;">';
+                    imagesHtml = '<div class="mt-4"><strong class="d-block mb-3"><i class="bi bi-image me-2"></i>Submitted Photos:</strong><div style="display: flex; flex-wrap: nowrap; gap: 15px; overflow-x: auto; padding-bottom: 10px;">';
                     data.images.forEach((img, idx) => {
-                        imagesHtml += `<div style="text-align: center;"><img src="../${img}" style="width: 180px; height: 180px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd; box-shadow: 0 2px 4px rgba(0,0,0,0.1);" onerror="this.style.display='none'" title="Photo ${idx + 1}"><p class="small text-muted mt-2">Photo ${idx + 1}</p></div>`;
+                        const fileName = img.split('/').pop();
+                        imagesHtml += `<div style="text-align: center; flex-shrink: 0;"><img src="../${img}" style="width: 180px; height: 180px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd; box-shadow: 0 2px 4px rgba(0,0,0,0.1); cursor: pointer;" onerror="this.style.display='none'" title="Photo ${idx + 1}"><p class="small text-muted mt-2">Photo ${idx + 1}</p><a href="../${img}" download="${fileName}" class="btn btn-sm btn-outline-primary mt-1" style="font-size: 0.75rem; padding: 3px 8px;"><i class="bi bi-download"></i></a></div>`;
                     });
                     imagesHtml += '</div></div>';
                 }

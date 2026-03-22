@@ -215,7 +215,7 @@ if ($hodResult && $hodResult->num_rows > 0) {
 //  7. Check if logbook already exists for this reservation
 // ════════════════════════════════════════════════════════════════════════════
 $dupResult = Database::search(
-    'SELECT id FROM practical_finished_logbook WHERE reservation_id = ? LIMIT 1',
+    'SELECT id FROM practical_finished_logbook WHERE reservation_id = ?  LIMIT 1',
     'i',
     [$reservation_db_id]
 );
@@ -231,8 +231,8 @@ if ($dupResult && $dupResult->num_rows > 0) {
 $inserted = Database::iud(
     "INSERT INTO practical_finished_logbook
         (reservation_id, student_id, supervisor_id, any_comment,
-         img_path1, img_path2, img_path3, img_path4)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+         img_path1, img_path2, img_path3, img_path4, datetime)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())",
     'iiisssss',
     [
         $reservation_db_id,

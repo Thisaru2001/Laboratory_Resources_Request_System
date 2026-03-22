@@ -56,7 +56,7 @@ try {
                 UPDATE practical_finished_hod_notify_and_approval 
                 SET is_approved = 1,
                     status = 'read',
-                    approved_datetime = NOW()
+                    approved_or_rejected_datetime = NOW()
                 WHERE practical_finished_logbook_id = ?
             ";
             error_log('Updating existing approval record for logbook ' . $logbook_id);
@@ -65,8 +65,8 @@ try {
             // Create new approval record
             $insertQuery = "
                 INSERT INTO practical_finished_hod_notify_and_approval 
-                (practical_finished_logbook_id, is_approved, status, approved_datetime, create_datetime)
-                VALUES (?, 1, 'read', NOW(), NOW())
+                (practical_finished_logbook_id, is_approved, status, approved_or_rejected_datetime)
+                VALUES (?, 1, 'read', NOW())
             ";
             error_log('Creating new approval record for logbook ' . $logbook_id);
             $updated = Database::iud($insertQuery, 'i', [$logbook_id]);
@@ -99,7 +99,7 @@ try {
                 SET is_approved = 0,
                     status = 'read',
                     rejection_reason = ?,
-                    rejected_datetime = NOW()
+                    approved_or_rejected_datetime = NOW()
                 WHERE practical_finished_logbook_id = ?
             ";
             error_log('Updating rejection record for logbook ' . $logbook_id);
@@ -108,8 +108,8 @@ try {
             // Create new rejection record
             $queryStr = "
                 INSERT INTO practical_finished_hod_notify_and_approval 
-                (practical_finished_logbook_id, is_approved, status, rejection_reason, rejected_datetime, create_datetime)
-                VALUES (?, 0, 'read', ?, NOW(), NOW())
+                (practical_finished_logbook_id, is_approved, status, rejection_reason, approved_or_rejected_datetime)
+                VALUES (?, 0, 'read', ?, NOW())
             ";
             error_log('Creating new rejection record for logbook ' . $logbook_id);
             $updated = Database::iud($queryStr, 'is', [$logbook_id, $reason]);

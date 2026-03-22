@@ -19,7 +19,7 @@ $query = "SELECT
     l.student_id,
     l.any_comment,
     l.supervisor_id,
-    l.who_technical_officer_checked,
+    l.who_technicalOfficer_id,
     l.img_path1,
     l.img_path2,
     l.img_path3,
@@ -27,20 +27,30 @@ $query = "SELECT
     u.first_name,
     u.last_name,
     u.university_id,
-    sup.first_name as sup_first_name,
-    sup.last_name as sup_last_name,
-    r.reservation_id as reservation_code,
+    sup.first_name AS sup_first_name,
+    sup.last_name AS sup_last_name,
+    r.reservation_id AS reservation_code,
     r.request_date,
-    to_notify.status,
-    to_notify.is_approved,
-    to_notify.id as notification_id
+    loc.location AS lab_location,
+    loc.is_room,
+    sup_notify.is_approved AS sup_is_approved,
+    sup_notify.status AS sup_status,
+    sup_notify.rejection_reason AS sup_rejection_reason,
+    sup_notify.approved_or_rejected_datetime AS sup_action_datetime,
+    to_notify.status AS to_status,
+    to_notify.is_approved AS to_is_approved,
+    to_notify.id AS to_notification_id
 FROM practical_finished_logbook l
 INNER JOIN lab_user u ON l.student_id = u.id
 INNER JOIN reservation r ON l.reservation_id = r.id
 LEFT JOIN lab_user sup ON l.supervisor_id = sup.id
-LEFT JOIN practical_finished_technicalOfficer_notify_and_approval to_notify 
+LEFT JOIN location loc ON r.location_id = loc.id
+LEFT JOIN practical_finished_supervisor_notify_and_approval sup_notify
+    ON l.id = sup_notify.practical_finished_logbook_id
+LEFT JOIN practical_finished_technicalofficer_notify_and_approval to_notify
     ON l.id = to_notify.practical_finished_logbook_id
-WHERE (to_notify.is_approved IS NULL OR to_notify.is_approved = 0)
+WHERE sup_notify.is_approved IS NOT NULL
+  AND to_notify.status = 'unread'
 ORDER BY l.id DESC";
 
 $result = Database::search($query, '');

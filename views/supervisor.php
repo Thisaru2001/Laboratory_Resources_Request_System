@@ -2206,9 +2206,9 @@ if (!empty($profile_image)) {
 
     <!-- Logbook Details Modal -->
     <div class="modal fade" id="logbookDetailsModal" tabindex="-1" aria-labelledby="logbookDetailsModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content" style="border-radius: 20px; border: none;">
-                <div class="modal-header" style="background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; border-radius: 20px 20px 0 0;">
+                <div class="modal-header" style="background: linear-gradient(135deg, #16a34a, #22c55e); color: white; border-radius: 20px 20px 0 0;">
                     <h5 class="modal-title" id="logbookDetailsModalLabel">
                         <i class="bi bi-journal-check me-2"></i>Logbook Details
                     </h5>
@@ -3445,18 +3445,9 @@ if (!empty($profile_image)) {
                             <i class="bi bi-calendar"></i> Submitted: ${submittedDate}<br>
                             <i class="bi bi-image"></i> Photos: ${logbook.has_photos || 0} image(s)
                         </div>
-                        ${logbook.any_comment ? `
-                        <div class="notification-meta">
-                            <i class="bi bi-chat"></i> Comment: ${escapeHtml(logbook.any_comment.substring(0, 100))}${logbook.any_comment.length > 100 ? '...' : ''}
-                        </div>
-                        ` : ''}
-                        <div class="notification-actions">
-                            <button class="btn-approve" onclick="approveLogbook(${logbook.id})">
-                                <i class="bi bi-check-circle"></i> Approve
-                            </button>
-                            <button class="btn-reject" onclick="rejectLogbook(${logbook.id})">
-                                <i class="bi bi-x-circle"></i> Reject
-                            </button>
+                      
+                        <div class="notification-actions justify-content-center">
+                          
                             <button class="btn-view" onclick="viewLogbookDetails(${logbook.id})">
                                 <i class="bi bi-eye"></i> View
                             </button>
@@ -3561,6 +3552,9 @@ if (!empty($profile_image)) {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
+                    // Close the logbook details modal
+                    closeModalManually('logbookDetailsModal');
+                    
                     const item = document.getElementById(`logbook-${logbookId}`);
                     if (item) {
                         item.style.transition = 'all 0.3s ease';
@@ -3582,6 +3576,9 @@ if (!empty($profile_image)) {
                         }, 300);
                     }
                     showToast(data.message || 'Logbook approved successfully!', 'success');
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1500);
                 } else {
                     showToast(data.message || 'Error approving logbook', 'error');
                 }
@@ -3609,6 +3606,12 @@ if (!empty($profile_image)) {
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
+                    // Close the rejection reason modal
+                    closeModalManually('rejectReasonModal');
+                    
+                    // Close the logbook details modal
+                    closeModalManually('logbookDetailsModal');
+                    
                     const item = document.getElementById(`logbook-${logbookId}`);
                     if (item) {
                         item.style.transition = 'all 0.3s ease';
@@ -3630,6 +3633,9 @@ if (!empty($profile_image)) {
                         }, 300);
                     }
                     showToast(data.message || 'Logbook rejected successfully', 'warning');
+                    setTimeout(() => {
+                        location.reload();
+                    }, 1500);
                 } else {
                     showToast(data.message || 'Error rejecting logbook', 'error');
                 }
@@ -3654,52 +3660,53 @@ if (!empty($profile_image)) {
                     if (data.success) {
                         let imagesHtml = '';
                         if (data.images && data.images.length > 0) {
-                            imagesHtml = '<div class="mt-4"><strong class="d-block mb-3"><i class="bi bi-image me-2"></i>Submitted Photos:</strong><div style="display: flex; flex-wrap: wrap; gap: 15px;">';
+                            imagesHtml = '<div style="margin-top: 12px;"><strong class="d-block mb-2" style="font-size: 0.9rem;"><i class="bi bi-image me-2"></i>Submitted Photos:</strong><div style="display: flex; flex-wrap: nowrap; gap: 10px; overflow-x: auto; padding-bottom: 8px;">';
                             data.images.forEach((img, idx) => {
-                                imagesHtml += `<div style="text-align: center;"><img src="../${img}" style="width: 180px; height: 180px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd; box-shadow: 0 2px 4px rgba(0,0,0,0.1);" onerror="this.style.display='none'" title="Photo ${idx + 1}"><p class="small text-muted mt-2">Photo ${idx + 1}</p></div>`;
+                                const fileName = img.split('/').pop();
+                                imagesHtml += `<div style="text-align: center; flex-shrink: 0;"><img src="../${img}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 6px; border: 1px solid #ddd; cursor: pointer;" onerror="this.style.display='none'" title="Photo ${idx + 1}" onclick="downloadImage('../${img}', '${fileName}')"><p class="small text-muted mt-1" style="font-size: 0.75rem;">Photo ${idx + 1}</p><a href="../${img}" download="${fileName}" class="btn btn-sm btn-outline-success" style="font-size: 0.65rem; padding: 2px 6px;" title="Download"><i class="bi bi-download"></i></a></div>`;
                             });
                             imagesHtml += '</div></div>';
                         }
                         
                         const detailsHtml = `
-                            <div style="max-height: 600px; overflow-y: auto;">
-                                <div class="card border-0 shadow-sm mb-3">
-                                    <div class="card-body">
-                                        <h6 class="fw-bold mb-3" style="color: #166534;"><i class="bi bi-person me-2"></i>Student Information</h6>
-                                        <div class="row">
+                            <div style="max-height: 500px; overflow-y: auto; font-size: 0.9rem;">
+                                <div class="card border-0 shadow-sm" style="margin-bottom: 10px;">
+                                    <div class="card-body" style="padding: 10px 12px;">
+                                        <h6 class="fw-bold" style="color: #166534; font-size: 0.9rem; margin-bottom: 8px;"><i class="bi bi-person me-2"></i>Student Information</h6>
+                                        <div class="row g-2">
                                             <div class="col-md-6">
-                                                <p class="mb-2"><strong>Name:</strong> ${escapeHtml(data.student_name)}</p>
-                                                <p class="mb-2"><strong>University ID:</strong> ${escapeHtml(data.university_id)}</p>
+                                                <p style="margin-bottom: 4px; font-size: 0.85rem;"><strong>Name:</strong> ${escapeHtml(data.student_name)}</p>
+                                                <p style="margin-bottom: 4px; font-size: 0.85rem;"><strong>University ID:</strong> ${escapeHtml(data.university_id)}</p>
                                             </div>
                                             <div class="col-md-6">
-                                                <p class="mb-2"><strong>Email:</strong> ${escapeHtml(data.student_email)}</p>
-                                                <p class="mb-2"><strong>Mobile:</strong> ${escapeHtml(data.student_mobile)}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="card border-0 shadow-sm mb-3">
-                                    <div class="card-body">
-                                        <h6 class="fw-bold mb-3" style="color: #166534;"><i class="bi bi-receipt me-2"></i>Reservation Details</h6>
-                                        <div class="row">
-                                            <div class="col-md-6">
-                                                <p class="mb-2"><strong>Reservation Code:</strong> ${escapeHtml(data.reservation_code)}</p>
-                                                <p class="mb-2"><strong>Request Date:</strong> ${escapeHtml(data.request_date)}</p>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <p class="mb-2"><strong>Duration:</strong> ${escapeHtml(data.duration || 'N/A')}</p>
-                                                <p class="mb-2"><strong>Lab Location:</strong> ${escapeHtml(data.location || 'N/A')}</p>
+                                                <p style="margin-bottom: 4px; font-size: 0.85rem;"><strong>Email:</strong> ${escapeHtml(data.student_email)}</p>
+                                                <p style="margin-bottom: 0; font-size: 0.85rem;"><strong>Mobile:</strong> ${escapeHtml(data.student_mobile)}</p>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                                 
-                                <div class="card border-0 shadow-sm mb-3">
-                                    <div class="card-body">
-                                        <h6 class="fw-bold mb-3" style="color: #166534;"><i class="bi bi-chat-left-text me-2"></i>Student's Practical Session Comment</h6>
-                                        <div style="background: #f8f9fa; padding: 12px; border-radius: 6px; border-left: 3px solid #22c55e;">
-                                            <p class="mb-0">${escapeHtml(data.description || 'No comment provided')}</p>
+                                <div class="card border-0 shadow-sm" style="margin-bottom: 10px;">
+                                    <div class="card-body" style="padding: 10px 12px;">
+                                        <h6 class="fw-bold" style="color: #166534; font-size: 0.9rem; margin-bottom: 8px;"><i class="bi bi-receipt me-2"></i>Reservation Details</h6>
+                                        <div class="row g-2">
+                                            <div class="col-md-6">
+                                                <p style="margin-bottom: 4px; font-size: 0.85rem;"><strong>Code:</strong> ${escapeHtml(data.reservation_code)}</p>
+                                                <p style="margin-bottom: 4px; font-size: 0.85rem;"><strong>Date:</strong> ${escapeHtml(data.request_date)}</p>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <p style="margin-bottom: 4px; font-size: 0.85rem;"><strong>Duration:</strong> ${escapeHtml(data.duration || 'N/A')}</p>
+                                                <p style="margin-bottom: 0; font-size: 0.85rem;"><strong>Location:</strong> ${escapeHtml(data.location || 'N/A')}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="card border-0 shadow-sm" style="margin-bottom: 10px;">
+                                    <div class="card-body" style="padding: 10px 12px;">
+                                        <h6 class="fw-bold" style="color: #166534; font-size: 0.9rem; margin-bottom: 8px;"><i class="bi bi-chat-left-text me-2"></i>Comment</h6>
+                                        <div style="background: #f8f9fa; padding: 8px; border-radius: 4px; border-left: 3px solid #22c55e; font-size: 0.85rem;">
+                                            <p style="margin: 0;">${escapeHtml(data.description || 'No comment provided')}</p>
                                         </div>
                                     </div>
                                 </div>

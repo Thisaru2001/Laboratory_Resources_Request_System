@@ -19,7 +19,7 @@ $query = "SELECT
     l.student_id,
     l.any_comment,
     l.supervisor_id,
-    l.who_technical_officer_checked,
+    l.who_technicalOfficer_id,
     l.img_path1,
     l.img_path2,
     l.img_path3,
@@ -27,20 +27,26 @@ $query = "SELECT
     u.first_name,
     u.last_name,
     u.university_id,
-    sup.first_name as sup_first_name,
-    sup.last_name as sup_last_name,
+    sup_user.first_name as sup_first_name,
+    sup_user.last_name as sup_last_name,
     to_user.first_name as to_first_name,
     to_user.last_name as to_last_name,
     r.reservation_id as reservation_code,
     r.request_date,
     h.status,
     h.is_approved,
-    h.id as notification_id
+    h.id as notification_id,
+    COALESCE(sup_approval.is_approved, 0) as supervisor_approved,
+    COALESCE(tech_approval.is_approved, 0) as technical_officer_approved
 FROM practical_finished_logbook l
 INNER JOIN lab_user u ON l.student_id = u.id
 INNER JOIN reservation r ON l.reservation_id = r.id
-LEFT JOIN lab_user sup ON l.supervisor_id = sup.id
-LEFT JOIN lab_user to_user ON l.who_technical_officer_checked = to_user.id
+LEFT JOIN lab_user sup_user ON l.supervisor_id = sup_user.id
+LEFT JOIN lab_user to_user ON l.who_technicalOfficer_id = to_user.id
+LEFT JOIN practical_finished_supervisor_notify_and_approval sup_approval 
+    ON l.id = sup_approval.practical_finished_logbook_id
+LEFT JOIN practical_finished_technicalOfficer_notify_and_approval tech_approval 
+    ON l.id = tech_approval.practical_finished_logbook_id
 LEFT JOIN practical_finished_hod_notify_and_approval h 
     ON l.id = h.practical_finished_logbook_id
 WHERE (h.is_approved IS NULL OR h.is_approved = 0)
@@ -68,7 +74,9 @@ if ($result && $result->num_rows > 0) {
             'any_comment' => $row['any_comment'],
             'has_photos' => $photoCount,
             'status' => $row['status'] ?? 'unread',
-            'is_approved' => $row['is_approved'] ?? 0
+            'is_approved' => $row['is_approved'] ?? 0,
+            'supervisor_approved' => (int)$row['supervisor_approved'],
+            'technical_officer_approved' => (int)$row['technical_officer_approved']
         ];
     }
 }

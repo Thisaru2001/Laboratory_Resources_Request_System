@@ -3071,7 +3071,7 @@ error_log("Profile image path: " . $profile_image);
                     </div>
                     <div class="col-md-8 p-3">
                         <table class="table table-sm table-borderless">
-                            <tr><th class="text-muted fw-normal" style="width:160px">Date Added</th><td>${addedDate}</td></tr>
+                            <!-- <tr><th class="text-muted fw-normal" style="width:160px">Date Added</th><td>${addedDate}</td></tr> -->
                             <tr><th class="text-muted fw-normal">Simultaneous Users</th><td>${eq.simultaneous_users || 1}</td></tr>
                             <tr>
                                 <th class="text-muted fw-normal">Sterilization Required</th>

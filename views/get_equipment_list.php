@@ -65,28 +65,25 @@ if ($result->num_rows === 0) {
 }
 
 while ($row = $result->fetch_assoc()) {
-    // Handle image path
+    // Handle image path - try to use relative path even if file check fails
     $image_url = 'https://upload.wikimedia.org/wikipedia/commons/b/b7/Ukrainian_microscope_%28cropped%29.jpg'; // Default image
     
     if (!empty($row['image_path'])) {
-        // The image_path from DB is like: "assets/equipment_images/filename"
-        // Clean it up
-        $clean_path = str_replace('\\', '/', $row['image_path']);
+        $path = trim($row['image_path']);
+        
+        // If path doesn't contain 'assets/', fix it
+        if (strpos($path, 'assets') === false) {
+            $path = 'assets/equipment_images/' . basename($path);
+        }
+        
+        // Clean the path
+        $clean_path = str_replace('\\', '/', $path);
         $clean_path = ltrim($clean_path, '/');
         
-        // Check if file exists
-        $full_path = $_SERVER['DOCUMENT_ROOT'] . '/' . $clean_path;
+        // Use relative path from /views/ folder
+        $image_url = '../' . $clean_path;
         
-        error_log("Equipment list image - DB path: " . $row['image_path']);
-        error_log("Equipment list image - Check path: " . $full_path);
-        
-        if (file_exists($full_path)) {
-            // Use relative path from /views/ folder
-            $image_url = '../' . $clean_path;
-            error_log("Equipment list image found! URL: " . $image_url);
-        } else {
-            error_log("Equipment list image NOT found. Falling back to default.");
-        }
+        error_log("Equipment list image: " . $row['image_path'] . " → " . $image_url);
     }
     
     // Display locations or "No location assigned"

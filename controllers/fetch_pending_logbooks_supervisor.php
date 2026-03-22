@@ -19,7 +19,7 @@ $query = "SELECT
     l.student_id,
     l.any_comment,
     l.supervisor_id,
-    l.who_technical_officer_checked,
+    l.who_technicalOfficer_id,
     l.img_path1,
     l.img_path2,
     l.img_path3,
@@ -40,11 +40,11 @@ INNER JOIN reservation r ON l.reservation_id = r.id
 LEFT JOIN lab_user sup ON l.supervisor_id = sup.id
 LEFT JOIN practical_finished_supervisor_notify_and_approval sup_notify 
     ON l.id = sup_notify.practical_finished_logbook_id
-WHERE l.supervisor_id = $supervisor_id
-    AND (sup_notify.is_approved IS NULL OR sup_notify.is_approved = 0)
+WHERE l.supervisor_id = ?
+    AND sup_notify.is_approved IS NULL
 ORDER BY l.id DESC";
 
-$result = Database::search($query, '');
+$result = Database::search($query, 'i', [$supervisor_id]);
 
 $logbooks = [];
 if ($result && $result->num_rows > 0) {

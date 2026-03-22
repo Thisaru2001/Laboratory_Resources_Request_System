@@ -54,28 +54,33 @@ $row = $result->fetch_assoc();
 $image_url = 'https://cdn-icons-png.flaticon.com/512/2941/2941514.png'; // Default image
 
 if (!empty($row['image_path'])) {
-    // The image_path from DB already includes "assets/equipment_images/filename"
-    // We just need to return a relative path from the /views/ folder to reach it
+    // The image_path from DB may be: "assets/equipment_images/filename" or just filename or "1"
+    $path = trim($row['image_path']);
     
-    // Clean the stored path
-    $clean_path = str_replace('\\', '/', $row['image_path']);
+    // If path doesn't contain 'assets/', assume it needs that prefix
+    if (strpos($path, 'assets') === false) {
+        $path = 'assets/equipment_images/' . basename($path);
+    }
+    
+    // Clean the path
+    $clean_path = str_replace('\\', '/', $path);
     $clean_path = ltrim($clean_path, '/');
     
-    // Check if file exists at this location
+    // Try to verify file exists
     $full_path = $_SERVER['DOCUMENT_ROOT'] . '/' . $clean_path;
     
-    // Log for debugging
-    error_log("Equipment image check - DB path: " . $row['image_path']);
-    error_log("Equipment image check - Full check path: " . $full_path);
-    error_log("Equipment image check - File exists: " . (file_exists($full_path) ? 'YES' : 'NO'));
+    error_log("Equipment image DB path: " . $row['image_path']);
+    error_log("Equipment image check full path: " . $full_path);
     
     if (file_exists($full_path)) {
-        // Return relative path from /views/ to the asset
-        // Since /views/ is one level up from root, we use ../
+        // Use relative path from /views/ folder
         $image_url = '../' . $clean_path;
-        error_log("Equipment image found! URL: " . $image_url);
+        error_log("✓ Equipment image found: " . $image_url);
     } else {
-        error_log("Equipment image NOT found at: " . $full_path);
+        error_log("✗ Equipment image not found at: " . $full_path);
+        error_log("  → Using relative path anyway: " . '../' . $clean_path);
+        // Even if file_exists fails, use the path anyway (it might work)
+        $image_url = '../' . $clean_path;
     }
 }
 

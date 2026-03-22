@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 session_start();
 
 // Function to check internet connection
@@ -3923,6 +3923,7 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
             <a onclick="showSection('history')"><i class="bi bi-clock-history"></i> Rservation Details</a>
             <a onclick="showSection('activity')"><i class="bi bi-activity"></i> Requests</a>
             <a onclick="showSection('analytics')"><i class="bi bi-download"></i> Download</a>
+            <a onclick="showSection('logbook')"><i class="bi bi-book"></i> Logbook</a>
             <!-- <a onclick="showSection('reports')"><i class="bi bi-file-text"></i> Reports</a> -->
             <a href="../logout.php"><i class="bi bi-box-arrow-right"></i> Logout</a>
 
@@ -4438,9 +4439,9 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
                                             echo '<td>' . htmlspecialchars($row['email']) . '</td>';
                                             echo '<td>';
                                             echo '<div class="action-buttons">';
-                                            echo '<button class="btn-edit" onclick="editUser(\'' . htmlspecialchars($row['university_id']) . '\')">';
-                                            echo '<i class="bi bi-pencil-square"></i> Edit';
-                                            echo '</button>';
+                                            // echo '<button class="btn-edit" onclick="editUser(\'' . htmlspecialchars($row['university_id']) . '\')">';
+                                            // echo '<i class="bi bi-pencil-square"></i> Edit';
+                                            // echo '</button>';
 
                                             // ✅ Show appropriate button based on status_user
                                             if ($row['status'] == 1) {
@@ -4535,6 +4536,7 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
           
          data-status="' . $status . '">';
                                             echo '<td>';
+                                         
                                             echo '<img src="' . htmlspecialchars($profile_image) . '" 
                                    style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid #22c55e;">';
                                             echo '</td>';
@@ -4543,9 +4545,9 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
                                             echo '<td>' . htmlspecialchars($row['email']) . '</td>';
                                             echo '<td>';
                                             echo '<div class="action-buttons">';
-                                            echo '<button class="btn-edit" onclick="editUser(\'' . htmlspecialchars($row['university_id']) . '\')">';
-                                            echo '<i class="bi bi-pencil-square"></i> Edit';
-                                            echo '</button>';
+                                            // echo '<button class="btn-edit" onclick="editUser(\'' . htmlspecialchars($row['university_id']) . '\')">';
+                                            // echo '<i class="bi bi-pencil-square"></i> Edit';
+                                            // echo '</button>';
 
 
                                             if ($row['status'] == 1) {
@@ -4653,6 +4655,7 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
           
          data-status="' . $status . '">';
                                             echo '<td>';
+                                         
                                             echo '<img src="' . htmlspecialchars($profile_image) . '" 
                                    style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid #22c55e;">';
                                             echo '</td>';
@@ -4662,9 +4665,9 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
                                             echo '<td>' . htmlspecialchars($row['email']) . '</td>';
                                             echo '<td>';
                                             echo '<div class="action-buttons">';
-                                            echo '<button class="btn-edit" onclick="editUser(\'' . htmlspecialchars($row['university_id']) . '\')">';
-                                            echo '<i class="bi bi-pencil-square"></i> Edit';
-                                            echo '</button>';
+                                            // echo '<button class="btn-edit" onclick="editUser(\'' . htmlspecialchars($row['university_id']) . '\')">';
+                                            // echo '<i class="bi bi-pencil-square"></i> Edit';
+                                            // echo '</button>';
 
                                             // Show appropriate button based on status_user
                                             if ($row['status'] == 1) {
@@ -5323,6 +5326,40 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
                                 </div>
                                 <p class="text-muted mt-2 mb-0 small">Download complete inventory of all equipment with details</p>
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Logbook Section -->
+                <div id="logbookSection" style="display: none;">
+                    <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Logbook Management</h3>
+                    
+                    <div class="card p-4">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h5 class="fw-bold mb-0" style="color: #166534;">
+                                <i class="bi bi-book-half me-2"></i>
+                                Practical Logbooks
+                            </h5>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th style="width: 10%;">NO</th>
+                                        <th style="width: 50%;">Reservation ID</th>
+                                        <th style="width: 40%;">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="logbookTableBody">
+                                    <tr>
+                                        <td colspan="3" class="text-center py-4">
+                                            <div class="spinner-border text-success me-2" role="status" style="width:1.5rem;height:1.5rem;"></div>
+                                            <span>Loading logbooks...</span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
@@ -6019,6 +6056,461 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
             function searchEquipment() {
                 filterAndDisplayEquipment();
             }
+
+            // ========== LOGBOOK SECTION FUNCTIONS ==========
+            function loadLogbooks() {
+                const tableBody = document.getElementById('logbookTableBody');
+                if (!tableBody) return;
+
+                tableBody.innerHTML = `
+        <tr>
+            <td colspan="3" class="text-center py-4">
+                <div class="spinner-border text-success me-2" role="status"
+                     style="width:1.5rem;height:1.5rem;"></div>
+                <span style="color:#166534;font-weight:600;">
+                    Loading logbook data...
+                </span>
+            </td>
+        </tr>`;
+
+                fetch('../controllers/get_logbooks_for_hod.php')
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Logbook data received:', data);
+
+                        if (data.success && data.logbooks && data.logbooks.length > 0) {
+                            let rowNumber = 1;
+                            const rows = data.logbooks.map(logbook => `
+                    <tr>
+                        <td>${rowNumber++}</td>
+                        <td>${logbook.reservation_code || 'N/A'}</td>
+                        <td>
+                            <button class="btn btn-primary btn-sm" 
+                                    onclick="viewLogbookDetailsHOD(${logbook.id})">
+                                <i class="bi bi-eye"></i> View
+                            </button>
+                        </td>
+                    </tr>`).join('');
+                            tableBody.innerHTML = rows;
+                        } else {
+                            tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="3" class="text-center py-4 text-muted">
+                            📚 No logbooks found
+                        </td>
+                    </tr>`;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Logbook load error:', error);
+                        tableBody.innerHTML = `
+                <tr>
+                    <td colspan="3" class="text-center py-4 text-danger">
+                        ❌ Failed to load logbooks
+                    </td>
+                </tr>`;
+                    });
+            }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// ========== CONFIRMATION MODAL =========
+function showConfirmationModal(title, message, onConfirm, confirmText = 'Confirm', isDanger = false) {
+    const modalId = 'confirmationModal';
+    let modal = document.getElementById(modalId);
+    if (modal) modal.remove();
+
+    modal = document.createElement('div');
+    modal.className = 'modal fade';
+    modal.id = modalId;
+    modal.innerHTML = `
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header text-white" style="background:linear-gradient(135deg,#22c55e,#16a34a);">
+                    <h5 class="modal-title">
+                        <i class="bi bi-question-circle me-2"></i>${title}
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-0">${message}</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-${isDanger ? 'danger' : 'success'}" id="confirmActionBtn">
+                        <i class="bi bi-${isDanger ? 'exclamation-triangle' : 'check-circle'} me-1"></i>${confirmText}
+                    </button>
+                </div>
+            </div>
+        </div>`;
+
+    document.body.appendChild(modal);
+    const modalInstance = new bootstrap.Modal(modal);
+    
+    document.getElementById('confirmActionBtn').addEventListener('click', () => {
+        modalInstance.hide();
+        onConfirm();
+    });
+
+    modal.addEventListener('hidden.bs.modal', () => modal.remove());
+    modalInstance.show();
+}
+
+// ========== LOGBOOK DETAIL FUNCTIONS ==========
+
+// Unified function for HOD to view logbook details with approve/reject
+function viewLogbookDetailsHOD(logbookId) {
+    console.log('Viewing logbook:', logbookId);
+
+    const existing = document.getElementById('logbookDetailModal');
+    if (existing) existing.remove();
+
+    const modal = document.createElement('div');
+    modal.className = 'modal fade';
+    modal.id = 'logbookDetailModal';
+    modal.innerHTML = `
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header text-white" style="background:linear-gradient(135deg,#22c55e,#16a34a);">
+                    <h5 class="modal-title">
+                        <i class="bi bi-journal-check me-2"></i>Logbook Details
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="logbookDetailBody">
+                    <div class="text-center py-5">
+                        <div class="spinner-border text-success" role="status" style="width:2rem;height:2rem;"></div>
+                        <p class="mt-3 text-muted">Loading details...</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-danger" id="rejectBtnHOD" onclick="rejectLogbookHOD(${logbookId})" disabled>
+                        <i class="bi bi-x-circle me-1"></i>Reject
+                    </button>
+                    <button type="button" class="btn btn-success" id="approveBtnHOD" onclick="approveLogbookHOD(${logbookId})" disabled>
+                        <i class="bi bi-check-circle me-1"></i>Approve
+                    </button>
+                </div>
+            </div>
+        </div>`;
+
+    document.body.appendChild(modal);
+    const modalInstance = new bootstrap.Modal(modal);
+    modalInstance.show();
+    modal.addEventListener('hidden.bs.modal', () => modal.remove());
+
+    fetch(`../controllers/get_logbook_details.php?id=${logbookId}`)
+        .then(r => r.json())
+        .then(data => {
+            if (!data.success || !data.logbook) {
+                document.getElementById('logbookDetailBody').innerHTML = `
+                    <div class="alert alert-danger m-3">
+                        <i class="bi bi-exclamation-circle me-2"></i>
+                        ${data.message || 'Failed to load logbook details'}
+                    </div>`;
+                return;
+            }
+
+            const lb = data.logbook;
+            const imgPaths = lb.evidence_images || [];
+
+            const imagesHtml = imgPaths.length > 0
+                ? `<div style="display:flex;flex-wrap:nowrap;overflow-x:auto;gap:12px;padding:12px;background:#f9fafb;border-radius:8px;">
+                    ${imgPaths.map((p, idx) => {
+                        const fileName = p.split('/').pop();
+                        return `<div style="flex-shrink:0;position:relative;">
+                            <img src="../${p}" class="rounded border"
+                                 style="height:150px;width:150px;object-fit:cover;cursor:pointer;"
+                                 onclick="window.open(this.src,'_blank')"
+                                 onerror="this.style.display='none'"
+                                 alt="Evidence photo ${idx + 1}">
+                            <a href="../${p}" download="${fileName}"
+                               class="btn btn-sm btn-outline-primary"
+                               style="position:absolute;bottom:8px;right:8px;padding:4px 8px;">
+                                <i class="bi bi-download"></i>
+                            </a>
+                        </div>`;
+                    }).join('')}
+                  </div>`
+                : '<p class="text-muted fst-italic"><i class="bi bi-info-circle me-1"></i>No photos submitted</p>';
+
+            document.getElementById('logbookDetailBody').innerHTML = `
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0"><i class="bi bi-person me-2"></i><strong>Student Info</strong></h6>
+                            </div>
+                            <div class="card-body p-3">
+                                <table class="table table-sm table-borderless mb-0">
+                                    <tr><td class="text-muted fw-semibold">Name</td><td>${lb.student_name || '—'}</td></tr>
+                                    <tr><td class="text-muted fw-semibold">University ID</td><td>${lb.university_id || '—'}</td></tr>
+                                    <tr><td class="text-muted fw-semibold">Email</td><td>${lb.student_email || '—'}</td></tr>
+                                    <tr><td class="text-muted fw-semibold">Mobile</td><td>${lb.student_mobile || '—'}</td></tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0"><i class="bi bi-calendar me-2"></i><strong>Reservation Info</strong></h6>
+                            </div>
+                            <div class="card-body p-3">
+                                <table class="table table-sm table-borderless mb-0">
+                                    <tr><td class="text-muted fw-semibold">Reservation ID</td><td>${lb.reservation_code || '—'}</td></tr>
+                                    <tr><td class="text-muted fw-semibold">Lab Location</td><td>${lb.lab_location || '—'}</td></tr>
+                                    <tr><td class="text-muted fw-semibold">Date</td><td>${lb.submitted_date || '—'}</td></tr>
+                                    <tr><td class="text-muted fw-semibold">Duration</td><td>${lb.continue_days || 1} day(s)</td></tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0"><i class="bi bi-check2 me-2"></i><strong>Approval Status</strong></h6>
+                            </div>
+                            <div class="card-body p-3">
+                                <table class="table table-sm table-borderless mb-0">
+                                    <tr>
+                                        <td class="text-muted fw-semibold">Supervisor</td>
+                                        <td>${lb.sup_is_approved == 1
+                                            ? '<span class="badge bg-success">Approved</span>'
+                                            : lb.sup_is_approved == 0
+                                            ? '<span class="badge bg-danger">Rejected</span>'
+                                            : '<span class="badge bg-warning text-dark">Pending</span>'}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="text-muted fw-semibold">Tech Officer</td>
+                                        <td>${lb.tech_is_approved == 1
+                                            ? '<span class="badge bg-success">Approved</span>'
+                                            : lb.tech_is_approved == 0
+                                            ? '<span class="badge bg-danger">Rejected</span>'
+                                            : '<span class="badge bg-warning text-dark">Pending</span>'}</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0"><i class="bi bi-person-check me-2"></i><strong>Reviewers</strong></h6>
+                            </div>
+                            <div class="card-body p-3">
+                                <table class="table table-sm table-borderless mb-0">
+                                    <tr><td class="text-muted fw-semibold">Supervisor</td><td>${lb.supervisor_name || 'Not assigned'}</td></tr>
+                                    <tr><td class="text-muted fw-semibold">Tech Officer</td><td>${lb.tech_officer_name || 'Not assigned'}</td></tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0"><i class="bi bi-chat-left me-2"></i><strong>Comments</strong></h6>
+                            </div>
+                            <div class="card-body p-3">
+                                <p class="mb-0">${lb.any_comment || '<span class="text-muted fst-italic">No comments provided</span>'}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0"><i class="bi bi-images me-2"></i><strong>Evidence Photos${imgPaths.length > 0 ? ` (${imgPaths.length})` : ''}</strong></h6>
+                            </div>
+                            <div class="card-body p-3">${imagesHtml}</div>
+                        </div>
+                    </div>
+                </div>`;
+
+            const approveBtnHOD = document.getElementById('approveBtnHOD');
+            const rejectBtnHOD = document.getElementById('rejectBtnHOD');
+
+            if (lb.sup_is_approved == 1 && lb.tech_is_approved == 1) {
+                approveBtnHOD.disabled = false;
+                rejectBtnHOD.disabled = false;
+            } else {
+                approveBtnHOD.disabled = true;
+                rejectBtnHOD.disabled = true;
+                approveBtnHOD.title = 'Cannot approve until Supervisor and Technical Officer approve';
+                rejectBtnHOD.title = 'Cannot reject until Supervisor and Technical Officer approve';
+            }
+        })
+        .catch(err => {
+            console.error('Error:', err);
+            document.getElementById('logbookDetailBody').innerHTML = `
+                <div class="alert alert-danger m-3">
+                    <i class="bi bi-exclamation-circle me-2"></i>
+                    Error loading logbook details
+                </div>`;
+        });
+}
+
+// HOD Approve logbook
+function approveLogbookHOD(logbookId) {
+    showConfirmationModal(
+        'Approve Logbook',
+        'Are you sure you want to approve this logbook? This action cannot be undone.',
+        () => {
+            const data = {
+                logbook_id: logbookId,
+                action: 'approve'
+            };
+
+            fetch('../controllers/approve_logbook_hod.php', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    showToast('Logbook approved successfully!', 'success');
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showToast(data.message || 'Failed to approve', 'error');
+                }
+            })
+            .catch(err => {
+                console.error('Error:', err);
+                showToast('Network error. Please try again.', 'error');
+            });
+        },
+        'Approve',
+        false
+    );
+}
+
+// HOD Reject logbook with reason modal
+function rejectLogbookHOD(logbookId) {
+    const modalId = 'rejectReasonModal';
+    let modal = document.getElementById(modalId);
+    if (modal) modal.remove();
+
+    modal = document.createElement('div');
+    modal.className = 'modal fade';
+    modal.id = modalId;
+    modal.innerHTML = `
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header text-white" style="background:linear-gradient(135deg,#ef4444,#dc2626);">
+                    <h5 class="modal-title">
+                        <i class="bi bi-exclamation-triangle me-2"></i>Reject Logbook
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-3"><strong>Please provide a reason for rejection:</strong></p>
+                    <textarea id="rejectionReason" class="form-control" placeholder="Enter rejection reason..." rows="4" style="resize: vertical;"></textarea>
+                    <small class="text-muted d-block mt-2">This reason will be visible to the student.</small>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="rejectConfirmBtn">
+                        <i class="bi bi-x-circle me-1"></i>Reject
+                    </button>
+                </div>
+            </div>
+        </div>`;
+
+    document.body.appendChild(modal);
+    const modalInstance = new bootstrap.Modal(modal);
+    
+    document.getElementById('rejectConfirmBtn').addEventListener('click', () => {
+        const reason = document.getElementById('rejectionReason').value.trim();
+        
+        if (!reason) {
+            showToast('Please enter a rejection reason.', 'warning');
+            return;
+        }
+
+        modalInstance.hide();
+        
+        const data = {
+            logbook_id: logbookId,
+            action: 'reject',
+            reason: reason
+        };
+
+        fetch('../controllers/approve_logbook_hod.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.success) {
+                showToast('Logbook rejected successfully!', 'success');
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                showToast(data.message || 'Failed to reject', 'error');
+            }
+            })
+        .catch(err => {
+            console.error('Error:', err);
+            showToast('Network error. Please try again.', 'error');
+        });
+    });
+
+    modal.addEventListener('hidden.bs.modal', () => modal.remove());
+    modalInstance.show();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -7747,7 +8239,7 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
 
             function showSection(section) {
                 console.log('Showing section:', section);
-                const sections = ['dashboard', 'userManagement', 'equipment', 'history', 'activity', 'analytics'];
+                const sections = ['dashboard', 'userManagement', 'equipment', 'history', 'activity', 'analytics', 'logbook'];
                 sections.forEach(s => {
                     const el = document.getElementById(s + 'Section');
                     if (el) el.style.display = 'none';
@@ -7788,6 +8280,9 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
                 }
                 if (section === 'activity') {
                     if (typeof initRequestSection === 'function') initRequestSection();
+                }
+                if (section === 'logbook') {
+                    if (typeof loadLogbooks === 'function') loadLogbooks();
                 }
             }
 
@@ -10010,6 +10505,8 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
                 let html = '';
                 logbooks.forEach(logbook => {
                     const statusClass = logbook.status === 'unread' ? 'unread' : '';
+                    const bothApproved = logbook.supervisor_approved && logbook.technical_officer_approved;
+                    
                     html += `
             <div class="notification-item ${statusClass}" id="logbook-${logbook.id}">
                 <div class="notification-title">
@@ -10021,19 +10518,23 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
                     <i class="bi bi-calendar"></i> Submitted: ${logbook.submitted_date}<br>
                     <i class="bi bi-image"></i> Photos: ${logbook.has_photos} image(s)
                 </div>
-                ${logbook.any_comment ? `
-                <div class="notification-meta">
-                    <i class="bi bi-chat"></i> Comment: ${logbook.any_comment.substring(0, 100)}${logbook.any_comment.length > 100 ? '...' : ''}
+                <div class="notification-meta" style="margin-top: 8px;">
+                    <span style="display: inline-block; padding: 4px 8px; background: ${logbook.supervisor_approved ? '#d4edda' : '#f8d7da'}; color: ${logbook.supervisor_approved ? '#155724' : '#856404'}; border-radius: 4px; font-size: 12px; margin-right: 5px;">
+                        <i class="bi ${logbook.supervisor_approved ? 'bi-check-circle' : 'bi-clock'}"></i> Supervisor: ${logbook.supervisor_approved ? 'Approved' : 'Pending'}
+                    </span>
+                    <span style="display: inline-block; padding: 4px 8px; background: ${logbook.technical_officer_approved ? '#d4edda' : '#f8d7da'}; color: ${logbook.technical_officer_approved ? '#155724' : '#856404'}; border-radius: 4px; font-size: 12px;">
+                        <i class="bi ${logbook.technical_officer_approved ? 'bi-check-circle' : 'bi-clock'}"></i> Tech Officer: ${logbook.technical_officer_approved ? 'Approved' : 'Pending'}
+                    </span>
+                </div>
+                
+                ${!bothApproved ? `
+                <div style="background: #fff3cd; color: #856404; padding: 8px 12px; border-radius: 4px; font-size: 12px; margin: 8px 0;">
+                    <i class="bi bi-info-circle"></i> Awaiting approval from Supervisor and/or Technical Officer
                 </div>
                 ` : ''}
-                <div class="notification-actions">
-                    <button class="btn-approve" onclick="approveLogbook(${logbook.id})">
-                        <i class="bi bi-check-circle"></i> Approve
-                    </button>
-                    <button class="btn-reject" onclick="rejectLogbook(${logbook.id})">
-                        <i class="bi bi-x-circle"></i> Reject
-                    </button>
-                    <button class="btn-view" onclick="viewLogbookDetails(${logbook.id})">
+                <div class="notification-actions justify-content-center">
+                   
+                    <button class="btn-view" onclick="viewLogbookDetailsHOD(${logbook.id})">
                         <i class="bi bi-eye"></i> View
                     </button>
                 </div>
@@ -10077,6 +10578,16 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
 
             // Approve logbook
             function approveLogbook(logbookId) {
+                // Get the logbook item to check approval status from notification dropdown
+                const logbookItem = document.getElementById(`logbook-${logbookId}`);
+                const approveBtn = logbookItem?.querySelector('.btn-approve');
+                
+                // If called from notification dropdown and button is disabled, prevent action
+                if (logbookItem && approveBtn && approveBtn.disabled) {
+                    showToast('Cannot approve until both Supervisor and Technical Officer have approved', 'warning');
+                    return;
+                }
+                
                 if (!confirm('Are you sure you want to approve this logbook?')) return;
 
                 console.log('Approving logbook:', logbookId);
@@ -10098,7 +10609,14 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
                     .then(data => {
                         console.log('Response data:', data);
                         if (data.success) {
-                            // Remove the item from list
+                            // Close modal if it exists
+                            const viewModal = document.getElementById('logbookViewModal');
+                            if (viewModal) {
+                                const modalInstance = bootstrap.Modal.getInstance(viewModal);
+                                if (modalInstance) modalInstance.hide();
+                            }
+
+                            // Remove the item from notification list
                             const item = document.getElementById(`logbook-${logbookId}`);
                             if (item) item.remove();
 
@@ -10200,6 +10718,15 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
 
             // Show rejection reason modal
             function showRejectModal(logbookId) {
+                // Get the logbook item to check approval status
+                const logbookItem = document.getElementById(`logbook-${logbookId}`);
+                const rejectBtn = logbookItem?.querySelector('.btn-reject');
+                
+                if (rejectBtn && rejectBtn.disabled) {
+                    showToast('Cannot reject until both Supervisor and Technical Officer have approved', 'warning');
+                    return;
+                }
+                
                 console.log('showRejectModal called:', logbookId);
                 currentLogbookId = logbookId;
 
@@ -10366,6 +10893,20 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
+                            // Close modal if it exists
+                            const viewModal = document.getElementById('logbookViewModal');
+                            if (viewModal) {
+                                const modalInstance = bootstrap.Modal.getInstance(viewModal);
+                                if (modalInstance) modalInstance.hide();
+                            }
+                            
+                            // Close rejection reason modal
+                            const rejectModal = document.getElementById('rejectReasonModal');
+                            if (rejectModal) {
+                                const rejectModalInstance = bootstrap.Modal.getInstance(rejectModal);
+                                if (rejectModalInstance) rejectModalInstance.hide();
+                            }
+
                             // Remove the item from list
                             const item = document.getElementById(`logbook-${logbookId}`);
                             if (item) {
@@ -10513,10 +11054,8 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
                 }
             });
 
-            // View logbook details
-            function viewLogbookDetails(logbookId) {
-                window.open(`../controllers/view_logbook.php?id=${logbookId}`, '_blank', 'width=900,height=700');
-            }
+            // View logbook details with approve/reject in modal
+
 
 
             function markOneRead(notifId, element, event) {

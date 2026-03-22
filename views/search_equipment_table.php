@@ -58,21 +58,23 @@ while ($row = $result->fetch_assoc()) {
     $status_color = $available > 0 ? '#22c55e' : '#dc3545';
     $status_text = $available > 0 ? 'Available' : 'Not Available';
     
-    // Handle image path
+    // Handle image path - try to use relative path even if file check fails
     $image_url = 'https://cdn-icons-png.flaticon.com/512/2941/2941514.png'; // Default image
     
     if (!empty($row['image_path'])) {
-        // Clean up the stored path
-        $clean_path = str_replace('\\', '/', $row['image_path']);
+        $path = trim($row['image_path']);
+        
+        // If path doesn't contain 'assets/', fix it
+        if (strpos($path, 'assets') === false) {
+            $path = 'assets/equipment_images/' . basename($path);
+        }
+        
+        // Clean the path
+        $clean_path = str_replace('\\', '/', $path);
         $clean_path = ltrim($clean_path, '/');
         
-        // Check if file exists
-        $full_path = $_SERVER['DOCUMENT_ROOT'] . '/' . $clean_path;
-        
-        if (file_exists($full_path)) {
-            // Use relative path from /views/ folder
-            $image_url = '../' . $clean_path;
-        }
+        // Use relative path from /views/ folder
+        $image_url = '../' . $clean_path;
     }
     
     // Highlight search term if present
