@@ -4065,13 +4065,23 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
                             // Remove any 'LRRS/' prefix if it exists (just in case)
                             $clean_path = preg_replace('/^LRRS\//', '', $clean_path);
 
-                            // For web path on server - /LRRS/ prefix needed for correct URL
-                            $image_url = '/LRRS/' . $clean_path;
+                            // Detect the base URL dynamically
+                            $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https' : 'http';
+                            $host = $_SERVER['HTTP_HOST'];
+                            
+                            // Get the script name and remove the file (hod.php) to get the directory
+                            $script_path = dirname($_SERVER['SCRIPT_NAME']);
+                            
+                            // Construct the base URL dynamically
+                            $base_url = $protocol . '://' . $host . $script_path;
+                            
+                            // For web path - use relative path that works from views folder
+                            $image_url = '../' . $clean_path;
 
-                            // Full system path for file checking: need to include LRRS folder
-                            // DOCUMENT_ROOT is C:/xampp/htdocs, but project is at C:/xampp/htdocs/LRRS
-                            $full_path = $_SERVER['DOCUMENT_ROOT'] . '/LRRS/' . $clean_path;
+                            // Full system path for file checking
+                            $full_path = dirname(__DIR__) . '/' . $clean_path;
 
+                            error_log("DEBUG: Base URL: " . $base_url);
                             error_log("DEBUG: Checking full path: " . $full_path);
                         
                             // Check if file exists
@@ -4080,10 +4090,10 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
                                 // Try alternative path - maybe it's stored without 'assets/' prefix
                                 $filename = basename($clean_path);
                                 $alt_path = 'assets/profile_images/' . $filename;
-                                $full_alt_path = $_SERVER['DOCUMENT_ROOT'] . '/LRRS/' . $alt_path;
+                                $full_alt_path = dirname(__DIR__) . '/' . $alt_path;
                                 error_log("DEBUG: Checking alternate path: " . $full_alt_path);
                                 if (file_exists($full_alt_path)) {
-                                    $image_url = '/LRRS/' . $alt_path;
+                                    $image_url = '../' . $alt_path;
                                     error_log("DEBUG: Found at alternative path: " . $image_url);
                                 } else {
                                     error_log("DEBUG: File not found at alternative path either, using avatar");
@@ -5893,7 +5903,45 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
                             <div class="mb-3">
                                 <label for="universityId" class="form-label fw-600">University ID</label>
                                 <input type="text" class="form-control" id="universityId" name="university_id" 
-                                    placeholder="Enter university ID">
+                                    placeholder="Enter university ID" readonly>
+                            </div>
+
+                            <!-- Password Change Section (Collapsible) -->
+                            <div class="mt-4 pt-4 border-top">
+                                <button type="button" class="btn btn-outline-secondary btn-sm w-100 mb-3" 
+                                        onclick="togglePasswordSection()" id="passwordToggleBtn">
+                                    <i class="bi bi-lock me-1"></i>Change Password
+                                </button>
+                                
+                                <div id="passwordChangeSection" style="display: none;">
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <label for="currentPassword" class="form-label fw-600">Current Password</label>
+                                            <input type="password" class="form-control" id="currentPassword" 
+                                                placeholder="Enter current password">
+                                        </div>
+                                    </div>
+
+                                    <div class="row mb-3">
+                                        <div class="col-md-6">
+                                            <label for="newPassword" class="form-label fw-600">New Password</label>
+                                            <input type="password" class="form-control" id="newPassword" 
+                                                placeholder="Enter new password">
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label for="confirmPassword" class="form-label fw-600">Confirm Password</label>
+                                            <input type="password" class="form-control" id="confirmPassword" 
+                                                placeholder="Confirm new password">
+                                        </div>
+                                    </div>
+
+                                    <div class="alert alert-info" role="alert">
+                                        <small>
+                                            <i class="bi bi-info-circle me-1"></i>
+                                            Password must be at least 8 characters long
+                                        </small>
+                                    </div>
+                                </div>
                             </div>
                         </form>
                     </div>
@@ -11810,6 +11858,39 @@ function rejectLogbookHOD(logbookId) {
                 const form = document.getElementById('profileForm');
                 const formData = new FormData(form);
 
+                // Check if password needs to be changed
+                const currentPassword = document.getElementById('currentPassword').value;
+                const newPassword = document.getElementById('newPassword').value;
+                const confirmPassword = document.getElementById('confirmPassword').value;
+
+                // If user is trying to change password
+                if (currentPassword || newPassword || confirmPassword) {
+                    // Validate password fields
+                    if (!currentPassword) {
+                        alert('Please enter your current password');
+                        return;
+                    }
+                    if (!newPassword) {
+                        alert('Please enter a new password');
+                        return;
+                    }
+                    if (!confirmPassword) {
+                        alert('Please confirm your new password');
+                        return;
+                    }
+                    if (newPassword !== confirmPassword) {
+                        alert('New passwords do not match');
+                        return;
+                    }
+                    if (newPassword.length < 8) {
+                        alert('New password must be at least 8 characters long');
+                        return;
+                    }
+
+                    formData.append('current_password', currentPassword);
+                    formData.append('new_password', newPassword);
+                }
+
                 // Show loading state
                 const saveBtn = event.target;
                 const originalText = saveBtn.innerHTML;
@@ -11826,7 +11907,7 @@ function rejectLogbookHOD(logbookId) {
                     saveBtn.innerHTML = originalText;
 
                     if (data.success) {
-                        alert('Profile updated successfully!');
+                        alert('Profile updated successfully!' + (currentPassword ? ' Password changed.' : ''));
                         
                         // Update session display
                         document.getElementById('userName').textContent = data.full_name;
@@ -11854,6 +11935,24 @@ function rejectLogbookHOD(logbookId) {
                     console.error('Error:', error);
                     alert('An error occurred while saving your profile');
                 });
+            }
+
+            // Toggle password change section
+            function togglePasswordSection() {
+                const section = document.getElementById('passwordChangeSection');
+                const btn = document.getElementById('passwordToggleBtn');
+                
+                if (section.style.display === 'none') {
+                    section.style.display = 'block';
+                    btn.innerHTML = '<i class="bi bi-lock me-1"></i>Hide Password Change';
+                } else {
+                    section.style.display = 'none';
+                    btn.innerHTML = '<i class="bi bi-lock me-1"></i>Change Password';
+                    // Clear password fields when closing
+                    document.getElementById('currentPassword').value = '';
+                    document.getElementById('newPassword').value = '';
+                    document.getElementById('confirmPassword').value = '';
+                }
             }
 
             // ========== INIT ==========

@@ -54,6 +54,46 @@ try {
         exit;
     }
 
+    // Handle password change if provided
+    $password_updated = false;
+    $hashed_password = null;
+    
+    if (!empty($_POST['current_password']) && !empty($_POST['new_password'])) {
+        $current_password = $_POST['current_password'];
+        $new_password = $_POST['new_password'];
+
+        // Get current user's password hash
+        $pwd_query = "SELECT password_user FROM lab_user WHERE id = ?";
+        $pwd_result = Database::search($pwd_query, "i", [$hod_id]);
+        
+        if (!$pwd_result || $pwd_result->num_rows === 0) {
+            echo json_encode(['success' => false, 'message' => 'User not found']);
+            exit;
+        }
+
+        $user_pwd = $pwd_result->fetch_assoc();
+        
+        // Verify current password
+        if (!password_verify($current_password, $user_pwd['password_user'])) {
+            echo json_encode(['success' => false, 'message' => 'Current password is incorrect']);
+            exit;
+        }
+
+        // Validate new password length
+        if (strlen($new_password) < 8) {
+            echo json_encode(['success' => false, 'message' => 'New password must be at least 8 characters long']);
+            exit;
+        }
+
+        // Hash new password
+        $hashed_password = password_hash($new_password, PASSWORD_BCRYPT);
+        $password_updated = true;
+    } else if (!empty($_POST['current_password']) || !empty($_POST['new_password'])) {
+        // Check if only one password field is filled
+        echo json_encode(['success' => false, 'message' => 'Please provide both current and new password']);
+        exit;
+    }
+
     // Get current user data to check existing image
     $current_query = "SELECT img_path FROM lab_user WHERE id = ?";
     $current_result = Database::search($current_query, "i", [$hod_id]);
@@ -156,6 +196,12 @@ try {
         $update_types .= "s";
     }
 
+    if ($password_updated && $hashed_password) {
+        $update_fields[] = "password_user = ?";
+        $update_params[] = $hashed_password;
+        $update_types .= "s";
+    }
+
     $update_params[] = $hod_id;
     $update_types .= "i";
 
@@ -182,9 +228,10 @@ try {
 
     echo json_encode([
         'success' => true,
-        'message' => 'Profile updated successfully',
+        'message' => 'Profile updated successfully' . ($password_updated ? ' and password changed' : ''),
         'img_path' => $img_path ? ('assets/profile_images/' . $img_path) : null,
-        'full_name' => $first_name . ' ' . $last_name
+        'full_name' => $first_name . ' ' . $last_name,
+        'password_changed' => $password_updated
     ]);
 
 } catch (Exception $e) {

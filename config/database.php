@@ -15,13 +15,17 @@ class Database {
             try {
 
                 $env = parse_ini_file(__DIR__ . '/../.env');
+                
+                if ($env === false) {
+                    throw new Exception('Failed to parse .env file');
+                }
 
                 self::$connection = new mysqli(
-                    $env["DB_HOST"],
-                    $env["DB_USER"],
-                    $env["DB_PASS"],
-                    $env["DB_NAME"],
-                    (int)$env["DB_PORT"]
+                    $env["DB_HOST"] ?? 'localhost',
+                    $env["DB_USER"] ?? 'root',
+                    $env["DB_PASS"] ?? 'root',
+                    $env["DB_NAME"] ?? 'mdb',
+                    (int)($env["DB_PORT"] ?? 3306)
                 );
 
                 self::$connection->set_charset("utf8mb4");
