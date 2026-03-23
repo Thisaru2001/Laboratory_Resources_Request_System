@@ -23,6 +23,10 @@ if ($id <= 0 || empty($code) || empty($name) || $qty < 1) {
     echo json_encode(['success' => false, 'message' => 'Invalid input data']);
     exit();
 }
+if ($qty < ($broken_qty + $repair_qty)) {
+    echo json_encode(['success' => false, 'message' => 'Total quantity cannot be less than the sum of broken and repair quantities']);
+    exit();
+}
 
 // Check duplicate code
 $check_result = Database::search("SELECT id FROM equipment WHERE code = ? AND id != ?", "si", [$code, $id]);
