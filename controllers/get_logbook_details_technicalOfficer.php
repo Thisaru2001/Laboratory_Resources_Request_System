@@ -55,7 +55,7 @@ INNER JOIN practical_finished_supervisor_notify_and_approval sup_notify
     ON l.id = sup_notify.practical_finished_logbook_id
     AND sup_notify.is_approved = 1
 LEFT JOIN location loc ON r.location_id = loc.id
-LEFT JOIN practical_finished_technicalOfficer_notify_and_approval to_notify 
+LEFT JOIN practical_finished_technicalofficer_notify_and_approval to_notify 
     ON l.id = to_notify.practical_finished_logbook_id
 WHERE l.id = ?";
 

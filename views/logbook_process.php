@@ -271,7 +271,7 @@ $notifSql = "INSERT INTO notification
              (description, created_datetime, owner_of_notification, status, need_approval)
              VALUES (?, NOW(), ?, 'unread', 1)";
 
-$notifSqltechof = "INSERT INTO practical_finished_technicalOfficer_notify_and_approval
+$notifSqltechof = "INSERT INTO practical_finished_technicalofficer_notify_and_approval
              (description, status, practical_finished_logbook_id)
              VALUES (?, 'unread', ?)";
              
