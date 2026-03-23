@@ -4107,8 +4107,8 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
                             alt="<?php echo htmlspecialchars($full_name); ?>">
 
                         <ul class="dropdown-menu dropdown-menu-end" style="border-radius: 16px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
-                            <li><a class="dropdown-item" href="profile.php"><i class="bi bi-person me-2"></i>Profile</a></li>
-                            <li><a class="dropdown-item" href="settings.php"><i class="bi bi-gear me-2"></i>Settings</a></li>
+                            <li><a class="dropdown-item" style="cursor: pointer;" onclick="loadProfileData();" data-bs-toggle="modal" data-bs-target="#profileModal"><i class="bi bi-person me-2"></i>Profile</a></li>
+                           
                             <li>
                                 <hr class="dropdown-divider">
                             </li>
@@ -5830,6 +5830,85 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
                 </div>
             </div>
         </div>
+
+        <!-- Profile Modal -->
+        <div class="modal fade" id="profileModal" tabindex="-1" aria-labelledby="profileModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content border-0 shadow-lg">
+                    <div class="modal-header py-4 px-4 border-0" style="background: linear-gradient(135deg, #22c55e, #16a34a);">
+                        <h5 class="modal-title text-white" id="profileModalLabel">
+                            <i class="bi bi-person-circle me-2"></i>My Profile
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <form id="profileForm" enctype="multipart/form-data">
+                            <!-- Profile Picture Section -->
+                            <div class="text-center mb-4">
+                                <div style="position: relative; display: inline-block; cursor: pointer;" onclick="document.getElementById('profileImageInput').click();">
+                                    <img id="profilePreview" 
+     src="https://ui-avatars.com/api/?name=Profile&background=22c55e&color=fff&size=120" 
+     alt="Profile" 
+     style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 4px solid #22c55e;"
+     onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'120\' height=\'120\' viewBox=\'0 0 120 120\'><circle cx=\'60\' cy=\'60\' r=\'60\' fill=\'%2322c55e\'/><text x=\'50%25\' y=\'54%25\' dominant-baseline=\'middle\' text-anchor=\'middle\' font-size=\'40\' fill=\'white\' font-family=\'Arial\'>P</text></svg>'">
+                                    
+                                        <input type="file" id="profileImageInput" name="profile_image" 
+                                        accept="image/*" style="display: none;" onchange="handleProfileImageChange(this)">
+                                    <div style="position: absolute; bottom: 0; right: 0; background: #22c55e; color: white; 
+                                        width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; 
+                                        justify-content: center; border: 3px solid white; font-size: 18px; pointer-events: none;">
+                                        <i class="bi bi-camera-fill"></i>
+                                    </div>
+                                </div>
+                                <p class="text-muted mt-2 small">Click image to change profile picture</p>
+                            </div>
+
+                            <!-- Form Fields -->
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="firstName" class="form-label fw-600">First Name</label>
+                                    <input type="text" class="form-control" id="firstName" name="first_name" 
+                                        placeholder="Enter first name" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="lastName" class="form-label fw-600">Last Name</label>
+                                    <input type="text" class="form-control" id="lastName" name="last_name" 
+                                        placeholder="Enter last name" required>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="email" class="form-label fw-600">Email</label>
+                                    <input type="email" class="form-control" id="email" name="email" 
+                                        placeholder="Enter email" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="mobile" class="form-label fw-600">Mobile Number</label>
+                                    <input type="tel" class="form-control" id="mobile" name="mobile" 
+                                        placeholder="Enter mobile number">
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="universityId" class="form-label fw-600">University ID</label>
+                                <input type="text" class="form-control" id="universityId" name="university_id" 
+                                    placeholder="Enter university ID">
+                            </div>
+                        </form>
+                    </div>
+                    <div class="modal-footer py-3 px-4 border-0" style="background: #f8fafc;">
+                        <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">
+                            <i class="bi bi-x-circle me-1"></i>Cancel
+                        </button>
+                        <button type="button" class="btn btn-success px-4" onclick="saveHodProfile()" 
+                            style="background: linear-gradient(135deg, #22c55e, #16a34a); border: none;">
+                            <i class="bi bi-check-circle me-1"></i>Save Changes
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
         <!-- Scripts -->
         <!-- Bootstrap JS -->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
@@ -5987,9 +6066,10 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
                     .then(data => {
                         console.log('Equipment data received:', data);
 
-                        if (data.success) {
+                        if (data.success && data.equipment) {
                             allEquipmentData = data.equipment;
-                            filterAndDisplayEquipment();
+                            // Display equipment directly instead of filtering first
+                            displayEquipmentTable(allEquipmentData);
 
                             const filterSelect = document.getElementById('statusFilterequipment');
                             if (filterSelect) filterSelect.value = 'all';
@@ -6014,8 +6094,13 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
             }
 
             function filterAndDisplayEquipment() {
-                const filterValue = document.getElementById('statusFilterequipment').value;
-                const searchTerm = document.getElementById('equipmentSearch').value.toLowerCase().trim();
+                // Add null checks for filter elements
+                const filterSelect = document.getElementById('statusFilterequipment');
+                const searchInput = document.getElementById('equipmentSearch');
+                
+                // If elements don't exist, display all data
+                const filterValue = filterSelect ? filterSelect.value : 'all';
+                const searchTerm = searchInput ? (searchInput.value.toLowerCase().trim()) : '';
 
                 if (!allEquipmentData || allEquipmentData.length === 0) {
                     return;
@@ -7245,7 +7330,7 @@ function rejectLogbookHOD(logbookId) {
                         }
 
                         const eq = data.equipment;
-                        const addedDate = eq.added_datetime ? new Date(eq.added_datetime).toLocaleDateString() : '—';
+                        const addedDate = eq.added_datetime ? new Date(eq.addedDate).toLocaleDateString() : '—';
 
                         contentDiv.innerHTML = `
                 <div class="row g-0">
@@ -7264,7 +7349,7 @@ function rejectLogbookHOD(logbookId) {
                     </div>
                     <div class="col-md-8 p-3">
                         <table class="table table-sm table-borderless">
-                            <tr><th class="text-muted fw-normal" style="width:160px">Date Added</th><td>${addedDate}</td></tr>
+                            <tr><th class="text-muted fw-normal" style="width:160px">Date Added</th><td>${eq.addedDate}</td></tr>
                             <tr><th class="text-muted fw-normal">Simultaneous Users</th><td>${eq.simultaneous_users || 1}</td></tr>
                             <tr>
                                 <th class="text-muted fw-normal">Sterilization Required</th>
@@ -11646,6 +11731,129 @@ function rejectLogbookHOD(logbookId) {
                         })
                         .catch(() => {}); // silently fail
                 }, 30000);
+            }
+
+            // ========== PROFILE FUNCTIONS ==========
+            function openProfileModal() {
+                loadProfileData();
+                const profileModal = new bootstrap.Modal(document.getElementById('profileModal'));
+                profileModal.show();
+            }
+
+            function loadProfileData() {
+                // Load current user data into the modal
+                const firstName = '<?php echo htmlspecialchars($_SESSION["user_first_name"] ?? ""); ?>';
+                const lastName = '<?php echo htmlspecialchars($_SESSION["user_last_name"] ?? ""); ?>';
+                const email = '<?php echo htmlspecialchars($_SESSION["user"]["email"] ?? ""); ?>';
+                const mobile = '<?php echo htmlspecialchars($_SESSION["user"]["mobile"] ?? ""); ?>';
+                const universityId = '<?php echo htmlspecialchars($_SESSION["user"]["university_id"] ?? ""); ?>';
+                const imgPath = '<?php echo htmlspecialchars($_SESSION["img_path"] ?? ""); ?>';
+                const fullName = '<?php echo htmlspecialchars(($_SESSION["user_first_name"] ?? "") . " " . ($_SESSION["user_last_name"] ?? "")); ?>';
+
+                document.getElementById('firstName').value = firstName;
+                document.getElementById('lastName').value = lastName;
+                document.getElementById('email').value = email;
+                document.getElementById('mobile').value = mobile;
+                document.getElementById('universityId').value = universityId;
+
+                // Reset file input
+                document.getElementById('profileImageInput').value = '';
+
+                // Set profile image - make sure it loads correctly
+                const profilePreview = document.getElementById('profilePreview');
+                if (imgPath && imgPath.trim() !== '') {
+                    // imgPath is just the filename, construct full path going up from views folder
+                    profilePreview.src = '../assets/profile_images/' + imgPath + '?t=' + new Date().getTime();
+                } else {
+                    profilePreview.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(fullName) + '&background=22c55e&color=fff&size=120';
+                }
+            }
+
+            function handleProfileImageChange(input) {
+                const file = input.files[0];
+                if (file) {
+                    // Validate file type
+                    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+                    if (!allowedTypes.includes(file.type)) {
+                        alert('Please select an image file (JPEG, PNG, GIF, or WebP)');
+                        input.value = '';
+                        return;
+                    }
+
+                    // Validate file size (max 5MB)
+                    if (file.size > 5 * 1024 * 1024) {
+                        alert('File size must be less than 5MB');
+                        input.value = '';
+                        return;
+                    }
+
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        document.getElementById('profilePreview').src = e.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            }
+
+            function previewProfileImage(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        document.getElementById('profilePreview').src = e.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            }
+
+            function saveHodProfile() {
+                const form = document.getElementById('profileForm');
+                const formData = new FormData(form);
+
+                // Show loading state
+                const saveBtn = event.target;
+                const originalText = saveBtn.innerHTML;
+                saveBtn.disabled = true;
+                saveBtn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Saving...';
+
+                fetch('../controllers/update_hod_profile.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    saveBtn.disabled = false;
+                    saveBtn.innerHTML = originalText;
+
+                    if (data.success) {
+                        alert('Profile updated successfully!');
+                        
+                        // Update session display
+                        document.getElementById('userName').textContent = data.full_name;
+                        
+                        // Update profile image if changed
+                        if (data.img_path) {
+                            document.querySelector('.profile-img').src = data.img_path + '?t=' + new Date().getTime();
+                        }
+
+                        // Close modal
+                        const profileModal = bootstrap.Modal.getInstance(document.getElementById('profileModal'));
+                        if (profileModal) {
+                            profileModal.hide();
+                        }
+
+                        // Reload page or update session
+                        location.reload();
+                    } else {
+                        alert('Error: ' + (data.message || 'Failed to update profile'));
+                    }
+                })
+                .catch(error => {
+                    saveBtn.disabled = false;
+                    saveBtn.innerHTML = originalText;
+                    console.error('Error:', error);
+                    alert('An error occurred while saving your profile');
+                });
             }
 
             // ========== INIT ==========

@@ -20,21 +20,22 @@ if (empty($equipment_code)) {
 
 // Fix the query - use 'code' column instead of 'equipment_code'C:\xampp\htdocs\LRRS\controllers\get_equipment_details.php
 $query = "SELECT 
-            e.id, 
-            e.code, 
-            e.name, 
-            e.total_qty as total_qty, 
-            e.simultaneous_users,
-            e.description, 
-            e.sterilization_required,
-            e.reservation_required, 
-            e.image_path as image_path,
-            GROUP_CONCAT(DISTINCT l.location SEPARATOR ', ') as locations
-          FROM equipment e
-          LEFT JOIN equipment_has_location ehl ON e.id = ehl.equipment_id
-          LEFT JOIN location l ON ehl.location_id = l.id
-          WHERE e.code = ?
-          GROUP BY e.id";
+    e.id, 
+    e.code, 
+    e.name, 
+    e.total_qty as total_qty, 
+    e.simultaneous_users,
+    e.description, 
+    e.sterilization_required,
+    e.reservation_required, 
+    e.image_path as image_path,
+    e.added_datatime,  -- Added this field
+    GROUP_CONCAT(DISTINCT l.location SEPARATOR ', ') as locations
+FROM equipment e
+LEFT JOIN equipment_has_location ehl ON e.id = ehl.equipment_id
+LEFT JOIN location l ON ehl.location_id = l.id
+WHERE e.code = ?
+GROUP BY e.id";
 
 $result = Database::search($query, "s", [$equipment_code]);
 
@@ -97,7 +98,8 @@ echo json_encode([
         'sterilization_required' => $row['sterilization_required'] ?? 'NO',
         'reservation_required' => $row['reservation_required'] ?? 'YES',
         'image_path' => $image_url,
-        'locations' => $row['locations'] ?? 'Not assigned'
+        'locations' => $row['locations'] ?? 'Not assigned',  //
+        'addedDate' => $row['added_datatime'] ?? 'Unknown'   // 
     ]
 ]);
 exit();
