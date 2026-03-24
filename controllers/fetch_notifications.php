@@ -13,7 +13,7 @@ $user_id = $_SESSION["user_id"];
 $result = Database::search(
     "SELECT id, description, created_datetime, status, need_approval
      FROM notification
-     WHERE owner_of_notification = ? AND need_approval = 1 AND status = 'unread'
+     WHERE owner_of_notification = ? AND status = 'unread'
      ORDER BY created_datetime DESC
      LIMIT 20",
     "i", [$user_id]

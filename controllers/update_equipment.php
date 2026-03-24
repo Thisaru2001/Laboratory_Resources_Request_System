@@ -22,11 +22,21 @@ $qty                    = intval($_POST['qty'] ?? 0);
 $simultaneous_users     = intval($_POST['simultaneous_users'] ?? 1);
 $sterilization_required = $_POST['sterilization_required'] ?? 'NO';
 $reservation_required   = $_POST['reservation_required'] ?? 'YES';
+$location_id            = intval($_POST['location_id'] ?? 0);  // Changed from lab_location to location_id
 $description            = trim($_POST['description'] ?? '');
 
 if ($id <= 0 || empty($code) || empty($name) || $qty < 1) {
     echo json_encode(['success' => false, 'message' => 'Invalid input data']);
     exit();
+}
+
+// Validate location if provided
+if ($location_id > 0) {
+    $location_check = Database::search("SELECT id FROM location WHERE id = ?", "i", [$location_id]);
+    if (!$location_check || $location_check->num_rows == 0) {
+        echo json_encode(['success' => false, 'message' => 'Selected location does not exist']);
+        exit();
+    }
 }
 
 // Check duplicate code excluding current equipment
@@ -68,34 +78,63 @@ if (isset($_FILES['image']) && $_FILES['image']['error'] === UPLOAD_ERR_OK) {
     }
 }
 
-// Build update query
-if ($update_image) {
-    $update_query = "UPDATE equipment SET 
-        code = ?, name = ?, total_qty = ?, simultaneous_users = ?,
-        sterilization_required = ?, reservation_required = ?,
-        description = ?, image_path = ?, updated_details_datetime = NOW()
-        WHERE id = ?";
-    $types  = "ssiissssi";
-    $params = [$code, $name, $qty, $simultaneous_users,
-               $sterilization_required, $reservation_required,
-               $description, $image_path, $id];
-} else {
-    $update_query = "UPDATE equipment SET 
-        code = ?, name = ?, total_qty = ?, simultaneous_users = ?,
-        sterilization_required = ?, reservation_required = ?,
-        description = ?, updated_details_datetime = NOW()
-        WHERE id = ?";
-    $types  = "ssiisssi";
-    $params = [$code, $name, $qty, $simultaneous_users,
-               $sterilization_required, $reservation_required,
-               $description, $id];
-}
+// Start transaction for data integrity
 
-$result = Database::iud($update_query, $types, $params);
 
-if ($result) {
+try {
+    // Build update query for equipment table
+    if ($update_image) {
+        $update_query = "UPDATE equipment SET 
+            code = ?, name = ?, total_qty = ?, simultaneous_users = ?,
+            sterilization_required = ?, reservation_required = ?,
+            description = ?, image_path = ?, updated_details_datetime = NOW()
+            WHERE id = ?";
+        $types  = "ssiissssi";
+        $params = [$code, $name, $qty, $simultaneous_users,
+                   $sterilization_required, $reservation_required,
+                   $description, $image_path, $id];
+    } else {
+        $update_query = "UPDATE equipment SET 
+            code = ?, name = ?, total_qty = ?, simultaneous_users = ?,
+            sterilization_required = ?, reservation_required = ?,
+            description = ?, updated_details_datetime = NOW()
+            WHERE id = ?";
+        $types  = "ssiisssi";
+        $params = [$code, $name, $qty, $simultaneous_users,
+                   $sterilization_required, $reservation_required,
+                   $description, $id];
+    }
+
+    $result = Database::iud($update_query, $types, $params);
+    
+    if (!$result) {
+        throw new Exception('Failed to update equipment');
+    }
+    
+    // Update location if location_id is provided
+    if ($location_id > 0) {
+        // Delete existing location associations for this equipment
+        Database::iud("DELETE FROM equipment_has_location WHERE equipment_id = ?", "i", [$id]);
+        
+        // Insert new location association
+        $insert_result = Database::iud(
+            "INSERT INTO equipment_has_location (equipment_id, location_id) VALUES (?, ?)",
+            "ii", [$id, $location_id]
+        );
+        
+        if (!$insert_result) {
+            throw new Exception('Failed to update equipment location');
+        }
+    }
+    
+    // Commit transaction
+  
+    
     echo json_encode(['success' => true, 'message' => 'Equipment updated successfully']);
-} else {
-    echo json_encode(['success' => false, 'message' => 'Database error while updating']);
+    
+} catch (Exception $e) {
+    // Rollback on error
+    
+    echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 }
 ?>

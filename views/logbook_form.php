@@ -492,6 +492,12 @@ session_start();
                 return;
             }
             
+            // Check if getUserMedia is supported
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                showError('Camera access is not supported in your browser. Please use HTTPS or a different browser.');
+                return;
+            }
+            
             try {
                 cameraStream = await navigator.mediaDevices.getUserMedia({
                     video: { facingMode: 'environment' },
@@ -506,6 +512,8 @@ session_start();
                     showError('Camera permission denied. Please allow camera access and try again.');
                 } else if (err.name === 'NotFoundError') {
                     showError('No camera device found. Please check your device.');
+                } else if (err.name === 'NotReadableError' || err.name === 'SecurityError') {
+                    showError('Unable to access camera. Make sure:\n1. You\'re using HTTPS \n2. Camera is not already in use\n3. Browser permissions are enabled');
                 } else {
                     showError('Unable to access camera: ' + err.message);
                 }

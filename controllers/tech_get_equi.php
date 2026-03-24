@@ -29,6 +29,7 @@ $query = "SELECT
             e.image_path as image_path,
             COALESCE((SELECT SUM(broken_qty) FROM broken WHERE equipment_id = e.id), 0) as broken_qty,
             COALESCE((SELECT SUM(repair_qty) FROM repair WHERE equipment_id = e.id), 0) as repair_qty,
+            GROUP_CONCAT(DISTINCT ehl.location_id SEPARATOR ',') as location_ids,
             GROUP_CONCAT(DISTINCT l.location SEPARATOR ', ') as locations
           FROM equipment e
           LEFT JOIN equipment_has_location ehl ON e.id = ehl.equipment_id
@@ -61,6 +62,13 @@ if (!empty($row['image_path'])) {
     }
 }
 
+// Get primary location ID (first one if multiple)
+$primary_location_id = null;
+if (!empty($row['location_ids'])) {
+    $location_ids = explode(',', $row['location_ids']);
+    $primary_location_id = intval($location_ids[0]);
+}
+
 echo json_encode([
     'success' => true,
     'equipment' => [
@@ -73,6 +81,7 @@ echo json_encode([
         'sterilization_required' => $row['sterilization_required'] ?? 'NO',
         'reservation_required'   => $row['reservation_required'] ?? 'YES',
         'image_path'             => $image_url,
+        'location_id'            => $primary_location_id,
         'locations'              => $row['locations'] ?? 'Not assigned',
         'broken_qty'             => (int)$row['broken_qty'],
         'repair_qty'             => (int)$row['repair_qty'],

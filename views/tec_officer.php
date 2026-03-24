@@ -348,14 +348,22 @@ if ($requests_result && $requests_result->num_rows > 0) {
             margin-right: 10px;
             color: #ffd700;
         }
-
-        .sidebar-footer {
-            padding: 20px;
-            margin-top: 30px;
+  .sidebar-footer {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 12px 16px;
+            margin-top: 0;
             text-align: center;
-            background: rgba(0, 0, 0, 0.2);
-            font-size: 0.85rem;
-            color: rgba(255, 255, 255, 0.7);
+            background: rgba(0, 0, 0, 0.25);
+            font-size: 0.82rem;
+            color: rgba(255, 255, 255, 0.8);
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .sidebar {
+            padding-bottom: 70px; /* important to avoid content overlap with footer */
         }
 
         /* Main content */
@@ -1680,7 +1688,7 @@ if ($requests_result && $requests_result->num_rows > 0) {
                 <button class="btn d-lg-none text-dark" onclick="toggleSidebar()">
                     <i class="bi bi-list fs-3"></i>
                 </button>
-                <h5 class="fw-bold mb-0" style="background: linear-gradient(135deg, #22c55e, #16a34a); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Technical Officer Dashboard</h5>
+                <h5 class="fw-bold mb-0" style="background: linear-gradient(135deg, #22c55e, #16a34a); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Welcome, <?= htmlspecialchars($first_name ?? '') ?></h5>
             </div>
             <div class="d-flex align-items-center gap-3">
 
@@ -2833,6 +2841,7 @@ if ($requests_result && $requests_result->num_rows > 0) {
                         document.getElementById('eqSimultaneousUsers').value = data.equipment.simultaneous_users || 1;
                         document.getElementById('eqSterilization').value = data.equipment.sterilization_required || 'NO';
                         document.getElementById('eqReservation').value = data.equipment.reservation_required || 'YES';
+                        document.getElementById('eqLabLocation').value = data.equipment.location_id || '';
                         document.getElementById('eqDescription').value = data.equipment.description || '';
                         document.getElementById('eqMaintenanceQty').value = data.equipment.repair_qty || 0;
                         document.getElementById('eqBrokenQty').value = data.equipment.broken_qty || 0;
@@ -3278,6 +3287,7 @@ if ($requests_result && $requests_result->num_rows > 0) {
             document.getElementById('eqSimultaneousUsers').value = '1';
             document.getElementById('eqSterilization').value = 'NO';
             document.getElementById('eqReservation').value = 'YES';
+            document.getElementById('eqLabLocation').value = '';
 
             document.getElementById('equipmentModalTitle').innerHTML = '<i class="bi bi-plus-circle me-2"></i>Add New Equipment';
             document.getElementById('modalSaveButtonText').textContent = 'Save Equipment';
@@ -3290,7 +3300,7 @@ if ($requests_result && $requests_result->num_rows > 0) {
 
         // Clear form errors
         function clearEquipmentErrors() {
-            const errorFields = ['eqCode', 'eqName', 'eqQty'];
+            const errorFields = ['eqCode', 'eqName', 'eqQty', 'eqLabLocation'];
             errorFields.forEach(field => {
                 const element = document.getElementById(field);
                 if (element) element.classList.remove('is-invalid');
@@ -3324,6 +3334,7 @@ if ($requests_result && $requests_result->num_rows > 0) {
             const simultaneous_users = document.getElementById('eqSimultaneousUsers').value || 1;
             const sterilization = document.getElementById('eqSterilization').value;
             const reservation = document.getElementById('eqReservation').value;
+            const labLocation = document.getElementById('eqLabLocation').value;
             const description = document.getElementById('eqDescription').value.trim();
             const imageFile = document.getElementById('eqImage').files[0];
 
@@ -3354,6 +3365,14 @@ if ($requests_result && $requests_result->num_rows > 0) {
                 document.getElementById('eqQty').classList.remove('is-invalid');
             }
 
+            if (!labLocation) {
+                document.getElementById('eqLabLocation').classList.add('is-invalid');
+                document.getElementById('eqLabLocationError').textContent = 'Lab location is required';
+                isValid = false;
+            } else {
+                document.getElementById('eqLabLocation').classList.remove('is-invalid');
+            }
+
             if (!isValid) return;
 
             const saveBtn = document.querySelector('#addEquipmentModal .btn-success');
@@ -3371,6 +3390,7 @@ if ($requests_result && $requests_result->num_rows > 0) {
             formData.append('simultaneous_users', simultaneous_users);
             formData.append('sterilization_required', sterilization);
             formData.append('reservation_required', reservation);
+            formData.append('location_id', labLocation);
             formData.append('description', description);
             formData.append('broken_qty', document.getElementById('eqBrokenQty').value);
             formData.append('repair_qty', document.getElementById('eqMaintenanceQty').value);
@@ -5248,6 +5268,20 @@ if ($requests_result && $requests_result->num_rows > 0) {
                                                 <option value="YES">Yes</option>
                                                 <option value="NO">No</option>
                                             </select>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label class="form-label fw-semibold">Lab Location <span class="text-danger">*</span></label>
+                                            <select class="form-select" id="eqLabLocation">
+                                                <option value="">-- Select Lab Location --</option>
+                                                <option value="13">A12-001</option>
+                                                <option value="14">A12-004</option>
+                                                <option value="15">A12-006</option>
+                                                <option value="16">A11-101 (Special Student Lab)</option>
+                                                <option value="17">A11-108 (Instrument Lab)</option>
+                                                <option value="18">A05-002 (Teaching Lab)</option>
+                                            </select>
+                                            <div class="invalid-feedback" id="eqLabLocationError"></div>
                                         </div>
                                     </div>
                                 </div>

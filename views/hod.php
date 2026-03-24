@@ -499,7 +499,6 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
                 color: #22c55e;
             }
 
-            /* Request Badge - only visible when count > 0 */
             .request-badge {
                 position: absolute;
                 top: -8px;
@@ -4018,7 +4017,7 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
                                     </button>
                                 </div>
                             </div>
-                            <div class="notification-list" id="notificationList">
+                            <div class="notification-list" id="mainNotificationList">
                                 <div class="text-center py-3 text-muted">
                                     <div class="spinner-border spinner-border-sm"></div>
                                     <span class="ms-2">Loading...</span>
@@ -4068,13 +4067,13 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
                             // Detect the base URL dynamically
                             $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off' ? 'https' : 'http';
                             $host = $_SERVER['HTTP_HOST'];
-                            
+
                             // Get the script name and remove the file (hod.php) to get the directory
                             $script_path = dirname($_SERVER['SCRIPT_NAME']);
-                            
+
                             // Construct the base URL dynamically
                             $base_url = $protocol . '://' . $host . $script_path;
-                            
+
                             // For web path - use relative path that works from views folder
                             $image_url = '../' . $clean_path;
 
@@ -4083,7 +4082,7 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
 
                             error_log("DEBUG: Base URL: " . $base_url);
                             error_log("DEBUG: Checking full path: " . $full_path);
-                        
+
                             // Check if file exists
                             if (!file_exists($full_path)) {
                                 error_log("DEBUG: File not found at main path, trying alternative path");
@@ -4118,7 +4117,7 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
 
                         <ul class="dropdown-menu dropdown-menu-end" style="border-radius: 16px; border: none; box-shadow: 0 10px 30px rgba(0,0,0,0.1);">
                             <li><a class="dropdown-item" style="cursor: pointer;" onclick="loadProfileData();" data-bs-toggle="modal" data-bs-target="#profileModal"><i class="bi bi-person me-2"></i>Profile</a></li>
-                           
+
                             <li>
                                 <hr class="dropdown-divider">
                             </li>
@@ -4557,7 +4556,7 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
           
          data-status="' . $status . '">';
                                             echo '<td>';
-                                         
+
                                             echo '<img src="' . htmlspecialchars($profile_image) . '" 
                                    style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid #22c55e;">';
                                             echo '</td>';
@@ -4676,7 +4675,7 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
           
          data-status="' . $status . '">';
                                             echo '<td>';
-                                         
+
                                             echo '<img src="' . htmlspecialchars($profile_image) . '" 
                                    style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid #22c55e;">';
                                             echo '</td>';
@@ -5354,7 +5353,7 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
                 <!-- Logbook Section -->
                 <div id="logbookSection" style="display: none;">
                     <h3 class="mb-4" style="color: white; text-shadow: 2px 2px 4px rgba(0,0,0,0.2);">Logbook Management</h3>
-                    
+
                     <div class="card p-4">
                         <div class="d-flex justify-content-between align-items-center mb-4">
                             <h5 class="fw-bold mb-0" style="color: #166534;">
@@ -5365,12 +5364,12 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
 
                         <!-- Search Input -->
                         <div class="mb-3">
-                            <input type="text" 
-                                   id="logbookSearchInput" 
-                                   class="form-control form-control-lg" 
-                                   placeholder="🔍 Search by Reservation ID (e.g., RES-2026-)..." 
-                                   style="border: 2px solid #e0e0e0; border-radius: 8px;"
-                                   oninput="filterLogbookTable()">
+                            <input type="text"
+                                id="logbookSearchInput"
+                                class="form-control form-control-lg"
+                                placeholder="🔍 Search by Reservation ID (e.g., RES-2026-)..."
+                                style="border: 2px solid #e0e0e0; border-radius: 8px;"
+                                oninput="filterLogbookTable()">
                         </div>
 
                         <div class="table-responsive">
@@ -5804,6 +5803,20 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
                                                     <option value="NO">No</option>
                                                 </select>
                                             </div>
+
+                                            <div class="mb-3">
+                                                <label class="form-label fw-semibold">Lab Location <span class="text-danger">*</span></label>
+                                                <select class="form-select" id="eqLabLocation">
+                                                    <option value="">-- Select Lab Location --</option>
+                                                    <option value="13">A12-001</option>
+                                                    <option value="14">A12-004</option>
+                                                    <option value="15">A12-006</option>
+                                                    <option value="16">A11-101 (Special Student Lab)</option>
+                                                    <option value="17">A11-108 (Instrument Lab)</option>
+                                                    <option value="18">A05-002 (Teaching Lab)</option>
+                                                </select>
+                                                <div class="invalid-feedback" id="eqLabLocationError"></div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -5856,13 +5869,13 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
                             <!-- Profile Picture Section -->
                             <div class="text-center mb-4">
                                 <div style="position: relative; display: inline-block; cursor: pointer;" onclick="document.getElementById('profileImageInput').click();">
-                                    <img id="profilePreview" 
-     src="https://ui-avatars.com/api/?name=Profile&background=22c55e&color=fff&size=120" 
-     alt="Profile" 
-     style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 4px solid #22c55e;"
-     onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'120\' height=\'120\' viewBox=\'0 0 120 120\'><circle cx=\'60\' cy=\'60\' r=\'60\' fill=\'%2322c55e\'/><text x=\'50%25\' y=\'54%25\' dominant-baseline=\'middle\' text-anchor=\'middle\' font-size=\'40\' fill=\'white\' font-family=\'Arial\'>P</text></svg>'">
-                                    
-                                        <input type="file" id="profileImageInput" name="profile_image" 
+                                    <img id="profilePreview"
+                                        src="https://ui-avatars.com/api/?name=Profile&background=22c55e&color=fff&size=120"
+                                        alt="Profile"
+                                        style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 4px solid #22c55e;"
+                                        onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'120\' height=\'120\' viewBox=\'0 0 120 120\'><circle cx=\'60\' cy=\'60\' r=\'60\' fill=\'%2322c55e\'/><text x=\'50%25\' y=\'54%25\' dominant-baseline=\'middle\' text-anchor=\'middle\' font-size=\'40\' fill=\'white\' font-family=\'Arial\'>P</text></svg>'">
+
+                                    <input type="file" id="profileImageInput" name="profile_image"
                                         accept="image/*" style="display: none;" onchange="handleProfileImageChange(this)">
                                     <div style="position: absolute; bottom: 0; right: 0; background: #22c55e; color: white; 
                                         width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; 
@@ -5877,12 +5890,12 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
                             <div class="row mb-3">
                                 <div class="col-md-6">
                                     <label for="firstName" class="form-label fw-600">First Name</label>
-                                    <input type="text" class="form-control" id="firstName" name="first_name" 
+                                    <input type="text" class="form-control" id="firstName" name="first_name"
                                         placeholder="Enter first name" required>
                                 </div>
                                 <div class="col-md-6">
                                     <label for="lastName" class="form-label fw-600">Last Name</label>
-                                    <input type="text" class="form-control" id="lastName" name="last_name" 
+                                    <input type="text" class="form-control" id="lastName" name="last_name"
                                         placeholder="Enter last name" required>
                                 </div>
                             </div>
@@ -5890,34 +5903,34 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
                             <div class="row mb-3">
                                 <div class="col-md-6">
                                     <label for="email" class="form-label fw-600">Email</label>
-                                    <input type="email" class="form-control" id="email" name="email" 
+                                    <input type="email" class="form-control" id="email" name="email"
                                         placeholder="Enter email" required>
                                 </div>
                                 <div class="col-md-6">
                                     <label for="mobile" class="form-label fw-600">Mobile Number</label>
-                                    <input type="tel" class="form-control" id="mobile" name="mobile" 
+                                    <input type="tel" class="form-control" id="mobile" name="mobile"
                                         placeholder="Enter mobile number">
                                 </div>
                             </div>
 
                             <div class="mb-3">
                                 <label for="universityId" class="form-label fw-600">University ID</label>
-                                <input type="text" class="form-control" id="universityId" name="university_id" 
+                                <input type="text" class="form-control" id="universityId" name="university_id"
                                     placeholder="Enter university ID" readonly>
                             </div>
 
                             <!-- Password Change Section (Collapsible) -->
                             <div class="mt-4 pt-4 border-top">
-                                <button type="button" class="btn btn-outline-secondary btn-sm w-100 mb-3" 
-                                        onclick="togglePasswordSection()" id="passwordToggleBtn">
+                                <button type="button" class="btn btn-outline-secondary btn-sm w-100 mb-3"
+                                    onclick="togglePasswordSection()" id="passwordToggleBtn">
                                     <i class="bi bi-lock me-1"></i>Change Password
                                 </button>
-                                
+
                                 <div id="passwordChangeSection" style="display: none;">
                                     <div class="row mb-3">
                                         <div class="col-md-6">
                                             <label for="currentPassword" class="form-label fw-600">Current Password</label>
-                                            <input type="password" class="form-control" id="currentPassword" 
+                                            <input type="password" class="form-control" id="currentPassword"
                                                 placeholder="Enter current password">
                                         </div>
                                     </div>
@@ -5925,12 +5938,12 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
                                     <div class="row mb-3">
                                         <div class="col-md-6">
                                             <label for="newPassword" class="form-label fw-600">New Password</label>
-                                            <input type="password" class="form-control" id="newPassword" 
+                                            <input type="password" class="form-control" id="newPassword"
                                                 placeholder="Enter new password">
                                         </div>
                                         <div class="col-md-6">
                                             <label for="confirmPassword" class="form-label fw-600">Confirm Password</label>
-                                            <input type="password" class="form-control" id="confirmPassword" 
+                                            <input type="password" class="form-control" id="confirmPassword"
                                                 placeholder="Confirm new password">
                                         </div>
                                     </div>
@@ -5949,7 +5962,7 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
                         <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal">
                             <i class="bi bi-x-circle me-1"></i>Cancel
                         </button>
-                        <button type="button" class="btn btn-success px-4" onclick="saveHodProfile()" 
+                        <button type="button" class="btn btn-success px-4" onclick="saveHodProfile()"
                             style="background: linear-gradient(135deg, #22c55e, #16a34a); border: none;">
                             <i class="bi bi-check-circle me-1"></i>Save Changes
                         </button>
@@ -6145,7 +6158,7 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
                 // Add null checks for filter elements
                 const filterSelect = document.getElementById('statusFilterequipment');
                 const searchInput = document.getElementById('equipmentSearch');
-                
+
                 // If elements don't exist, display all data
                 const filterValue = filterSelect ? filterSelect.value : 'all';
                 const searchTerm = searchInput ? (searchInput.value.toLowerCase().trim()) : '';
@@ -6254,7 +6267,7 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
                                     const date = new Date(logbook.datetime);
                                     dateTimeStr = !isNaN(date) ? date.toLocaleString() : logbook.datetime;
                                 }
-                                
+
                                 return `
                     <tr>
                         <td>${rowNumber++}</td>
@@ -6298,8 +6311,8 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
 
                 tableRows.forEach(row => {
                     // Skip loading and "no data" rows
-                    if (row.innerHTML.includes('Loading') || 
-                        row.innerHTML.includes('No logbooks found') || 
+                    if (row.innerHTML.includes('Loading') ||
+                        row.innerHTML.includes('No logbooks found') ||
                         row.innerHTML.includes('Failed to load')) {
                         return;
                     }
@@ -6308,7 +6321,7 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
                     const cells = row.querySelectorAll('td');
                     if (cells.length > 1) {
                         const reservationCode = cells[1].textContent.toUpperCase().trim();
-                        
+
                         // Show row if filter is empty or matches reservation code
                         if (filterValue === '' || reservationCode.includes(filterValue)) {
                             row.style.display = '';
@@ -6371,16 +6384,16 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
 
 
 
-// ========== CONFIRMATION MODAL =========
-function showConfirmationModal(title, message, onConfirm, confirmText = 'Confirm', isDanger = false) {
-    const modalId = 'confirmationModal';
-    let modal = document.getElementById(modalId);
-    if (modal) modal.remove();
+            // ========== CONFIRMATION MODAL =========
+            function showConfirmationModal(title, message, onConfirm, confirmText = 'Confirm', isDanger = false) {
+                const modalId = 'confirmationModal';
+                let modal = document.getElementById(modalId);
+                if (modal) modal.remove();
 
-    modal = document.createElement('div');
-    modal.className = 'modal fade';
-    modal.id = modalId;
-    modal.innerHTML = `
+                modal = document.createElement('div');
+                modal.className = 'modal fade';
+                modal.id = modalId;
+                modal.innerHTML = `
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header text-white" style="background:linear-gradient(135deg,#22c55e,#16a34a);">
@@ -6401,29 +6414,29 @@ function showConfirmationModal(title, message, onConfirm, confirmText = 'Confirm
             </div>
         </div>`;
 
-    document.body.appendChild(modal);
-    const modalInstance = new bootstrap.Modal(modal);
-    
-    document.getElementById('confirmActionBtn').addEventListener('click', () => {
-        modalInstance.hide();
-        onConfirm();
-    });
+                document.body.appendChild(modal);
+                const modalInstance = new bootstrap.Modal(modal);
 
-    modal.addEventListener('hidden.bs.modal', () => modal.remove());
-    modalInstance.show();
-}
+                document.getElementById('confirmActionBtn').addEventListener('click', () => {
+                    modalInstance.hide();
+                    onConfirm();
+                });
 
-// ========== LOGBOOK DETAIL FUNCTIONS ==========
-function viewLogbookDetailsHOD(logbookId) {
-    console.log('Viewing logbook:', logbookId);
+                modal.addEventListener('hidden.bs.modal', () => modal.remove());
+                modalInstance.show();
+            }
 
-    const existing = document.getElementById('logbookDetailModal');
-    if (existing) existing.remove();
+            // ========== LOGBOOK DETAIL FUNCTIONS ==========
+            function viewLogbookDetailsHOD(logbookId) {
+                console.log('Viewing logbook:', logbookId);
 
-    const modal = document.createElement('div');
-    modal.className = 'modal fade';
-    modal.id = 'logbookDetailModal';
-    modal.innerHTML = `
+                const existing = document.getElementById('logbookDetailModal');
+                if (existing) existing.remove();
+
+                const modal = document.createElement('div');
+                modal.className = 'modal fade';
+                modal.id = 'logbookDetailModal';
+                modal.innerHTML = `
         <div class="modal-dialog modal-lg modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header text-white" style="background:linear-gradient(135deg,#22c55e,#16a34a);">
@@ -6450,28 +6463,28 @@ function viewLogbookDetailsHOD(logbookId) {
             </div>
         </div>`;
 
-    document.body.appendChild(modal);
-    const modalInstance = new bootstrap.Modal(modal);
-    modalInstance.show();
-    modal.addEventListener('hidden.bs.modal', () => modal.remove());
+                document.body.appendChild(modal);
+                const modalInstance = new bootstrap.Modal(modal);
+                modalInstance.show();
+                modal.addEventListener('hidden.bs.modal', () => modal.remove());
 
-    fetch(`../controllers/get_logbook_details.php?id=${logbookId}`)
-        .then(r => r.json())
-        .then(data => {
-            if (!data.success || !data.logbook) {
-                document.getElementById('logbookDetailBody').innerHTML = `
+                fetch(`../controllers/get_logbook_details.php?id=${logbookId}`)
+                    .then(r => r.json())
+                    .then(data => {
+                        if (!data.success || !data.logbook) {
+                            document.getElementById('logbookDetailBody').innerHTML = `
                     <div class="alert alert-danger m-3">
                         <i class="bi bi-exclamation-circle me-2"></i>
                         ${data.message || 'Failed to load logbook details'}
                     </div>`;
-                return;
-            }
+                            return;
+                        }
 
-            const lb = data.logbook;
-            const imgPaths = lb.evidence_images || [];
+                        const lb = data.logbook;
+                        const imgPaths = lb.evidence_images || [];
 
-            const imagesHtml = imgPaths.length > 0
-                ? `<div style="display:flex;flex-wrap:nowrap;overflow-x:auto;gap:12px;padding:12px;background:#f9fafb;border-radius:8px;">
+                        const imagesHtml = imgPaths.length > 0 ?
+                            `<div style="display:flex;flex-wrap:nowrap;overflow-x:auto;gap:12px;padding:12px;background:#f9fafb;border-radius:8px;">
                     ${imgPaths.map((p, idx) => {
                         const fileName = p.split('/').pop();
                         return `<div style="flex-shrink:0;position:relative;">
@@ -6487,10 +6500,10 @@ function viewLogbookDetailsHOD(logbookId) {
                             </a>
                         </div>`;
                     }).join('')}
-                  </div>`
-                : '<p class="text-muted fst-italic"><i class="bi bi-info-circle me-1"></i>No photos submitted</p>';
+                  </div>` :
+                            '<p class="text-muted fst-italic"><i class="bi bi-info-circle me-1"></i>No photos submitted</p>';
 
-            document.getElementById('logbookDetailBody').innerHTML = `
+                        document.getElementById('logbookDetailBody').innerHTML = `
                 <div class="row g-3">
                     <div class="col-md-6">
                         <div class="card border-0 shadow-sm">
@@ -6582,39 +6595,39 @@ function viewLogbookDetailsHOD(logbookId) {
                     </div>
                 </div>`;
 
-            const approveBtnHOD = document.getElementById('approveBtnHOD');
-            const rejectBtnHOD = document.getElementById('rejectBtnHOD');
+                        const approveBtnHOD = document.getElementById('approveBtnHOD');
+                        const rejectBtnHOD = document.getElementById('rejectBtnHOD');
 
-            if (true) {
-                approveBtnHOD.disabled = false;
-                rejectBtnHOD.disabled = false;
-            } else {
-                approveBtnHOD.disabled = true;
-                rejectBtnHOD.disabled = true;
-                approveBtnHOD.title = 'Cannot approve until Supervisor and Technical Officer approve';
-                rejectBtnHOD.title = 'Cannot reject until Supervisor and Technical Officer approve';
-            }
-        })
-        .catch(err => {
-            console.error('Error:', err);
-            document.getElementById('logbookDetailBody').innerHTML = `
+                        if (true) {
+                            approveBtnHOD.disabled = false;
+                            rejectBtnHOD.disabled = false;
+                        } else {
+                            approveBtnHOD.disabled = true;
+                            rejectBtnHOD.disabled = true;
+                            approveBtnHOD.title = 'Cannot approve until Supervisor and Technical Officer approve';
+                            rejectBtnHOD.title = 'Cannot reject until Supervisor and Technical Officer approve';
+                        }
+                    })
+                    .catch(err => {
+                        console.error('Error:', err);
+                        document.getElementById('logbookDetailBody').innerHTML = `
                 <div class="alert alert-danger m-3">
                     <i class="bi bi-exclamation-circle me-2"></i>
                     Error loading logbook details
                 </div>`;
-        });
-}
-// Unified function for HOD to view logbook details with approve/reject
-function viewLogbookDetailsHODD(logbookId) {
-    console.log('Viewing logbook:', logbookId);
+                    });
+            }
+            // Unified function for HOD to view logbook details with approve/reject
+            function viewLogbookDetailsHODD(logbookId) {
+                console.log('Viewing logbook:', logbookId);
 
-    const existing = document.getElementById('logbookDetailModal');
-    if (existing) existing.remove();
+                const existing = document.getElementById('logbookDetailModal');
+                if (existing) existing.remove();
 
-    const modal = document.createElement('div');
-    modal.className = 'modal fade';
-    modal.id = 'logbookDetailModal';
-    modal.innerHTML = `
+                const modal = document.createElement('div');
+                modal.className = 'modal fade';
+                modal.id = 'logbookDetailModal';
+                modal.innerHTML = `
         <div class="modal-dialog modal-lg modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header text-white" style="background:linear-gradient(135deg,#22c55e,#16a34a);">
@@ -6641,28 +6654,28 @@ function viewLogbookDetailsHODD(logbookId) {
             </div>
         </div>`;
 
-    document.body.appendChild(modal);
-    const modalInstance = new bootstrap.Modal(modal);
-    modalInstance.show();
-    modal.addEventListener('hidden.bs.modal', () => modal.remove());
+                document.body.appendChild(modal);
+                const modalInstance = new bootstrap.Modal(modal);
+                modalInstance.show();
+                modal.addEventListener('hidden.bs.modal', () => modal.remove());
 
-    fetch(`../controllers/get_logbook_details.php?id=${logbookId}`)
-        .then(r => r.json())
-        .then(data => {
-            if (!data.success || !data.logbook) {
-                document.getElementById('logbookDetailBody').innerHTML = `
+                fetch(`../controllers/get_logbook_details.php?id=${logbookId}`)
+                    .then(r => r.json())
+                    .then(data => {
+                        if (!data.success || !data.logbook) {
+                            document.getElementById('logbookDetailBody').innerHTML = `
                     <div class="alert alert-danger m-3">
                         <i class="bi bi-exclamation-circle me-2"></i>
                         ${data.message || 'Failed to load logbook details'}
                     </div>`;
-                return;
-            }
+                            return;
+                        }
 
-            const lb = data.logbook;
-            const imgPaths = lb.evidence_images || [];
+                        const lb = data.logbook;
+                        const imgPaths = lb.evidence_images || [];
 
-            const imagesHtml = imgPaths.length > 0
-                ? `<div style="display:flex;flex-wrap:nowrap;overflow-x:auto;gap:12px;padding:12px;background:#f9fafb;border-radius:8px;">
+                        const imagesHtml = imgPaths.length > 0 ?
+                            `<div style="display:flex;flex-wrap:nowrap;overflow-x:auto;gap:12px;padding:12px;background:#f9fafb;border-radius:8px;">
                     ${imgPaths.map((p, idx) => {
                         const fileName = p.split('/').pop();
                         return `<div style="flex-shrink:0;position:relative;">
@@ -6678,10 +6691,10 @@ function viewLogbookDetailsHODD(logbookId) {
                             </a>
                         </div>`;
                     }).join('')}
-                  </div>`
-                : '<p class="text-muted fst-italic"><i class="bi bi-info-circle me-1"></i>No photos submitted</p>';
+                  </div>` :
+                            '<p class="text-muted fst-italic"><i class="bi bi-info-circle me-1"></i>No photos submitted</p>';
 
-            document.getElementById('logbookDetailBody').innerHTML = `
+                        document.getElementById('logbookDetailBody').innerHTML = `
                 <div class="row g-3">
                     <div class="col-md-6">
                         <div class="card border-0 shadow-sm">
@@ -6781,76 +6794,76 @@ function viewLogbookDetailsHODD(logbookId) {
                     </div>
                 </div>`;
 
-            const approveBtnHOD = document.getElementById('approveBtnHOD');
-            const rejectBtnHOD = document.getElementById('rejectBtnHOD');
+                        const approveBtnHOD = document.getElementById('approveBtnHOD');
+                        const rejectBtnHOD = document.getElementById('rejectBtnHOD');
 
-            if (true) {
-                approveBtnHOD.disabled = false;
-                rejectBtnHOD.disabled = false;
-            } else {
-                approveBtnHOD.disabled = true;
-                rejectBtnHOD.disabled = true;
-                approveBtnHOD.title = 'Cannot approve until Supervisor and Technical Officer approve';
-                rejectBtnHOD.title = 'Cannot reject until Supervisor and Technical Officer approve';
-            }
-        })
-        .catch(err => {
-            console.error('Error:', err);
-            document.getElementById('logbookDetailBody').innerHTML = `
+                        if (true) {
+                            approveBtnHOD.disabled = false;
+                            rejectBtnHOD.disabled = false;
+                        } else {
+                            approveBtnHOD.disabled = true;
+                            rejectBtnHOD.disabled = true;
+                            approveBtnHOD.title = 'Cannot approve until Supervisor and Technical Officer approve';
+                            rejectBtnHOD.title = 'Cannot reject until Supervisor and Technical Officer approve';
+                        }
+                    })
+                    .catch(err => {
+                        console.error('Error:', err);
+                        document.getElementById('logbookDetailBody').innerHTML = `
                 <div class="alert alert-danger m-3">
                     <i class="bi bi-exclamation-circle me-2"></i>
                     Error loading logbook details
                 </div>`;
-        });
-}
+                    });
+            }
 
-// HOD Approve logbook
-function approveLogbookHOD(logbookId) {
-    showConfirmationModal(
-        'Approve Logbook',
-        'Are you sure you want to approve this logbook? This action cannot be undone.',
-        () => {
-            const data = {
-                logbook_id: logbookId,
-                action: 'approve'
-            };
+            // HOD Approve logbook
+            function approveLogbookHOD(logbookId) {
+                showConfirmationModal(
+                    'Approve Logbook',
+                    'Are you sure you want to approve this logbook? This action cannot be undone.',
+                    () => {
+                        const data = {
+                            logbook_id: logbookId,
+                            action: 'approve'
+                        };
 
-            fetch('../controllers/approve_logbook_hod.php', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(data)
-            })
-            .then(r => r.json())
-            .then(data => {
-                if (data.success) {
-                    showToast('Logbook approved successfully!', 'success');
-                    setTimeout(() => location.reload(), 1500);
-                } else {
-                    showToast(data.message || 'Failed to approve', 'error');
-                }
-            })
-            .catch(err => {
-                console.error('Error:', err);
-                showToast('Network error. Please try again.', 'error');
-            });
-        },
-        'Approve',
-        false
-    );
-}
+                        fetch('../controllers/approve_logbook_hod.php', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify(data)
+                            })
+                            .then(r => r.json())
+                            .then(data => {
+                                if (data.success) {
+                                    showToast('Logbook approved successfully!', 'success');
+                                    setTimeout(() => location.reload(), 1500);
+                                } else {
+                                    showToast(data.message || 'Failed to approve', 'error');
+                                }
+                            })
+                            .catch(err => {
+                                console.error('Error:', err);
+                                showToast('Network error. Please try again.', 'error');
+                            });
+                    },
+                    'Approve',
+                    false
+                );
+            }
 
-// HOD Reject logbook with reason modal
-function rejectLogbookHOD(logbookId) {
-    const modalId = 'rejectReasonModal';
-    let modal = document.getElementById(modalId);
-    if (modal) modal.remove();
+            // HOD Reject logbook with reason modal
+            function rejectLogbookHOD(logbookId) {
+                const modalId = 'rejectReasonModal';
+                let modal = document.getElementById(modalId);
+                if (modal) modal.remove();
 
-    modal = document.createElement('div');
-    modal.className = 'modal fade';
-    modal.id = modalId;
-    modal.innerHTML = `
+                modal = document.createElement('div');
+                modal.className = 'modal fade';
+                modal.id = modalId;
+                modal.innerHTML = `
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header text-white" style="background:linear-gradient(135deg,#ef4444,#dc2626);">
@@ -6873,50 +6886,50 @@ function rejectLogbookHOD(logbookId) {
             </div>
         </div>`;
 
-    document.body.appendChild(modal);
-    const modalInstance = new bootstrap.Modal(modal);
-    
-    document.getElementById('rejectConfirmBtn').addEventListener('click', () => {
-        const reason = document.getElementById('rejectionReason').value.trim();
-        
-        if (!reason) {
-            showToast('Please enter a rejection reason.', 'warning');
-            return;
-        }
+                document.body.appendChild(modal);
+                const modalInstance = new bootstrap.Modal(modal);
 
-        modalInstance.hide();
-        
-        const data = {
-            logbook_id: logbookId,
-            action: 'reject',
-            reason: reason
-        };
+                document.getElementById('rejectConfirmBtn').addEventListener('click', () => {
+                    const reason = document.getElementById('rejectionReason').value.trim();
 
-        fetch('../controllers/approve_logbook_hod.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
-        })
-        .then(r => r.json())
-        .then(data => {
-            if (data.success) {
-                showToast('Logbook rejected successfully!', 'success');
-                setTimeout(() => location.reload(), 1500);
-            } else {
-                showToast(data.message || 'Failed to reject', 'error');
+                    if (!reason) {
+                        showToast('Please enter a rejection reason.', 'warning');
+                        return;
+                    }
+
+                    modalInstance.hide();
+
+                    const data = {
+                        logbook_id: logbookId,
+                        action: 'reject',
+                        reason: reason
+                    };
+
+                    fetch('../controllers/approve_logbook_hod.php', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify(data)
+                        })
+                        .then(r => r.json())
+                        .then(data => {
+                            if (data.success) {
+                                showToast('Logbook rejected successfully!', 'success');
+                                setTimeout(() => location.reload(), 1500);
+                            } else {
+                                showToast(data.message || 'Failed to reject', 'error');
+                            }
+                        })
+                        .catch(err => {
+                            console.error('Error:', err);
+                            showToast('Network error. Please try again.', 'error');
+                        });
+                });
+
+                modal.addEventListener('hidden.bs.modal', () => modal.remove());
+                modalInstance.show();
             }
-            })
-        .catch(err => {
-            console.error('Error:', err);
-            showToast('Network error. Please try again.', 'error');
-        });
-    });
-
-    modal.addEventListener('hidden.bs.modal', () => modal.remove());
-    modalInstance.show();
-}
 
 
 
@@ -9027,6 +9040,7 @@ function rejectLogbookHOD(logbookId) {
                 document.getElementById('eqSimultaneousUsers').value = '1';
                 document.getElementById('eqSterilization').value = 'NO';
                 document.getElementById('eqReservation').value = 'YES';
+                document.getElementById('eqLabLocation').value = '';
 
                 document.getElementById('equipmentModalTitle').innerHTML = '<i class="bi bi-plus-circle me-2"></i>Add New Equipment';
                 document.getElementById('modalSaveButtonText').textContent = 'Save Equipment';
@@ -9039,7 +9053,7 @@ function rejectLogbookHOD(logbookId) {
 
             // Clear form errors
             function clearEquipmentErrors() {
-                const errorFields = ['eqCode', 'eqName', 'eqQty'];
+                const errorFields = ['eqCode', 'eqName', 'eqQty', 'eqLabLocation'];
                 errorFields.forEach(field => {
                     const element = document.getElementById(field);
                     if (element) element.classList.remove('is-invalid');
@@ -9073,6 +9087,7 @@ function rejectLogbookHOD(logbookId) {
                 const simultaneous_users = document.getElementById('eqSimultaneousUsers').value || 1;
                 const sterilization = document.getElementById('eqSterilization').value;
                 const reservation = document.getElementById('eqReservation').value;
+                const labLocation = document.getElementById('eqLabLocation').value;
                 const description = document.getElementById('eqDescription').value.trim();
                 const imageFile = document.getElementById('eqImage').files[0];
 
@@ -9103,6 +9118,14 @@ function rejectLogbookHOD(logbookId) {
                     document.getElementById('eqQty').classList.remove('is-invalid');
                 }
 
+                if (!labLocation) {
+                    document.getElementById('eqLabLocation').classList.add('is-invalid');
+                    document.getElementById('eqLabLocationError').textContent = 'Lab location is required';
+                    isValid = false;
+                } else {
+                    document.getElementById('eqLabLocation').classList.remove('is-invalid');
+                }
+
                 if (!isValid) return;
 
                 const saveBtn = document.querySelector('#addEquipmentModal .btn-success');
@@ -9120,6 +9143,7 @@ function rejectLogbookHOD(logbookId) {
                 formData.append('simultaneous_users', simultaneous_users);
                 formData.append('sterilization_required', sterilization);
                 formData.append('reservation_required', reservation);
+                formData.append('location_id', labLocation);
                 formData.append('description', description);
                 if (imageFile) formData.append('image', imageFile);
 
@@ -9183,6 +9207,7 @@ function rejectLogbookHOD(logbookId) {
                             document.getElementById('eqSimultaneousUsers').value = data.equipment.simultaneous_users || 1;
                             document.getElementById('eqSterilization').value = data.equipment.sterilization_required || 'NO';
                             document.getElementById('eqReservation').value = data.equipment.reservation_required || 'YES';
+                            document.getElementById('eqLabLocation').value = data.equipment.location_id || '';
                             document.getElementById('eqDescription').value = data.equipment.description || '';
 
                             if (data.equipment.image_path) {
@@ -10785,7 +10810,7 @@ function rejectLogbookHOD(logbookId) {
                     })
                     .catch(err => {
                         console.error('Notification fetch error:', err);
-                        document.getElementById('notificationList').innerHTML = `
+                        document.getElementById('mainNotificationList').innerHTML = `
                 <div class="no-notifications">
                     <i class="bi bi-wifi-off d-block"></i>
                     Failed to load notifications
@@ -10794,7 +10819,7 @@ function rejectLogbookHOD(logbookId) {
             }
 
             function renderNotifications(notifications) {
-                const list = document.getElementById('notificationList');
+                const list = document.getElementById('mainNotificationList');
                 const newSpan = document.getElementById('notificationNewCount');
 
                 const unread = notifications.filter(n => n.status === 'unread').length;
@@ -10948,7 +10973,7 @@ function rejectLogbookHOD(logbookId) {
                 logbooks.forEach(logbook => {
                     const statusClass = logbook.status === 'unread' ? 'unread' : '';
                     const bothApproved = logbook.supervisor_approved && logbook.technical_officer_approved;
-                    
+
                     html += `
             <div class="notification-item ${statusClass}" id="logbook-${logbook.id}">
                 <div class="notification-title">
@@ -11023,13 +11048,13 @@ function rejectLogbookHOD(logbookId) {
                 // Get the logbook item to check approval status from notification dropdown
                 const logbookItem = document.getElementById(`logbook-${logbookId}`);
                 const approveBtn = logbookItem?.querySelector('.btn-approve');
-                
+
                 // If called from notification dropdown and button is disabled, prevent action
                 if (logbookItem && approveBtn && approveBtn.disabled) {
                     showToast('Cannot approve until both Supervisor and Technical Officer have approved', 'warning');
                     return;
                 }
-                
+
                 if (!confirm('Are you sure you want to approve this logbook?')) return;
 
                 console.log('Approving logbook:', logbookId);
@@ -11163,12 +11188,12 @@ function rejectLogbookHOD(logbookId) {
                 // Get the logbook item to check approval status
                 const logbookItem = document.getElementById(`logbook-${logbookId}`);
                 const rejectBtn = logbookItem?.querySelector('.btn-reject');
-                
+
                 if (rejectBtn && rejectBtn.disabled) {
                     showToast('Cannot reject until both Supervisor and Technical Officer have approved', 'warning');
                     return;
                 }
-                
+
                 console.log('showRejectModal called:', logbookId);
                 currentLogbookId = logbookId;
 
@@ -11319,7 +11344,7 @@ function rejectLogbookHOD(logbookId) {
             // Execute reject
             function executeReject(logbookId, reason) {
                 // Show loading state
-               // showToast('Processing rejection...', 'info');
+                // showToast('Processing rejection...', 'info');
 
                 fetch('approve_logbook.php', {
                         method: 'POST',
@@ -11341,7 +11366,7 @@ function rejectLogbookHOD(logbookId) {
                                 const modalInstance = bootstrap.Modal.getInstance(viewModal);
                                 if (modalInstance) modalInstance.hide();
                             }
-                            
+
                             // Close rejection reason modal
                             const rejectModal = document.getElementById('rejectReasonModal');
                             if (rejectModal) {
@@ -11389,7 +11414,7 @@ function rejectLogbookHOD(logbookId) {
             // Execute approve
             function executeApprove(logbookId) {
                 // Show loading state
-             //   showToast('Processing approval...', 'info');
+                //   showToast('Processing approval...', 'info');
 
                 fetch('approve_logbook.php', {
                         method: 'POST',
@@ -11836,7 +11861,7 @@ function rejectLogbookHOD(logbookId) {
                     }
 
                     const reader = new FileReader();
-                    reader.onload = function (e) {
+                    reader.onload = function(e) {
                         document.getElementById('profilePreview').src = e.target.result;
                     };
                     reader.readAsDataURL(file);
@@ -11847,7 +11872,7 @@ function rejectLogbookHOD(logbookId) {
                 const file = event.target.files[0];
                 if (file) {
                     const reader = new FileReader();
-                    reader.onload = function (e) {
+                    reader.onload = function(e) {
                         document.getElementById('profilePreview').src = e.target.result;
                     };
                     reader.readAsDataURL(file);
@@ -11898,50 +11923,50 @@ function rejectLogbookHOD(logbookId) {
                 saveBtn.innerHTML = '<i class="bi bi-hourglass-split me-1"></i>Saving...';
 
                 fetch('../controllers/update_hod_profile.php', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    saveBtn.disabled = false;
-                    saveBtn.innerHTML = originalText;
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        saveBtn.disabled = false;
+                        saveBtn.innerHTML = originalText;
 
-                    if (data.success) {
-                        alert('Profile updated successfully!' + (currentPassword ? ' Password changed.' : ''));
-                        
-                        // Update session display
-                        document.getElementById('userName').textContent = data.full_name;
-                        
-                        // Update profile image if changed
-                        if (data.img_path) {
-                            document.querySelector('.profile-img').src = data.img_path + '?t=' + new Date().getTime();
+                        if (data.success) {
+                            alert('Profile updated successfully!' + (currentPassword ? ' Password changed.' : ''));
+
+                            // Update session display
+                            document.getElementById('userName').textContent = data.full_name;
+
+                            // Update profile image if changed
+                            if (data.img_path) {
+                                document.querySelector('.profile-img').src = data.img_path + '?t=' + new Date().getTime();
+                            }
+
+                            // Close modal
+                            const profileModal = bootstrap.Modal.getInstance(document.getElementById('profileModal'));
+                            if (profileModal) {
+                                profileModal.hide();
+                            }
+
+                            // Reload page or update session
+                            location.reload();
+                        } else {
+                            alert('Error: ' + (data.message || 'Failed to update profile'));
                         }
-
-                        // Close modal
-                        const profileModal = bootstrap.Modal.getInstance(document.getElementById('profileModal'));
-                        if (profileModal) {
-                            profileModal.hide();
-                        }
-
-                        // Reload page or update session
-                        location.reload();
-                    } else {
-                        alert('Error: ' + (data.message || 'Failed to update profile'));
-                    }
-                })
-                .catch(error => {
-                    saveBtn.disabled = false;
-                    saveBtn.innerHTML = originalText;
-                    console.error('Error:', error);
-                    alert('An error occurred while saving your profile');
-                });
+                    })
+                    .catch(error => {
+                        saveBtn.disabled = false;
+                        saveBtn.innerHTML = originalText;
+                        console.error('Error:', error);
+                        alert('An error occurred while saving your profile');
+                    });
             }
 
             // Toggle password change section
             function togglePasswordSection() {
                 const section = document.getElementById('passwordChangeSection');
                 const btn = document.getElementById('passwordToggleBtn');
-                
+
                 if (section.style.display === 'none') {
                     section.style.display = 'block';
                     btn.innerHTML = '<i class="bi bi-lock me-1"></i>Hide Password Change';

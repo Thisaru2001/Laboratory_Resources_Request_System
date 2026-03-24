@@ -51,7 +51,7 @@ FROM practical_finished_logbook l
 INNER JOIN lab_user u ON l.student_id = u.id
 INNER JOIN reservation r ON l.reservation_id = r.id
 LEFT JOIN lab_user sup ON l.supervisor_id = sup.id
-INNER JOIN practical_finished_supervisor_notify_and_approval sup_notify
+LEFT JOIN practical_finished_supervisor_notify_and_approval sup_notify
     ON l.id = sup_notify.practical_finished_logbook_id
     AND sup_notify.is_approved = 1
 LEFT JOIN location loc ON r.location_id = loc.id

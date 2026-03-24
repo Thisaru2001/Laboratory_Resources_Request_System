@@ -15,6 +15,7 @@ $qty                  = intval($_POST['qty'] ?? 0);
 $simultaneous_users   = intval($_POST['simultaneous_users'] ?? 1);
 $sterilization_required = $_POST['sterilization_required'] ?? 'NO';
 $reservation_required = $_POST['reservation_required'] ?? 'YES';
+$location_id          = intval($_POST['location_id'] ?? 0);
 $description          = $_POST['description'] ?? '';
 $broken_qty           = intval($_POST['broken_qty'] ?? 0);
 $repair_qty           = intval($_POST['repair_qty'] ?? 0);
@@ -23,6 +24,16 @@ if ($id <= 0 || empty($code) || empty($name) || $qty < 1) {
     echo json_encode(['success' => false, 'message' => 'Invalid input data']);
     exit();
 }
+
+// Validate location if provided
+if ($location_id > 0) {
+    $location_check = Database::search("SELECT id FROM location WHERE id = ?", "i", [$location_id]);
+    if (!$location_check || $location_check->num_rows == 0) {
+        echo json_encode(['success' => false, 'message' => 'Selected location does not exist']);
+        exit();
+    }
+}
+
 if ($qty < ($broken_qty + $repair_qty)) {
     echo json_encode(['success' => false, 'message' => 'Total quantity cannot be less than the sum of broken and repair quantities']);
     exit();
@@ -94,6 +105,23 @@ if ($result) {
     Database::iud("DELETE FROM repair WHERE equipment_id = ?", "i", [$id]);
     if ($repair_qty > 0) {
         Database::iud("INSERT INTO repair (equipment_id, repair_qty) VALUES (?, ?)", "ii", [$id, $repair_qty]);
+    }
+
+    // ── UPDATE LOCATION (EQUIPMENT_HAS_LOCATION TABLE) ───────────────────────
+    if ($location_id > 0) {
+        // Delete existing location associations for this equipment
+        Database::iud("DELETE FROM equipment_has_location WHERE equipment_id = ?", "i", [$id]);
+        
+        // Insert new location association
+        $insert_result = Database::iud(
+            "INSERT INTO equipment_has_location (equipment_id, location_id) VALUES (?, ?)",
+            "ii", [$id, $location_id]
+        );
+        
+        if (!$insert_result) {
+            echo json_encode(['success' => false, 'message' => 'Failed to update equipment location']);
+            exit();
+        }
     }
 
     // ── BUILD CHANGE SUMMARY ─────────────────────────────────────────────────

@@ -576,12 +576,21 @@ if ($students_result && $students_result->num_rows > 0) {
         }
 
         .sidebar-footer {
-            padding: 20px;
-            margin-top: 30px;
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 12px 16px;
+            margin-top: 0;
             text-align: center;
-            background: rgba(0, 0, 0, 0.2);
-            font-size: 0.85rem;
-            color: rgba(255, 255, 255, 0.7);
+            background: rgba(0, 0, 0, 0.25);
+            font-size: 0.82rem;
+            color: rgba(255, 255, 255, 0.8);
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .sidebar {
+            padding-bottom: 70px; /* important to avoid content overlap with footer */
         }
 
         /* Main */
@@ -1684,33 +1693,26 @@ if ($students_result && $students_result->num_rows > 0) {
 if (!empty($profile_image)) {
     $filename = basename($profile_image);
     
-    // Get the application root directory (LRRS folder)
-    $app_root = dirname(__DIR__);
-    $app_name = basename($app_root);
-    
-    // Construct the full file system path
-    $image_file_path = $app_root . '/assets/profile_images/' . $filename;
-    
-    error_log("Profile image - Filename: " . $filename);
-    error_log("App root: " . $app_root);
-    error_log("Full file path: " . $image_file_path);
-    error_log("File exists: " . (file_exists($image_file_path) ? 'YES' : 'NO'));
+    // Resolve local filesystem image path
+    $image_file_path = dirname(__DIR__) . '/assets/profile_images/' . $filename;
     
     if (file_exists($image_file_path)) {
-        // Construct URL that works on both localhost and online servers
-        // Get the base URL from the current request
-        $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https://' : 'http://';
+        // Build base path from current script path (works for /LRRS and root deployments)
+        $base_path = dirname(dirname($_SERVER['SCRIPT_NAME']));
+        if ($base_path === '\\' || $base_path === '.') {
+            $base_path = '';
+        }
+        $base_path = rtrim($base_path, '/');
+
+        $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https://' : 'http://';
         $host = $_SERVER['HTTP_HOST'];
-        
-        // Construct the correct URL path
-        $profile_image = $protocol . $host . '/' . $app_name . '/assets/profile_images/' . $filename;
-        error_log("Using full URL: " . $profile_image);
+
+        $profile_image = $protocol . $host . $base_path . '/assets/profile_images/' . $filename;
     } else {
-        error_log("Image NOT FOUND, using avatar");
+        error_log("Image not found in supervisor profile: " . $image_file_path);
         $profile_image = 'https://ui-avatars.com/api/?name=' . urlencode($full_name) . '&background=22c55e&color=fff&size=100';
     }
 } else {
-    error_log("No image path in database, using avatar");
     $profile_image = 'https://ui-avatars.com/api/?name=' . urlencode($full_name) . '&background=22c55e&color=fff&size=100';
 }
                     ?>
@@ -2023,7 +2025,7 @@ if (!empty($profile_image)) {
                         <table class="user-table">
                             <thead>
                                 <tr>
-                                    <th>Image</th>
+                                    <th>Profile image</th>
                                     <th>Name</th>
                                     <th>University ID</th>
                                     <th>Email</th>
@@ -2041,20 +2043,27 @@ if (!empty($profile_image)) {
                                             $simg = '';
                                             if (!empty($st['img_path'])) {
                                                 $filename = basename($st['img_path']);
-                                                $app_root = dirname(__DIR__);
-                                                $app_name = basename($app_root);
-                                                $image_file_path = $app_root . '/assets/profile_images/' . $filename;
-                                                
+                                                $image_file_path = dirname(__DIR__) . '/assets/profile_images/' . $filename;
+
                                                 if (file_exists($image_file_path)) {
-                                                    $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https://' : 'http://';
-                                                    $host = $_SERVER['HTTP_HOST'];
-                                                    $simg = $protocol . $host . '/' . $app_name . '/assets/profile_images/' . $filename;
+                                                    $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https://' : 'http://';
+                                                    $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+
+                                                    // base path should point to app root, not /views
+                                                    $basePath = dirname(dirname($_SERVER['SCRIPT_NAME'] ?? ''));
+                                                    if ($basePath === '\\' || $basePath === '.') {
+                                                        $basePath = '';
+                                                    }
+                                                    $basePath = rtrim($basePath, '/\\');
+
+                                                    $simg = $protocol . $host . $basePath . '/assets/profile_images/' . $filename;
                                                 }
                                             }
-                                            
+
                                             if (empty($simg)) {
                                                 $simg = 'https://ui-avatars.com/api/?name=' . urlencode($st['first_name'] . ' ' . $st['last_name']) . '&background=22c55e&color=fff&size=50';
                                             }
+                                           // error_log("Student profile image for " . $st['first_name'] . ": " . $simg);
                                             ?>
                                             <img src="<?= $simg ?>" style="width:42px;height:42px;border-radius:50%;object-fit:cover;border:2px solid #22c55e;">
                                         </td>
@@ -2615,8 +2624,11 @@ if (!empty($profile_image)) {
             let studentImage = '';
             if (student.img_path) {
                 const filename = student.img_path.split('/').pop();
-                const appName = window.location.pathname.split('/')[1]; // Get LRRS from URL
-                studentImage = `${window.location.protocol}//${window.location.host}/${appName}/assets/profile_images/${filename}`;
+
+                // Build path based on current URL to support root and subfolder deployment
+                const pathParts = window.location.pathname.split('/').filter(part => part !== '');
+                const basePath = pathParts.length > 1 ? `/${pathParts[0]}` : '';
+                studentImage = `${window.location.protocol}//${window.location.host}${basePath}/assets/profile_images/${filename}`;
             }
             
             // Use actual image if available, otherwise create avatar with initials

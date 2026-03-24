@@ -253,7 +253,7 @@ try {
             <!DOCTYPE html>
             <html>
             <head>
-                <title>Reservation Checked</title>
+                <title>Lab Resources Reservation Confirmed</title>
                 <style>
                     body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #333; }
                     .container { max-width: 600px; margin: 0 auto; padding: 20px; }

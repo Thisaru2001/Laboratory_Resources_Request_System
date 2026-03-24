@@ -205,10 +205,15 @@ $insert_success = Database::iud($insert_query, "siisis", [
             $mail->isHTML(true);
             $mail->Subject = 'New Reservation Approval Request - ' . $reservation_id;
 
-            // Get base URL
-            $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https://' : 'http://';
+            // Get base URL dynamically (works on localhost + online root/subfolder)
+            $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https://' : 'http://';
             $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
-            $base_url = $protocol . $host . '/LRRS/';
+            $scriptDir = dirname($_SERVER['SCRIPT_NAME'] ?? '');
+            $basePath = rtrim($scriptDir, '/\\');
+            if ($basePath === '.' || $basePath === '/') {
+                $basePath = '';
+            }
+            $base_url = $protocol . $host . $basePath . '/';
 
             // Build equipment list for email
             $equipment_list_html = '';

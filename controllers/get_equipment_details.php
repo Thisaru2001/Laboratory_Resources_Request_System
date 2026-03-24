@@ -18,7 +18,7 @@ if (empty($equipment_code)) {
     exit();
 }
 
-// Fix the query - use 'code' column instead of 'equipment_code'C:\xampp\htdocs\LRRS\controllers\get_equipment_details.php
+// Fix the query - use 'code' column instead of 'equipment_code'
 $query = "SELECT 
     e.id, 
     e.code, 
@@ -29,7 +29,10 @@ $query = "SELECT
     e.sterilization_required,
     e.reservation_required, 
     e.image_path as image_path,
-    e.added_datatime,  -- Added this field
+    e.added_datatime,
+    e.is_hod_checked,
+    e.updated_details_datetime,
+    GROUP_CONCAT(DISTINCT l.id SEPARATOR ',') as location_ids,
     GROUP_CONCAT(DISTINCT l.location SEPARATOR ', ') as locations
 FROM equipment e
 LEFT JOIN equipment_has_location ehl ON e.id = ehl.equipment_id
@@ -85,6 +88,20 @@ if (!empty($row['image_path'])) {
     }
 }
 
+// Get primary location ID (first one if multiple)
+$primary_location_id = null;
+if (!empty($row['location_ids'])) {
+    $location_ids = explode(',', $row['location_ids']);
+    $primary_location_id = intval($location_ids[0]);
+}
+
+// Extract primary location name for lab_location field
+$lab_location = '';
+if (!empty($row['locations'])) {
+    $locations = explode(', ', $row['locations']);
+    $lab_location = trim($locations[0]);
+}
+
 // Return JSON data
 echo json_encode([
     'success' => true,
@@ -98,8 +115,13 @@ echo json_encode([
         'sterilization_required' => $row['sterilization_required'] ?? 'NO',
         'reservation_required' => $row['reservation_required'] ?? 'YES',
         'image_path' => $image_url,
-        'locations' => $row['locations'] ?? 'Not assigned',  //
-        'addedDate' => $row['added_datatime'] ?? 'Unknown'   // 
+        'lab_location' => $lab_location,
+        'location_id' => $primary_location_id,           // Primary location ID for form
+        'location_ids' => $row['location_ids'] ?? '',    // All location IDs
+        'locations' => $row['locations'] ?? 'Not assigned',  // All location names
+        'addedDate' => $row['added_datatime'] ?? 'Unknown',
+        'is_hod_checked' => $row['is_hod_checked'] ?? 0,
+        'updated_details_datetime' => $row['updated_details_datetime'] ?? null
     ]
 ]);
 exit();

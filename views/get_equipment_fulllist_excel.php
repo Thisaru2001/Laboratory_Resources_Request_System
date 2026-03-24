@@ -70,7 +70,6 @@ while ($row = $result->fetch_assoc()) {
         $counter++,
         $row['code'] ?? '—',
         $row['name'] ?? '—',
-        $row['description'] ?? '—',
         $row['total_qty'] ?? 0,
         $available_qty,
         $row['broken_qty'] ?? 0,
@@ -78,9 +77,7 @@ while ($row = $result->fetch_assoc()) {
         $usage_percentage . '%',
         $row['locations'] ?? 'Not assigned',
         $row['sterilization_required'] ?? 'NO',
-        $row['reservation_required'] ?? 'YES',
-        $added_date,
-        $row['total_bookings'] ?? 0
+        $row['reservation_required'] ?? 'YES'
     ];
     
     // Calculate totals for summary
@@ -109,7 +106,6 @@ $writer->setHeaders([
     '#',
     'Code',
     'Name',
-    'Description',
     'Total',
     'Available',
     'Broken',
@@ -117,19 +113,16 @@ $writer->setHeaders([
     'Usage %',
     'Location(s)',
     "Sterilization\nRequired",
-    "Reservation\nRequired",
-    'Date Added',
-    'Total Bookings'
+    "Reservation\nRequired"
 ]);
 
 // Set which columns get the quantity color treatment (0-based indices)
-// Available = index 5, Broken = index 6, Under Repair = index 7, Usage % = index 8
-$writer->setQtyColumns(5, 6, 7, 8);
+// Available = index 4, Broken = index 5, Under Repair = index 6, Usage % = index 7
+$writer->setQtyColumns(4, 5, 6, 7);
 
 // Set summary data
 $writer->setSummary([
     'total_types'     => count($rows),
-    'total_units'     => $total_units,
     'total_available' => $total_available,
     'total_broken'    => $total_broken,
     'total_repair'    => $total_repair,

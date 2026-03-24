@@ -492,10 +492,15 @@ function sendRoleNotification($recipient_email, $first_name, $last_name, $user_i
             $role_text = $user_type;
         }
 
-        // Get base URL
-        $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https://' : 'http://';
-        $host = $_SERVER['HTTP_HOST'] ?? '100.27.246.223';
-       $base_url = $protocol . $host . '/';  // FIXED - remove /LRRS/
+        // Get base URL dynamically (works in localhost + hosted root/subfolder)
+        $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https://' : 'http://';
+        $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+        $scriptDir = dirname($_SERVER['SCRIPT_NAME'] ?? '');
+        $basePath = rtrim($scriptDir, '/\\');
+        if ($basePath === '.' || $basePath === '/') {
+            $basePath = '';
+        }
+        $base_url = $protocol . $host . $basePath . '/';
 
         $mail->Body = "
         <html>
