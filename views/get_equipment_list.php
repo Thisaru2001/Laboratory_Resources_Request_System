@@ -66,7 +66,7 @@ if ($result->num_rows === 0) {
 
 while ($row = $result->fetch_assoc()) {
     // Handle image path - try to use relative path even if file check fails
-    $image_url = 'https://upload.wikimedia.org/wikipedia/commons/b/b7/Ukrainian_microscope_%28cropped%29.jpg'; // Default image
+    $image_url = '../assets/equipment_images/default_img.png'; // Default image
     
     if (!empty($row['image_path'])) {
         $path = trim($row['image_path']);

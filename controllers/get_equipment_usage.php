@@ -3,7 +3,7 @@ header('Content-Type: application/json');
 require_once '../config/database.php';
 
 try {
-    // Get all equipment with maintenance, broken, and usage statistics
+    // Get all equipment with maintenance, broken, usage statistics, and locations
     $query = "
        SELECT 
     e.id,
@@ -19,7 +19,9 @@ try {
     -- Calculate broken quantity
     COALESCE(b.broken_qty, 0) as broken_qty,
     -- Count total bookings
-    COUNT(DISTINCT be.id) as total_bookings
+    COUNT(DISTINCT be.id) as total_bookings,
+    -- Get location data
+    GROUP_CONCAT(DISTINCT l.location SEPARATOR ', ') as locations
 FROM equipment e
 LEFT JOIN (
     SELECT equipment_id, SUM(repair_qty) as repair_qty
@@ -32,6 +34,8 @@ LEFT JOIN (
     GROUP BY equipment_id
 ) b ON e.id = b.equipment_id
 LEFT JOIN book_equipment be ON e.id = be.equipment_id
+LEFT JOIN equipment_has_location ehl ON e.id = ehl.equipment_id
+LEFT JOIN location l ON ehl.location_id = l.id
 WHERE e.is_hod_checked = 1
 GROUP BY e.id, e.code, e.name, e.total_qty, e.image_path, e.description, 
          e.added_datatime, e.is_hod_checked, r.repair_qty, b.broken_qty
@@ -61,6 +65,11 @@ ORDER BY e.id
             ? '../' . ltrim(str_replace('\\', '/', $row['image_path']), '/')
             : 'https://cdn-icons-png.flaticon.com/512/2941/2941514.png';
         
+        // Process location data
+        $location = !empty($row['locations']) && $row['locations'] !== null
+            ? htmlspecialchars($row['locations'])
+            : 'Not assigned';
+        
         $equipment_list[] = [
             'id' => (int)$row['id'],
             'code' => $row['code'] ?? 'N/A',
@@ -72,7 +81,8 @@ ORDER BY e.id
             'maintenance' => (int)($row['maintenance_pending'] ?? 0),
             'broken' => (int)($row['broken_qty'] ?? 0),
             'usage' => $usage_percentage,
-            'total_bookings' => (int)$row['total_bookings']
+            'total_bookings' => (int)$row['total_bookings'],
+            'location' => $location
         ];
     }
 

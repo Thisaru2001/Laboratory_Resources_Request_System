@@ -60,7 +60,7 @@ try {
     }
 
     // Soft delete
-    Database::search("UPDATE equipment SET is_hod_checked = 0 WHERE id = ?", "i", [$equipmentId]);
+    Database::iud("UPDATE equipment SET is_hod_checked = 0 WHERE id = ?", "i", [$equipmentId]);
 
     // Verify by re-querying (don't trust UPDATE return value)
     $verifyResult = Database::search("SELECT is_hod_checked FROM equipment WHERE id = ?", "i", [$equipmentId]);

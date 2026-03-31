@@ -1719,13 +1719,12 @@ if ($requests_result && $requests_result->num_rows > 0) {
                     if (!empty($img_path)) {
                         $filename = basename($img_path);
                         $app_root = dirname(__DIR__);
-                        $app_name = basename($app_root);
                         $image_file_path = $app_root . '/assets/profile_images/' . $filename;
 
                         if (file_exists($image_file_path)) {
                             $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https://' : 'http://';
                             $host = $_SERVER['HTTP_HOST'];
-                            $profile_image = $protocol . $host . '/' . $app_name . '/assets/profile_images/' . $filename;
+                            $profile_image = $protocol . $host . '/assets/profile_images/' . $filename;
                         } else {
                             $profile_image = 'https://ui-avatars.com/api/?name=' . urlencode($full_name) . '&background=22c55e&color=fff&size=100';
                         }
@@ -1884,8 +1883,10 @@ if ($requests_result && $requests_result->num_rows > 0) {
                                 <tr>
                                     <th>Image</th>
                                     <th>Equipment Name</th>
+                                    <th>Total Qty</th>
                                     <th>Maintenance qty</th>
                                     <th>Broken qty</th>
+                                    <th>Location</th>
                                     <th>Usage %</th>
                                     <th>Actions</th>
                                 </tr>
@@ -1904,9 +1905,13 @@ if ($requests_result && $requests_result->num_rows > 0) {
             e.total_qty,
             e.image_path,
             (SELECT COALESCE(SUM(broken_qty), 0) FROM broken WHERE equipment_id = e.id) as broken_qty,
-            (SELECT COALESCE(SUM(repair_qty), 0) FROM repair WHERE equipment_id = e.id) as repair_qty
+            (SELECT COALESCE(SUM(repair_qty), 0) FROM repair WHERE equipment_id = e.id) as repair_qty,
+            GROUP_CONCAT(DISTINCT l.location SEPARATOR ', ') as locations
         FROM equipment e
+        LEFT JOIN equipment_has_location ehl ON e.id = ehl.equipment_id
+        LEFT JOIN location l ON ehl.location_id = l.id
         WHERE e.is_hod_checked = 1
+        GROUP BY e.id
         ORDER BY e.name ASC";
 
                                 $equipment_result = Database::search($equipment_query);
@@ -1918,6 +1923,9 @@ if ($requests_result && $requests_result->num_rows > 0) {
                                         $total_qty = (int)$equipment_row['total_qty'];
                                         $broken_qty = (int)$equipment_row['broken_qty'];
                                         $repair_qty = (int)$equipment_row['repair_qty'];
+                                        $equipment_location = !empty($equipment_row['locations']) && $equipment_row['locations'] !== null 
+                                            ? htmlspecialchars($equipment_row['locations']) 
+                                            : 'Not assigned';
 
                                         // Calculate available quantity
                                         $available_qty = $total_qty - ($broken_qty + $repair_qty);
@@ -1956,9 +1964,10 @@ if ($requests_result && $requests_result->num_rows > 0) {
                                             'code' => $equipment_code,
                                             'name' => $name,
                                             'image' => $image_path,
-                                            'total' => $total_qty,
+                                            'qty' => $total_qty,
                                             'broken' => $broken_qty,
                                             'maintenance' => $repair_qty,
+                                            'location' => $equipment_location,
                                             'usage' => $usage_percentage,
                                             'id' => $equipment_row['id']
                                         ];
@@ -3013,7 +3022,7 @@ if ($requests_result && $requests_result->num_rows > 0) {
             tableBody.innerHTML = '';
 
             if (!equipment || equipment.length === 0) {
-                tableBody.innerHTML = '<tr><td colspan="6" class="text-center py-4">No equipment found</td></tr>';
+                tableBody.innerHTML = '<tr><td colspan="8" class="text-center py-4">No equipment found</td></tr>';
                 return;
             }
 
@@ -3023,8 +3032,10 @@ if ($requests_result && $requests_result->num_rows > 0) {
                 const code = item.code || 'N/A';
                 const name = item.name || 'Unknown';
                 const image = item.image || 'https://cdn-icons-png.flaticon.com/512/2941/2941514.png';
+                const qty = item.qty || 0;
                 const maintenance = item.maintenance || 0;
                 const broken = item.broken || 0;
+                const location = (item.location && item.location.trim() !== '') ? item.location.trim() : null;
                 const usage = Math.round(parseFloat(item.usage) || 0);
 
                 let barColor = '#22c55e';
@@ -3042,7 +3053,10 @@ if ($requests_result && $requests_result->num_rows > 0) {
                      onerror="this.src='https://cdn-icons-png.flaticon.com/512/2941/2941514.png'"
                      alt="${name}">
             </td>
-            <td><strong>${name}</strong></td>
+            <td>${name}</td>
+            <td style="width: 80px; padding: 8px 4px; text-align: center;">
+                <span style="font-weight: 600;">${qty}</span>
+            </td>
             <td>
                 ${maintenance > 0 
                     ? `<span class="badge bg-warning">${maintenance}</span>` 
@@ -3052,6 +3066,15 @@ if ($requests_result && $requests_result->num_rows > 0) {
                 ${broken > 0 
                     ? `<span class="badge bg-danger">${broken}</span>` 
                     : '<span class="text-muted">------</span>'}
+            </td>
+            <td style="width: 150px; padding: 8px 4px;">
+                ${!location
+                    ? `<span class="badge bg-secondary" style="background-color: #9ca3af !important;">
+                        <i class="bi bi-geo-alt"></i> Not Assigned
+                       </span>`
+                    : `<span class="badge bg-info" style="background-color: #0ea5e9 !important;">
+                        <i class="bi bi-geo-alt"></i> ${location}
+                       </span>`}
             </td>
             <td>
                 <div class="d-flex align-items-center gap-2">

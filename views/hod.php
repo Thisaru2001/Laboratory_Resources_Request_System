@@ -4761,8 +4761,10 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
                                     <tr>
                                         <th>Image</th>
                                         <th>Equipment Name</th>
+                                        <th>Total Qty</th>
                                         <th>Maintenance Qty</th>
                                         <th>Broken Qty</th>
+                                         <th>Location</th>
                                         <th>Usage %</th>
                                         <th>Actions</th>
                                     </tr>
@@ -4781,12 +4783,24 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
             e.total_qty,
             e.image_path,
             (SELECT COALESCE(SUM(broken_qty), 0) FROM broken WHERE equipment_id = e.id) as broken_qty,
-            (SELECT COALESCE(SUM(repair_qty), 0) FROM repair WHERE equipment_id = e.id) as repair_qty
+            (SELECT COALESCE(SUM(repair_qty), 0) FROM repair WHERE equipment_id = e.id) as repair_qty,
+            GROUP_CONCAT(DISTINCT l.location SEPARATOR ', ') as locations
         FROM equipment e
+        LEFT JOIN equipment_has_location ehl ON e.id = ehl.equipment_id
+        LEFT JOIN location l ON ehl.location_id = l.id
         WHERE e.is_hod_checked = 1
+        GROUP BY e.id
         ORDER BY e.name ASC";
 
                                     $equipment_result = Database::search($equipment_query, '');
+                                    
+                                    // DEBUG: Check if query executed and has results
+                                    error_log("Equipment Query Executed. Rows found: " . ($equipment_result ? $equipment_result->num_rows : 0));
+                                    if ($equipment_result && $equipment_result->num_rows > 0) {
+                                        $first_row = $equipment_result->fetch_assoc();
+                                        error_log("First Equipment Row: " . json_encode($first_row));
+                                        $equipment_result->data_seek(0); // Reset pointer
+                                    }
 
                                     if ($equipment_result && $equipment_result->num_rows > 0) {
                                         // Get max booking count for dynamic percentage calculation
@@ -4807,6 +4821,10 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
                                             $broken_qty = (int)$row['broken_qty'];
                                             $repair_qty = (int)$row['repair_qty'];
                                             $equipment_id = (int)$row['id'];
+                                            
+                                            $equipment_location = !empty($row['locations']) && $row['locations'] !== null 
+                                                ? htmlspecialchars($row['locations']) 
+                                                : 'Not assigned';
 
                                             // Calculate available quantity
                                             $available_qty = $total_qty - ($broken_qty + $repair_qty);
@@ -4847,6 +4865,7 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
                                                 'available' => $available_qty,
                                                 'broken' => $broken_qty,
                                                 'maintenance' => $repair_qty,
+                                                'location' => $equipment_location,
                                                 'usage' => $usage_percentage,
                                                 'id' => $equipment_id
                                             ];
@@ -4908,6 +4927,18 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
                                                 </td>
 
                                                 <td>
+                                                    <?php if ($equipment_location === 'Not assigned'): ?>
+                                                        <span class="badge bg-secondary" style="font-size: 0.85rem; padding: 6px 10px;">
+                                                            <i class="bi bi-geo-alt"></i> Not Assigned
+                                                        </span>
+                                                    <?php else: ?>
+                                                        <span class="badge bg-info" style="font-size: 0.85rem; padding: 6px 10px; background-color: #0ea5e9 !important;">
+                                                            <i class="bi bi-geo-alt"></i> <?php echo $equipment_location; ?>
+                                                        </span>
+                                                    <?php endif; ?>
+                                                </td>
+
+                                                <td>
                                                     <div class="d-flex align-items-center gap-2">
                                                         <div style="width:100px;height:8px;background:#e9ecef;border-radius:4px;overflow:hidden;">
                                                             <div style="width:<?php echo $usage_percentage; ?>%;height:8px;background:<?php echo $barColor; ?>;border-radius:4px;transition:width 0.3s ease;"></div>
@@ -4938,7 +4969,7 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
                                     } else {
                                         ?>
                                         <tr>
-                                            <td colspan="6" class="text-center py-5">
+                                            <td colspan="7" class="text-center py-5">
                                                 <div class="text-muted">
                                                     <i class="bi bi-inbox" style="font-size: 2rem;"></i>
                                                     <p class="mt-2">No equipment found in database</p>
@@ -5974,6 +6005,25 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
         <!-- Bootstrap JS -->
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
         <script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
             var equipmentDataTable = <?php echo json_encode($equipmentDataTable, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>;
             let equipmentUsageData = [];
 
@@ -7292,7 +7342,7 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
                 tableBody.innerHTML = '';
 
                 if (!equipment || equipment.length === 0) {
-                    tableBody.innerHTML = '<tr><td colspan="6" class="text-center py-4">No equipment found</td></tr>';
+                    tableBody.innerHTML = '<tr><td colspan="8" class="text-center py-4">No equipment found</td></tr>';
                     return;
                 }
 
@@ -7302,8 +7352,10 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
                     const code = item.code || 'N/A';
                     const name = item.name || 'Unknown';
                     const image = item.image || 'https://cdn-icons-png.flaticon.com/512/2941/2941514.png';
+                    const qty = item.qty || 0;
                     const maintenance = item.maintenance || 0;
                     const broken = item.broken || 0;
+                    const location = (item.location && item.location.trim() !== '') ? item.location.trim() : null;
                     const usage = Math.round(parseFloat(item.usage) || 0);
 
                     let barColor = '#22c55e';
@@ -7322,6 +7374,9 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
                      alt="${name}">
             </td>
             <td style="font-size: 0.9rem;">${name}</td>
+            <td style="width: 80px; padding: 8px 4px; text-align: center;">
+                <span style="font-weight: 600;">${qty}</span>
+            </td>
             <td style="width: 120px; padding: 8px 4px;">
                 ${maintenance > 0 
                     ? `<span class="badge bg-warning">${maintenance}</span>` 
@@ -7331,6 +7386,15 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
                 ${broken > 0 
                     ? `<span class="badge bg-danger">${broken}</span>` 
                     : '<span class="text-muted">------</span>'}
+            </td>
+            <td style="width: 150px; padding: 8px 4px;">
+                ${!location
+                    ? `<span class="badge bg-secondary" style="background-color: #9ca3af !important;">
+                        <i class="bi bi-geo-alt"></i> Not Assigned
+                       </span>`
+                    : `<span class="badge bg-info" style="background-color: #0ea5e9 !important;">
+                        <i class="bi bi-geo-alt"></i> ${location}
+                       </span>`}
             </td>
             <td>
                 <div class="d-flex align-items-center gap-2">
@@ -11598,7 +11662,7 @@ if (isset($_SESSION["user_id"]) && isset($_SESSION["user_role"]) && $_SESSION["u
 
                             // If already processed, just refresh and return
                             if (data.already_processed) {
-                                showSuccess('Equipment already approved!');
+                                showSuccess('Equipment approved!');
                                 loadNotifications();
                                 return null;
                             }

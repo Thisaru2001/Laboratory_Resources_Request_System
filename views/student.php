@@ -28,6 +28,21 @@ if (!$user_result) {
 }
 $full_name = trim($first_name . ' ' . $last_name);
 
+// Load .env file and get OpenRouter API key
+$env_file_path = __DIR__ . '/../.env';
+$env = @parse_ini_file($env_file_path);
+$openrouter_api_key = '';
+
+if ($env === false) {
+    error_log("WARNING: .env file not found at: " . $env_file_path);
+} else if (!isset($env['OPENROUTER_API_KEY']) || empty($env['OPENROUTER_API_KEY'])) {
+    error_log("WARNING: OPENROUTER_API_KEY not found in .env file");
+} else {
+    $openrouter_api_key = $env['OPENROUTER_API_KEY'];
+    error_log("API KEY LOADED: " . substr($openrouter_api_key, 0, 10) . "...");
+}
+
+
 // Get notification count - only unread
 $notif_query = "SELECT COUNT(*) as count FROM notification WHERE owner_of_notification = ? AND status = 'unread'";
 $notif_result = Database::search($notif_query, "i", [$student_id]);
@@ -64,7 +79,10 @@ if ($supervisor_result && $supervisor_result->num_rows > 0) {
 }
 
 // Get locations for dropdown
-$location_query = "SELECT id, location FROM location ORDER BY location";
+$location_query = "SELECT id, location 
+FROM location 
+WHERE is_room = 0 
+ORDER BY location;";
 $location_result = Database::search($location_query);
 
 // Get student's reservations - INCLUDING continue_days
@@ -732,6 +750,92 @@ $calendar_events_json = json_encode($calendar_events);
             box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.1);
         }
 
+        /* LabBot Chatbot Styles */
+        #chatMessages {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+        }
+
+        .chat-message-user {
+            display: flex;
+            justify-content: flex-end;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .chat-message-user > div {
+            background: #10b981;
+            color: white;
+            padding: 12px 16px;
+            border-radius: 12px;
+            max-width: 70%;
+            word-wrap: break-word;
+        }
+
+        .chat-message-bot {
+            display: flex;
+            justify-content: flex-start;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .chat-message-bot > div {
+            background: #334155;
+            color: #e2e8f0;
+            padding: 12px 16px;
+            border-radius: 12px;
+            max-width: 70%;
+            word-wrap: break-word;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .chat-loading {
+            display: flex;
+            gap: 6px;
+            padding: 12px 16px;
+        }
+
+        .chat-loading span {
+            width: 8px;
+            height: 8px;
+            background: #999;
+            border-radius: 50%;
+            animation: pulse 1.4s infinite;
+        }
+
+        .chat-loading span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .chat-loading span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes pulse {
+            0%, 60%, 100% {
+                opacity: 0.5;
+            }
+            30% {
+                opacity: 1;
+            }
+        }
+
+        @keyframes blink {
+            0%, 48%, 100% {
+                opacity: 1;
+            }
+            50%, 98% {
+                opacity: 0;
+            }
+        }
+
         /* Equipment dropdown */
         .position-relative {
             position: relative !important;
@@ -1323,6 +1427,11 @@ $calendar_events_json = json_encode($calendar_events);
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
         }
+
+        @keyframes lbdot {
+    0%, 60%, 100% { opacity: 0.3; transform: translateY(0); }
+    30% { opacity: 1; transform: translateY(-3px); }
+}
     </style>
     <link rel="icon" type="image/svg+xml" href="../assets/resources/flask.svg">
 </head>
@@ -1336,6 +1445,7 @@ $calendar_events_json = json_encode($calendar_events);
         <h4><i class="bi bi-flask"></i> MicroLab</h4>
         <a onclick="showSection('dashboard')" class="active"><i class="bi bi-speedometer2"></i> Dashboard</a>
         <a onclick="showSection('equipment')"><i class="bi bi-tools"></i> Equipment</a>
+        <a onclick="showSection('labbot')"><i class="bi bi-chat-dots"></i> LabBot</a>
         <a onclick="showSection('history')"><i class="bi bi-clock-history"></i> Reservation History</a>
         <a href="../logout.php"><i class="bi bi-box-arrow-right"></i> Logout</a>
         <div class="sidebar-footer">
@@ -1977,6 +2087,96 @@ error_log("Profile image path: " . $profile_image);
                 </div>
             </div>
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+          <!-- LabBot AI Chatbot Section -->
+<div id="labbotSection" style="display: none;">
+   <h5 class="mb-3" style="color: white; font-style: italic;">AI Assistant</h5>
+<div style="display: flex; flex-direction: column; height: 560px; background: #0f172a; border-radius: 20px; overflow: hidden; border: 1px solid #1e293b; box-shadow: 0 20px 40px rgba(0,0,0,0.3);">
+
+        <!-- Header -->
+        <div style="background: #1e293b; padding: 14px 20px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #334155; flex-shrink: 0;">
+            <div style="width: 36px; height: 36px; border-radius: 50%; background: #10b981; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                <i class="bi bi-robot" style="color: white; font-size: 16px;"></i>
+            </div>
+            <div>
+                <div style="color: #f1f5f9; font-weight: 600; font-size: 14px;">LabBot</div>
+                <div style="color: #10b981; font-size: 11px; display: flex; align-items: center; gap: 4px;">
+                    <span style="width: 6px; height: 6px; border-radius: 50%; background: #10b981; display: inline-block;"></span>
+                    Online · AI Assistant
+                </div>
+            </div>
+            <div style="margin-left: auto; color: #475569; font-size: 11px;">Microbiology Lab</div>
+        </div>
+
+        <!-- Messages -->
+        <div id="chatMessages" style="flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 10px; scroll-behavior: smooth; scrollbar-width: thin; scrollbar-color: #334155 transparent;">
+            <!-- Welcome message -->
+            <div style="display: flex; gap: 8px; align-items: flex-end;">
+                <div style="width: 28px; height: 28px; border-radius: 50%; background: #10b981; color: white; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; flex-shrink: 0;"><i class="bi bi-robot" style="color: white; font-size: 16px;"></i></div>
+                <div style="max-width: 72%; background: #1e293b; color: #cbd5e1; padding: 10px 14px; border-radius: 16px; border-bottom-left-radius: 4px; font-size: 13px; line-height: 1.5;">
+                    <div style="font-weight: 600; font-size: 11px; margin-bottom: 4px; opacity: 0.6;">LabBot</div>
+                    Hello! I'm LabBot, your AI assistant for the Microbiology Department. How can I help you today?
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick chips -->
+        <!-- <div id="labbotChips" style="display: flex; gap: 6px; flex-wrap: wrap; padding: 0 16px 10px; flex-shrink: 0;">
+            <span onclick="sendChip('How do I make a reservation?')" style="background: #1e293b; border: 1px solid #334155; color: #94a3b8; font-size: 11px; padding: 5px 10px; border-radius: 20px; cursor: pointer;">How do I make a reservation?</span>
+            <span onclick="sendChip('What equipment is available?')" style="background: #1e293b; border: 1px solid #334155; color: #94a3b8; font-size: 11px; padding: 5px 10px; border-radius: 20px; cursor: pointer;">Available equipment</span>
+            <span onclick="sendChip('Lab safety protocols')" style="background: #1e293b; border: 1px solid #334155; color: #94a3b8; font-size: 11px; padding: 5px 10px; border-radius: 20px; cursor: pointer;">Safety protocols</span>
+        </div> -->
+
+        <!-- Input -->
+        <div style="display: flex; gap: 8px; padding: 12px 16px; background: #1e293b; border-top: 1px solid #334155; flex-shrink: 0; align-items: center;">
+            <input type="text" id="labbotInput" placeholder="Type a message..."
+                style="flex: 1; background: #0f172a; border: 1px solid #334155; color: #f1f5f9; border-radius: 24px; padding: 9px 16px; font-size: 13px; outline: none;"
+                onkeypress="if(event.key==='Enter') sendLabbotMessage()"
+                onfocus="this.style.borderColor='#10b981'" onblur="this.style.borderColor='#334155'">
+            <button onclick="sendLabbotMessage()" id="labbotSendBtn"
+                style="width: 36px; height: 36px; border-radius: 50%; background: #10b981; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.2s;">
+                <i class="bi bi-send-fill" style="color: white; font-size: 13px;"></i>
+            </button>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
             <!-- Reservation History Section (unchanged) -->
             <div id="historySection" style="display: none;">
                 <h3 class="mb-4" style="color: white;">Reservation History</h3>
@@ -2030,6 +2230,255 @@ error_log("Profile image path: " . $profile_image);
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
+
+
+
+// ========== LabBot AI Chatbot Functions ==========
+const OPENROUTER_API_KEY = '<?php echo htmlspecialchars($openrouter_api_key, ENT_QUOTES, 'UTF-8'); ?>';
+const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions';
+const STUDENT_NAME = '<?php echo htmlspecialchars($full_name, ENT_QUOTES, 'UTF-8'); ?>';
+const STUDENT_IMAGE = '<?php echo htmlspecialchars($image_url, ENT_QUOTES, 'UTF-8'); ?>';
+
+let labBotConversationHistory = [
+    {
+        role: 'system',
+        content: 'You are LabBot, an AI assistant for the Microbiology Department, Faculty of Science, University of Kelaniya.You assist students with questions related to microbiology, practical lab work, research, general biology topics, laboratory equipment, and safety protocols.Provide helpful, concise, and professional responses at all times.If you are unsure about specific lab-related details, advise the student to contact the Technical Officer.'
+    }
+];
+
+function sendChip(text) {
+    document.getElementById('labbotChips').style.display = 'none';
+    document.getElementById('labbotInput').value = text;
+    sendLabbotMessage();
+}
+
+function sendLabbotMessage() {
+    const input = document.getElementById('labbotInput');
+    const message = input.value.trim();
+    
+    if (!message) return;
+
+    // Check if API key is configured
+    if (!OPENROUTER_API_KEY || OPENROUTER_API_KEY.trim() === '') {
+        addChatMessageWithTyping('I apologize, but the AI assistant is not properly configured on this server. The API key is missing. Please contact your lab administrator to set up the OPENROUTER_API_KEY in the .env file.', 'bot');
+        return;
+    }
+
+    addChatMessage(message, 'user');
+    input.value = '';
+
+    // Loading bubble
+    const loadingDiv = document.createElement('div');
+    loadingDiv.id = 'labbotLoading';
+    loadingDiv.style.cssText = 'display:flex;gap:8px;align-items:flex-end;';
+    loadingDiv.innerHTML = `
+        <div style="width:28px;height:28px;border-radius:50%;background:#10b981;color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0;">LB</div>
+        <div style="background:#1e293b;padding:10px 14px;border-radius:16px;border-bottom-left-radius:4px;display:flex;gap:5px;align-items:center;">
+            <span style="width:7px;height:7px;background:#64748b;border-radius:50%;animation:lbdot 1.4s infinite;display:inline-block;"></span>
+            <span style="width:7px;height:7px;background:#64748b;border-radius:50%;animation:lbdot 1.4s infinite 0.2s;display:inline-block;"></span>
+            <span style="width:7px;height:7px;background:#64748b;border-radius:50%;animation:lbdot 1.4s infinite 0.4s;display:inline-block;"></span>
+        </div>`;
+    document.getElementById('chatMessages').appendChild(loadingDiv);
+    document.getElementById('chatMessages').scrollTop = document.getElementById('chatMessages').scrollHeight;
+
+    labBotConversationHistory.push({
+        role: 'user',
+        content: message
+    });
+
+    fetch(OPENROUTER_API_URL, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${OPENROUTER_API_KEY}`,
+            'HTTP-Referer': window.location.origin,
+            'X-Title': 'LabBot'
+        },
+        body: JSON.stringify({
+         model: 'nvidia/nemotron-3-super-120b-a12b:free',
+            messages: labBotConversationHistory,
+            temperature: 0.7,
+            max_tokens: 300
+        })
+    })
+    .then(response => {
+        // Check for HTTP errors first
+        if (response.status === 401) {
+            throw new Error('API_UNAUTHORIZED: Your API key is invalid or expired. Please contact the lab administrator.');
+        }
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        const loading = document.getElementById('labbotLoading');
+        if (loading) loading.remove();
+
+        if (data.choices && data.choices[0] && data.choices[0].message) {
+            const botResponse = data.choices[0].message.content;
+            labBotConversationHistory.push({
+                role: 'assistant',
+                content: botResponse
+            });
+            addChatMessageWithTyping(botResponse, 'bot');
+        } else if (data.error) {
+            let errorMsg = 'Sorry, I encountered an error. ';
+            if (data.error.message === 'Incorrect API key provided' || data.error.message?.includes('authentication')) {
+                errorMsg += 'The API key is invalid or not configured. Please check with the lab administrator.';
+            } else {
+                errorMsg += data.error.message || 'Please try again.';
+            }
+            addChatMessageWithTyping(errorMsg, 'bot');
+        } else {
+            addChatMessageWithTyping('Sorry, something went wrong. Please try again.', 'bot');
+        }
+    })
+    .catch(error => {
+        console.error('LabBot Error:', error);
+        const loading = document.getElementById('labbotLoading');
+        if (loading) loading.remove();
+        
+        let errorMsg = 'Sorry, I\'m having trouble connecting. ';
+        if (error.message?.includes('API_UNAUTHORIZED')) {
+            errorMsg += 'The API key is invalid. Please contact your lab administrator.';
+        } else if (error.message?.includes('401')) {
+            errorMsg += 'Authentication failed. Please ensure the API key is properly configured.';
+        } else {
+            errorMsg += 'Please check your internet connection or try again later.';
+        }
+        addChatMessageWithTyping(errorMsg, 'bot');
+    });
+}
+
+function addChatMessage(text, sender) {
+    const chatMessages = document.getElementById('chatMessages');
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;gap:8px;align-items:flex-end;' + (sender === 'user' ? 'flex-direction:row-reverse;' : '');
+
+    let avatar = document.createElement('div');
+    let label = 'LabBot';
+    const bubbleBg  = sender === 'user' ? '#10b981' : '#1e293b';
+    const textColor = sender === 'user' ? 'white' : '#cbd5e1';
+    const radius    = sender === 'user' ? '16px 16px 4px 16px' : '16px 16px 16px 4px';
+
+    if (sender === 'user') {
+        // Student message - show profile image
+        label = STUDENT_NAME;
+        avatar.innerHTML = `<img src="${STUDENT_IMAGE}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;flex-shrink:0;">`;
+    } else {
+        // Bot message - show initials
+        avatar.style.cssText = 'width:28px;height:28px;border-radius:50%;background:#10b981;color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0;';
+        avatar.textContent = 'LB';
+    }
+
+    const messageContent = document.createElement('div');
+    messageContent.style.cssText = `max-width:72%;background:${bubbleBg};color:${textColor};padding:10px 14px;border-radius:${radius};font-size:13px;line-height:1.5;word-break:break-word;`;
+    messageContent.innerHTML = `
+        <div style="font-weight:600;font-size:11px;margin-bottom:4px;opacity:0.6;">${label}</div>
+        ${escapeHtml(text)}`;
+
+    if (sender === 'user') {
+        row.appendChild(messageContent);
+        row.appendChild(avatar);
+    } else {
+        row.appendChild(avatar);
+        row.appendChild(messageContent);
+    }
+
+    chatMessages.appendChild(row);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function addChatMessageWithTyping(text, sender) {
+    // Ensure text is a string
+    if (!text || typeof text !== 'string') {
+        text = String(text || '');
+    }
+    
+    const chatMessages = document.getElementById('chatMessages');
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;gap:8px;align-items:flex-end;' + (sender === 'user' ? 'flex-direction:row-reverse;' : '');
+
+    let avatar = document.createElement('div');
+    let label = 'LabBot';
+    const bubbleBg  = sender === 'user' ? '#10b981' : '#1e293b';
+    const textColor = sender === 'user' ? 'white' : '#cbd5e1';
+    const radius    = sender === 'user' ? '16px 16px 4px 16px' : '16px 16px 16px 4px';
+
+    if (sender === 'user') {
+        // Student message - show profile image, display instantly (no typing animation)
+        label = STUDENT_NAME;
+        avatar.innerHTML = `<img src="${STUDENT_IMAGE}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;flex-shrink:0;">`;
+        
+        const messageContent = document.createElement('div');
+        messageContent.style.cssText = `max-width:72%;background:${bubbleBg};color:${textColor};padding:10px 14px;border-radius:${radius};font-size:13px;line-height:1.5;word-break:break-word;`;
+        messageContent.innerHTML = `<div style="font-weight:600;font-size:11px;margin-bottom:4px;opacity:0.6;">${label}</div>${escapeHtml(text)}`;
+        
+        row.appendChild(messageContent);
+        row.appendChild(avatar);
+        chatMessages.appendChild(row);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    } else {
+        // Bot message - show typing animation
+        avatar.style.cssText = 'width:28px;height:28px;border-radius:50%;background:#10b981;color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0;';
+        avatar.textContent = 'LB';
+
+        const messageContent = document.createElement('div');
+        messageContent.style.cssText = `max-width:72%;background:${bubbleBg};color:${textColor};padding:10px 14px;border-radius:${radius};font-size:13px;line-height:1.5;word-break:break-word;`;
+        
+        const labelDiv = document.createElement('div');
+        labelDiv.style.cssText = 'font-weight:600;font-size:11px;margin-bottom:4px;opacity:0.6;';
+        labelDiv.textContent = label;
+        
+        const textSpan = document.createElement('span');
+        const cursorSpan = document.createElement('span');
+        cursorSpan.style.animation = 'blink 0.7s infinite';
+        cursorSpan.textContent = '|';
+        
+        messageContent.appendChild(labelDiv);
+        messageContent.appendChild(textSpan);
+        messageContent.appendChild(cursorSpan);
+        
+        row.appendChild(avatar);
+        row.appendChild(messageContent);
+        chatMessages.appendChild(row);
+        
+        // Animate typing
+        let charIndex = 0;
+        const typeChar = () => {
+            if (charIndex < text.length) {
+                const char = text[charIndex];
+                if (char === '\n') {
+                    textSpan.innerHTML += '<br>';
+                } else {
+                    textSpan.textContent += char;
+                }
+                charIndex++;
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                setTimeout(typeChar, 30);
+            } else {
+                // Remove cursor when done
+                if (cursorSpan && cursorSpan.parentNode) {
+                    cursorSpan.remove();
+                }
+            }
+        };
+        
+        typeChar();
+    }
+}
+
+
+
+
+
         // View reservation details
         function viewReservation(reservationId) {
             viewReservationDetails(reservationId);
@@ -2740,6 +3189,7 @@ error_log("Profile image path: " . $profile_image);
         function showSection(section) {
             document.getElementById('dashboardSection').style.display = 'none';
             document.getElementById('equipmentSection').style.display = 'none';
+            document.getElementById('labbotSection').style.display = 'none';
             document.getElementById('historySection').style.display = 'none';
             document.getElementById(section + 'Section').style.display = 'block';
 
@@ -3462,6 +3912,8 @@ error_log("Profile image path: " . $profile_image);
                 showToast('error', 'Error saving profile');
             });
         }
+
+       
     </script>
 
 
