@@ -1445,7 +1445,7 @@ $calendar_events_json = json_encode($calendar_events);
         <h4><i class="bi bi-flask"></i> MicroLab</h4>
         <a onclick="showSection('dashboard')" class="active"><i class="bi bi-speedometer2"></i> Dashboard</a>
         <a onclick="showSection('equipment')"><i class="bi bi-tools"></i> Equipment</a>
-        <a onclick="showSection('labbot')"><i class="bi bi-chat-dots"></i> LabBot</a>
+        <a onclick="showSection('labbot')"> <i class="bi bi-robot" style="color: white; font-size: 16px;"></i> Lab AI</a>
         <a onclick="showSection('history')"><i class="bi bi-clock-history"></i> Reservation History</a>
         <a href="../logout.php"><i class="bi bi-box-arrow-right"></i> Logout</a>
         <div class="sidebar-footer">
@@ -2264,6 +2264,10 @@ function sendLabbotMessage() {
         return;
     }
 
+    console.log('LabBot: Sending message:', message);
+    console.log('LabBot: API Key loaded:', !!OPENROUTER_API_KEY);
+    console.log('LabBot: API Key length:', OPENROUTER_API_KEY.length);
+
     addChatMessage(message, 'user');
     input.value = '';
 
@@ -2272,7 +2276,7 @@ function sendLabbotMessage() {
     loadingDiv.id = 'labbotLoading';
     loadingDiv.style.cssText = 'display:flex;gap:8px;align-items:flex-end;';
     loadingDiv.innerHTML = `
-        <div style="width:28px;height:28px;border-radius:50%;background:#10b981;color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0;">LB</div>
+        <div style="width:28px;height:28px;border-radius:50%;background:#10b981;color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0;"> <i class="bi bi-robot" style="color: white; font-size: 16px;"></i></div>
         <div style="background:#1e293b;padding:10px 14px;border-radius:16px;border-bottom-left-radius:4px;display:flex;gap:5px;align-items:center;">
             <span style="width:7px;height:7px;background:#64748b;border-radius:50%;animation:lbdot 1.4s infinite;display:inline-block;"></span>
             <span style="width:7px;height:7px;background:#64748b;border-radius:50%;animation:lbdot 1.4s infinite 0.2s;display:inline-block;"></span>
@@ -2302,27 +2306,61 @@ function sendLabbotMessage() {
         })
     })
     .then(response => {
+        console.log('LabBot: Response received, status:', response.status);
+        
         // Check for HTTP errors first
         if (response.status === 401) {
-            throw new Error('API_UNAUTHORIZED: Your API key is invalid or expired. Please contact the lab administrator.');
+            throw new Error('API_UNAUTHORIZED: Your API key is invalid or expired.');
+        }
+        if (response.status === 429) {
+            throw new Error('API_RATE_LIMIT: Too many requests. Please wait a moment.');
         }
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
-        return response.json();
+        return response.json().catch(err => {
+            console.error('LabBot: JSON parse error:', err);
+            throw new Error('Failed to parse API response');
+        });
     })
     .then(data => {
+        console.log('LabBot: Full data received:', JSON.stringify(data, null, 2));
+        
         const loading = document.getElementById('labbotLoading');
         if (loading) loading.remove();
 
-        if (data.choices && data.choices[0] && data.choices[0].message) {
-            const botResponse = data.choices[0].message.content;
-            labBotConversationHistory.push({
-                role: 'assistant',
-                content: botResponse
-            });
-            addChatMessageWithTyping(botResponse, 'bot');
+        if (data.choices && data.choices[0]) {
+            console.log('LabBot: choices[0]:', JSON.stringify(data.choices[0], null, 2));
+            
+            let botResponse = null;
+            
+            // Try different paths to get the message content
+            if (data.choices[0].message && data.choices[0].message.content) {
+                botResponse = data.choices[0].message.content;
+                console.log('LabBot: Found response at choices[0].message.content');
+            } else if (data.choices[0].text) {
+                botResponse = data.choices[0].text;
+                console.log('LabBot: Found response at choices[0].text');
+            } else if (data.result && data.result.completions && data.result.completions[0]) {
+                botResponse = data.result.completions[0].text || data.result.completions[0].content;
+                console.log('LabBot: Found response at data.result.completions');
+            }
+            
+            if (botResponse) {
+                console.log('LabBot: Bot response received:', botResponse.substring(0, 50) + '...');
+                
+                labBotConversationHistory.push({
+                    role: 'assistant',
+                    content: botResponse
+                });
+                addChatMessageWithTyping(botResponse, 'bot');
+            } else {
+                console.error('LabBot: No response content found in choices[0]');
+                addChatMessageWithTyping('Sorry, I received an incomplete response from the API. Please try again.', 'bot');
+            }
         } else if (data.error) {
+            console.error('LabBot API Error:', data.error.message);
+            
             let errorMsg = 'Sorry, I encountered an error. ';
             if (data.error.message === 'Incorrect API key provided' || data.error.message?.includes('authentication')) {
                 errorMsg += 'The API key is invalid or not configured. Please check with the lab administrator.';
@@ -2331,21 +2369,29 @@ function sendLabbotMessage() {
             }
             addChatMessageWithTyping(errorMsg, 'bot');
         } else {
+            console.error('LabBot: Unexpected response format:', JSON.stringify(data, null, 2));
             addChatMessageWithTyping('Sorry, something went wrong. Please try again.', 'bot');
         }
     })
     .catch(error => {
-        console.error('LabBot Error:', error);
+        console.error('LabBot Error caught:', error.message, error);
+        
         const loading = document.getElementById('labbotLoading');
         if (loading) loading.remove();
         
         let errorMsg = 'Sorry, I\'m having trouble connecting. ';
         if (error.message?.includes('API_UNAUTHORIZED')) {
-            errorMsg += 'The API key is invalid. Please contact your lab administrator.';
+            errorMsg = 'The API key appears to be invalid. Please contact your lab administrator.';
+        } else if (error.message?.includes('API_RATE_LIMIT')) {
+            errorMsg = 'Too many requests. Please wait a moment and try again.';
         } else if (error.message?.includes('401')) {
-            errorMsg += 'Authentication failed. Please ensure the API key is properly configured.';
+            errorMsg = 'Authentication failed. The API key may be invalid or expired.';
+        } else if (error.message?.includes('timeout')) {
+            errorMsg = 'Request timed out. Please try again.';
+        } else if (error.message?.includes('parse')) {
+            errorMsg = 'Got an invalid response from the API. Please try again.';
         } else {
-            errorMsg += 'Please check your internet connection or try again later.';
+            errorMsg = 'Network error. Please check your connection and try again.';
         }
         addChatMessageWithTyping(errorMsg, 'bot');
     });
@@ -2367,9 +2413,9 @@ function addChatMessage(text, sender) {
         label = STUDENT_NAME;
         avatar.innerHTML = `<img src="${STUDENT_IMAGE}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;flex-shrink:0;">`;
     } else {
-        // Bot message - show initials
+        // Bot message - show robot icon
         avatar.style.cssText = 'width:28px;height:28px;border-radius:50%;background:#10b981;color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0;';
-        avatar.textContent = 'LB';
+        avatar.innerHTML = '<i class="bi bi-robot" style="color: white; font-size: 16px;"></i>';
     }
 
     const messageContent = document.createElement('div');
@@ -2426,9 +2472,9 @@ function addChatMessageWithTyping(text, sender) {
         chatMessages.appendChild(row);
         chatMessages.scrollTop = chatMessages.scrollHeight;
     } else {
-        // Bot message - show typing animation
+        // Bot message - show robot icon with typing animation
         avatar.style.cssText = 'width:28px;height:28px;border-radius:50%;background:#10b981;color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0;';
-        avatar.textContent = 'LB';
+        avatar.innerHTML = '<i class="bi bi-robot" style="color: white; font-size: 16px;"></i>';
 
         const messageContent = document.createElement('div');
         messageContent.style.cssText = `max-width:72%;background:${bubbleBg};color:${textColor};padding:10px 14px;border-radius:${radius};font-size:13px;line-height:1.5;word-break:break-word;`;
